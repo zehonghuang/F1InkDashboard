@@ -152,6 +152,33 @@ bool LcdDisplay::SwitchPage(UiPageId id) {
     return SwitchPageLocked(id);
 }
 
+bool LcdDisplay::NavigateToLocked(UiPageId id) {
+    if (page_stack_.empty()) {
+        page_stack_.push_back(id);
+    } else if (page_stack_.back() != id) {
+        page_stack_.push_back(id);
+    }
+    return SwitchPageLocked(id);
+}
+
+bool LcdDisplay::NavigateTo(UiPageId id) {
+    DisplayLockGuard lock(this);
+    return NavigateToLocked(id);
+}
+
+bool LcdDisplay::BackLocked() {
+    if (page_stack_.size() <= 1) {
+        return false;
+    }
+    page_stack_.pop_back();
+    return SwitchPageLocked(page_stack_.back());
+}
+
+bool LcdDisplay::Back() {
+    DisplayLockGuard lock(this);
+    return BackLocked();
+}
+
 UiPageId LcdDisplay::GetActivePageId() const {
     DisplayLockGuard lock(const_cast<LcdDisplay*>(this));
     return page_registry_.ActiveId();
@@ -229,7 +256,7 @@ bool LcdDisplay::IsRaw1bppFrameVisible() const {
 
 void LcdDisplay::ShowFactoryTestPage() {
     SetupUI();
-    (void)SwitchPage(UiPageId::FactoryTest);
+    (void)NavigateTo(UiPageId::FactoryTest);
 }
 
 void LcdDisplay::ShowWifiSetupPage(const std::string& ap_ssid,
@@ -240,12 +267,12 @@ void LcdDisplay::ShowWifiSetupPage(const std::string& ap_ssid,
     if (wifi_setup_page_adapter_ != nullptr) {
         wifi_setup_page_adapter_->UpdateInfo(ap_ssid, web_url, status);
     }
-    (void)SwitchPageLocked(UiPageId::WifiSetup);
+    (void)NavigateToLocked(UiPageId::WifiSetup);
 }
 
 void LcdDisplay::ShowF1Page() {
     SetupUI();
-    (void)SwitchPage(UiPageId::F1);
+    (void)NavigateTo(UiPageId::F1);
 }
 
 bool LcdDisplay::IsFactoryTestPageActive() {
@@ -284,6 +311,8 @@ void LcdDisplay::SetupUI() {
         ESP_LOGW(kTag, "Failed to switch to FT page");
         return;
     }
+    page_stack_.clear();
+    page_stack_.push_back(UiPageId::FactoryTest);
 
     ws_overlay_root_ = lv_obj_create(lv_layer_top());
     lv_obj_set_size(ws_overlay_root_, width_, height_);

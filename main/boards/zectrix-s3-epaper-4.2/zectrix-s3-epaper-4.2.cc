@@ -650,6 +650,12 @@ private:
             if (display_ != nullptr && display_->IsWsOverlayVisible()) {
                 return;
             }
+            if (display_ != nullptr && display_->GetActivePageId() == UiPageId::WifiSetup) {
+                if (display_->Back()) {
+                    display_->RequestUrgentFullRefresh();
+                    return;
+                }
+            }
             if (display_ != nullptr && display_->GetActivePageId() == UiPageId::F1) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;

@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 class FactoryTestPageAdapter;
 class WifiSetupPageAdapter;
@@ -23,6 +24,7 @@ protected:
     lv_obj_t* f1_screen_ = nullptr;
 
     UiPageRegistry page_registry_;
+    std::vector<UiPageId> page_stack_;
     FactoryTestPageAdapter* factory_test_page_adapter_ = nullptr;
     WifiSetupPageAdapter* wifi_setup_page_adapter_ = nullptr;
     F1PageAdapter* f1_page_adapter_ = nullptr;
@@ -35,6 +37,8 @@ protected:
     void ShowScreen(lv_obj_t* scr);
     bool RegisterPageLocked(std::unique_ptr<IUiPage> page);
     bool SwitchPageLocked(UiPageId id);
+    bool NavigateToLocked(UiPageId id);
+    bool BackLocked();
     void SetupUI();
 
     bool Lock(int timeout_ms = 0) override;
@@ -56,6 +60,8 @@ public:
 
     bool RegisterPage(std::unique_ptr<IUiPage> page);
     bool SwitchPage(UiPageId id);
+    bool NavigateTo(UiPageId id);
+    bool Back();
     UiPageId GetActivePageId() const;
     void DispatchPageEvent(const UiPageEvent& e, bool only_active = true);
     void ShowFactoryTestPage();
