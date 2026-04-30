@@ -1,0 +1,426 @@
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x15 (USB_UART_CHIP_RESET),boot:0x9 (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4216eac8
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x56c
+load:0x403c8700,len:0x4
+load:0x403c8704,len:0xc30
+load:0x403cb700,len:0x2e2c
+entry 0x403c890c
+[0;32mI (35) octal_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (35) octal_psram: dev id       : 0x02 (generation 3)[0m
+[0;32mI (35) octal_psram: density      : 0x03 (64 Mbit)[0m
+[0;32mI (37) octal_psram: good-die     : 0x01 (Pass)[0m
+[0;32mI (41) octal_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (45) octal_psram: VCC          : 0x01 (3V)[0m
+[0;32mI (49) octal_psram: SRF          : 0x01 (Fast Refresh)[0m
+[0;32mI (54) octal_psram: BurstType    : 0x01 (Hybrid Wrap)[0m
+[0;32mI (59) octal_psram: BurstLen     : 0x01 (32 Byte)[0m
+[0;32mI (63) octal_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (68) octal_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (73) MSPI Timing: PSRAM timing tuning index: 5[0m
+[0;32mI (77) esp_psram: Found 8MB PSRAM device[0m
+[0;32mI (80) esp_psram: Speed: 80MHz[0m
+[0;32mI (83) cpu_start: Multicore app[0m
+[0;32mI (97) cpu_start: GPIO 44 and 43 are used as console UART I/O pins[0m
+[0;32mI (98) cpu_start: Pro cpu start user code[0m
+[0;32mI (98) cpu_start: cpu freq: 240000000 Hz[0m
+[0;32mI (99) app_init: Application information:[0m
+[0;32mI (103) app_init: Project name:     xiaozhi[0m
+[0;32mI (107) app_init: App version:      2.2.3[0m
+[0;32mI (111) app_init: Compile time:     Apr 26 2026 15:09:00[0m
+[0;32mI (116) app_init: ELF file SHA256:  854306dc3...[0m
+[0;32mI (120) app_init: ESP-IDF:          v5.4.4[0m
+[0;32mI (124) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (128) efuse_init: Max chip rev:     v0.99 [0m
+[0;32mI (132) efuse_init: Chip rev:         v0.2[0m
+[0;32mI (136) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (142) heap_init: At 3FCA9968 len 0003FDA8 (255 KiB): RAM[0m
+[0;32mI (147) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM[0m
+[0;32mI (152) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM[0m
+[0;32mI (157) heap_init: At 600FE000 len 00001FD8 (7 KiB): RTCRAM[0m
+[0;32mI (163) esp_psram: Adding pool of 8192K of PSRAM memory to heap allocator[0m
+[0;32mI (170) spi_flash: detected chip: generic[0m
+[0;32mI (173) spi_flash: flash io: qio[0m
+[0;32mI (176) sleep_gpio: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (182) sleep_gpio: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (189) main_task: Started on CPU0[0m
+[0;32mI (199) esp_psram: Reserving pool of 64K of internal memory for DMA/internal allocations[0m
+[0;32mI (199) main_task: Calling app_main()[0m
+[0;32mI (209) main: NVS stats: used=80 free=424 total=504 (15%) namespaces=4[0m
+[0;32mI (209) Board: EFUSE_UUID=f2 86 5d 67 ac c7 58 5f 1e f7 e0 4b f5 f9 7f a7[0m
+[0;32mI (219) Board: UUID=3e057a60-b5ab-4024-bd7c-ed478027adae SKU=zectrix-s3-epaper-4.2 device_key=f2865d67acc7585f1ef7e04bf5f97fa7[0m
+[0;32mI (229) gpio: GPIO[39]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (239) button: IoT Button Version: 4.1.5[0m
+[0;32mI (239) gpio: GPIO[18]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (249) gpio: GPIO[0]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (259) gpio: GPIO[6]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (259) gpio: GPIO[17]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (269) gpio: GPIO[42]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (279) gpio: GPIO[46]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (289) gpio: GPIO[3]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (299) gpio: GPIO[5]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (309) gpio: GPIO[21]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (309) gpio: GPIO[7]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:3 [0m
+[0;32mI (349) ZectrixNfc: NFC init: addr=0x55 power_gpio=21 fd_gpio=7 fd_active=0 capacity=880 field=0 uid_ret=ESP_OK uid=04:F5:52:C4:28:02:69[0m
+[0;32mI (349) gpio: GPIO[1]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (359) gpio: GPIO[2]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (369) CustomLcdDisplay: Initialize SPI[0m
+[0;32mI (369) gpio: GPIO[9]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (379) gpio: GPIO[10]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (389) gpio: GPIO[11]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (399) gpio: GPIO[8]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (409) CustomLcdDisplay: Initialize LVGL library[0m
+[0;32mI (409) LVGL: Starting LVGL task[0m
+[0;32mI (419) CustomLcdDisplay: BW threshold=254[0m
+[0;32mI (419) CustomLcdDisplay: EPD init[0m
+[0;32mI (469) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (469) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (479) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (479) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2569) CustomLcdDisplay: ui start[0m
+[0;32mI (2579) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2589) Application: State 0 -> 1[0m
+[0;32mI (2589) Es8311AudioCodec: Duplex channels created[0m
+[0;32mI (2589) gpio: GPIO[46]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (2599) ES8311: Work in Slave mode[0m
+[0;32mI (2609) Es8311AudioCodec: Es8311AudioCodec initialized[0m
+[0;32mI (2609) AudioCodec: Set input enable to true[0m
+[0;32mI (2609) I2S_IF: STD mode, dir: TX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (2619) I2S_IF: STD mode, dir: RX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (2629) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2629) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=120000 diff=100.00% ones=0.00% head=00 00 00 00 00 00 00 00[0m
+[0;32mI (2639) Adev_Codec: Open codec device OK[0m
+[0;32mI (2649) AudioCodec: Set output enable to true[0m
+[0;32mI (2649) AudioCodec: Audio codec started[0m
+[0;32mI (2649) Application: State 1 -> 3[0m
+[0;32mI (2659) WifiManager: Initializing...[0m
+[0;32mI (2659) pp: pp rom version: e7ae62f[0m
+[0;32mI (2659) net80211: net80211 rom version: e7ae62f[0m
+[0;32mI (2679) wifi:wifi driver task: 3fcd938c, prio:23, stack:6656, core=0[0m
+[0;32mI (2679) wifi:wifi firmware version: 8896d66[0m
+[0;32mI (2679) wifi:wifi certification version: v7.0[0m
+[0;32mI (2679) wifi:config NVS flash: disabled[0m
+[0;32mI (2689) wifi:config nano formatting: disabled[0m
+[0;32mI (2689) wifi:Init data frame dynamic rx buffer num: 6[0m
+[0;32mI (2689) wifi:Init dynamic rx mgmt buffer num: 5[0m
+[0;32mI (2699) wifi:Init management short buffer num: 32[0m
+[0;32mI (2699) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (2709) wifi:Init static tx FG buffer num: 2[0m
+[0;32mI (2709) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (2719) wifi:Init static rx buffer num: 3[0m
+[0;32mI (2719) wifi:Init dynamic rx buffer num: 6[0m
+[0;32mI (2719) wifi_init: rx ba win: 3[0m
+[0;32mI (2729) wifi_init: accept mbox: 6[0m
+[0;32mI (2729) wifi_init: tcpip mbox: 16[0m
+[0;32mI (2729) wifi_init: udp mbox: 6[0m
+[0;32mI (2739) wifi_init: tcp mbox: 6[0m
+[0;32mI (2739) wifi_init: tcp tx win: 5760[0m
+[0;32mI (2739) wifi_init: tcp rx win: 5760[0m
+[0;32mI (2739) wifi_init: tcp mss: 1440[0m
+[0;32mI (2749) WifiManager: Initialized[0m
+[0;32mI (2749) WifiManager: Starting station[0m
+[0;32mI (2749) FAST_RC: stage=wifi event=station_start path=slow t_ms=2591 fast_enable=1[0m
+[0;32mI (2759) phy_init: phy_version 711,97bcf0a2,Aug 25 2025,19:04:10[0m
+[0;32mI (2799) wifi:mode : sta (9c:13:9e:b5:7d:a0)[0m
+[0;32mI (2799) wifi:enable tsf[0m
+[0;32mI (2799) FAST_RC: stage=wifi event=sta_start path=slow t_ms=2636[0m
+[0;32mI (2799) FAST_RC: stage=wifi event=fast_cache path=fast t_ms=2636 have=0 ssid=- channel=0 bssid=00:00:00:00:00:00 last_age_ms=-1 fail_count=0[0m
+[0;32mI (2809) FAST_RC: stage=wifi event=fast_direct_connect_skip path=fast t_ms=2636 reason=cache_miss[0m
+[0;32mI (3789) WifiSetupPage: splash loaded(bin) path=wifi/setup.bin[0m
+[0;32mI (4529) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (4559) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (4559) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=90366 diff=75.31% ones=75.31% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (4619) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (4619) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (4629) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (4639) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (5229) WifiStation: Found AP: FUFU吃大米, BSSID: a4:ba:70:58:3d:d9, RSSI: -31, Channel: 2, Authmode: 3[0m
+[0;33mW (5229) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;32mI (5439) wifi:new:<2,0>, old:<1,0>, ap:<255,255>, sta:<2,0>, prof:1, snd_ch_cfg:0x0[0m
+[0;32mI (5439) wifi:state: init -> auth (0xb0)[0m
+[0;32mI (5459) wifi:state: auth -> assoc (0x0)[0m
+[0;32mI (5509) wifi:state: assoc -> run (0x10)[0m
+[0;32mI (5529) wifi:connected with FUFU吃大米, aid = 1, channel 2, BW20, bssid = a4:ba:70:58:3d:d9[0m
+[0;32mI (5529) wifi:security: WPA2-PSK, phy: bgn, rssi: -31, cipher(pairwise:0x3, group:0x3), pmf:0[0m
+[0;32mI (5539) wifi:pm start, type: 1[0m
+
+[0;32mI (5539) wifi:dp: 1, bi: 102400, li: 10, scale listen interval from 1024000 us to 1024000 us[0m
+[0;32mI (5549) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000[0m
+[0;32mI (5559) FAST_RC: stage=wifi event=sta_connected path=slow t_ms=5395[0m
+[0;32mI (5559) FAST_RC: stage=ip event=fast_skip path=fast t_ms=5395 reason=cache_miss[0m
+[0;32mI (5559) wifi:<ba-add>idx:0 (ifx:0, a4:ba:70:58:3d:d9), tid:6, ssn:2, winSize:64[0m
+[0;32mI (5599) wifi:AP's beacon interval = 102400 us, DTIM period = 1[0m
+[0;32mI (6579) esp_netif_handlers: sta ip: 192.168.31.252, mask: 255.255.255.0, gw: 192.168.31.1[0m
+[0;32mI (6579) WifiStation: Got IP: 192.168.31.252[0m
+[0;32mI (6579) FAST_RC: stage=ip event=got_ip path=slow t_ms=6412 ip=192.168.31.252[0m
+[0;32mI (6579) FAST_RC: stage=wifi event=cache_writeback path=slow t_ms=6412 wrote=1 ssid=FUFU吃大米 channel=2 bssid=a4:ba:70:58:3d:d9[0m
+[0;32mI (6589) WsClientService: start[0m
+[0;32mI (6599) WsClientService: url derived=ws://192.168.31.110:8008/ws[0m
+[0;32mI (6689) CustomLcdDisplay: [REFRESH] Got dirty rect: x=8, y=193, w=384, h=100, area=38400[0m
+[0;32mI (6719) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (6719) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=436 diff=0.36% ones=75.52% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (7099) WsClientService: connect url=ws://192.168.31.110:8008/ws[0m
+[0;32mI (7099) WebSocket: stage=ws event=dns_lookup host=192.168.31.110 ok=1 delta_ms=0 reason=ip_literal[0m
+[0;32mI (7099) wifi:<ba-add>idx:1 (ifx:0, a4:ba:70:58:3d:d9), tid:0, ssn:0, winSize:64[0m
+[0;32mI (7369) WifiSetupPage: splash released bytes=8000[0m
+[0;32mI (7369) F1Page: fetch start force=0 race_week=0 interval_ms=3600000 url=http://192.168.31.110:8008/api/v1/ui/pages?tz=Asia/Shanghai[0m
+[0;32mI (7379) F1Page: timer started interval_ms=3600000[0m
+[0;32mI (7479) WsClientService: connected[0m
+[0;32mI (7479) WsClientService: rx len=5[0m
+[0;32mI (8399) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (8429) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (8429) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=33235 diff=27.70% ones=89.55% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (8479) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (8479) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (8489) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (8499) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (14539) F1Page: timer started interval_ms=600000[0m
+[0;32mI (14549) F1Page: circuit urls small=/static/circuits/2026/miami.png detail=/static/circuits/2026/miami_detail.png[0m
+[0;32mI (14549) F1Page: circuit frame fetch start url=http://192.168.31.110:8008/api/v1/epd/frame.bin?png_url=http://192.168.31.110:8008/static/circuits/2026/miami.png&w=188&h=150&dither=0[0m
+[0;32mI (14569) F1Page: circuit detail frame fetch start url=http://192.168.31.110:8008/api/v1/epd/frame.bin?png_url=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png&w=388&h=238&dither=0[0m
+[0;32mI (14939) F1Page: circuit frame fetched ok=1 bytes=3600 url=http://192.168.31.110:8008/api/v1/epd/frame.bin?png_url=http://192.168.31.110:8008/static/circuits/2026/miami.png&w=188&h=150&dither=0[0m
+[0;32mI (15279) F1Page: circuit detail frame fetched ok=1 bytes=11662 url=http://192.168.31.110:8008/api/v1/epd/frame.bin?png_url=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png&w=388&h=238&dither=0[0m
+[0;32mI (15649) AudioCodec: Set input enable to false[0m
+[0;32mI (15649) AudioCodec: Set output enable to false[0m
+[0;32mI (17519) F1Page: aJu.wav play bytes=122634[0m
+[0;32mI (17519) AudioCodec: Set output enable to true[0m
+[1;31mE (17519) i2s_common: i2s_channel_disable(1244): the channel has not been enabled yet[0m
+[1;31mE (17519) i2s_common: i2s_channel_disable(1244): the channel has not been enabled yet[0m
+[0;32mI (17529) I2S_IF: STD mode, dir: TX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (17539) I2S_IF: STD mode, dir: RX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (17559) Adev_Codec: Open codec device OK[0m
+[0;32mI (17579) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (17589) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (17589) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (17629) CustomLcdDisplay: [FLUSH] ROI circuit_map_img t_ms=17420 thr=254 area=200,34-391,187 luma_min=0 luma_max=255 dark<250=4758/29568 white=24810/29568 b1_white=24570/29568[0m
+[0;32mI (17679) CustomLcdDisplay: [REFRESH] Urgent merged dirty: x=0, y=26, w=400, h=162, area=64800[0m
+[0;32mI (17699) CustomLcdDisplay: [REFRESH] Debounce merged dirty: x=0, y=26, w=400, h=274, area=109600[0m
+[0;32mI (17709) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (17709) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=8934 diff=7.45% ones=88.20% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (17769) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (17769) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (17779) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (17789) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (19839) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (19869) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (19869) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=1775 diff=1.48% ones=87.05% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (33519) AudioCodec: Set output enable to false[0m
+[0;32mI (614539) F1Page: fetch start force=0 race_week=1 interval_ms=600000 url=http://192.168.31.110:8008/api/v1/ui/pages?tz=Asia/Shanghai[0m
+[0;32mI (614539) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (620749) F1Page: timer started interval_ms=600000[0m
+[0;32mI (620759) F1Page: circuit urls small=/static/circuits/2026/miami.png detail=/static/circuits/2026/miami_detail.png[0m
+[0;32mI (620759) F1Page: circuit image url unchanged full=http://192.168.31.110:8008/static/circuits/2026/miami.png[0m
+[0;32mI (620769) F1Page: circuit detail image url unchanged full=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png[0m
+[0;32mI (620789) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (620939) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (620939) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=0 diff=0.00% ones=87.05% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (620989) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (620989) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (620999) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (621009) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (623059) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (623109) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (623109) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=409 diff=0.34% ones=87.02% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (1220749) F1Page: fetch start force=0 race_week=1 interval_ms=600000 url=http://192.168.31.110:8008/api/v1/ui/pages?tz=Asia/Shanghai[0m
+[0;32mI (1220749) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;33mW (1234719) F1Page: HTTP GET failed url=http://192.168.31.110:8008/api/v1/ui/pages?tz=Asia/Shanghai[0m
+[0;32mI (1820749) F1Page: fetch start force=0 race_week=1 interval_ms=600000 url=http://192.168.31.110:8008/api/v1/ui/pages?tz=Asia/Shanghai[0m
+[0;32mI (1820749) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (1828249) F1Page: timer started interval_ms=600000[0m
+[0;32mI (1828259) F1Page: circuit urls small=/static/circuits/2026/miami.png detail=/static/circuits/2026/miami_detail.png[0m
+[0;32mI (1828259) F1Page: circuit image url unchanged full=http://192.168.31.110:8008/static/circuits/2026/miami.png[0m
+[0;32mI (1828269) F1Page: circuit detail image url unchanged full=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png[0m
+[0;32mI (1828289) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (1828399) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=26, w=400, h=162, area=64800[0m
+[0;32mI (1828419) CustomLcdDisplay: [REFRESH] Debounce merged dirty: x=0, y=26, w=400, h=274, area=109600[0m
+[0;32mI (1828429) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (1828429) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=315 diff=0.26% ones=87.07% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (1828489) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (1828489) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (1828499) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (1828509) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (1830559) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (1830609) CustomLcdDisplay: [REFRESH] Diff too small (bits=0.03%), skip to reduce flicker (streak=1, accum=38b)[0m
+[0;32mI (1831009) CustomLcdDisplay: [REFRESH] Diff too small (bits=0.03%), skip to reduce flicker (streak=2, accum=76b)[0m
+[0;32mI (1831409) CustomLcdDisplay: [REFRESH] Diff too small (bits=0.03%), skip to reduce flicker (streak=3, accum=114b)[0m
+[0;32mI (1831809) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (1831809) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=38 diff=0.03% ones=87.06% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2088319) F1Page: circuit detail image url unchanged full=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png[0m
+[0;32mI (2088319) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2088769) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2088819) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2088819) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=23865 diff=19.89% ones=90.65% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2193339) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2193809) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2193859) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2193859) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=22246 diff=18.54% ones=88.27% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2413089) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2413159) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=26, w=400, h=162, area=64800[0m
+[0;32mI (2413179) CustomLcdDisplay: [REFRESH] Debounce merged dirty: x=0, y=26, w=400, h=274, area=109600[0m
+[0;32mI (2413189) CustomLcdDisplay: [REFRESH] Debounce merged dirty: x=0, y=26, w=400, h=274, area=109600[0m
+[0;32mI (2413199) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2413199) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=4260 diff=3.55% ones=88.52% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2415629) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2415779) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (2415779) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=0 diff=0.00% ones=88.52% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2415829) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2415829) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2415839) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2415849) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2418099) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (2418099) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=0 diff=0.00% ones=88.52% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2418149) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2418149) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2418159) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2418169) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2420249) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2420379) CustomLcdDisplay: [REFRESH] Urgent merged dirty: x=200, y=26, w=200, h=162, area=32400[0m
+[0;32mI (2420399) CustomLcdDisplay: [REFRESH] Debounce merged dirty: x=0, y=26, w=400, h=162, area=64800[0m
+[0;32mI (2420409) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2420409) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=1558 diff=1.30% ones=87.29% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2422089) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=190, w=400, h=110, area=44000[0m
+[0;32mI (2422139) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2422139) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=2702 diff=2.25% ones=88.27% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2422379) F1Page: circuit detail image url unchanged full=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png[0m
+[0;32mI (2422379) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2423809) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2423839) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (2423839) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=22246 diff=18.54% ones=90.65% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2423899) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2423899) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2423909) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2423919) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2425979) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2426239) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2426529) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2426529) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=22246 diff=18.54% ones=88.27% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2428249) F1Page: fetch start force=0 race_week=1 interval_ms=600000 url=http://192.168.31.110:8008/api/v1/ui/pages?tz=Asia/Shanghai[0m
+[0;32mI (2428249) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (2433949) F1Page: timer started interval_ms=600000[0m
+[0;32mI (2433959) F1Page: circuit urls small=/static/circuits/2026/miami.png detail=/static/circuits/2026/miami_detail.png[0m
+[0;32mI (2433959) F1Page: circuit image url unchanged full=http://192.168.31.110:8008/static/circuits/2026/miami.png[0m
+[0;32mI (2433969) F1Page: circuit detail image url unchanged full=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png[0m
+[0;32mI (2435629) F1Page: aJu.wav play bytes=122634[0m
+[0;32mI (2435629) AudioCodec: Set output enable to true[0m
+[1;31mE (2435629) i2s_common: i2s_channel_disable(1244): the channel has not been enabled yet[0m
+[1;31mE (2435639) i2s_common: i2s_channel_disable(1244): the channel has not been enabled yet[0m
+[0;32mI (2435649) I2S_IF: STD mode, dir: TX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (2435649) I2S_IF: STD mode, dir: RX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (2435679) Adev_Codec: Open codec device OK[0m
+[0;32mI (2435689) Settings: SetString key=last_news_id len=40[0m
+[0;32mI (2435699) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (2435759) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=26, w=400, h=162, area=64800[0m
+[0;32mI (2436029) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2436079) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2436079) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=426 diff=0.35% ones=88.25% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2451629) AudioCodec: Set output enable to false[0m
+[0;32mI (2471929) F1Page: circuit detail image url unchanged full=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png[0m
+[0;32mI (2471929) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2472169) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2472199) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (2472199) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=22260 diff=18.55% ones=90.65% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2472259) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2472259) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2472269) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2472279) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2476059) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2476289) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2476579) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2476579) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=22260 diff=18.55% ones=88.25% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2479079) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2479229) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (2479229) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=0 diff=0.00% ones=88.25% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2479279) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2479279) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2479289) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2479299) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2481549) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (2481549) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=0 diff=0.00% ones=88.25% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2481599) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2481599) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2481609) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2481619) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2557479) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2557819) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (2557819) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=0 diff=0.00% ones=88.25% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2557869) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2557869) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2557879) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2557889) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2559939) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2559989) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2559989) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=24562 diff=20.47% ones=87.03% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2565279) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2565769) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2565819) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2565819) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=25247 diff=21.04% ones=87.04% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2580859) F1Page: circuit detail image url unchanged full=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png[0m
+[0;32mI (2580859) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2581309) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2581359) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2581359) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=23879 diff=19.90% ones=90.65% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2583949) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2584399) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2584449) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2584449) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=418 diff=0.35% ones=90.72% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2591149) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2593669) F1Page: circuit detail image url unchanged full=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png[0m
+[0;32mI (2593669) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2594219) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2594269) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2594269) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=418 diff=0.35% ones=90.65% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2596249) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2596789) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2596839) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2596839) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=418 diff=0.35% ones=90.72% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2598799) F1Page: circuit detail image url unchanged full=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png[0m
+[0;32mI (2598799) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2598909) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2598939) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2598939) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=418 diff=0.35% ones=90.65% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2787329) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2787689) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2787979) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2787979) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=22260 diff=18.55% ones=88.25% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2791249) F1Page: circuit detail image url unchanged full=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png[0m
+[0;32mI (2791249) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2791349) CustomLcdDisplay: [REFRESH] Urgent merged dirty: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2791379) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (2791379) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=22260 diff=18.55% ones=90.65% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (2791439) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2791439) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2791449) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2791459) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2794269) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (2794439) CustomLcdDisplay: [REFRESH] Urgent merged dirty: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2794519) CustomLcdDisplay: [REFRESH] Debounce merged dirty: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2794519) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2794519) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=418 diff=0.35% ones=90.72% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (3033949) F1Page: fetch start force=0 race_week=1 interval_ms=600000 url=http://192.168.31.110:8008/api/v1/ui/pages?tz=Asia/Shanghai[0m
+[0;32mI (3033949) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (3038319) F1Page: timer started interval_ms=600000[0m
+[0;32mI (3038329) F1Page: circuit urls small=/static/circuits/2026/miami.png detail=/static/circuits/2026/miami_detail.png[0m
+[0;32mI (3038329) F1Page: circuit image url unchanged full=http://192.168.31.110:8008/static/circuits/2026/miami.png[0m
+[0;32mI (3038339) F1Page: circuit detail image url unchanged full=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png[0m
+[0;32mI (3040009) F1Page: aJu.wav play bytes=122634[0m
+[0;32mI (3040009) AudioCodec: Set output enable to true[0m
+[1;31mE (3040009) i2s_common: i2s_channel_disable(1244): the channel has not been enabled yet[0m
+[1;31mE (3040009) i2s_common: i2s_channel_disable(1244): the channel has not been enabled yet[0m
+[0;32mI (3040019) I2S_IF: STD mode, dir: TX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (3040029) I2S_IF: STD mode, dir: RX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (3040059) Adev_Codec: Open codec device OK[0m
+[0;32mI (3040069) Settings: SetString key=last_news_id len=40[0m
+[0;32mI (3040079) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (3040179) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (3044599) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (3044859) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (3044889) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (3044889) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=22223 diff=18.52% ones=88.26% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (3044949) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (3044949) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (3044959) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (3044969) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (3056009) AudioCodec: Set output enable to false[0m

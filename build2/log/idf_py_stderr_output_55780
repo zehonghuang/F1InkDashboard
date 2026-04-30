@@ -1,0 +1,13 @@
+[0;33m--- Warning: GDB cannot open serial ports accessed as COMx[0m
+[0;33m--- Using \\.\COM4 instead...[0m
+[0;33m--- esp-idf-monitor 1.9.0 on \\.\COM4 115200[0m
+[0;33m--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H[0m
+[0m--- 0x40041a76: [0;33mets_delay_us[0m[0m in [0;32mROM[0m
+[0m--- 0x40382fb6: [0;33mxQueueGiveMutexRecursive[0m[0m at [0;32mC:/esp/v5.4.4/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c[0m[0m:[1;31m773[0m
+[0m--- 0x400570e8: [0;33mmemset[0m[0m in [0;32mROM[0m
+[0m--- 0x400570f3: [0;33mmemset[0m[0m in [0;32mROM[0m
+[0m--- 0x40382fb3: [0;33mxQueueGiveMutexRecursive[0m[0m at [0;32mC:/esp/v5.4.4/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c[0m[0m:[1;31m765[0m
+[0m--- 0x42137469: [0;33mesp_event_loop_run[0m[0m at [0;32mC:/esp/v5.4.4/esp-idf/components/esp_event/esp_event.c[0m[0m:[1;31m727[0m
+[0m--- 0x42137477: [0;33mesp_event_loop_run_task[0m[0m at [0;32mC:/esp/v5.4.4/esp-idf/components/esp_event/esp_event.c[0m[0m:[1;31m106[0m
+[0m--- 0x40379d85: [0;33mesp_restart_noos[0m[0m at [0;32mC:/esp/v5.4.4/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c[0m[0m:[1;31m164[0m
+[0m

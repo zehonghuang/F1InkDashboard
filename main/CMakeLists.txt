@@ -1,0 +1,94 @@
+set(SOURCES
+    "application.cc"
+    "main.cc"
+    "settings.cc"
+    "system_info.cc"
+    "ws_client_service.cc"
+    "audio/audio_codec.cc"
+    "audio/audio_service.cc"
+    "audio/codecs/es8311_audio_codec.cc"
+    "audio/processors/audio_debugger.cc"
+    "audio/processors/no_audio_processor.cc"
+    "display/display.cc"
+    "display/lcd_display.cc"
+    "display/ui_page_registry.cc"
+    "display/pages/factory_test_page_adapter.cc"
+    "display/pages/f1_page_adapter.cc"
+    "display/pages/f1_page_adapter_common.cc"
+    "display/pages/f1_page_adapter_net.cc"
+    "display/pages/f1_page_adapter_fetch.cc"
+    "display/pages/f1_page_adapter_ui_circuit.cc"
+    "display/pages/f1_page_adapter_ui_race.cc"
+    "display/pages/f1_page_adapter_ui_offweek.cc"
+    "display/pages/f1_page_adapter_ui_sessions.cc"
+    "display/pages/f1_page_adapter_ui_menu.cc"
+    "display/pages/wifi_setup_page_adapter.cc"
+    "display/lvgl_display/lvgl_display.cc"
+    "third_party/pngle/pngle.c"
+    "assets_fs.cc"
+    "display/lvgl_display/lvgl_theme.cc"
+    "display/lvgl_display/lvgl_font.cc"
+    "common/sleep_manager.cc"
+    "boards/common/board.cc"
+    "boards/common/button.cc"
+    "boards/common/i2c_bus_lock.cc"
+    "boards/common/i2c_device.cc"
+    "boards/zectrix/zectrix_nfc.cc"
+    "boards/zectrix-s3-epaper-4.2/board_power_bsp.cc"
+    "boards/zectrix-s3-epaper-4.2/charge_status.cc"
+    "boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc"
+    "boards/zectrix-s3-epaper-4.2/i2c_power_hook.cc"
+    "boards/zectrix-s3-epaper-4.2/rtc_pcf8563.cc"
+    "boards/zectrix-s3-epaper-4.2/zectrix-s3-epaper-4.2.cc"
+    "boards/zectrix-s3-epaper-4.2/FT/acoustic_selftest.cc"
+    "boards/zectrix-s3-epaper-4.2/FT/factory_test_service.cc"
+)
+
+set(INCLUDE_DIRS
+    "."
+    "audio"
+    "display"
+    "display/lvgl_display"
+    "protocols"
+    "boards/common"
+    "third_party/pngle"
+)
+
+idf_component_register(
+    SRCS ${SOURCES}
+    INCLUDE_DIRS ${INCLUDE_DIRS}
+    REQUIRES
+        nvs_flash
+        spi_flash
+        esp_app_format
+        app_update
+        efuse
+        esp_http_client
+        esp_timer
+        json
+        esp_event
+        esp_netif
+        esp_wifi
+        esp_lcd
+        lvgl__lvgl
+        espressif__esp_lvgl_port
+        espressif__esp_mmap_assets
+        78__esp-wifi-connect
+        78__esp-ml307
+        78__xiaozhi-fonts
+        78__esp-opus
+        78__esp-opus-encoder
+    PRIV_REQUIRES
+        "u8g2-fonts"
+)
+
+target_compile_definitions(
+    ${COMPONENT_LIB}
+    PRIVATE
+    BOARD_TYPE=\"zectrix-s3-epaper-4.2\"
+    BOARD_NAME=\"zectrix-s3-epaper-4.2\"
+    BUILTIN_TEXT_FONT=SourceHanSansSC_Regular_slim
+    BUILTIN_ICON_FONT=font_zectrix_16_1
+)
+
+spiffs_create_partition_image(assets ${CMAKE_CURRENT_SOURCE_DIR}/assets FLASH_IN_PROJECT)

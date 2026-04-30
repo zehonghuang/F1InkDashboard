@@ -1,0 +1,198 @@
+[1/16] Performing build step for 'bootloader'
+[1/1] C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Users\GinTonic\Desktop\zectrix\build2\bootloader\esp-idf\esptool_py && C:\Espressif\tools\python\v5.4.4\venv\Scripts\python.exe C:/esp/v5.4.4/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x0 C:/Users/GinTonic/Desktop/zectrix/build2/bootloader/bootloader.bin"
+Bootloader binary size 0x4030 bytes. 0x3fd0 bytes (50%) free.
+[2/16] No install step for 'bootloader'
+[3/16] Completed 'bootloader'
+[4/16] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/pages/factory_test_page_adapter.cc.obj
+[5/16] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/ui_page_registry.cc.obj
+C:/Users/GinTonic/Desktop/zectrix/main/display/ui_page_registry.cc: In member function 'bool UiPageRegistry::SwitchTo(UiPageId)':
+C:/Users/GinTonic/Desktop/zectrix/main/display/ui_page_registry.cc:79:20: warning: unused variable 'from_id' [-Wunused-variable]
+   79 |     const UiPageId from_id = active_id_;
+      |                    ^~~~~~~
+[6/16] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc.obj
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc: In member function 'void CustomLcdDisplay::refresh_task_loop()':
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:557:22: warning: unused variable 'total_bits' [-Wunused-variable]
+  557 |         const size_t total_bits = total_bytes * 8;
+      |                      ^~~~~~~~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc: In member function 'void CustomLcdDisplay::EPD_Display()':
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:872:18: warning: unused variable 'row' [-Wunused-variable]
+  872 |     unsigned int row, col;
+      |                  ^~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:872:23: warning: unused variable 'col' [-Wunused-variable]
+  872 |     unsigned int row, col;
+      |                       ^~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:873:18: warning: unused variable 'pcnt' [-Wunused-variable]
+  873 |     unsigned int pcnt;
+      |                  ^~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:874:25: warning: unused variable 'temp2' [-Wunused-variable]
+  874 |     unsigned char temp1,temp2,tempvalue;
+      |                         ^~~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc: In member function 'void CustomLcdDisplay::WRITE_WHITE_TO_HLINE()':
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1017:20: warning: variable 'pcnt' set but not used [-Wunused-but-set-variable]
+ 1017 |   unsigned int i,j,pcnt,pcnt1;
+      |                    ^~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1017:25: warning: unused variable 'pcnt1' [-Wunused-variable]
+ 1017 |   unsigned int i,j,pcnt,pcnt1;
+      |                         ^~~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc: In member function 'void CustomLcdDisplay::WRITE_HLINE_TO_VLINE()':
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1038:20: warning: variable 'pcnt' set but not used [-Wunused-but-set-variable]
+ 1038 |   unsigned int i,j,pcnt,pcnt1;
+      |                    ^~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1038:25: warning: unused variable 'pcnt1' [-Wunused-variable]
+ 1038 |   unsigned int i,j,pcnt,pcnt1;
+      |                         ^~~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc: In member function 'void CustomLcdDisplay::WRITE_VLINE_TO_HLINE()':
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1074:20: warning: variable 'pcnt' set but not used [-Wunused-but-set-variable]
+ 1074 |   unsigned int i,j,pcnt,pcnt1;
+      |                    ^~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1074:25: warning: unused variable 'pcnt1' [-Wunused-variable]
+ 1074 |   unsigned int i,j,pcnt,pcnt1;
+      |                         ^~~~~
+[7/16] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/pages/wifi_setup_page_adapter.cc.obj
+[8/16] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/lcd_display.cc.obj
+[9/16] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/pages/gallery_page_adapter.cc.obj
+[10/16] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/zectrix-s3-epaper-4.2/zectrix-s3-epaper-4.2.cc.obj
+[11/16] Linking C static library esp-idf\main\libmain.a
+[12/16] Generating ld/sections.ld
+[13/16] Linking CXX executable xiaozhi.elf
+[14/16] Generating binary image from built executable
+esptool.py v4.11.0
+Creating esp32s3 image...
+Merged 2 ELF sections
+Successfully created esp32s3 image.
+Generated C:/Users/GinTonic/Desktop/zectrix/build2/xiaozhi.bin
+[15/16] C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Users\GinTonic\Desktop\zectrix\build2\esp-idf\esptool_py && C:\Espressif\tools\python\v5.4.4\venv\Scripts\python.exe C:/esp/v5.4.4/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 partition --type app C:/Users/GinTonic/Desktop/zectrix/build2/partition_table/partition-table.bin C:/Users/GinTonic/Desktop/zectrix/build2/xiaozhi.bin"
+xiaozhi.bin binary size 0x260e30 bytes. Smallest app partition is 0x3f0000 bytes. 0x18f1d0 bytes (40%) free.
+[15/16] C:\WINDOWS\system32\cmd.exe /C "cd /D C:\esp\v5.4.4\esp-idf\components\esptool_py && C:\Espressif\tools\cmake\3.30.2\bin\cmake.exe -D IDF_PATH=C:/esp/v5.4.4/esp-idf -D SERIAL_TOOL=C:/Espressif/tools/python/v5.4.4/venv/Scripts/python.exe;;C:/esp/v5.4.4/esp-idf/components/esptool_py/esptool/esptool.py;--chip;esp32s3 -D SERIAL_TOOL_ARGS=--before=default_reset;--after=hard_reset;write_flash;@flash_args -D WORKING_DIRECTORY=C:/Users/GinTonic/Desktop/zectrix/build2 -P C:/esp/v5.4.4/esp-idf/components/esptool_py/run_serial_tool.cmake"
+esptool.py --chip esp32s3 -p COM4 -b 460800 --before=default_reset --after=hard_reset write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB 0x0 bootloader/bootloader.bin 0x20000 xiaozhi.bin 0x8000 partition_table/partition-table.bin 0xd000 ota_data_initial.bin
+esptool.py v4.11.0
+Serial port COM4
+Connecting....
+Chip is ESP32-S3 (QFN56) (revision v0.2)
+Features: WiFi, BLE, Embedded PSRAM 8MB (AP_3v3)
+Crystal is 40MHz
+USB mode: USB-Serial/JTAG
+MAC: 9c:13:9e:b5:7d:a0
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00000000 to 0x00004fff...
+Flash will be erased from 0x00020000 to 0x00280fff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+Flash will be erased from 0x0000d000 to 0x0000efff...
+SHA digest in image updated
+Compressed 16432 bytes to 11394...
+Writing at 0x00000000... (100 %)
+Wrote 16432 bytes (11394 compressed) at 0x00000000 in 0.2 seconds (effective 742.2 kbit/s)...
+Hash of data verified.
+Compressed 2494000 bytes to 1525125...
+Writing at 0x00020000... (1 %)
+Writing at 0x0002c57d... (2 %)
+Writing at 0x00039582... (3 %)
+Writing at 0x000479cd... (4 %)
+Writing at 0x00051d44... (5 %)
+Writing at 0x00062e9d... (6 %)
+Writing at 0x00070ca2... (7 %)
+Writing at 0x0007763a... (8 %)
+Writing at 0x0007df69... (9 %)
+Writing at 0x00084802... (10 %)
+Writing at 0x0008affd... (11 %)
+Writing at 0x0009163b... (12 %)
+Writing at 0x00097a8a... (13 %)
+Writing at 0x0009d9e0... (14 %)
+Writing at 0x000a322c... (15 %)
+Writing at 0x000a9362... (17 %)
+Writing at 0x000af5ca... (18 %)
+Writing at 0x000b55a4... (19 %)
+Writing at 0x000bc77b... (20 %)
+Writing at 0x000c2a03... (21 %)
+Writing at 0x000c87af... (22 %)
+Writing at 0x000ceb75... (23 %)
+Writing at 0x000d4907... (24 %)
+Writing at 0x000da156... (25 %)
+Writing at 0x000eac4d... (26 %)
+Writing at 0x000f9ea7... (27 %)
+Writing at 0x000ff885... (28 %)
+Writing at 0x00105635... (29 %)
+Writing at 0x0010b3d7... (30 %)
+Writing at 0x00110e46... (31 %)
+Writing at 0x00116979... (32 %)
+Writing at 0x0011c97b... (34 %)
+Writing at 0x00121fe3... (35 %)
+Writing at 0x00127528... (36 %)
+Writing at 0x0012cb4f... (37 %)
+Writing at 0x001337b9... (38 %)
+Writing at 0x00139b1b... (39 %)
+Writing at 0x00143259... (40 %)
+Writing at 0x00151950... (41 %)
+Writing at 0x00157183... (42 %)
+Writing at 0x0015d047... (43 %)
+Writing at 0x00163241... (44 %)
+Writing at 0x001690a2... (45 %)
+Writing at 0x0016e390... (46 %)
+Writing at 0x0017333c... (47 %)
+Writing at 0x00178351... (48 %)
+Writing at 0x0017d2b2... (50 %)
+Writing at 0x001821bf... (51 %)
+Writing at 0x00186f4b... (52 %)
+Writing at 0x0018c1b8... (53 %)
+Writing at 0x00191351... (54 %)
+Writing at 0x00196c76... (55 %)
+Writing at 0x0019c2c3... (56 %)
+Writing at 0x001a1b10... (57 %)
+Writing at 0x001a6cfe... (58 %)
+Writing at 0x001ac704... (59 %)
+Writing at 0x001b1bc4... (60 %)
+Writing at 0x001b71c8... (61 %)
+Writing at 0x001bc659... (62 %)
+Writing at 0x001c2b37... (63 %)
+Writing at 0x001c825d... (64 %)
+Writing at 0x001cdc78... (65 %)
+Writing at 0x001d3f29... (67 %)
+Writing at 0x001d9420... (68 %)
+Writing at 0x001de5b8... (69 %)
+Writing at 0x001e38e1... (70 %)
+Writing at 0x001e8dd7... (71 %)
+Writing at 0x001ee7b6... (72 %)
+Writing at 0x001f3ec6... (73 %)
+Writing at 0x001f93b9... (74 %)
+Writing at 0x001fe6a5... (75 %)
+Writing at 0x00203819... (76 %)
+Writing at 0x00208df0... (77 %)
+Writing at 0x0020e684... (78 %)
+Writing at 0x00213b7d... (79 %)
+Writing at 0x00218e5e... (80 %)
+Writing at 0x0021e468... (81 %)
+Writing at 0x002246e4... (82 %)
+Writing at 0x00229d2b... (84 %)
+Writing at 0x0022eda3... (85 %)
+Writing at 0x00234059... (86 %)
+Writing at 0x002394c5... (87 %)
+Writing at 0x0023e585... (88 %)
+Writing at 0x00243c96... (89 %)
+Writing at 0x002494e8... (90 %)
+Writing at 0x0024ebb4... (91 %)
+Writing at 0x00257ba5... (92 %)
+Writing at 0x0025d921... (93 %)
+Writing at 0x00263026... (94 %)
+Writing at 0x0026833f... (95 %)
+Writing at 0x0026e74c... (96 %)
+Writing at 0x002741f2... (97 %)
+Writing at 0x00279db1... (98 %)
+Writing at 0x002805e6... (100 %)
+Wrote 2494000 bytes (1525125 compressed) at 0x00020000 in 13.5 seconds (effective 1475.3 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 142...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (142 compressed) at 0x00008000 in 0.0 seconds (effective 1031.5 kbit/s)...
+Hash of data verified.
+Compressed 8192 bytes to 31...
+Writing at 0x0000d000... (100 %)
+Wrote 8192 bytes (31 compressed) at 0x0000d000 in 0.0 seconds (effective 1726.2 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...

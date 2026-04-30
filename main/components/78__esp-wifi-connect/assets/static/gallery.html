@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>GinTonic Tips</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f5f7fb; color: #111; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 18px; }
+    .card { background: #fff; border: 1px solid #e6e8ef; border-radius: 12px; padding: 16px; }
+    h1 { font-size: 18px; margin: 0 0 10px 0; }
+    .sub { color: #666; font-size: 14px; margin-bottom: 14px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .img { background: #fafbfe; border: 1px solid #eef0f6; border-radius: 10px; padding: 10px; display: flex; align-items: center; justify-content: center; }
+    .img img { width: 100%; height: auto; display: block; }
+    .footer { margin-top: 14px; display: flex; gap: 10px; align-items: center; }
+    button { border: none; background: #007bff; color: #fff; border-radius: 10px; padding: 10px 12px; font-size: 14px; cursor: pointer; }
+    button:disabled { background: #9bbcf2; cursor: not-allowed; }
+    .count { color: #666; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>已保存 Wi‑Fi，欢迎</h1>
+      <div class="sub">下面是静态资源示例（你可以把自己的图片放进 assets/static 目录）。</div>
+      <div class="grid">
+        <div class="img"><img src="/static/gin_1.svg" alt="gin_1"></div>
+        <div class="img"><img src="/static/gin_2.svg" alt="gin_2"></div>
+      </div>
+      <div class="footer">
+        <button id="exitBtn" onclick="exitConfig()">完成并退出</button>
+        <div class="count">将于 <span id="sec">8</span>s 后自动退出</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    let left = 8;
+    const secEl = document.getElementById('sec');
+    const btn = document.getElementById('exitBtn');
+    const timer = setInterval(() => {
+      left -= 1;
+      if (left <= 0) {
+        clearInterval(timer);
+        exitConfig();
+      } else {
+        secEl.textContent = String(left);
+      }
+    }, 1000);
+    async function exitConfig() {
+      btn.disabled = true;
+      try {
+        await fetch('/exit', { method: 'POST' });
+      } catch (e) {
+      }
+    }
+  </script>
+</body>
+</html>

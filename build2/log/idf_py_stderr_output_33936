@@ -1,0 +1,45 @@
+[0;33m--- Warning: GDB cannot open serial ports accessed as COMx[0m
+[0;33m--- Using \\.\COM4 instead...[0m
+[0;33m--- esp-idf-monitor 1.9.0 on \\.\COM4 115200[0m
+[0;33m--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H[0m
+[0m--- 0x40041a79: [0;33mets_delay_us[0m[0m in [0;32mROM[0m
+[0m--- 0x4206ea2c: [0;33mtransform_and_recolor[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/draw/sw/lv_draw_sw_img.c[0m[0m:[1;31m495[0m
+[0m--- (inlined by) [0;33mimg_draw_core[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/draw/sw/lv_draw_sw_img.c[0m[0m:[1;31m304[0m
+[0m--- 0x400570e8: [0;33mmemset[0m[0m in [0;32mROM[0m
+[0m--- 0x400570f3: [0;33mmemset[0m[0m in [0;32mROM[0m
+[0m--- 0x4206ea29: [0;33mtransform_and_recolor[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/draw/sw/lv_draw_sw_img.c[0m[0m:[1;31m495[0m
+[0m--- (inlined by) [0;33mimg_draw_core[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/draw/sw/lv_draw_sw_img.c[0m[0m:[1;31m304[0m
+[0m--- 0x4205854d: [0;33mimg_decode_and_draw[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/draw/lv_draw_image.c[0m[0m:[1;31m347[0m
+[0m--- 0x42058b51: [0;33mlv_draw_image_normal_helper[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/draw/lv_draw_image.c[0m[0m:[1;31m240[0m
+[0m--- 0x4206ebe1: [0;33mlv_draw_sw_image[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/draw/sw/lv_draw_sw_img.c[0m[0m:[1;31m205[0m
+[0m--- (inlined by) [0;33mlv_draw_sw_image[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/draw/sw/lv_draw_sw_img.c[0m[0m:[1;31m201[0m
+[0m--- 0x4206c11e: [0;33mexecute_drawing[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/draw/sw/lv_draw_sw.c[0m[0m:[1;31m404[0m
+[0m--- (inlined by) [0;33mdispatch[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/draw/sw/lv_draw_sw.c[0m[0m:[1;31m331[0m
+[0m--- (inlined by) [0;33mdispatch[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/draw/sw/lv_draw_sw.c[0m[0m:[1;31m250[0m
+[0m--- 0x42057ae9: [0;33mlv_draw_dispatch_layer[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/draw/lv_draw.c[0m[0m:[1;31m283[0m
+[0m--- 0x42057b32: [0;33mlv_draw_dispatch[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/draw/lv_draw.c[0m[0m:[1;31m220[0m
+[0m--- 0x42057ba9: [0;33mlv_draw_finalize_task_creation[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/draw/lv_draw.c[0m[0m:[1;31m171[0m
+[0m--- 0x42058943: [0;33mlv_draw_image[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/draw/lv_draw_image.c[0m[0m:[1;31m136[0m
+[0m--- 0x42065c79: [0;33mdraw_image[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/widgets/image/lv_image.c[0m[0m:[1;31m878[0m
+[0m--- (inlined by) [0;33mlv_image_event[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/widgets/image/lv_image.c[0m[0m:[1;31m758[0m
+[0m--- 0x421273a1: [0;33mlv_obj_event_base[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/core/lv_obj_event.c[0m[0m:[1;31m90[0m
+[0m--- 0x42051c8c: [0;33mevent_send_core[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/core/lv_obj_event.c[0m[0m:[1;31m369[0m
+[0m--- (inlined by) [0;33mlv_obj_send_event[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/core/lv_obj_event.c[0m[0m:[1;31m67[0m
+[0m--- 0x42055d52: [0;33mlv_obj_redraw[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/core/lv_refr.c[0m[0m:[1;31m120[0m
+[0m--- 0x4205609a: [0;33mrefr_obj[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/core/lv_refr.c[0m[0m:[1;31m1209[0m
+[0m--- (inlined by) [0;33mrefr_obj[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/core/lv_refr.c[0m[0m:[1;31m1188[0m
+[0m--- 0x42055df6: [0;33mlv_obj_redraw[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/core/lv_refr.c[0m[0m:[1;31m170[0m
+[0m--- 0x4205609a: [0;33mrefr_obj[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/core/lv_refr.c[0m[0m:[1;31m1209[0m
+[0m--- (inlined by) [0;33mrefr_obj[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/core/lv_refr.c[0m[0m:[1;31m1188[0m
+[0m--- 0x4205644c: [0;33mrefr_obj_and_children[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/core/lv_refr.c[0m[0m:[1;31m973[0m
+[0m--- 0x42056559: [0;33mrefr_configured_layer[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/core/lv_refr.c[0m[0m:[1;31m895[0m
+[0m--- 0x420565f9: [0;33mrefr_area[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/core/lv_refr.c[0m[0m:[1;31m730[0m
+[0m--- 0x42056db1: [0;33mrefr_invalid_areas[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/core/lv_refr.c[0m[0m:[1;31m633[0m
+[0m--- (inlined by) [0;33mlv_display_refr_timer[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/core/lv_refr.c[0m[0m:[1;31m403[0m
+[0m--- 0x42060256: [0;33mlv_timer_exec[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/misc/lv_timer.c[0m[0m:[1;31m327[0m
+[0m--- (inlined by) [0;33mlv_timer_handler[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/misc/lv_timer.c[0m[0m:[1;31m107[0m
+[0m--- (inlined by) [0;33mlv_timer_handler[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/misc/lv_timer.c[0m[0m:[1;31m63[0m
+[0m--- 0x4201cddc: [0;33mlvgl_port_task[0m[0m at [0;32mC:/Users/GinTonic/Desktop/zectrix/managed_components/espressif__esp_lvgl_port/src/lvgl9/esp_lvgl_port.c[0m[0m:[1;31m235[0m
+[0m--- 0x4209352e: [0;33mgpio_ll_get_level[0m[0m at [0;32mC:/esp/v5.4.4/esp-idf/components/hal/esp32s3/include/hal/gpio_ll.h[0m[0m:[1;31m352[0m
+[0m--- (inlined by) [0;33mgpio_get_level[0m[0m at [0;32mC:/esp/v5.4.4/esp-idf/components/esp_driver_gpio/src/gpio.c[0m[0m:[1;31m254[0m
+[0m

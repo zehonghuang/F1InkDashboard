@@ -1,0 +1,65 @@
+[1/15] Performing build step for 'bootloader'
+[1/1] C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Users\GinTonic\Desktop\zectrix\build2\bootloader\esp-idf\esptool_py && C:\Espressif\tools\python\v5.4.4\venv\Scripts\python.exe C:/esp/v5.4.4/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x0 C:/Users/GinTonic/Desktop/zectrix/build2/bootloader/bootloader.bin"
+Bootloader binary size 0x4030 bytes. 0x3fd0 bytes (50%) free.
+[2/15] No install step for 'bootloader'
+[3/15] Completed 'bootloader'
+[4/15] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/ui_page_registry.cc.obj
+C:/Users/GinTonic/Desktop/zectrix/main/display/ui_page_registry.cc: In member function 'bool UiPageRegistry::SwitchTo(UiPageId)':
+C:/Users/GinTonic/Desktop/zectrix/main/display/ui_page_registry.cc:79:20: warning: unused variable 'from_id' [-Wunused-variable]
+   79 |     const UiPageId from_id = active_id_;
+      |                    ^~~~~~~
+[5/15] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/pages/factory_test_page_adapter.cc.obj
+[6/15] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/pages/wifi_setup_page_adapter.cc.obj
+[7/15] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc.obj
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc: In member function 'void CustomLcdDisplay::refresh_task_loop()':
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:557:22: warning: unused variable 'total_bits' [-Wunused-variable]
+  557 |         const size_t total_bits = total_bytes * 8;
+      |                      ^~~~~~~~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc: In member function 'void CustomLcdDisplay::EPD_Display()':
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:872:18: warning: unused variable 'row' [-Wunused-variable]
+  872 |     unsigned int row, col;
+      |                  ^~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:872:23: warning: unused variable 'col' [-Wunused-variable]
+  872 |     unsigned int row, col;
+      |                       ^~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:873:18: warning: unused variable 'pcnt' [-Wunused-variable]
+  873 |     unsigned int pcnt;
+      |                  ^~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:874:25: warning: unused variable 'temp2' [-Wunused-variable]
+  874 |     unsigned char temp1,temp2,tempvalue;
+      |                         ^~~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc: In member function 'void CustomLcdDisplay::WRITE_WHITE_TO_HLINE()':
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1017:20: warning: variable 'pcnt' set but not used [-Wunused-but-set-variable]
+ 1017 |   unsigned int i,j,pcnt,pcnt1;
+      |                    ^~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1017:25: warning: unused variable 'pcnt1' [-Wunused-variable]
+ 1017 |   unsigned int i,j,pcnt,pcnt1;
+      |                         ^~~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc: In member function 'void CustomLcdDisplay::WRITE_HLINE_TO_VLINE()':
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1038:20: warning: variable 'pcnt' set but not used [-Wunused-but-set-variable]
+ 1038 |   unsigned int i,j,pcnt,pcnt1;
+      |                    ^~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1038:25: warning: unused variable 'pcnt1' [-Wunused-variable]
+ 1038 |   unsigned int i,j,pcnt,pcnt1;
+      |                         ^~~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc: In member function 'void CustomLcdDisplay::WRITE_VLINE_TO_HLINE()':
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1074:20: warning: variable 'pcnt' set but not used [-Wunused-but-set-variable]
+ 1074 |   unsigned int i,j,pcnt,pcnt1;
+      |                    ^~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1074:25: warning: unused variable 'pcnt1' [-Wunused-variable]
+ 1074 |   unsigned int i,j,pcnt,pcnt1;
+      |                         ^~~~~
+[8/15] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/lcd_display.cc.obj
+[9/15] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/zectrix-s3-epaper-4.2/zectrix-s3-epaper-4.2.cc.obj
+[10/15] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/pages/f1_page_adapter.cc.obj
+[11/15] Linking C static library esp-idf\main\libmain.a
+[12/15] Generating ld/sections.ld
+[13/15] Linking CXX executable xiaozhi.elf
+[14/15] Generating binary image from built executable
+esptool.py v4.11.0
+Creating esp32s3 image...
+Merged 2 ELF sections
+Successfully created esp32s3 image.
+Generated C:/Users/GinTonic/Desktop/zectrix/build2/xiaozhi.bin
+[15/15] C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Users\GinTonic\Desktop\zectrix\build2\esp-idf\esptool_py && C:\Espressif\tools\python\v5.4.4\venv\Scripts\python.exe C:/esp/v5.4.4/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 partition --type app C:/Users/GinTonic/Desktop/zectrix/build2/partition_table/partition-table.bin C:/Users/GinTonic/Desktop/zectrix/build2/xiaozhi.bin"
+xiaozhi.bin binary size 0x267d50 bytes. Smallest app partition is 0x3f0000 bytes. 0x1882b0 bytes (39%) free.

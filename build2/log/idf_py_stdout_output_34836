@@ -1,0 +1,341 @@
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x15 (USB_UART_CHIP_RESET),boot:0x9 (SPI_FAST_FLASH_BOOT)
+Saved PC:0x421360ed
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x56c
+load:0x403c8700,len:0x4
+load:0x403c8704,len:0xc30
+load:0x403cb700,len:0x2e2c
+entry 0x403c890c
+[0;32mI (35) octal_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (35) octal_psram: dev id       : 0x02 (generation 3)[0m
+[0;32mI (35) octal_psram: density      : 0x03 (64 Mbit)[0m
+[0;32mI (37) octal_psram: good-die     : 0x01 (Pass)[0m
+[0;32mI (41) octal_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (45) octal_psram: VCC          : 0x01 (3V)[0m
+[0;32mI (49) octal_psram: SRF          : 0x01 (Fast Refresh)[0m
+[0;32mI (54) octal_psram: BurstType    : 0x01 (Hybrid Wrap)[0m
+[0;32mI (59) octal_psram: BurstLen     : 0x01 (32 Byte)[0m
+[0;32mI (63) octal_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (68) octal_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (73) MSPI Timing: PSRAM timing tuning index: 5[0m
+[0;32mI (77) esp_psram: Found 8MB PSRAM device[0m
+[0;32mI (80) esp_psram: Speed: 80MHz[0m
+[0;32mI (83) cpu_start: Multicore app[0m
+[0;32mI (97) cpu_start: GPIO 44 and 43 are used as console UART I/O pins[0m
+[0;32mI (98) cpu_start: Pro cpu start user code[0m
+[0;32mI (98) cpu_start: cpu freq: 240000000 Hz[0m
+[0;32mI (99) app_init: Application information:[0m
+[0;32mI (103) app_init: Project name:     xiaozhi[0m
+[0;32mI (107) app_init: App version:      2.2.3[0m
+[0;32mI (111) app_init: Compile time:     Apr 25 2026 00:48:17[0m
+[0;32mI (116) app_init: ELF file SHA256:  6f83b604c...[0m
+[0;32mI (120) app_init: ESP-IDF:          v5.4.4[0m
+[0;32mI (124) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (128) efuse_init: Max chip rev:     v0.99 [0m
+[0;32mI (132) efuse_init: Chip rev:         v0.2[0m
+[0;32mI (136) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (142) heap_init: At 3FCA8440 len 000412D0 (260 KiB): RAM[0m
+[0;32mI (147) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM[0m
+[0;32mI (152) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM[0m
+[0;32mI (157) heap_init: At 600FE000 len 00001FD8 (7 KiB): RTCRAM[0m
+[0;32mI (163) esp_psram: Adding pool of 8192K of PSRAM memory to heap allocator[0m
+[0;32mI (170) spi_flash: detected chip: generic[0m
+[0;32mI (173) spi_flash: flash io: qio[0m
+[0;32mI (176) sleep_gpio: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (182) sleep_gpio: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (189) main_task: Started on CPU0[0m
+[0;32mI (199) esp_psram: Reserving pool of 64K of internal memory for DMA/internal allocations[0m
+[0;32mI (199) main_task: Calling app_main()[0m
+[0;32mI (209) main: NVS stats: used=81 free=423 total=504 (16%) namespaces=4[0m
+[0;32mI (209) Board: EFUSE_UUID=f2 86 5d 67 ac c7 58 5f 1e f7 e0 4b f5 f9 7f a7[0m
+[0;32mI (219) Board: UUID=3e057a60-b5ab-4024-bd7c-ed478027adae SKU=zectrix-s3-epaper-4.2 device_key=f2865d67acc7585f1ef7e04bf5f97fa7[0m
+[0;32mI (229) gpio: GPIO[39]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (239) button: IoT Button Version: 4.1.5[0m
+[0;32mI (239) gpio: GPIO[18]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (249) gpio: GPIO[0]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (259) gpio: GPIO[6]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (259) gpio: GPIO[17]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (269) gpio: GPIO[42]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (279) gpio: GPIO[46]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (289) gpio: GPIO[3]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (299) gpio: GPIO[5]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (309) gpio: GPIO[21]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (309) gpio: GPIO[7]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:3 [0m
+[0;32mI (349) ZectrixNfc: NFC init: addr=0x55 power_gpio=21 fd_gpio=7 fd_active=0 capacity=880 field=0 uid_ret=ESP_OK uid=04:F5:52:C4:28:02:69[0m
+[0;32mI (349) gpio: GPIO[1]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (359) gpio: GPIO[2]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (369) CustomLcdDisplay: Initialize SPI[0m
+[0;32mI (369) gpio: GPIO[9]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (379) gpio: GPIO[10]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (389) gpio: GPIO[11]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (399) gpio: GPIO[8]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (409) CustomLcdDisplay: Initialize LVGL library[0m
+[0;32mI (409) LVGL: Starting LVGL task[0m
+[0;32mI (419) CustomLcdDisplay: BW threshold=240[0m
+[0;32mI (419) CustomLcdDisplay: EPD init[0m
+[0;32mI (469) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (469) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (479) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (479) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2569) CustomLcdDisplay: ui start[0m
+[0;32mI (2569) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2589) Application: State 0 -> 1[0m
+[0;32mI (2589) Es8311AudioCodec: Duplex channels created[0m
+[0;32mI (2589) gpio: GPIO[46]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (2599) ES8311: Work in Slave mode[0m
+[0;32mI (2599) Es8311AudioCodec: Es8311AudioCodec initialized[0m
+[0;32mI (2599) AudioCodec: Set input enable to true[0m
+[0;32mI (2609) I2S_IF: STD mode, dir: TX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (2609) I2S_IF: STD mode, dir: RX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (2639) Adev_Codec: Open codec device OK[0m
+[0;32mI (2639) AudioCodec: Set output enable to true[0m
+[0;32mI (2639) AudioCodec: Audio codec started[0m
+[0;32mI (2639) Application: State 1 -> 3[0m
+[0;32mI (2639) WifiManager: Initializing...[0m
+[0;32mI (2649) pp: pp rom version: e7ae62f[0m
+[0;32mI (2649) net80211: net80211 rom version: e7ae62f[0m
+[0;32mI (2659) wifi:wifi driver task: 3fcd7e24, prio:23, stack:6656, core=0[0m
+[0;32mI (2659) wifi:wifi firmware version: 8896d66[0m
+[0;32mI (2659) wifi:wifi certification version: v7.0[0m
+[0;32mI (2669) wifi:config NVS flash: disabled[0m
+[0;32mI (2669) wifi:config nano formatting: disabled[0m
+[0;32mI (2679) wifi:Init data frame dynamic rx buffer num: 6[0m
+[0;32mI (2679) wifi:Init dynamic rx mgmt buffer num: 5[0m
+[0;32mI (2679) wifi:Init management short buffer num: 32[0m
+[0;32mI (2689) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (2689) wifi:Init static tx FG buffer num: 2[0m
+[0;32mI (2699) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (2699) wifi:Init static rx buffer num: 3[0m
+[0;32mI (2709) wifi:Init dynamic rx buffer num: 6[0m
+[0;32mI (2709) wifi_init: rx ba win: 3[0m
+[0;32mI (2709) wifi_init: accept mbox: 6[0m
+[0;32mI (2719) wifi_init: tcpip mbox: 16[0m
+[0;32mI (2719) wifi_init: udp mbox: 6[0m
+[0;32mI (2719) wifi_init: tcp mbox: 6[0m
+[0;32mI (2719) wifi_init: tcp tx win: 5760[0m
+[0;32mI (2729) wifi_init: tcp rx win: 5760[0m
+[0;32mI (2729) wifi_init: tcp mss: 1440[0m
+[0;32mI (2729) WifiManager: Initialized[0m
+[0;32mI (2739) WifiManager: Starting station[0m
+[0;32mI (2739) FAST_RC: stage=wifi event=station_start path=slow t_ms=2576 fast_enable=1[0m
+[0;32mI (2749) phy_init: phy_version 711,97bcf0a2,Aug 25 2025,19:04:10[0m
+[0;32mI (2779) wifi:mode : sta (9c:13:9e:b5:7d:a0)[0m
+[0;32mI (2779) wifi:enable tsf[0m
+[0;32mI (2789) FAST_RC: stage=wifi event=sta_start path=slow t_ms=2622[0m
+[0;32mI (2789) FAST_RC: stage=wifi event=fast_cache path=fast t_ms=2622 have=0 ssid=- channel=0 bssid=00:00:00:00:00:00 last_age_ms=-1 fail_count=0[0m
+[0;32mI (2799) FAST_RC: stage=wifi event=fast_direct_connect_skip path=fast t_ms=2622 reason=cache_miss[0m
+[0;32mI (3159) CustomLcdDisplay: [REFRESH] Urgent merged dirty: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (3189) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (3189) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=7110 diff=5.93% ones=94.07% head=E0 00 00 00 00 00 00 00[0m
+[0;32mI (3239) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (3239) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (3249) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (3259) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (5209) WifiStation: Found AP: FUFU吃大米, BSSID: a4:ba:70:58:3d:d9, RSSI: -26, Channel: 2, Authmode: 3[0m
+[0;33mW (5209) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;32mI (5309) CustomLcdDisplay: [REFRESH] Got dirty rect: x=8, y=41, w=384, h=144, area=55296[0m
+[0;32mI (5339) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (5339) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=436 diff=0.36% ones=94.29% head=E0 00 00 00 00 00 00 00[0m
+[0;32mI (5389) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (5389) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (5399) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (5409) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (5429) wifi:new:<2,0>, old:<1,0>, ap:<255,255>, sta:<2,0>, prof:1, snd_ch_cfg:0x0[0m
+[0;32mI (5429) wifi:state: init -> auth (0xb0)[0m
+[0;32mI (5439) wifi:state: auth -> assoc (0x0)[0m
+[0;32mI (5499) wifi:state: assoc -> run (0x10)[0m
+[0;32mI (5529) wifi:connected with FUFU吃大米, aid = 1, channel 2, BW20, bssid = a4:ba:70:58:3d:d9[0m
+[0;32mI (5529) wifi:security: WPA2-PSK, phy: bgn, rssi: -24, cipher(pairwise:0x3, group:0x3), pmf:0[0m
+[0;32mI (5529) wifi:pm start, type: 1[0m
+
+[0;32mI (5529) wifi:dp: 1, bi: 102400, li: 10, scale listen interval from 1024000 us to 1024000 us[0m
+[0;32mI (5539) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000[0m
+[0;32mI (5549) FAST_RC: stage=wifi event=sta_connected path=slow t_ms=5387[0m
+[0;32mI (5559) FAST_RC: stage=ip event=fast_skip path=fast t_ms=5387 reason=cache_miss[0m
+[0;32mI (5559) wifi:<ba-add>idx:0 (ifx:0, a4:ba:70:58:3d:d9), tid:6, ssn:2, winSize:64[0m
+[0;32mI (5589) wifi:AP's beacon interval = 102400 us, DTIM period = 1[0m
+[0;32mI (6579) esp_netif_handlers: sta ip: 192.168.31.252, mask: 255.255.255.0, gw: 192.168.31.1[0m
+[0;32mI (6579) WifiStation: Got IP: 192.168.31.252[0m
+[0;32mI (6579) FAST_RC: stage=ip event=got_ip path=slow t_ms=6412 ip=192.168.31.252[0m
+[0;32mI (6579) FAST_RC: stage=wifi event=cache_writeback path=slow t_ms=6412 wrote=1 ssid=FUFU吃大米 channel=2 bssid=a4:ba:70:58:3d:d9[0m
+[0;32mI (7119) F1Page: fetch start force=0 race_week=0 interval_ms=3600000 url=http://192.168.31.110:8008/api/v1/ui/pages?tz=Asia/Shanghai[0m
+[0;32mI (7119) F1Page: timer started interval_ms=3600000[0m
+[0;32mI (7119) wifi:<ba-add>idx:1 (ifx:0, a4:ba:70:58:3d:d9), tid:0, ssn:0, winSize:64[0m
+[0;32mI (7479) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=2 (full=2, partial=0, urgent=2), skip(throttle=1, nodiff=2, tiny=0, tiny_forced=0)[0m
+[0;32mI (7479) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (7519) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (7519) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=24111 diff=20.09% ones=82.89% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (7569) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (7569) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (7579) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (7589) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (10539) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=3 (full=3, partial=0, urgent=3), skip(throttle=3, nodiff=5, tiny=0, tiny_forced=0)[0m
+[0;32mI (12799) F1Page: timer started interval_ms=3600000[0m
+[0;32mI (12809) F1Page: circuit urls small=/static/circuits/2026/suzuka.png detail=/static/circuits/2026/suzuka_detail.png[0m
+[0;32mI (12809) F1Page: circuit image fetch start url=http://192.168.31.110:8008/static/circuits/2026/suzuka.png[0m
+[0;32mI (12819) F1Page: circuit detail image fetch start url=http://192.168.31.110:8008/static/circuits/2026/suzuka_detail.png[0m
+[0;32mI (12899) F1Page: circuit image ihdr w=200 h=130 bd=1 ct=0 cmp=0 flt=0 il=0[0m
+[0;32mI (12909) F1Page: circuit image fetched ok=1 status=200 bytes=1051 url=http://192.168.31.110:8008/static/circuits/2026/suzuka.png final=http://192.168.31.110:8008/static/circuits/2026/suzuka.png ct=[0m
+[0;32mI (13019) F1Page: circuit detail image ihdr w=400 h=300 bd=1 ct=0 cmp=0 flt=0 il=0[0m
+[0;32mI (13019) F1Page: circuit detail image fetched ok=1 status=200 bytes=3207 url=http://192.168.31.110:8008/static/circuits/2026/suzuka_detail.png final=http://192.168.31.110:8008/static/circuits/2026/suzuka_detail.png ct=[0m
+[0;32mI (15639) AudioCodec: Set input enable to false[0m
+[0;32mI (15639) AudioCodec: Set output enable to false[0m
+[0;32mI (16269) F1Page: aJu.wav play bytes=122634[0m
+[0;32mI (16269) AudioCodec: Set output enable to true[0m
+[1;31mE (16269) i2s_common: i2s_channel_disable(1244): the channel has not been enabled yet[0m
+[1;31mE (16269) i2s_common: i2s_channel_disable(1244): the channel has not been enabled yet[0m
+[0;32mI (16279) I2S_IF: STD mode, dir: TX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (16289) I2S_IF: STD mode, dir: RX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (16299) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=3 (full=3, partial=0, urgent=3), skip(throttle=9, nodiff=11, tiny=0, tiny_forced=0)[0m
+[0;32mI (16309) Adev_Codec: Open codec device OK[0m
+[0;32mI (16329) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (16329) F1Page: circuit image applied bytes=1051 probe=200x130 box=180x114 zoom=224 url=http://192.168.31.110:8008/static/circuits/2026/suzuka.png[0m
+[0;32mI (16339) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (16339) F1Page: circuit detail image applied bytes=3207 probe=400x300 box=392x248 zoom=211 url=http://192.168.31.110:8008/static/circuits/2026/suzuka_detail.png[0m
+[0;32mI (16359) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (16439) CustomLcdDisplay: [REFRESH] Urgent merged dirty: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (16469) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (16469) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=32156 diff=26.80% ones=68.12% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (16519) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (16519) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (16529) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (16539) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (19489) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=4 (full=4, partial=0, urgent=4), skip(throttle=11, nodiff=14, tiny=0, tiny_forced=0)[0m
+[0;32mI (20619) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (20769) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (20769) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=0 diff=0.00% ones=68.12% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (20819) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (20819) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (20829) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (20839) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (22889) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=5 (full=5, partial=0, urgent=5), skip(throttle=14, nodiff=16, tiny=0, tiny_forced=0)[0m
+[0;32mI (22889) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (22929) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (22929) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=37689 diff=31.41% ones=94.45% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (22989) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (22989) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (22999) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (23009) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (25959) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=6 (full=6, partial=0, urgent=6), skip(throttle=16, nodiff=19, tiny=0, tiny_forced=0)[0m
+[0;32mI (27079) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (27229) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (27229) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=0 diff=0.00% ones=94.45% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (27279) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (27279) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (27289) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (27299) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (29349) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=7, partial=0, urgent=7), skip(throttle=19, nodiff=21, tiny=0, tiny_forced=0)[0m
+[0;32mI (29549) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (29549) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=0 diff=0.00% ones=94.45% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (29599) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (29599) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (29609) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (29619) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (32269) AudioCodec: Set output enable to false[0m
+[0;32mI (32569) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=8, partial=0, urgent=8), skip(throttle=21, nodiff=24, tiny=0, tiny_forced=0)[0m
+[0;32mI (35769) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=8, partial=0, urgent=8), skip(throttle=29, nodiff=32, tiny=0, tiny_forced=0)[0m
+[0;32mI (38449) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (38619) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (38619) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=0 diff=0.00% ones=94.45% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (38669) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (38669) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (38679) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (38689) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (40739) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=9 (full=9, partial=0, urgent=9), skip(throttle=36, nodiff=38, tiny=0, tiny_forced=0)[0m
+[0;32mI (41299) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (41589) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (41619) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (41619) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=37689 diff=31.41% ones=68.12% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (41679) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (41679) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (41689) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (41699) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (43749) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=10 (full=10, partial=0, urgent=10), skip(throttle=38, nodiff=40, tiny=0, tiny_forced=0)[0m
+[0;32mI (46829) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (47099) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (47099) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=0 diff=0.00% ones=68.12% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (47149) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (47149) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (47159) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (47169) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (49219) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=11, partial=0, urgent=11), skip(throttle=46, nodiff=48, tiny=0, tiny_forced=0)[0m
+[0;32mI (49219) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (49279) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (49279) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=21822 diff=18.18% ones=70.05% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (51479) F1Page: circuit detail image applied bytes=3207 probe=400x300 box=392x248 zoom=211 url=http://192.168.31.110:8008/static/circuits/2026/suzuka_detail.png[0m
+[0;32mI (51479) F1Page: circuit detail image url unchanged full=http://192.168.31.110:8008/static/circuits/2026/suzuka_detail.png[0m
+[0;32mI (51499) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (51649) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (51649) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=0 diff=0.00% ones=70.05% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (51699) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (51699) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (51709) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (51719) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (53769) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=13 (full=12, partial=1, urgent=12), skip(throttle=47, nodiff=50, tiny=0, tiny_forced=0)[0m
+[0;32mI (53769) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (53809) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (53809) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=34924 diff=29.10% ones=95.75% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (53869) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (53869) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (53879) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (53889) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (56839) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=49, nodiff=53, tiny=0, tiny_forced=0)[0m
+[0;32mI (60039) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=57, nodiff=61, tiny=0, tiny_forced=0)[0m
+[0;32mI (63239) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=65, nodiff=69, tiny=0, tiny_forced=0)[0m
+[0;32mI (66439) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=73, nodiff=77, tiny=0, tiny_forced=0)[0m
+[0;32mI (69639) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=81, nodiff=85, tiny=0, tiny_forced=0)[0m
+[0;32mI (72839) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=89, nodiff=93, tiny=0, tiny_forced=0)[0m
+[0;32mI (76039) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=97, nodiff=101, tiny=0, tiny_forced=0)[0m
+[0;32mI (79239) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=105, nodiff=109, tiny=0, tiny_forced=0)[0m
+[0;32mI (82439) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=113, nodiff=117, tiny=0, tiny_forced=0)[0m
+[0;32mI (85639) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=121, nodiff=125, tiny=0, tiny_forced=0)[0m
+[0;32mI (88839) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=129, nodiff=133, tiny=0, tiny_forced=0)[0m
+[0;32mI (92039) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=137, nodiff=141, tiny=0, tiny_forced=0)[0m
+[0;32mI (95239) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=145, nodiff=149, tiny=0, tiny_forced=0)[0m
+[0;32mI (98439) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=153, nodiff=157, tiny=0, tiny_forced=0)[0m
+[0;32mI (101639) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=161, nodiff=165, tiny=0, tiny_forced=0)[0m
+[0;32mI (104839) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=169, nodiff=173, tiny=0, tiny_forced=0)[0m
+[0;32mI (108039) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=177, nodiff=181, tiny=0, tiny_forced=0)[0m
+[0;32mI (111239) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=185, nodiff=189, tiny=0, tiny_forced=0)[0m
+[0;32mI (114439) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=193, nodiff=197, tiny=0, tiny_forced=0)[0m
+[0;32mI (117639) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=201, nodiff=205, tiny=0, tiny_forced=0)[0m
+[0;32mI (120839) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=209, nodiff=213, tiny=0, tiny_forced=0)[0m
+[0;32mI (124039) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=217, nodiff=221, tiny=0, tiny_forced=0)[0m
+[0;32mI (127239) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=225, nodiff=229, tiny=0, tiny_forced=0)[0m
+[0;32mI (130439) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=233, nodiff=237, tiny=0, tiny_forced=0)[0m
+[0;32mI (133639) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=241, nodiff=245, tiny=0, tiny_forced=0)[0m
+[0;32mI (136839) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=249, nodiff=253, tiny=0, tiny_forced=0)[0m
+[0;32mI (140039) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=257, nodiff=261, tiny=0, tiny_forced=0)[0m
+[0;32mI (143239) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=265, nodiff=269, tiny=0, tiny_forced=0)[0m
+[0;32mI (146439) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=273, nodiff=277, tiny=0, tiny_forced=0)[0m
+[0;32mI (149639) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=281, nodiff=285, tiny=0, tiny_forced=0)[0m
+[0;32mI (152839) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=289, nodiff=293, tiny=0, tiny_forced=0)[0m
+[0;32mI (156039) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=297, nodiff=301, tiny=0, tiny_forced=0)[0m
+[0;32mI (159239) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=305, nodiff=309, tiny=0, tiny_forced=0)[0m
+[0;32mI (162439) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=313, nodiff=317, tiny=0, tiny_forced=0)[0m
+[0;32mI (165639) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=321, nodiff=325, tiny=0, tiny_forced=0)[0m
+[0;32mI (168839) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=329, nodiff=333, tiny=0, tiny_forced=0)[0m
+[0;32mI (172039) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=337, nodiff=341, tiny=0, tiny_forced=0)[0m
+[0;32mI (175239) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=345, nodiff=349, tiny=0, tiny_forced=0)[0m
+[0;32mI (178439) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=353, nodiff=357, tiny=0, tiny_forced=0)[0m
+[0;32mI (181639) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=361, nodiff=365, tiny=0, tiny_forced=0)[0m
+[0;32mI (184839) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=369, nodiff=373, tiny=0, tiny_forced=0)[0m
+[0;32mI (188039) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=377, nodiff=381, tiny=0, tiny_forced=0)[0m
+[0;32mI (191239) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=385, nodiff=389, tiny=0, tiny_forced=0)[0m
+[0;32mI (194439) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=393, nodiff=397, tiny=0, tiny_forced=0)[0m
+[0;32mI (197639) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=401, nodiff=405, tiny=0, tiny_forced=0)[0m
+[0;32mI (200839) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=409, nodiff=413, tiny=0, tiny_forced=0)[0m
+[0;32mI (204039) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=417, nodiff=421, tiny=0, tiny_forced=0)[0m
+[0;32mI (207239) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=425, nodiff=429, tiny=0, tiny_forced=0)[0m
+[0;32mI (210439) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=433, nodiff=437, tiny=0, tiny_forced=0)[0m
+[0;32mI (213639) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=441, nodiff=445, tiny=0, tiny_forced=0)[0m
+[0;32mI (216839) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=449, nodiff=453, tiny=0, tiny_forced=0)[0m
+[0;32mI (220039) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=457, nodiff=461, tiny=0, tiny_forced=0)[0m
+[0;32mI (223239) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=465, nodiff=469, tiny=0, tiny_forced=0)[0m
+[0;32mI (226439) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=473, nodiff=477, tiny=0, tiny_forced=0)[0m
+[0;32mI (229639) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=481, nodiff=485, tiny=0, tiny_forced=0)[0m
+[0;32mI (232839) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=489, nodiff=493, tiny=0, tiny_forced=0)[0m
+[0;32mI (236039) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=14 (full=13, partial=1, urgent=13), skip(throttle=497, nodiff=501, tiny=0, tiny_forced=0)[0m

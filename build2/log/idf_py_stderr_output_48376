@@ -1,0 +1,19 @@
+CMake Error at C:/esp/v5.4.4/esp-idf/tools/cmake/tool_version_check.cmake:36 (message):
+  
+
+  Tool doesn't match supported version from list ['esp-14.2.0_20260121']:
+  C:/Espressif/tools/xtensa-esp-elf/esp-14.2.0_20260121/xtensa-esp-elf/bin/xtensa-esp32s3-elf-gcc.exe
+
+
+  Please try to run 'idf.py fullclean' to solve it.
+
+Call Stack (most recent call first):
+  C:/esp/v5.4.4/esp-idf/components/esp_common/project_include.cmake:10 (check_expected_tool_version)
+  C:/esp/v5.4.4/esp-idf/tools/cmake/build.cmake:469 (include)
+  C:/esp/v5.4.4/esp-idf/tools/cmake/build.cmake:719 (__build_process_project_includes)
+  C:/esp/v5.4.4/esp-idf/tools/cmake/project.cmake:722 (idf_build_process)
+  CMakeLists.txt:20 (project)
+
+
+ninja: fatal: GetOverlappedResult: The operation completed successfully.
+

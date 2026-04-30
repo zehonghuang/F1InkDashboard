@@ -1,0 +1,425 @@
+[0;32mI (102) cpu_start: GPIO 44 and 43 are used as console UART I/O pESP-ROM:esp32s3-20210327[0m
+Build:Mar 27 2021
+rst:0x15 (USB_UART_CHIP_RESET),boot:0x9 (SPI_FAST_FLASH_BOOT)
+Saved PC:0x4216ea94
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x56c
+load:0x403c8700,len:0x4
+load:0x403c8704,len:0xc30
+load:0x403cb700,len:0x2e2c
+entry 0x403c890c
+[0;32mI (35) octal_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (35) octal_psram: dev id       : 0x02 (generation 3)[0m
+[0;32mI (35) octal_psram: density      : 0x03 (64 Mbit)[0m
+[0;32mI (37) octal_psram: good-die     : 0x01 (Pass)[0m
+[0;32mI (41) octal_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (45) octal_psram: VCC          : 0x01 (3V)[0m
+[0;32mI (49) octal_psram: SRF          : 0x01 (Fast Refresh)[0m
+[0;32mI (54) octal_psram: BurstType    : 0x01 (Hybrid Wrap)[0m
+[0;32mI (59) octal_psram: BurstLen     : 0x01 (32 Byte)[0m
+[0;32mI (63) octal_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (68) octal_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (73) MSPI Timing: PSRAM timing tuning index: 5[0m
+[0;32mI (77) esp_psram: Found 8MB PSRAM device[0m
+[0;32mI (80) esp_psram: Speed: 80MHz[0m
+[0;32mI (83) cpu_start: Multicore app[0m
+[0;32mI (97) cpu_start: GPIO 44 and 43 are used as console UART I/O pins[0m
+[0;32mI (98) cpu_start: Pro cpu start user code[0m
+[0;32mI (98) cpu_start: cpu freq: 240000000 Hz[0m
+[0;32mI (99) app_init: Application information:[0m
+[0;32mI (103) app_init: Project name:     xiaozhi[0m
+[0;32mI (107) app_init: App version:      2.2.3[0m
+[0;32mI (111) app_init: Compile time:     Apr 26 2026 15:09:00[0m
+[0;32mI (116) app_init: ELF file SHA256:  afa82ea32...[0m
+[0;32mI (120) app_init: ESP-IDF:          v5.4.4[0m
+[0;32mI (124) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (128) efuse_init: Max chip rev:     v0.99 [0m
+[0;32mI (132) efuse_init: Chip rev:         v0.2[0m
+[0;32mI (136) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (142) heap_init: At 3FCA9968 len 0003FDA8 (255 KiB): RAM[0m
+[0;32mI (147) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM[0m
+[0;32mI (152) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM[0m
+[0;32mI (157) heap_init: At 600FE000 len 00001FD8 (7 KiB): RTCRAM[0m
+[0;32mI (163) esp_psram: Adding pool of 8192K of PSRAM memory to heap allocator[0m
+[0;32mI (170) spi_flash: detected chip: generic[0m
+[0;32mI (173) spi_flash: flash io: qio[0m
+[0;32mI (176) sleep_gpio: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (182) sleep_gpio: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (189) main_task: Started on CPU0[0m
+[0;32mI (199) esp_psram: Reserving pool of 64K of internal memory for DMA/internal allocations[0m
+[0;32mI (199) main_task: Calling app_main()[0m
+[0;32mI (209) main: NVS stats: used=80 free=424 total=504 (15%) namespaces=4[0m
+[0;32mI (209) Board: EFUSE_UUID=f2 86 5d 67 ac c7 58 5f 1e f7 e0 4b f5 f9 7f a7[0m
+[0;32mI (219) Board: UUID=3e057a60-b5ab-4024-bd7c-ed478027adae SKU=zectrix-s3-epaper-4.2 device_key=f2865d67acc7585f1ef7e04bf5f97fa7[0m
+[0;32mI (229) gpio: GPIO[39]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (239) button: IoT Button Version: 4.1.5[0m
+[0;32mI (239) gpio: GPIO[18]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (249) gpio: GPIO[0]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (259) gpio: GPIO[6]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (259) gpio: GPIO[17]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (269) gpio: GPIO[42]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (279) gpio: GPIO[46]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (289) gpio: GPIO[3]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (299) gpio: GPIO[5]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (309) gpio: GPIO[21]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (309) gpio: GPIO[7]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:3 [0m
+[0;32mI (349) ZectrixNfc: NFC init: addr=0x55 power_gpio=21 fd_gpio=7 fd_active=0 capacity=880 field=0 uid_ret=ESP_OK uid=04:F5:52:C4:28:02:69[0m
+[0;32mI (349) gpio: GPIO[1]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (359) gpio: GPIO[2]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (369) CustomLcdDisplay: Initialize SPI[0m
+[0;32mI (369) gpio: GPIO[9]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (379) gpio: GPIO[10]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (389) gpio: GPIO[11]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (399) gpio: GPIO[8]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (409) CustomLcdDisplay: Initialize LVGL library[0m
+[0;32mI (409) LVGL: Starting LVGL task[0m
+[0;32mI (419) CustomLcdDisplay: BW threshold=254[0m
+[0;32mI (419) CustomLcdDisplay: EPD init[0m
+[0;32mI (469) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (469) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (479) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (479) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2449) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2449) CustomLcdDisplay: ui start[0m
+[0;32mI (2459) Application: State 0 -> 1[0m
+[0;32mI (2459) Es8311AudioCodec: Duplex channels created[0m
+[0;32mI (2459) gpio: GPIO[46]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (2469) ES8311: Work in Slave mode[0m
+[0;32mI (2479) Es8311AudioCodec: Es8311AudioCodec initialized[0m
+[0;32mI (2479) AudioCodec: Set input enable to true[0m
+[0;32mI (2479) I2S_IF: STD mode, dir: TX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (2489) I2S_IF: STD mode, dir: RX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (2499) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2499) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=120000 diff=100.00% ones=0.00% head=00 00 00 00 00 00 00 00[0m
+[0;32mI (2509) Adev_Codec: Open codec device OK[0m
+[0;32mI (2519) AudioCodec: Set output enable to true[0m
+[0;32mI (2519) AudioCodec: Audio codec started[0m
+[0;32mI (2519) Application: State 1 -> 3[0m
+[0;32mI (2529) WifiManager: Initializing...[0m
+[0;32mI (2529) pp: pp rom version: e7ae62f[0m
+[0;32mI (2529) net80211: net80211 rom version: e7ae62f[0m
+[0;32mI (2549) wifi:wifi driver task: 3fcd938c, prio:23, stack:6656, core=0[0m
+[0;32mI (2549) wifi:wifi firmware version: 8896d66[0m
+[0;32mI (2549) wifi:wifi certification version: v7.0[0m
+[0;32mI (2549) wifi:config NVS flash: disabled[0m
+[0;32mI (2559) wifi:config nano formatting: disabled[0m
+[0;32mI (2559) wifi:Init data frame dynamic rx buffer num: 6[0m
+[0;32mI (2559) wifi:Init dynamic rx mgmt buffer num: 5[0m
+[0;32mI (2569) wifi:Init management short buffer num: 32[0m
+[0;32mI (2569) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (2579) wifi:Init static tx FG buffer num: 2[0m
+[0;32mI (2579) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (2589) wifi:Init static rx buffer num: 3[0m
+[0;32mI (2589) wifi:Init dynamic rx buffer num: 6[0m
+[0;32mI (2589) wifi_init: rx ba win: 3[0m
+[0;32mI (2599) wifi_init: accept mbox: 6[0m
+[0;32mI (2599) wifi_init: tcpip mbox: 16[0m
+[0;32mI (2599) wifi_init: udp mbox: 6[0m
+[0;32mI (2609) wifi_init: tcp mbox: 6[0m
+[0;32mI (2609) wifi_init: tcp tx win: 5760[0m
+[0;32mI (2609) wifi_init: tcp rx win: 5760[0m
+[0;32mI (2619) wifi_init: tcp mss: 1440[0m
+[0;32mI (2619) WifiManager: Initialized[0m
+[0;32mI (2619) WifiManager: Starting station[0m
+[0;32mI (2629) FAST_RC: stage=wifi event=station_start path=slow t_ms=2461 fast_enable=1[0m
+[0;32mI (2629) phy_init: phy_version 711,97bcf0a2,Aug 25 2025,19:04:10[0m
+[0;32mI (2669) wifi:mode : sta (9c:13:9e:b5:7d:a0)[0m
+[0;32mI (2669) wifi:enable tsf[0m
+[0;32mI (2669) FAST_RC: stage=wifi event=sta_start path=slow t_ms=2509[0m
+[0;32mI (2669) FAST_RC: stage=wifi event=fast_cache path=fast t_ms=2509 have=0 ssid=- channel=0 bssid=00:00:00:00:00:00 last_age_ms=-1 fail_count=0[0m
+[0;32mI (2689) FAST_RC: stage=wifi event=fast_direct_connect_skip path=fast t_ms=2509 reason=cache_miss[0m
+[0;32mI (4289) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (4319) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (4319) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=112474 diff=93.73% ones=93.73% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (4379) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (4379) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (4389) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (4399) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (5099) WifiStation: Found AP: FUFU吃大米, BSSID: a4:ba:70:58:3d:d9, RSSI: -26, Channel: 2, Authmode: 3[0m
+[0;33mW (5099) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;32mI (5309) wifi:new:<2,0>, old:<1,0>, ap:<255,255>, sta:<2,0>, prof:1, snd_ch_cfg:0x0[0m
+[0;32mI (5309) wifi:state: init -> auth (0xb0)[0m
+[0;32mI (5339) wifi:state: auth -> assoc (0x0)[0m
+[0;32mI (5389) wifi:state: assoc -> run (0x10)[0m
+[0;32mI (5399) wifi:connected with FUFU吃大米, aid = 1, channel 2, BW20, bssid = a4:ba:70:58:3d:d9[0m
+[0;32mI (5399) wifi:security: WPA2-PSK, phy: bgn, rssi: -28, cipher(pairwise:0x3, group:0x3), pmf:0[0m
+[0;32mI (5409) wifi:pm start, type: 1[0m
+
+[0;32mI (5409) wifi:dp: 1, bi: 102400, li: 10, scale listen interval from 1024000 us to 1024000 us[0m
+[0;32mI (5419) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000[0m
+[0;32mI (5429) FAST_RC: stage=wifi event=sta_connected path=slow t_ms=5265[0m
+[0;32mI (5429) FAST_RC: stage=ip event=fast_skip path=fast t_ms=5265 reason=cache_miss[0m
+[0;32mI (5429) wifi:<ba-add>idx:0 (ifx:0, a4:ba:70:58:3d:d9), tid:6, ssn:2, winSize:64[0m
+[0;32mI (5449) wifi:AP's beacon interval = 102400 us, DTIM period = 1[0m
+[0;32mI (6309) CustomLcdDisplay: [REFRESH] Got dirty rect: x=8, y=193, w=384, h=100, area=38400[0m
+[0;32mI (6339) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (6339) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=436 diff=0.36% ones=93.94% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (6469) esp_netif_handlers: sta ip: 192.168.31.252, mask: 255.255.255.0, gw: 192.168.31.1[0m
+[0;32mI (6469) WifiStation: Got IP: 192.168.31.252[0m
+[0;32mI (6469) FAST_RC: stage=ip event=got_ip path=slow t_ms=6302 ip=192.168.31.252[0m
+[0;32mI (6469) FAST_RC: stage=wifi event=cache_writeback path=slow t_ms=6302 wrote=1 ssid=FUFU吃大米 channel=2 bssid=a4:ba:70:58:3d:d9[0m
+[0;32mI (6479) WsClientService: start[0m
+[0;32mI (6489) WsClientService: url derived=ws://192.168.31.110:8008/ws[0m
+[0;32mI (6989) WsClientService: connect url=ws://192.168.31.110:8008/ws[0m
+[0;32mI (6989) WebSocket: stage=ws event=dns_lookup host=192.168.31.110 ok=1 delta_ms=0 reason=ip_literal[0m
+[0;32mI (6999) wifi:<ba-add>idx:1 (ifx:0, a4:ba:70:58:3d:d9), tid:0, ssn:0, winSize:64[0m
+[0;32mI (7099) WsClientService: connected[0m
+[0;32mI (7219) F1Page: fetch start force=0 race_week=0 interval_ms=3600000 url=http://192.168.31.110:8008/api/v1/ui/pages?tz=Asia/Shanghai[0m
+[0;32mI (7219) F1Page: timer started interval_ms=3600000[0m
+[0;32mI (7449) WsClientService: rx len=5[0m
+[0;32mI (7899) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (7929) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (7929) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=18675 diff=15.56% ones=89.55% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (7979) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (7979) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (7989) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (7999) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (15259) F1Page: timer started interval_ms=600000[0m
+[0;32mI (15269) F1Page: circuit urls small=/static/circuits/2026/miami.png detail=/static/circuits/2026/miami_detail.png[0m
+[0;32mI (15269) F1Page: circuit frame fetch start url=http://192.168.31.110:8008/api/v1/epd/frame.bin?png_url=http://192.168.31.110:8008/static/circuits/2026/miami.png&w=188&h=150&dither=0[0m
+[0;32mI (15279) F1Page: circuit detail frame fetch start url=http://192.168.31.110:8008/api/v1/epd/frame.bin?png_url=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png&w=388&h=238&dither=0[0m
+[0;32mI (15519) F1Page: circuit frame fetched ok=1 bytes=3600 url=http://192.168.31.110:8008/api/v1/epd/frame.bin?png_url=http://192.168.31.110:8008/static/circuits/2026/miami.png&w=188&h=150&dither=0[0m
+[0;32mI (15519) AudioCodec: Set input enable to false[0m
+[0;32mI (15529) AudioCodec: Set output enable to false[0m
+[0;32mI (15829) F1Page: circuit detail frame fetched ok=1 bytes=11662 url=http://192.168.31.110:8008/api/v1/epd/frame.bin?png_url=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png&w=388&h=238&dither=0[0m
+[0;32mI (16969) F1Page: aJu.wav play bytes=122634[0m
+[0;32mI (16969) AudioCodec: Set output enable to true[0m
+[1;31mE (16969) i2s_common: i2s_channel_disable(1244): the channel has not been enabled yet[0m
+[1;31mE (16969) i2s_common: i2s_channel_disable(1244): the channel has not been enabled yet[0m
+[0;32mI (16979) I2S_IF: STD mode, dir: TX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (16989) I2S_IF: STD mode, dir: RX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (17009) Adev_Codec: Open codec device OK[0m
+[0;32mI (17029) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (17039) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (17039) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (17079) CustomLcdDisplay: [FLUSH] ROI circuit_map_img t_ms=16870 thr=254 area=200,34-391,187 luma_min=0 luma_max=255 dark<250=4757/29568 white=24811/29568 b1_white=24570/29568[0m
+[0;32mI (17099) CustomLcdDisplay: [REFRESH] Got dirty rect: x=200, y=26, w=200, h=162, area=32400[0m
+[0;32mI (17349) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (17399) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (17399) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=10706 diff=8.92% ones=87.05% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (32969) AudioCodec: Set output enable to false[0m
+[0;32mI (160009) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (160299) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (160299) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=0 diff=0.00% ones=87.05% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (160349) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (160349) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (160359) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (160369) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (162279) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (162329) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (162329) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=25240 diff=21.03% ones=87.03% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (165179) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (165209) CustomLcdDisplay: [REFRESH] Got dirty rect: x=256, y=0, w=144, h=24, area=3456[0m
+[0;32mI (165489) CustomLcdDisplay: [REFRESH] Got dirty rect: x=8, y=32, w=384, h=154, area=59136[0m
+[0;32mI (165539) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (165539) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=6699 diff=5.58% ones=87.03% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (167649) wifi:state: run -> init (0x0)[0m
+[0;32mI (167649) wifi:pm stop, total sleep time: 147426057 us / 162239712 us[0m
+
+[0;32mI (167649) wifi:<ba-del>idx:1, tid:0[0m
+[0;32mI (167649) wifi:<ba-del>idx:0, tid:6[0m
+[0;32mI (167659) wifi:new:<2,0>, old:<2,0>, ap:<255,255>, sta:<2,0>, prof:1, snd_ch_cfg:0x0[0m
+[1;31mE (167669) EspTcp: TCP receive failed: -1[0m
+[0;32mI (167669) FAST_RC: stage=wifi event=sta_disconnected path=slow t_ms=167501 reason=8(ASSOC_LEAVE) fast_attempt=0 fast_fail=0 was_connected=1 ip_fast_attempt=0 ip_fast_ready=0 ssid=FUFU吃大米[0m
+[0;32mI (167669) WsClientService: disconnected[0m
+[0;32mI (167679) WifiStation: WiFi disconnected, notifying callback[0m
+[0;32mI (167699) wifi:flush txq[0m
+[0;32mI (167699) wifi:stop sw txq[0m
+[0;32mI (167699) wifi:lmac stop hw txq[0m
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x9 (SPI_FAST_FLASH_BOOT)
+Saved PC:0x40379d95
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x56c
+load:0x403c8700,len:0x4
+load:0x403c8704,len:0xc30
+load:0x403cb700,len:0x2e2c
+entry 0x403c890c
+[0;32mI (34) octal_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (34) octal_psram: dev id       : 0x02 (generation 3)[0m
+[0;32mI (34) octal_psram: density      : 0x03 (64 Mbit)[0m
+[0;32mI (36) octal_psram: good-die     : 0x01 (Pass)[0m
+[0;32mI (40) octal_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (45) octal_psram: VCC          : 0x01 (3V)[0m
+[0;32mI (49) octal_psram: SRF          : 0x01 (Fast Refresh)[0m
+[0;32mI (53) octal_psram: BurstType    : 0x01 (Hybrid Wrap)[0m
+[0;32mI (58) octal_psram: BurstLen     : 0x01 (32 Byte)[0m
+[0;32mI (63) octal_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (68) octal_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (72) MSPI Timing: PSRAM timing tuning index: 5[0m
+[0;32mI (76) esp_psram: Found 8MB PSRAM device[0m
+[0;32mI (80) esp_psram: Speed: 80MHz[0m
+[0;32mI (83) cpu_start: Multicore app[0m
+[0;32mI (97) cpu_start: GPIO 44 and 43 are used as console UART I/O pins[0m
+[0;32mI (97) cpu_start: Pro cpu start user code[0m
+[0;32mI (97) cpu_start: cpu freq: 240000000 Hz[0m
+[0;32mI (99) app_init: Application information:[0m
+[0;32mI (103) app_init: Project name:     xiaozhi[0m
+[0;32mI (107) app_init: App version:      2.2.3[0m
+[0;32mI (110) app_init: Compile time:     Apr 26 2026 15:09:00[0m
+[0;32mI (115) app_init: ELF file SHA256:  afa82ea32...[0m
+[0;32mI (120) app_init: ESP-IDF:          v5.4.4[0m
+[0;32mI (123) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (127) efuse_init: Max chip rev:     v0.99 [0m
+[0;32mI (131) efuse_init: Chip rev:         v0.2[0m
+[0;32mI (135) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (141) heap_init: At 3FCA9968 len 0003FDA8 (255 KiB): RAM[0m
+[0;32mI (147) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM[0m
+[0;32mI (152) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM[0m
+[0;32mI (157) heap_init: At 600FE000 len 00001FD8 (7 KiB): RTCRAM[0m
+[0;32mI (162) esp_psram: Adding pool of 8192K of PSRAM memory to heap allocator[0m
+[0;32mI (169) spi_flash: detected chip: generic[0m
+[0;32mI (172) spi_flash: flash io: qio[0m
+[0;32mI (176) sleep_gpio: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (182) sleep_gpio: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (189) main_task: Started on CPU0[0m
+[0;32mI (199) esp_psram: Reserving pool of 64K of internal memory for DMA/internal allocations[0m
+[0;32mI (199) main_task: Calling app_main()[0m
+[0;32mI (209) main: NVS stats: used=80 free=424 total=504 (15%) namespaces=4[0m
+[0;32mI (209) Board: EFUSE_UUID=f2 86 5d 67 ac c7 58 5f 1e f7 e0 4b f5 f9 7f a7[0m
+[0;32mI (219) Board: UUID=3e057a60-b5ab-4024-bd7c-ed478027adae SKU=zectrix-s3-epaper-4.2 device_key=f2865d67acc7585f1ef7e04bf5f97fa7[0m
+[0;32mI (229) gpio: GPIO[39]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (239) button: IoT Button Version: 4.1.5[0m
+[0;32mI (239) gpio: GPIO[18]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (249) gpio: GPIO[0]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (259) gpio: GPIO[6]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (259) gpio: GPIO[17]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (269) gpio: GPIO[42]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (279) gpio: GPIO[46]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (289) gpio: GPIO[3]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (299) gpio: GPIO[5]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (309) gpio: GPIO[21]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (309) gpio: GPIO[7]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:3 [0m
+[0;32mI (349) ZectrixNfc: NFC init: addr=0x55 power_gpio=21 fd_gpio=7 fd_active=0 capacity=880 field=0 uid_ret=ESP_OK uid=04:F5:52:C4:28:02:69[0m
+[0;32mI (349) gpio: GPIO[1]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (359) gpio: GPIO[2]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (369) CustomLcdDisplay: Initialize SPI[0m
+[0;32mI (369) gpio: GPIO[9]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (379) gpio: GPIO[10]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (389) gpio: GPIO[11]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (399) gpio: GPIO[8]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (409) CustomLcdDisplay: Initialize LVGL library[0m
+[0;32mI (409) LVGL: Starting LVGL task[0m
+[0;32mI (419) CustomLcdDisplay: BW threshold=254[0m
+[0;32mI (419) CustomLcdDisplay: EPD init[0m
+[0;32mI (469) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (469) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (479) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (479) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2449) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2449) CustomLcdDisplay: ui start[0m
+[0;32mI (2459) Application: State 0 -> 1[0m
+[0;32mI (2459) Es8311AudioCodec: Duplex channels created[0m
+[0;32mI (2459) gpio: GPIO[46]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (2469) ES8311: Work in Slave mode[0m
+[0;32mI (2479) Es8311AudioCodec: Es8311AudioCodec initialized[0m
+[0;32mI (2479) AudioCodec: Set input enable to true[0m
+[0;32mI (2479) I2S_IF: STD mode, dir: TX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (2489) I2S_IF: STD mode, dir: RX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (2499) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (2499) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=120000 diff=100.00% ones=0.00% head=00 00 00 00 00 00 00 00[0m
+[0;32mI (2509) Adev_Codec: Open codec device OK[0m
+[0;32mI (2519) AudioCodec: Set output enable to true[0m
+[0;32mI (2519) AudioCodec: Audio codec started[0m
+[0;32mI (2519) Application: State 1 -> 3[0m
+[0;32mI (2529) WifiManager: Initializing...[0m
+[0;32mI (2529) pp: pp rom version: e7ae62f[0m
+[0;32mI (2529) net80211: net80211 rom version: e7ae62f[0m
+[0;32mI (2549) wifi:wifi driver task: 3fcd938c, prio:23, stack:6656, core=0[0m
+[0;32mI (2549) wifi:wifi firmware version: 8896d66[0m
+[0;32mI (2549) wifi:wifi certification version: v7.0[0m
+[0;32mI (2549) wifi:config NVS flash: disabled[0m
+[0;32mI (2559) wifi:config nano formatting: disabled[0m
+[0;32mI (2559) wifi:Init data frame dynamic rx buffer num: 6[0m
+[0;32mI (2559) wifi:Init dynamic rx mgmt buffer num: 5[0m
+[0;32mI (2569) wifi:Init management short buffer num: 32[0m
+[0;32mI (2569) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (2579) wifi:Init static tx FG buffer num: 2[0m
+[0;32mI (2579) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (2589) wifi:Init static rx buffer num: 3[0m
+[0;32mI (2589) wifi:Init dynamic rx buffer num: 6[0m
+[0;32mI (2589) wifi_init: rx ba win: 3[0m
+[0;32mI (2599) wifi_init: accept mbox: 6[0m
+[0;32mI (2599) wifi_init: tcpip mbox: 16[0m
+[0;32mI (2599) wifi_init: udp mbox: 6[0m
+[0;32mI (2609) wifi_init: tcp mbox: 6[0m
+[0;32mI (2609) wifi_init: tcp tx win: 5760[0m
+[0;32mI (2609) wifi_init: tcp rx win: 5760[0m
+[0;32mI (2619) wifi_init: tcp mss: 1440[0m
+[0;32mI (2619) WifiManager: Initialized[0m
+[0;32mI (2619) WifiManager: Starting station[0m
+[0;32mI (2629) FAST_RC: stage=wifi event=station_start path=slow t_ms=2461 fast_enable=1[0m
+[0;32mI (2629) phy_init: phy_version 711,97bcf0a2,Aug 25 2025,19:04:10[0m
+[0;32mI (2669) wifi:mode : sta (9c:13:9e:b5:7d:a0)[0m
+[0;32mI (2669) wifi:enable tsf[0m
+[0;32mI (2669) FAST_RC: stage=wifi event=sta_start path=slow t_ms=2507[0m
+[0;32mI (2669) FAST_RC: stage=wifi event=fast_cache path=fast t_ms=2507 have=0 ssid=- channel=0 bssid=00:00:00:00:00:00 last_age_ms=-1 fail_count=0[0m
+[0;32mI (2679) FAST_RC: stage=wifi event=fast_direct_connect_skip path=fast t_ms=2507 reason=cache_miss[0m
+[0;32mI (4289) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (4319) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (4319) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=112474 diff=93.73% ones=93.73% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (4379) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (4379) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (4389) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (4399) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (5099) WifiStation: Found AP: FUFU吃大米, BSSID: a4:ba:70:58:3d:d9, RSSI: -28, Channel: 2, Authmode: 3[0m
+[0;33mW (5099) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;32mI (5309) wifi:new:<2,0>, old:<1,0>, ap:<255,255>, sta:<2,0>, prof:1, snd_ch_cfg:0x0[0m
+[0;32mI (5309) wifi:state: init -> auth (0xb0)[0m
+[0;32mI (5319) wifi:state: auth -> assoc (0x0)[0m
+[0;32mI (5389) wifi:state: assoc -> run (0x10)[0m
+[0;32mI (5399) wifi:connected with FUFU吃大米, aid = 1, channel 2, BW20, bssid = a4:ba:70:58:3d:d9[0m
+[0;32mI (5399) wifi:security: WPA2-PSK, phy: bgn, rssi: -35, cipher(pairwise:0x3, group:0x3), pmf:0[0m
+[0;32mI (5409) wifi:pm start, type: 1[0m
+
+[0;32mI (5409) wifi:dp: 1, bi: 102400, li: 10, scale listen interval from 1024000 us to 1024000 us[0m
+[0;32mI (5419) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000[0m
+[0;32mI (5429) FAST_RC: stage=wifi event=sta_connected path=slow t_ms=5263[0m
+[0;32mI (5429) FAST_RC: stage=ip event=fast_skip path=fast t_ms=5263 reason=cache_miss[0m
+[0;32mI (5429) wifi:<ba-add>idx:0 (ifx:0, a4:ba:70:58:3d:d9), tid:6, ssn:2, winSize:64[0m
+[0;32mI (5469) wifi:AP's beacon interval = 102400 us, DTIM period = 1[0m
+[0;32mI (5679) wifi:<ba-add>idx:1 (ifx:0, a4:ba:70:58:3d:d9), tid:0, ssn:0, winSize:64[0m
+[0;32mI (6309) CustomLcdDisplay: [REFRESH] Got dirty rect: x=8, y=193, w=384, h=100, area=38400[0m
+[0;32mI (6339) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (6339) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=436 diff=0.36% ones=93.94% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (6449) esp_netif_handlers: sta ip: 192.168.31.252, mask: 255.255.255.0, gw: 192.168.31.1[0m
+[0;32mI (6449) WifiStation: Got IP: 192.168.31.252[0m
+[0;32mI (6449) FAST_RC: stage=ip event=got_ip path=slow t_ms=6282 ip=192.168.31.252[0m
+[0;32mI (6449) FAST_RC: stage=wifi event=cache_writeback path=slow t_ms=6282 wrote=1 ssid=FUFU吃大米 channel=2 bssid=a4:ba:70:58:3d:d9[0m
+[0;32mI (6459) WsClientService: start[0m
+[0;32mI (6469) WsClientService: url derived=ws://192.168.31.110:8008/ws[0m
+[0;32mI (6969) WsClientService: connect url=ws://192.168.31.110:8008/ws[0m
+[0;32mI (6969) WebSocket: stage=ws event=dns_lookup host=192.168.31.110 ok=1 delta_ms=0 reason=ip_literal[0m
+[0;32mI (7099) WsClientService: connected[0m
+[0;32mI (7219) F1Page: fetch start force=0 race_week=0 interval_ms=3600000 url=http://192.168.31.110:8008/api/v1/ui/pages?tz=Asia/Shanghai[0m
+[0;32mI (7219) F1Page: timer started interval_ms=3600000[0m
+[0;32mI (7449) WsClientService: rx len=5[0m
+[0;32mI (7899) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (7929) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (7929) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=18675 diff=15.56% ones=89.55% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (7979) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (7979) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (7989) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (7999) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (8989) F1Page: timer started interval_ms=600000[0m
+[0;32mI (8999) F1Page: circuit urls small=/static/circuits/2026/miami.png detail=/static/circuits/2026/miami_detail.png[0m
+[0;32mI (8999) F1Page: circuit frame fetch start url=http://192.168.31.110:8008/api/v1/epd/frame.bin?png_url=http://192.168.31.110:8008/static/circuits/2026/miami.png&w=188&h=150&dither=0[0m
+[0;32mI (9009) F1Page: circuit detail frame fetch start url=http://192.168.31.110:8008/api/v1/epd/frame.bin?png_url=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png&w=388&h=238&dither=0[0m
+[0;32mI (9289) F1Page: circuit frame fetched ok=1 bytes=3600 url=http://192.168.31.110:8008/api/v1/epd/frame.bin?png_url=http://192.168.31.110:8008/static/circuits/2026/miami.png&w=188&h=150&dither=0[0m
+[0;32mI (9559) F1Page: circuit detail frame fetched ok=1 bytes=11662 url=http://192.168.31.110:8008/api/v1/epd/frame.bin?png_url=http://192.168.31.110:8008/static/circuits/2026/miami_detail.png&w=388&h=238&dither=0[0m
+[0;32mI (10699) F1Page: aJu.wav play bytes=122634[0m
+[0;32mI (10709) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (10719) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (10719) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (11159) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (11189) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (11189) CustomLcdDisplay: [REFRESH] Snapshot diff_bits=10731 diff=8.94% ones=87.05% head=FF FF FF FF FF FF FF FF[0m
+[0;32mI (11239) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (11239) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (11249) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (11259) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (15519) AudioCodec: Set input enable to false[0m
+[0;32mI (26519) AudioCodec: Set output enable to false[0m

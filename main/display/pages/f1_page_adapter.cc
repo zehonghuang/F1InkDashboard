@@ -1,0 +1,1882 @@
+#include "pages/f1_page_adapter.h"
+
+#include "lcd_display.h"
+#include "lvgl_theme.h"
+#include "settings.h"
+#include "pages/f1_page_adapter_common.h"
+#include "pages/f1_page_adapter_net.h"
+#include "pages/f1_page_adapter_payloads.h"
+
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <array>
+#include <cstring>
+#include <algorithm>
+#include <memory>
+#include <string_view>
+#include <vector>
+
+#include "cJSON.h"
+#include "esp_http_client.h"
+#include "esp_log.h"
+#include "esp_system.h"
+#include "esp_timer.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "pngle.h"
+
+extern "C" bool ZectrixReadBatteryPercentForFactoryTest(int* level);
+#include "boards/zectrix-s3-epaper-4.2/rtc_pcf8563.h"
+extern "C" RtcPcf8563* ZectrixGetRtc();
+
+using namespace f1_page_internal;
+
+namespace {
+
+struct PngleDrawCtx {
+    uint16_t* dst = nullptr;
+    uint32_t dst_w = 0;
+    uint32_t dst_h = 0;
+    uint32_t stride_px = 0;
+
+    uint32_t src_w = 0;
+    uint32_t src_h = 0;
+
+    int32_t off_x = 0;
+    int32_t off_y = 0;
+    uint32_t draw_w = 0;
+    uint32_t draw_h = 0;
+
+    enum class Mode : uint8_t {
+        Mean = 0,
+        BBox = 1,
+        Draw = 2,
+    };
+    Mode mode = Mode::Draw;
+    bool lock_offset = false;
+
+    bool has_bb = false;
+    int32_t bb_min_x = 0;
+    int32_t bb_min_y = 0;
+    int32_t bb_max_x = 0;
+    int32_t bb_max_y = 0;
+
+    uint64_t sum_luma = 0;
+    uint32_t cnt_luma = 0;
+    bool invert = false;
+};
+
+[[maybe_unused]] static inline uint8_t Luma8(uint8_t r, uint8_t g, uint8_t b) {
+    return static_cast<uint8_t>((static_cast<uint32_t>(r) * 30U + static_cast<uint32_t>(g) * 59U +
+                                 static_cast<uint32_t>(b) * 11U) /
+                                100U);
+}
+
+[[maybe_unused]] static void PngleOnInit(pngle_t* pngle, uint32_t w, uint32_t h) {
+    auto* ctx = static_cast<PngleDrawCtx*>(pngle_get_user_data(pngle));
+    if (ctx == nullptr) {
+        return;
+    }
+    ctx->src_w = w;
+    ctx->src_h = h;
+
+    uint32_t draw_w = ctx->dst_w;
+    uint32_t draw_h = ctx->dst_h;
+    if (w != 0 && h != 0) {
+        if (static_cast<int64_t>(w) * static_cast<int64_t>(ctx->dst_h) >
+            static_cast<int64_t>(h) * static_cast<int64_t>(ctx->dst_w)) {
+            draw_w = ctx->dst_w;
+            draw_h = static_cast<uint32_t>((static_cast<int64_t>(ctx->dst_w) * static_cast<int64_t>(h)) /
+                                           static_cast<int64_t>(w));
+        } else {
+            draw_h = ctx->dst_h;
+            draw_w = static_cast<uint32_t>((static_cast<int64_t>(ctx->dst_h) * static_cast<int64_t>(w)) /
+                                           static_cast<int64_t>(h));
+        }
+    }
+    if (draw_w == 0) draw_w = 1;
+    if (draw_h == 0) draw_h = 1;
+    ctx->draw_w = draw_w;
+    ctx->draw_h = draw_h;
+    if (!ctx->lock_offset) {
+        ctx->off_x = static_cast<int32_t>(ctx->dst_w - draw_w) / 2;
+        ctx->off_y = static_cast<int32_t>(ctx->dst_h - draw_h) / 2;
+    }
+}
+
+[[maybe_unused]] static void PngleOnDraw(pngle_t* pngle, uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint8_t rgba[4]) {
+    auto* ctx = static_cast<PngleDrawCtx*>(pngle_get_user_data(pngle));
+    if (ctx == nullptr || ctx->dst == nullptr || ctx->src_w == 0 || ctx->src_h == 0 || ctx->draw_w == 0 ||
+        ctx->draw_h == 0) {
+        return;
+    }
+    if (rgba[3] < 16) {
+        return;
+    }
+    const uint8_t l_raw = Luma8(rgba[0], rgba[1], rgba[2]);
+    if (ctx->mode == PngleDrawCtx::Mode::Mean) {
+        ctx->sum_luma += l_raw;
+        ctx->cnt_luma++;
+        return;
+    }
+    uint8_t l = ctx->invert ? static_cast<uint8_t>(255U - l_raw) : l_raw;
+    const bool black = l < 128;
+    if (!black) {
+        return;
+    }
+
+    int32_t dx0 = ctx->off_x +
+                  static_cast<int32_t>((static_cast<int64_t>(x) * static_cast<int64_t>(ctx->draw_w)) /
+                                       static_cast<int64_t>(ctx->src_w));
+    int32_t dx1 = ctx->off_x +
+                  static_cast<int32_t>((static_cast<int64_t>(x + w) * static_cast<int64_t>(ctx->draw_w)) /
+                                       static_cast<int64_t>(ctx->src_w));
+    int32_t dy0 = ctx->off_y +
+                  static_cast<int32_t>((static_cast<int64_t>(y) * static_cast<int64_t>(ctx->draw_h)) /
+                                       static_cast<int64_t>(ctx->src_h));
+    int32_t dy1 = ctx->off_y +
+                  static_cast<int32_t>((static_cast<int64_t>(y + h) * static_cast<int64_t>(ctx->draw_h)) /
+                                       static_cast<int64_t>(ctx->src_h));
+
+    if (dx1 <= dx0) dx1 = dx0 + 1;
+    if (dy1 <= dy0) dy1 = dy0 + 1;
+
+    if (dx0 < 0) dx0 = 0;
+    if (dy0 < 0) dy0 = 0;
+    if (dx1 > static_cast<int32_t>(ctx->dst_w)) dx1 = static_cast<int32_t>(ctx->dst_w);
+    if (dy1 > static_cast<int32_t>(ctx->dst_h)) dy1 = static_cast<int32_t>(ctx->dst_h);
+
+    if (ctx->mode == PngleDrawCtx::Mode::BBox) {
+        const int32_t mx0 = dx0;
+        const int32_t my0 = dy0;
+        const int32_t mx1 = dx1 - 1;
+        const int32_t my1 = dy1 - 1;
+        if (mx1 < mx0 || my1 < my0) {
+            return;
+        }
+        if (!ctx->has_bb) {
+            ctx->has_bb = true;
+            ctx->bb_min_x = mx0;
+            ctx->bb_min_y = my0;
+            ctx->bb_max_x = mx1;
+            ctx->bb_max_y = my1;
+        } else {
+            if (mx0 < ctx->bb_min_x) ctx->bb_min_x = mx0;
+            if (my0 < ctx->bb_min_y) ctx->bb_min_y = my0;
+            if (mx1 > ctx->bb_max_x) ctx->bb_max_x = mx1;
+            if (my1 > ctx->bb_max_y) ctx->bb_max_y = my1;
+        }
+        return;
+    }
+
+    for (int32_t yy = dy0; yy < dy1; yy++) {
+        uint16_t* row = ctx->dst + static_cast<uint32_t>(yy) * ctx->stride_px;
+        for (int32_t xx = dx0; xx < dx1; xx++) {
+            row[static_cast<uint32_t>(xx)] = 0x0000;
+        }
+    }
+}
+
+[[maybe_unused]] static bool PngleFeedAll(pngle_t* pngle, const uint8_t* data, size_t size) {
+    size_t off = 0;
+    while (off < size) {
+        const int n = pngle_feed(pngle, data + off, size - off);
+        if (n < 0) {
+            return false;
+        }
+        if (n == 0) {
+            return false;
+        }
+        off += static_cast<size_t>(n);
+    }
+    const char* err = pngle_error(pngle);
+    if (err != nullptr && strcmp(err, "No error") != 0) {
+        return false;
+    }
+    return true;
+}
+
+[[maybe_unused]] static bool DecodePngToRgb565ContainPngle(const std::vector<uint8_t>& png_bytes,
+                                         lv_coord_t dst_w,
+                                         lv_coord_t dst_h,
+                                         std::vector<uint16_t>& out_pixels,
+                                         lv_image_dsc_t& out_dsc,
+                                         uint32_t& out_src_w,
+                                         uint32_t& out_src_h) {
+    out_src_w = 0;
+    out_src_h = 0;
+    if (dst_w <= 0 || dst_h <= 0) {
+        return false;
+    }
+    if (png_bytes.size() < 8 || memcmp(png_bytes.data(), "\x89PNG\r\n\x1a\n", 8) != 0) {
+        return false;
+    }
+
+    const uint32_t stride = lv_draw_buf_width_to_stride(dst_w, LV_COLOR_FORMAT_RGB565);
+    const uint32_t stride_px = stride / 2U;
+    const size_t need_px = static_cast<size_t>(stride_px) * static_cast<size_t>(dst_h);
+    if (out_pixels.size() != need_px) {
+        out_pixels.assign(need_px, 0xFFFF);
+    } else {
+        std::fill(out_pixels.begin(), out_pixels.end(), 0xFFFF);
+    }
+
+    PngleDrawCtx ctx;
+    ctx.dst = out_pixels.data();
+    ctx.dst_w = static_cast<uint32_t>(dst_w);
+    ctx.dst_h = static_cast<uint32_t>(dst_h);
+    ctx.stride_px = stride_px;
+
+    {
+        pngle_t* p = pngle_new();
+        if (p == nullptr) {
+            return false;
+        }
+        ctx.mode = PngleDrawCtx::Mode::Mean;
+        ctx.lock_offset = false;
+        ctx.sum_luma = 0;
+        ctx.cnt_luma = 0;
+        pngle_set_user_data(p, &ctx);
+        pngle_set_init_callback(p, &PngleOnInit);
+        pngle_set_draw_callback(p, &PngleOnDraw);
+        const bool ok = PngleFeedAll(p, png_bytes.data(), png_bytes.size());
+        const char* err = pngle_error(p);
+        pngle_destroy(p);
+        if (!ok) {
+            if (err != nullptr) {
+                ESP_LOGW(kTag, "pngle probe failed err=%s", err);
+            }
+            return false;
+        }
+        if (ctx.cnt_luma > 0) {
+            const uint32_t mean = static_cast<uint32_t>(ctx.sum_luma / ctx.cnt_luma);
+            ctx.invert = mean < 128;
+        } else {
+            ctx.invert = false;
+        }
+    }
+
+    int32_t dx_bias = 0;
+    int32_t dy_bias = 0;
+    {
+        pngle_t* p = pngle_new();
+        if (p == nullptr) {
+            return false;
+        }
+        ctx.mode = PngleDrawCtx::Mode::BBox;
+        ctx.lock_offset = false;
+        ctx.has_bb = false;
+        ctx.bb_min_x = 0;
+        ctx.bb_min_y = 0;
+        ctx.bb_max_x = 0;
+        ctx.bb_max_y = 0;
+        pngle_set_user_data(p, &ctx);
+        pngle_set_init_callback(p, &PngleOnInit);
+        pngle_set_draw_callback(p, &PngleOnDraw);
+        const bool ok = PngleFeedAll(p, png_bytes.data(), png_bytes.size());
+        const char* err = pngle_error(p);
+        pngle_destroy(p);
+        if (!ok) {
+            if (err != nullptr) {
+                ESP_LOGW(kTag, "pngle bbox failed err=%s", err);
+            }
+            return false;
+        }
+        if (ctx.has_bb) {
+            const int32_t dst_max_x = static_cast<int32_t>(ctx.dst_w) - 1;
+            const int32_t dst_max_y = static_cast<int32_t>(ctx.dst_h) - 1;
+            const int32_t bb_cx = (ctx.bb_min_x + ctx.bb_max_x) / 2;
+            const int32_t bb_cy = (ctx.bb_min_y + ctx.bb_max_y) / 2;
+            const int32_t want_cx = dst_max_x / 2;
+            const int32_t want_cy = dst_max_y / 2;
+            dx_bias = want_cx - bb_cx;
+            dy_bias = want_cy - bb_cy;
+
+            if (ctx.bb_min_x + dx_bias < 0) {
+                dx_bias -= (ctx.bb_min_x + dx_bias);
+            }
+            if (ctx.bb_max_x + dx_bias > dst_max_x) {
+                dx_bias -= (ctx.bb_max_x + dx_bias - dst_max_x);
+            }
+
+            if (ctx.bb_min_y + dy_bias < 0) {
+                dy_bias -= (ctx.bb_min_y + dy_bias);
+            }
+            if (ctx.bb_max_y + dy_bias > dst_max_y) {
+                dy_bias -= (ctx.bb_max_y + dy_bias - dst_max_y);
+            }
+        }
+    }
+
+    {
+        pngle_t* p = pngle_new();
+        if (p == nullptr) {
+            return false;
+        }
+        std::fill(out_pixels.begin(), out_pixels.end(), 0xFFFF);
+        ctx.mode = PngleDrawCtx::Mode::Draw;
+        ctx.lock_offset = true;
+        ctx.off_x += dx_bias;
+        ctx.off_y += dy_bias;
+        pngle_set_user_data(p, &ctx);
+        pngle_set_init_callback(p, &PngleOnInit);
+        pngle_set_draw_callback(p, &PngleOnDraw);
+        const bool ok = PngleFeedAll(p, png_bytes.data(), png_bytes.size());
+        const char* err = pngle_error(p);
+        pngle_destroy(p);
+        if (!ok) {
+            if (err != nullptr) {
+                ESP_LOGW(kTag, "pngle decode failed err=%s", err);
+            }
+            return false;
+        }
+    }
+
+    out_src_w = ctx.src_w;
+    out_src_h = ctx.src_h;
+    if (out_src_w == 0 || out_src_h == 0) {
+        return false;
+    }
+
+    out_dsc.header.magic = LV_IMAGE_HEADER_MAGIC;
+    out_dsc.header.cf = LV_COLOR_FORMAT_RGB565;
+    out_dsc.header.w = static_cast<int32_t>(dst_w);
+    out_dsc.header.h = static_cast<int32_t>(dst_h);
+    out_dsc.header.stride = stride;
+    out_dsc.data_size = static_cast<uint32_t>(stride) * static_cast<uint32_t>(dst_h);
+    out_dsc.data = reinterpret_cast<const uint8_t*>(out_pixels.data());
+    return true;
+}
+
+}  // namespace
+
+void F1PageAdapter::ApplyCircuitImageLocked() {
+    if (race_track_box_ == nullptr) {
+        return;
+    }
+    constexpr int kInset = 2;
+    if (menu_visible_) {
+        if (host_ != nullptr && circuit_image_pic_active_) {
+            lv_area_t a{};
+            lv_obj_get_coords(race_track_box_, &a);
+            const int x = a.x1 + kInset;
+            const int y = a.y1 + kInset;
+            const int w = (a.x2 - a.x1 + 1) - kInset * 2;
+            const int h = (a.y2 - a.y1 + 1) - kInset * 2;
+            if (w > 0 && h > 0) {
+                host_->UpdatePicRegion(x, y, w, h, nullptr, 0);
+            }
+        }
+        circuit_image_pic_active_ = false;
+        lv_obj_invalidate(race_track_box_);
+        return;
+    }
+    if (view_index_ != 0) {
+        if (host_ != nullptr && circuit_image_pic_active_) {
+            lv_area_t a{};
+            lv_obj_get_coords(race_track_box_, &a);
+            const int x = a.x1 + kInset;
+            const int y = a.y1 + kInset;
+            const int w = (a.x2 - a.x1 + 1) - kInset * 2;
+            const int h = (a.y2 - a.y1 + 1) - kInset * 2;
+            if (w > 0 && h > 0) {
+                host_->UpdatePicRegion(x, y, w, h, nullptr, 0);
+            }
+        }
+        circuit_image_pic_active_ = false;
+        lv_obj_invalidate(race_track_box_);
+        return;
+    }
+    lv_area_t a{};
+    lv_obj_get_coords(race_track_box_, &a);
+    const int x = a.x1 + kInset;
+    const int y = a.y1 + kInset;
+    const int w = (a.x2 - a.x1 + 1) - kInset * 2;
+    const int h = (a.y2 - a.y1 + 1) - kInset * 2;
+    if (w <= 0 || h <= 0) {
+        return;
+    }
+
+    const size_t expected = static_cast<size_t>((w + 7) >> 3) * static_cast<size_t>(h);
+    if (circuit_image_bytes_.empty()) {
+        if (host_ != nullptr) {
+            host_->UpdatePicRegion(x, y, w, h, nullptr, 0);
+        }
+        circuit_image_pic_active_ = false;
+        if (race_track_placeholder_ != nullptr) {
+            lv_obj_clear_flag(race_track_placeholder_, LV_OBJ_FLAG_HIDDEN);
+        }
+        lv_obj_invalidate(race_track_box_);
+        return;
+    }
+    if (circuit_image_bytes_.size() != expected) {
+        ESP_LOGW(kTag, "circuit frame size mismatch got=%u exp=%u url=%s",
+                 static_cast<unsigned>(circuit_image_bytes_.size()),
+                 static_cast<unsigned>(expected),
+                 circuit_image_url_.c_str());
+        if (host_ != nullptr) {
+            host_->UpdatePicRegion(x, y, w, h, nullptr, 0);
+            host_->RequestUrgentFullRefresh();
+        }
+        circuit_image_pic_active_ = false;
+        if (race_track_placeholder_ != nullptr) {
+            lv_label_set_text(race_track_placeholder_, "地图加载失败");
+            lv_obj_clear_flag(race_track_placeholder_, LV_OBJ_FLAG_HIDDEN);
+        }
+        lv_obj_invalidate(race_track_box_);
+        return;
+    }
+
+    if (host_ != nullptr) {
+        host_->UpdatePicRegion(x, y, w, h, circuit_image_bytes_.data(), circuit_image_bytes_.size());
+        host_->RequestDebouncedRefresh(150);
+    }
+    circuit_image_pic_active_ = true;
+    if (race_track_image_ != nullptr) {
+        lv_obj_add_flag(race_track_image_, LV_OBJ_FLAG_HIDDEN);
+    }
+    if (race_track_placeholder_ != nullptr) {
+        lv_obj_add_flag(race_track_placeholder_, LV_OBJ_FLAG_HIDDEN);
+    }
+    lv_obj_invalidate(race_track_box_);
+}
+
+void F1PageAdapter::ApplyCircuitDetailImageLocked() {
+    if (circuit_map_root_ == nullptr) {
+        return;
+    }
+    constexpr int kInset = 2;
+    if (menu_visible_) {
+        if (host_ != nullptr && circuit_detail_pic_active_) {
+            lv_area_t a{};
+            lv_obj_get_coords(circuit_map_root_, &a);
+            const int x = a.x1 + 4 + kInset;
+            const int y = a.y1 + 4 + kInset;
+            const int w = ((a.x2 - a.x1 + 1) - 8) - kInset * 2;
+            const int h = ((a.y2 - a.y1 + 1) - 8) - kInset * 2;
+            if (w > 0 && h > 0) {
+                host_->UpdatePicRegion(x, y, w, h, nullptr, 0);
+            }
+        }
+        circuit_detail_pic_active_ = false;
+        lv_obj_invalidate(circuit_map_root_);
+        return;
+    }
+    if (view_index_ != 4 || circuit_page_ != 0) {
+        if (host_ != nullptr && circuit_detail_pic_active_) {
+            lv_area_t a{};
+            lv_obj_get_coords(circuit_map_root_, &a);
+            const int x = a.x1 + 4 + kInset;
+            const int y = a.y1 + 4 + kInset;
+            const int w = ((a.x2 - a.x1 + 1) - 8) - kInset * 2;
+            const int h = ((a.y2 - a.y1 + 1) - 8) - kInset * 2;
+            if (w > 0 && h > 0) {
+                host_->UpdatePicRegion(x, y, w, h, nullptr, 0);
+            }
+        }
+        circuit_detail_pic_active_ = false;
+        lv_obj_invalidate(circuit_map_root_);
+        return;
+    }
+    lv_area_t a{};
+    lv_obj_get_coords(circuit_map_root_, &a);
+    int x = a.x1 + 4 + kInset;
+    int y = a.y1 + 4 + kInset;
+    int w = ((a.x2 - a.x1 + 1) - 8) - kInset * 2;
+    int h = ((a.y2 - a.y1 + 1) - 8) - kInset * 2;
+    if (w <= 0 || h <= 0) {
+        return;
+    }
+
+    const size_t expected = static_cast<size_t>((w + 7) >> 3) * static_cast<size_t>(h);
+    if (circuit_detail_image_bytes_.empty()) {
+        if (host_ != nullptr) {
+            host_->UpdatePicRegion(x, y, w, h, nullptr, 0);
+        }
+        circuit_detail_pic_active_ = false;
+        if (circuit_map_placeholder_ != nullptr) {
+            lv_obj_clear_flag(circuit_map_placeholder_, LV_OBJ_FLAG_HIDDEN);
+        }
+        lv_obj_invalidate(circuit_map_root_);
+        return;
+    }
+    if (circuit_detail_image_bytes_.size() != expected) {
+        ESP_LOGW(kTag, "circuit detail frame size mismatch got=%u exp=%u url=%s",
+                 static_cast<unsigned>(circuit_detail_image_bytes_.size()),
+                 static_cast<unsigned>(expected),
+                 circuit_detail_image_url_.c_str());
+        if (host_ != nullptr) {
+            host_->UpdatePicRegion(x, y, w, h, nullptr, 0);
+            host_->RequestUrgentFullRefresh();
+        }
+        circuit_detail_pic_active_ = false;
+        if (circuit_map_placeholder_ != nullptr) {
+            lv_label_set_text(circuit_map_placeholder_, "地图加载失败");
+            lv_obj_clear_flag(circuit_map_placeholder_, LV_OBJ_FLAG_HIDDEN);
+        }
+        lv_obj_invalidate(circuit_map_root_);
+        return;
+    }
+
+    if (host_ != nullptr) {
+        host_->UpdatePicRegion(x, y, w, h, circuit_detail_image_bytes_.data(), circuit_detail_image_bytes_.size());
+        host_->RequestDebouncedRefresh(150);
+    }
+    circuit_detail_pic_active_ = true;
+    if (circuit_map_image_ != nullptr) {
+        lv_obj_add_flag(circuit_map_image_, LV_OBJ_FLAG_HIDDEN);
+    }
+    if (circuit_map_placeholder_ != nullptr) {
+        lv_obj_add_flag(circuit_map_placeholder_, LV_OBJ_FLAG_HIDDEN);
+    }
+    lv_obj_invalidate(circuit_map_root_);
+}
+
+F1PageAdapter::F1PageAdapter(LcdDisplay* host)
+    : host_(host), nav_(this, NavNode::RaceRoot, NavNode::OffRoot) {
+    nav_children_race_.fill(-1);
+    nav_children_off_.fill(-1);
+    nav_children_race_[1] = static_cast<int8_t>(NavNode::Circuit);
+    nav_children_race_[2] = static_cast<int8_t>(NavNode::RaceSessions);
+    nav_children_off_[0] = static_cast<int8_t>(NavNode::Wdc);
+    nav_children_off_[1] = static_cast<int8_t>(NavNode::Circuit);
+    nav_children_off_[2] = static_cast<int8_t>(NavNode::Wcc);
+}
+
+F1PageAdapter::~F1PageAdapter() {
+    if (refresh_timer_ != nullptr) {
+        esp_timer_stop(refresh_timer_);
+        esp_timer_delete(refresh_timer_);
+        refresh_timer_ = nullptr;
+    }
+    if (race_right_canvas_buf_ != nullptr) {
+        lv_free(race_right_canvas_buf_);
+        race_right_canvas_buf_ = nullptr;
+    }
+}
+
+UiPageId F1PageAdapter::Id() const {
+    return UiPageId::F1;
+}
+
+const char* F1PageAdapter::Name() const {
+    return "F1";
+}
+
+void F1PageAdapter::Build() {
+    if (built_ || host_ == nullptr) {
+        built_ = true;
+        return;
+    }
+    auto* lvgl_theme = static_cast<LvglTheme*>(host_->current_theme_);
+    const lv_font_t* text_font = lvgl_theme && lvgl_theme->text_font() ? lvgl_theme->text_font()->font()
+                                                                       : nullptr;
+    const lv_font_t* small_font = &lv_font_montserrat_14;
+
+    if (refresh_timer_ == nullptr) {
+        esp_timer_create_args_t t = {};
+        t.callback = &F1PageAdapter::RefreshTimerCallback;
+        t.arg = this;
+        t.dispatch_method = ESP_TIMER_TASK;
+        t.name = "f1_refresh";
+        (void)esp_timer_create(&t, &refresh_timer_);
+    }
+
+    if (host_->f1_screen_ != nullptr) {
+        screen_ = host_->f1_screen_;
+        built_ = true;
+        return;
+    }
+
+    screen_ = lv_obj_create(nullptr);
+    host_->f1_screen_ = screen_;
+    StyleScreen(screen_);
+
+    race_root_ = lv_obj_create(screen_);
+    lv_obj_set_size(race_root_, kPageWidth, kPageHeight);
+    lv_obj_align(race_root_, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_bg_opa(race_root_, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(race_root_, 0, 0);
+    lv_obj_set_style_pad_all(race_root_, 0, 0);
+    BuildRaceLocked();
+
+    standings_root_ = lv_obj_create(screen_);
+    lv_obj_set_size(standings_root_, kPageWidth, kPageHeight);
+    lv_obj_align(standings_root_, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_bg_opa(standings_root_, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(standings_root_, 0, 0);
+    lv_obj_set_style_pad_all(standings_root_, 0, 0);
+    BuildStandingsLocked();
+
+    wdc_root_ = lv_obj_create(screen_);
+    lv_obj_set_size(wdc_root_, kPageWidth, kPageHeight);
+    lv_obj_align(wdc_root_, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_bg_opa(wdc_root_, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(wdc_root_, 0, 0);
+    lv_obj_set_style_pad_all(wdc_root_, 0, 0);
+    BuildWdcDetailLocked();
+
+    wcc_root_ = lv_obj_create(screen_);
+    lv_obj_set_size(wcc_root_, kPageWidth, kPageHeight);
+    lv_obj_align(wcc_root_, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_bg_opa(wcc_root_, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(wcc_root_, 0, 0);
+    lv_obj_set_style_pad_all(wcc_root_, 0, 0);
+    BuildWccDetailLocked();
+
+    circuit_root_ = lv_obj_create(screen_);
+    lv_obj_set_size(circuit_root_, kPageWidth, kPageHeight);
+    lv_obj_align(circuit_root_, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_bg_opa(circuit_root_, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(circuit_root_, 0, 0);
+    lv_obj_set_style_pad_all(circuit_root_, 0, 0);
+    BuildCircuitDetailLocked();
+
+    race_sessions_root_ = lv_obj_create(screen_);
+    lv_obj_set_size(race_sessions_root_, kPageWidth, kPageHeight);
+    lv_obj_align(race_sessions_root_, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_bg_opa(race_sessions_root_, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(race_sessions_root_, 0, 0);
+    lv_obj_set_style_pad_all(race_sessions_root_, 0, 0);
+    BuildRaceSessionsLocked();
+
+    menu_root_ = lv_obj_create(screen_);
+    lv_obj_set_size(menu_root_, kPageWidth, kPageHeight);
+    lv_obj_align(menu_root_, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_border_width(menu_root_, 0, 0);
+    lv_obj_set_style_pad_all(menu_root_, 0, 0);
+    BuildMenuLocked();
+    UpdateMenuStatusLocked();
+    SetRootVisible(menu_root_, false);
+
+    (void)text_font;
+    (void)small_font;
+
+    built_ = true;
+    ApplyViewLocked();
+}
+
+lv_obj_t* F1PageAdapter::Screen() const {
+    return screen_;
+}
+
+void F1PageAdapter::OnShow() {
+    active_ = true;
+    ApplyViewLocked();
+    StartFetchIfNeededLocked(false);
+    RestartRefreshTimerLocked();
+}
+
+void F1PageAdapter::OnHide() {
+    active_ = false;
+    if (refresh_timer_ != nullptr) {
+        (void)esp_timer_stop(refresh_timer_);
+    }
+}
+
+bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
+    if (event.type != UiPageEventType::Custom) {
+        return false;
+    }
+    const auto id = static_cast<UiPageCustomEventId>(event.i32);
+    if (id == UiPageCustomEventId::ComboUpDown) {
+        menu_visible_ = !menu_visible_;
+        SetRootVisible(menu_root_, menu_visible_);
+        if (menu_visible_) {
+            UpdateMenuStatusLocked();
+            ApplyMenuSelectionLocked();
+        }
+        ApplyCircuitImageLocked();
+        ApplyCircuitDetailImageLocked();
+        if (host_ != nullptr) {
+            host_->RequestUrgentFullRefresh();
+        }
+        return true;
+    }
+    if (menu_visible_) {
+        if (id == UiPageCustomEventId::PagePrev || id == UiPageCustomEventId::GalleryPrev) {
+            menu_focus_--;
+            if (menu_focus_ < 0) {
+                menu_focus_ = static_cast<int>(menu_item_boxes_.size()) - 1;
+            }
+            UpdateMenuStatusLocked();
+            ApplyMenuSelectionLocked();
+            if (host_ != nullptr) {
+                host_->RequestDebouncedRefresh(150);
+            }
+            return true;
+        }
+        if (id == UiPageCustomEventId::PageNext || id == UiPageCustomEventId::GalleryNext) {
+            menu_focus_++;
+            if (menu_focus_ >= static_cast<int>(menu_item_boxes_.size())) {
+                menu_focus_ = 0;
+            }
+            UpdateMenuStatusLocked();
+            ApplyMenuSelectionLocked();
+            if (host_ != nullptr) {
+                host_->RequestDebouncedRefresh(150);
+            }
+            return true;
+        }
+        if (id == UiPageCustomEventId::ConfirmLongPress) {
+            menu_visible_ = false;
+            SetRootVisible(menu_root_, false);
+            ApplyCircuitImageLocked();
+            ApplyCircuitDetailImageLocked();
+            if (host_ != nullptr) {
+                host_->RequestUrgentFullRefresh();
+            }
+            return true;
+        }
+        if (id == UiPageCustomEventId::ConfirmClick) {
+            if (menu_focus_ == 6) {
+                esp_restart();
+            }
+            if (menu_focus_ == 2) {
+                pending_sessions_force_fetch_ = true;
+                StartFetchIfNeededLocked(true);
+            }
+            menu_visible_ = false;
+            SetRootVisible(menu_root_, false);
+            if (host_ != nullptr) {
+                host_->RequestUrgentFullRefresh();
+            }
+            return true;
+        }
+        return true;
+    }
+    if (id == UiPageCustomEventId::PagePrev || id == UiPageCustomEventId::GalleryPrev) {
+        nav_.Prev();
+        if (host_ != nullptr) {
+            host_->RequestDebouncedRefresh(150);
+        }
+        return true;
+    }
+    if (id == UiPageCustomEventId::PageNext || id == UiPageCustomEventId::GalleryNext) {
+        nav_.Next();
+        if (host_ != nullptr) {
+            host_->RequestDebouncedRefresh(150);
+        }
+        return true;
+    }
+    if (id == UiPageCustomEventId::JumpRaceDay) {
+        if (nav_.IsAtRoot()) {
+            nav_.ToggleRoot();
+            if (host_ != nullptr) {
+                host_->RequestUrgentFullRefresh();
+            }
+        }
+        return true;
+    }
+    if (id == UiPageCustomEventId::JumpOffWeek) {
+        return true;
+    }
+    if (id == UiPageCustomEventId::F1ForceSessionsFetch) {
+        pending_sessions_force_fetch_ = true;
+        StartFetchIfNeededLocked(true);
+        return true;
+    }
+    if (id == UiPageCustomEventId::ConfirmClick) {
+        nav_.Enter();
+        if (host_ != nullptr) {
+            host_->RequestUrgentFullRefresh();
+        }
+        return true;
+    }
+    if (id == UiPageCustomEventId::ConfirmLongPress) {
+        nav_.Back();
+        if (host_ != nullptr) {
+            host_->RequestUrgentFullRefresh();
+        }
+        return true;
+    }
+    if (id == UiPageCustomEventId::F1Data) {
+        std::unique_ptr<std::string> payload(static_cast<std::string*>(event.ptr));
+        if (!active_) {
+            return true;
+        }
+        if (payload) {
+            (void)ApplyUiJsonLocked(payload->c_str(), payload->size());
+        }
+        if (pending_sessions_force_fetch_) {
+            pending_sessions_force_fetch_ = false;
+            StartSessionsFetchIfNeededLocked(true);
+        }
+        if (menu_visible_) {
+            UpdateMenuStatusLocked();
+        }
+        if (host_ != nullptr) {
+            host_->RequestUrgentFullRefresh();
+        }
+        return true;
+    }
+    if (id == UiPageCustomEventId::F1SessionsData) {
+        std::unique_ptr<std::string> payload(static_cast<std::string*>(event.ptr));
+        if (!active_) {
+            return true;
+        }
+        if (payload) {
+            (void)ApplySessionsJsonLocked(payload->c_str(), payload->size());
+        }
+        if (host_ != nullptr) {
+            host_->RequestUrgentFullRefresh();
+        }
+        return true;
+    }
+    if (id == UiPageCustomEventId::F1CircuitImage) {
+        std::unique_ptr<f1_page_internal::CircuitImagePayload> payload(
+            static_cast<f1_page_internal::CircuitImagePayload*>(event.ptr));
+        if (!payload) {
+            return true;
+        }
+        if (payload->url != circuit_image_url_) {
+            ESP_LOGI(kTag, "circuit image drop url=%s expected=%s status=%d bytes=%u final=%s",
+                     payload->url.c_str(),
+                     circuit_image_url_.c_str(),
+                     payload->status,
+                     static_cast<unsigned>(payload->bytes.size()),
+                     payload->final_url.c_str());
+            return true;
+        }
+        circuit_image_bytes_ = std::move(payload->bytes);
+        if (active_) {
+            ApplyCircuitImageLocked();
+        }
+        return true;
+    }
+    if (id == UiPageCustomEventId::F1CircuitDetailImage) {
+        std::unique_ptr<f1_page_internal::CircuitDetailImagePayload> payload(
+            static_cast<f1_page_internal::CircuitDetailImagePayload*>(event.ptr));
+        if (!payload) {
+            return true;
+        }
+        if (payload->url != circuit_detail_image_url_) {
+            ESP_LOGI(kTag, "circuit detail image drop url=%s expected=%s status=%d bytes=%u final=%s",
+                     payload->url.c_str(),
+                     circuit_detail_image_url_.c_str(),
+                     payload->status,
+                     static_cast<unsigned>(payload->bytes.size()),
+                     payload->final_url.c_str());
+            return true;
+        }
+        circuit_detail_image_bytes_ = std::move(payload->bytes);
+        if (active_) {
+            ApplyCircuitDetailImageLocked();
+        }
+        return true;
+    }
+    if (id == UiPageCustomEventId::F1Tick) {
+        if (!active_) {
+            return true;
+        }
+        StartFetchIfNeededLocked(false);
+        if (view_index_ == 5) {
+            StartSessionsFetchIfNeededLocked(false);
+        }
+        if (menu_visible_) {
+            UpdateMenuStatusLocked();
+        }
+        return true;
+    }
+    return false;
+}
+
+void F1PageAdapter::UpdateMenuStatusLocked() {
+    if (!built_ || menu_header_right_ == nullptr) {
+        return;
+    }
+
+    char time_buf[16] = {};
+    bool has_time = false;
+    {
+        auto* rtc = ZectrixGetRtc();
+        if (rtc != nullptr) {
+            tm local_tm = {};
+            if (rtc->GetTime(local_tm)) {
+                snprintf(time_buf, sizeof(time_buf), "%02d:%02d", local_tm.tm_hour, local_tm.tm_min);
+                has_time = true;
+            }
+        }
+    }
+
+    int batt = -1;
+    (void)ZectrixReadBatteryPercentForFactoryTest(&batt);
+    if (batt < 0) {
+        batt = 0;
+    }
+    if (batt > 100) {
+        batt = 100;
+    }
+
+    const char* t = has_time ? time_buf : (status_time_ ? lv_label_get_text(status_time_) : "");
+    const char* b = status_battery_ ? lv_label_get_text(status_battery_) : "";
+
+    char right[48];
+    if (b && b[0]) {
+        snprintf(right, sizeof(right), "%s %s", t ? t : "", b);
+    } else {
+        snprintf(right, sizeof(right), "%s [||||] %d%%", t ? t : "", batt);
+    }
+    SetText(menu_header_right_, right);
+}
+
+void F1PageAdapter::ApplyViewLocked() {
+    if (!built_) {
+        return;
+    }
+    SetRootVisible(race_root_, view_index_ == 0);
+    SetRootVisible(standings_root_, view_index_ == 1);
+    SetRootVisible(wdc_root_, view_index_ == 2);
+    SetRootVisible(wcc_root_, view_index_ == 3);
+    SetRootVisible(circuit_root_, view_index_ == 4);
+    SetRootVisible(race_sessions_root_, view_index_ == 5);
+    SetRootVisible(menu_root_, menu_visible_);
+    if (host_ != nullptr) {
+        if (view_index_ != 0 && circuit_image_pic_active_ && race_track_box_ != nullptr) {
+            lv_area_t a{};
+            lv_obj_get_coords(race_track_box_, &a);
+            constexpr int kInset = 2;
+            const int x = a.x1 + kInset;
+            const int y = a.y1 + kInset;
+            const int w = (a.x2 - a.x1 + 1) - kInset * 2;
+            const int h = (a.y2 - a.y1 + 1) - kInset * 2;
+            if (w > 0 && h > 0) {
+                host_->UpdatePicRegion(x, y, w, h, nullptr, 0);
+            }
+            circuit_image_pic_active_ = false;
+            lv_obj_invalidate(race_track_box_);
+        }
+        if (!(view_index_ == 4 && circuit_page_ == 0) && circuit_detail_pic_active_ && circuit_map_root_ != nullptr) {
+            lv_area_t a{};
+            lv_obj_get_coords(circuit_map_root_, &a);
+            constexpr int kInset = 2;
+            const int x = a.x1 + 4 + kInset;
+            const int y = a.y1 + 4 + kInset;
+            const int w = ((a.x2 - a.x1 + 1) - 8) - kInset * 2;
+            const int h = ((a.y2 - a.y1 + 1) - 8) - kInset * 2;
+            if (w > 0 && h > 0) {
+                host_->UpdatePicRegion(x, y, w, h, nullptr, 0);
+            }
+            circuit_detail_pic_active_ = false;
+            lv_obj_invalidate(circuit_map_root_);
+        }
+    }
+    if (view_index_ == 1) {
+        UpdateOffWeekSelectionLocked();
+    }
+    if (view_index_ == 0) {
+        UpdateRaceDaySelectionLocked();
+        ApplyCircuitImageLocked();
+    }
+    if (view_index_ == 4 && circuit_page_ == 0) {
+        ApplyCircuitDetailImageLocked();
+    }
+}
+
+void F1PageAdapter::SetRootVisible(lv_obj_t* root, bool visible) {
+    if (root == nullptr) {
+        return;
+    }
+    if (visible) {
+        lv_obj_clear_flag(root, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(root, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+int F1PageAdapter::UiNavRootSlotCount(NavNode root) {
+    (void)root;
+    return 4;
+}
+
+int F1PageAdapter::UiNavRootFocus(NavNode root) {
+    return root == NavNode::RaceRoot ? race_day_focus_ : off_week_focus_;
+}
+
+void F1PageAdapter::UiNavSetRootFocus(NavNode root, int focus) {
+    if (root == NavNode::RaceRoot) {
+        race_day_focus_ = focus;
+    } else {
+        off_week_focus_ = focus;
+    }
+}
+
+bool F1PageAdapter::UiNavResolveChild(NavNode root, int focus, NavNode& out) {
+    const auto& table = root == NavNode::RaceRoot ? nav_children_race_ : nav_children_off_;
+    if (focus < 0 || focus >= static_cast<int>(table.size())) {
+        return false;
+    }
+    const int8_t child = table[static_cast<size_t>(focus)];
+    if (child < 0) {
+        return false;
+    }
+    out = static_cast<NavNode>(child);
+    return true;
+}
+
+bool F1PageAdapter::UiNavPrev(NavNode node) {
+    if (node == NavNode::Wdc) {
+        if (wdc_page_ > 0) {
+            wdc_page_--;
+            ApplyWdcPageLocked();
+            return true;
+        }
+        return false;
+    }
+    if (node == NavNode::Wcc) {
+        if (wcc_page_ > 0) {
+            wcc_page_--;
+            ApplyWccPageLocked();
+            return true;
+        }
+        return false;
+    }
+    if (node == NavNode::Circuit) {
+        if (circuit_page_ > 0) {
+            circuit_page_--;
+            ApplyCircuitDetailLocked();
+            return true;
+        }
+        return false;
+    }
+    if (node == NavNode::RaceSessions) {
+        if (race_sessions_page_ > 0) {
+            race_sessions_page_--;
+            ApplyRaceSessionsLocked();
+            StartSessionsFetchIfNeededLocked(true);
+            return true;
+        }
+        return false;
+    }
+    return true;
+}
+
+void F1PageAdapter::UiNavNext(NavNode node) {
+    if (node == NavNode::Wdc) {
+        if (wdc_page_ + 1 < wdc_page_count_) {
+            wdc_page_++;
+            ApplyWdcPageLocked();
+        }
+        return;
+    }
+    if (node == NavNode::Wcc) {
+        if (wcc_page_ + 1 < wcc_page_count_) {
+            wcc_page_++;
+            ApplyWccPageLocked();
+        }
+        return;
+    }
+    if (node == NavNode::Circuit) {
+        if (circuit_page_ < 1) {
+            circuit_page_ = 1;
+            ApplyCircuitDetailLocked();
+        }
+        return;
+    }
+    if (node == NavNode::RaceSessions) {
+        if (race_sessions_page_ < 1) {
+            race_sessions_page_ = 1;
+            ApplyRaceSessionsLocked();
+            StartSessionsFetchIfNeededLocked(true);
+        }
+    }
+}
+
+void F1PageAdapter::UiNavActivate(NavNode node) {
+    view_index_ = node == NavNode::RaceRoot ? 0 : static_cast<int>(node);
+    ApplyViewLocked();
+    if (node == NavNode::Wdc) {
+        ApplyWdcPageLocked();
+    } else if (node == NavNode::Wcc) {
+        ApplyWccPageLocked();
+    } else if (node == NavNode::Circuit) {
+        ApplyCircuitDetailLocked();
+    } else if (node == NavNode::RaceSessions) {
+        race_sessions_page_ = 0;
+        ApplyRaceSessionsLocked();
+        StartSessionsFetchIfNeededLocked(true);
+    }
+}
+
+void F1PageAdapter::BuildWdcDetailLocked() {
+    auto* lvgl_theme = static_cast<LvglTheme*>(host_->current_theme_);
+    const lv_font_t* cn_font = lvgl_theme && lvgl_theme->text_font() ? lvgl_theme->text_font()->font() : nullptr;
+    const lv_font_t* small_font = &lv_font_montserrat_14;
+    const lv_font_t* font = cn_font ? cn_font : small_font;
+
+    lv_obj_t* header = lv_obj_create(wdc_root_);
+    lv_obj_set_size(header, kPageWidth, kHeaderH);
+    lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 0);
+    lv_obj_set_style_bg_opa(header, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(header, 1, 0);
+    lv_obj_set_style_border_side(header, LV_BORDER_SIDE_BOTTOM, 0);
+    lv_obj_set_style_border_color(header, lv_color_black(), 0);
+    lv_obj_set_style_pad_left(header, 8, 0);
+    lv_obj_set_style_pad_right(header, 8, 0);
+    lv_obj_set_style_pad_top(header, 4, 0);
+    lv_obj_set_style_pad_bottom(header, 4, 0);
+
+    lv_obj_t* back = lv_label_create(header);
+    lv_obj_set_style_text_font(back, font, 0);
+    lv_obj_align(back, LV_ALIGN_LEFT_MID, 0, 0);
+    lv_label_set_text(back, "[BACK]");
+
+    wdc_title_ = lv_label_create(header);
+    lv_obj_set_style_text_font(wdc_title_, font, 0);
+    lv_obj_align(wdc_title_, LV_ALIGN_CENTER, 0, 0);
+    lv_label_set_text(wdc_title_, "2026 DRIVER STANDINGS (WDC)");
+
+    wdc_page_label_ = lv_label_create(header);
+    lv_obj_set_style_text_font(wdc_page_label_, font, 0);
+    lv_obj_align(wdc_page_label_, LV_ALIGN_RIGHT_MID, 0, 0);
+    lv_label_set_text(wdc_page_label_, "PAGE 01/01");
+
+    lv_obj_t* table = lv_obj_create(wdc_root_);
+    StyleBox(table);
+    lv_obj_set_size(table, kPageWidth, kPageHeight - kHeaderH);
+    lv_obj_align(table, LV_ALIGN_TOP_LEFT, 0, kHeaderH);
+    lv_obj_set_style_border_width(table, 0, 0);
+    lv_obj_set_style_pad_all(table, 6, 0);
+
+    constexpr lv_coord_t kPosW = 26;
+    constexpr lv_coord_t kDrvW = 140;
+    constexpr lv_coord_t kTeamW = 86;
+    constexpr lv_coord_t kPtsW = 34;
+    const lv_coord_t kTrendW = (kPageWidth - 12) - (kPosW + kDrvW + kTeamW + kPtsW);
+    const lv_coord_t pts_x = (kPageWidth - 12) - kPtsW - kTrendW;
+    (void)pts_x;
+    const lv_coord_t team_x = kPosW + kDrvW;
+    const lv_coord_t pts2_x = kPosW + kDrvW + kTeamW;
+    const lv_coord_t trend_x = pts2_x + kPtsW;
+
+    CreateCellLabel(table, 0, 0, kPosW, "POS", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, kPosW, 0, kDrvW, "DRIVER", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, team_x, 0, kTeamW, "TEAM", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, pts2_x, 0, kPtsW, "PTS", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, trend_x, 0, kTrendW, "TREND", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+
+    for (int i = 0; i < kWdcRows; i++) {
+        const lv_coord_t y = kRowH * (i + 1);
+        wdc_cells_[i][0] = CreateCellLabel(table, 0, y, kPosW, "", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+        wdc_cells_[i][1] = CreateCellLabel(table, kPosW, y, kDrvW, "", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_DOT);
+        wdc_cells_[i][2] = CreateCellLabel(table, team_x, y, kTeamW, "", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_DOT);
+        wdc_cells_[i][3] = CreateCellLabel(table, pts2_x, y, kPtsW, "", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+        wdc_cells_[i][4] = CreateCellLabel(table, trend_x, y, kTrendW, "", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+    }
+}
+
+void F1PageAdapter::BuildWccDetailLocked() {
+    auto* lvgl_theme = static_cast<LvglTheme*>(host_->current_theme_);
+    const lv_font_t* cn_font = lvgl_theme && lvgl_theme->text_font() ? lvgl_theme->text_font()->font() : nullptr;
+    const lv_font_t* small_font = &lv_font_montserrat_14;
+    const lv_font_t* font = cn_font ? cn_font : small_font;
+
+    lv_obj_t* header = lv_obj_create(wcc_root_);
+    lv_obj_set_size(header, kPageWidth, kHeaderH);
+    lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 0);
+    lv_obj_set_style_bg_opa(header, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(header, 1, 0);
+    lv_obj_set_style_border_side(header, LV_BORDER_SIDE_BOTTOM, 0);
+    lv_obj_set_style_border_color(header, lv_color_black(), 0);
+    lv_obj_set_style_pad_left(header, 8, 0);
+    lv_obj_set_style_pad_right(header, 8, 0);
+    lv_obj_set_style_pad_top(header, 4, 0);
+    lv_obj_set_style_pad_bottom(header, 4, 0);
+
+    lv_obj_t* back = lv_label_create(header);
+    lv_obj_set_style_text_font(back, font, 0);
+    lv_obj_align(back, LV_ALIGN_LEFT_MID, 0, 0);
+    lv_label_set_text(back, "[BACK]");
+
+    wcc_title_ = lv_label_create(header);
+    lv_obj_set_style_text_font(wcc_title_, font, 0);
+    lv_obj_align(wcc_title_, LV_ALIGN_CENTER, 0, 0);
+    lv_label_set_text(wcc_title_, "2026 CONSTRUCTOR STANDINGS (WCC)");
+
+    wcc_page_label_ = lv_label_create(header);
+    lv_obj_set_style_text_font(wcc_page_label_, font, 0);
+    lv_obj_align(wcc_page_label_, LV_ALIGN_RIGHT_MID, 0, 0);
+    lv_label_set_text(wcc_page_label_, "PAGE 01/01");
+
+    lv_obj_t* table = lv_obj_create(wcc_root_);
+    StyleBox(table);
+    lv_obj_set_size(table, kPageWidth, kPageHeight - kHeaderH);
+    lv_obj_align(table, LV_ALIGN_TOP_LEFT, 0, kHeaderH);
+    lv_obj_set_style_border_width(table, 0, 0);
+    lv_obj_set_style_pad_all(table, 6, 0);
+
+    constexpr lv_coord_t kPosW = 26;
+    constexpr lv_coord_t kTeamW = 132;
+    constexpr lv_coord_t kPtsW = 36;
+    constexpr lv_coord_t kGapW = 40;
+    constexpr lv_coord_t kBarW = 86;
+    const lv_coord_t kValW = (kPageWidth - 12) - (kPosW + kTeamW + kPtsW + kGapW + kBarW);
+    const lv_coord_t x_team = kPosW;
+    const lv_coord_t x_pts = x_team + kTeamW;
+    const lv_coord_t x_gap = x_pts + kPtsW;
+    const lv_coord_t x_bar = x_gap + kGapW;
+    const lv_coord_t x_val = x_bar + kBarW;
+
+    CreateCellLabel(table, 0, 0, kPosW, "POS", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, x_team, 0, kTeamW, "CONSTRUCTOR", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, x_pts, 0, kPtsW, "PTS", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, x_gap, 0, kGapW, "GAP", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, x_bar, 0, kBarW, "SPLIT", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, x_val, 0, kValW, "P1/P2", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+
+    for (int i = 0; i < kWccRows; i++) {
+        const lv_coord_t y = kRowH * (i + 1);
+        wcc_cells_[i][0] = CreateCellLabel(table, 0, y, kPosW, "", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+        wcc_cells_[i][1] = CreateCellLabel(table, x_team, y, kTeamW, "", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_DOT);
+        wcc_cells_[i][2] = CreateCellLabel(table, x_pts, y, kPtsW, "", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+        wcc_cells_[i][3] = CreateCellLabel(table, x_gap, y, kGapW, "", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+        wcc_cells_[i][4] = CreateCellLabel(table, x_bar, y, kBarW, "", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+        wcc_cells_[i][5] = CreateCellLabel(table, x_val, y, kValW, "", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+    }
+}
+
+void F1PageAdapter::ApplyWdcPageLocked() {
+    if (wdc_page_count_ < 1) {
+        wdc_page_count_ = 1;
+    }
+    if (wdc_page_ < 0) {
+        wdc_page_ = 0;
+    }
+    if (wdc_page_ >= wdc_page_count_) {
+        wdc_page_ = wdc_page_count_ - 1;
+    }
+    if (wdc_page_label_ != nullptr) {
+        char buf[32];
+        snprintf(buf, sizeof(buf), "PAGE %02d/%02d", wdc_page_ + 1, wdc_page_count_);
+        lv_label_set_text(wdc_page_label_, buf);
+    }
+    const int start = wdc_page_ * kWdcRows;
+    for (int i = 0; i < kWdcRows; i++) {
+        const int idx = start + i;
+        if (idx >= 0 && idx < static_cast<int>(wdc_rows_.size())) {
+            auto& r = wdc_rows_[static_cast<size_t>(idx)];
+            SetText(wdc_cells_[i][0], r[0].c_str());
+            SetText(wdc_cells_[i][1], r[1].c_str());
+            SetText(wdc_cells_[i][2], r[2].c_str());
+            SetText(wdc_cells_[i][3], r[3].c_str());
+            SetText(wdc_cells_[i][4], r[4].c_str());
+        } else {
+            for (int c = 0; c < kWdcCols; c++) {
+                SetText(wdc_cells_[i][c], "");
+            }
+        }
+    }
+}
+
+void F1PageAdapter::ApplyWccPageLocked() {
+    if (wcc_page_count_ < 1) {
+        wcc_page_count_ = 1;
+    }
+    if (wcc_page_ < 0) {
+        wcc_page_ = 0;
+    }
+    if (wcc_page_ >= wcc_page_count_) {
+        wcc_page_ = wcc_page_count_ - 1;
+    }
+    if (wcc_page_label_ != nullptr) {
+        char buf[32];
+        snprintf(buf, sizeof(buf), "PAGE %02d/%02d", wcc_page_ + 1, wcc_page_count_);
+        lv_label_set_text(wcc_page_label_, buf);
+    }
+    const int start = wcc_page_ * kWccRows;
+    for (int i = 0; i < kWccRows; i++) {
+        const int idx = start + i;
+        if (idx >= 0 && idx < static_cast<int>(wcc_rows_.size())) {
+            auto& r = wcc_rows_[static_cast<size_t>(idx)];
+            SetText(wcc_cells_[i][0], r[0].c_str());
+            SetText(wcc_cells_[i][1], r[1].c_str());
+            SetText(wcc_cells_[i][2], r[2].c_str());
+            SetText(wcc_cells_[i][3], r[3].c_str());
+            SetText(wcc_cells_[i][4], r[4].c_str());
+            SetText(wcc_cells_[i][5], r[5].c_str());
+        } else {
+            for (int c = 0; c < kWccCols; c++) {
+                SetText(wcc_cells_[i][c], "");
+            }
+        }
+    }
+}
+
+void F1PageAdapter::RefreshTimerCallback(void* arg) {
+    auto* self = static_cast<F1PageAdapter*>(arg);
+    if (self == nullptr) {
+        return;
+    }
+    UiPageEvent e{};
+    e.type = UiPageEventType::Custom;
+    e.i32 = static_cast<int32_t>(UiPageCustomEventId::F1Tick);
+    if (self->host_ != nullptr) {
+        self->host_->DispatchPageEvent(e, false);
+    }
+}
+
+void F1PageAdapter::RestartRefreshTimerLocked() {
+    if (refresh_timer_ == nullptr) {
+        return;
+    }
+    const int64_t us = refresh_interval_ms_ * 1000;
+    if (us <= 0) {
+        return;
+    }
+    (void)esp_timer_stop(refresh_timer_);
+    const esp_err_t err = esp_timer_start_periodic(refresh_timer_, us);
+    if (err != ESP_OK) {
+        ESP_LOGW(kTag, "timer start failed err=%d interval_ms=%lld", static_cast<int>(err), static_cast<long long>(refresh_interval_ms_));
+    } else {
+        ESP_LOGI(kTag, "timer started interval_ms=%lld", static_cast<long long>(refresh_interval_ms_));
+    }
+}
+
+void F1PageAdapter::SetText(lv_obj_t* label, const char* text) {
+    if (label == nullptr) {
+        return;
+    }
+    lv_label_set_text(label, text ? text : "");
+}
+
+void F1PageAdapter::SetTextFmt(lv_obj_t* label, const char* fmt, int v) {
+    if (label == nullptr) {
+        return;
+    }
+    char buf[64];
+    snprintf(buf, sizeof(buf), fmt, v);
+    lv_label_set_text(label, buf);
+}
+
+static const char* GetStringOrEmpty(cJSON* obj, const char* key) {
+    if (obj == nullptr || key == nullptr) {
+        return "";
+    }
+    cJSON* it = cJSON_GetObjectItemCaseSensitive(obj, key);
+    if (cJSON_IsString(it) && it->valuestring != nullptr) {
+        return it->valuestring;
+    }
+    return "";
+}
+
+static int GetIntOrNeg(cJSON* obj, const char* key) {
+    if (obj == nullptr || key == nullptr) {
+        return -1;
+    }
+    cJSON* it = cJSON_GetObjectItemCaseSensitive(obj, key);
+    if (cJSON_IsNumber(it)) {
+        return it->valueint;
+    }
+    return -1;
+}
+
+static double GetDoubleOrNeg(cJSON* obj, const char* key) {
+    if (obj == nullptr || key == nullptr) {
+        return -1;
+    }
+    cJSON* it = cJSON_GetObjectItemCaseSensitive(obj, key);
+    if (cJSON_IsNumber(it)) {
+        return it->valuedouble;
+    }
+    return -1;
+}
+
+static cJSON* GetObj(cJSON* obj, const char* key) {
+    if (obj == nullptr || key == nullptr) {
+        return nullptr;
+    }
+    cJSON* it = cJSON_GetObjectItemCaseSensitive(obj, key);
+    return cJSON_IsObject(it) ? it : nullptr;
+}
+
+static cJSON* GetArr(cJSON* obj, const char* key) {
+    if (obj == nullptr || key == nullptr) {
+        return nullptr;
+    }
+    cJSON* it = cJSON_GetObjectItemCaseSensitive(obj, key);
+    return cJSON_IsArray(it) ? it : nullptr;
+}
+
+bool F1PageAdapter::ApplySessionsJsonLocked(const char* json_text, size_t len) {
+    if (json_text == nullptr || len == 0 || len > kMaxJsonBytes) {
+        return false;
+    }
+    cJSON* root = cJSON_ParseWithLength(json_text, len);
+    if (root == nullptr) {
+        return false;
+    }
+
+    cJSON* race = GetObj(root, "race");
+    cJSON* sess = GetObj(root, "session");
+    cJSON* no_data = cJSON_GetObjectItemCaseSensitive(root, "no_data");
+    const char* country = race ? GetStringOrEmpty(race, "country") : "";
+    const char* label = sess ? GetStringOrEmpty(sess, "label") : "";
+    const char* kind = sess ? GetStringOrEmpty(sess, "kind") : "";
+    const char* time_remain = sess ? GetStringOrEmpty(sess, "time_remain") : "";
+    if (country == nullptr || country[0] == 0) {
+        country = race ? GetStringOrEmpty(race, "name") : "";
+    }
+
+    char left[96];
+    if (label && label[0] && country && country[0]) {
+        snprintf(left, sizeof(left), "[ %s ] %s", label, country);
+    } else if (label && label[0]) {
+        snprintf(left, sizeof(left), "[ %s ]", label);
+    } else if (country && country[0]) {
+        snprintf(left, sizeof(left), "%s", country);
+    } else {
+        snprintf(left, sizeof(left), "SESSION");
+    }
+    SetText(race_sessions_header_left_, left);
+
+    char center[48];
+    if (time_remain && time_remain[0]) {
+        snprintf(center, sizeof(center), "TIME REMAIN: %s", time_remain);
+    } else {
+        snprintf(center, sizeof(center), "TIME REMAIN: --:--");
+    }
+    SetText(race_sessions_header_center_, center);
+
+    const bool is_no_data = cJSON_IsBool(no_data) && cJSON_IsTrue(no_data);
+    if (race_sessions_no_data_ != nullptr) {
+        if (is_no_data) {
+            lv_obj_clear_flag(race_sessions_no_data_, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_add_flag(race_sessions_no_data_, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+
+    if (kind && strcmp(kind, "practice") == 0) {
+        race_sessions_page_ = 0;
+    } else if (kind && strcmp(kind, "qualifying") == 0) {
+        race_sessions_page_ = 1;
+    }
+    ApplyRaceSessionsLocked();
+
+    cJSON* table = GetObj(root, "table");
+    cJSON* rows = table ? GetArr(table, "rows") : nullptr;
+
+    auto clear_practice = [&]() {
+        for (auto& r : sessions_practice_cells_) {
+            for (auto* c : r) {
+                SetText(c, "");
+            }
+        }
+    };
+    auto clear_quali = [&]() {
+        for (auto& r : sessions_quali_cells_) {
+            for (auto* c : r) {
+                SetText(c, "");
+            }
+        }
+    };
+
+    if (is_no_data) {
+        clear_practice();
+        clear_quali();
+        if (sessions_drop_zone_ != nullptr) {
+            lv_obj_add_flag(sessions_drop_zone_, LV_OBJ_FLAG_HIDDEN);
+        }
+        cJSON_Delete(root);
+        return true;
+    }
+
+    if (kind && strcmp(kind, "qualifying") == 0) {
+        clear_quali();
+        const int n = rows ? cJSON_GetArraySize(rows) : 0;
+        auto fill_slot = [&](int slot, cJSON* row) {
+            if (slot < 0 || slot >= kSessionsQualiRows || row == nullptr) {
+                return;
+            }
+            if (!cJSON_IsObject(row)) {
+                return;
+            }
+            SetText(sessions_quali_cells_[static_cast<size_t>(slot)][0], GetStringOrEmpty(row, "pos"));
+            SetText(sessions_quali_cells_[static_cast<size_t>(slot)][1], GetStringOrEmpty(row, "no"));
+            SetText(sessions_quali_cells_[static_cast<size_t>(slot)][2], GetStringOrEmpty(row, "drv"));
+            SetText(sessions_quali_cells_[static_cast<size_t>(slot)][3], GetStringOrEmpty(row, "lap_time"));
+            SetText(sessions_quali_cells_[static_cast<size_t>(slot)][4], GetStringOrEmpty(row, "gap"));
+            SetText(sessions_quali_cells_[static_cast<size_t>(slot)][5], GetStringOrEmpty(row, "st"));
+            SetText(sessions_quali_cells_[static_cast<size_t>(slot)][6], GetStringOrEmpty(row, "sec123"));
+        };
+
+        if (n >= 13) {
+            for (int i = 0; i < 6; i++) {
+                fill_slot(i, cJSON_GetArrayItem(rows, i));
+            }
+            SetText(sessions_quali_cells_[6][0], "..");
+            SetText(sessions_quali_cells_[6][1], "..");
+            SetText(sessions_quali_cells_[6][2], "..........");
+            SetText(sessions_quali_cells_[6][3], ".........");
+            SetText(sessions_quali_cells_[6][4], "......");
+            SetText(sessions_quali_cells_[6][5], "...");
+            SetText(sessions_quali_cells_[6][6], "...");
+
+            fill_slot(7, cJSON_GetArrayItem(rows, 9));
+            fill_slot(8, cJSON_GetArrayItem(rows, 10));
+            fill_slot(9, cJSON_GetArrayItem(rows, 11));
+            fill_slot(10, cJSON_GetArrayItem(rows, 12));
+        } else {
+            const int top = n < 8 ? n : 8;
+            for (int i = 0; i < top; i++) {
+                fill_slot(i, cJSON_GetArrayItem(rows, i));
+            }
+            int bottom = n - top;
+            if (bottom > 3) {
+                bottom = 3;
+            }
+            for (int i = 0; i < bottom; i++) {
+                fill_slot(8 + i, cJSON_GetArrayItem(rows, top + i));
+            }
+        }
+        if (sessions_drop_zone_ != nullptr) {
+            lv_obj_clear_flag(sessions_drop_zone_, LV_OBJ_FLAG_HIDDEN);
+        }
+    } else if (kind && strcmp(kind, "practice") == 0) {
+        clear_practice();
+        const int n = rows ? cJSON_GetArraySize(rows) : 0;
+        const int cap = n < kSessionsPracticeRows ? n : kSessionsPracticeRows;
+        for (int i = 0; i < cap; i++) {
+            cJSON* row = cJSON_GetArrayItem(rows, i);
+            if (!cJSON_IsObject(row)) {
+                continue;
+            }
+            SetText(sessions_practice_cells_[static_cast<size_t>(i)][0], GetStringOrEmpty(row, "pos"));
+            SetText(sessions_practice_cells_[static_cast<size_t>(i)][1], GetStringOrEmpty(row, "no"));
+            SetText(sessions_practice_cells_[static_cast<size_t>(i)][2], GetStringOrEmpty(row, "drv"));
+            const char* best = GetStringOrEmpty(row, "best_time");
+            if (best == nullptr || best[0] == 0) {
+                best = GetStringOrEmpty(row, "best");
+            }
+            SetText(sessions_practice_cells_[static_cast<size_t>(i)][3], best);
+            SetText(sessions_practice_cells_[static_cast<size_t>(i)][4], GetStringOrEmpty(row, "gap"));
+            SetText(sessions_practice_cells_[static_cast<size_t>(i)][5], GetStringOrEmpty(row, "laps"));
+        }
+        if (sessions_drop_zone_ != nullptr) {
+            lv_obj_add_flag(sessions_drop_zone_, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+
+    cJSON_Delete(root);
+    return true;
+}
+
+bool F1PageAdapter::ApplyUiJsonLocked(const char* json_text, size_t len) {
+    if (json_text == nullptr || len == 0) {
+        return false;
+    }
+    cJSON* root = cJSON_ParseWithLength(json_text, len);
+    if (root == nullptr) {
+        return false;
+    }
+
+    cJSON* pages = cJSON_GetObjectItemCaseSensitive(root, "pages");
+    cJSON* race_day = pages ? cJSON_GetObjectItemCaseSensitive(pages, "race_day")
+                            : cJSON_GetObjectItemCaseSensitive(root, "race_day");
+    cJSON* off_week = pages ? cJSON_GetObjectItemCaseSensitive(pages, "off_week")
+                            : cJSON_GetObjectItemCaseSensitive(root, "off_week");
+
+    cJSON* default_page = cJSON_GetObjectItemCaseSensitive(root, "default_page");
+    if (cJSON_IsString(default_page) && default_page->valuestring != nullptr) {
+        if (strcmp(default_page->valuestring, "race_day") == 0) {
+            if (nav_.IsAtRoot()) {
+                nav_.SetRoot(NavNode::RaceRoot);
+            }
+        } else if (strcmp(default_page->valuestring, "off_week") == 0) {
+            if (nav_.IsAtRoot()) {
+                nav_.SetRoot(NavNode::OffRoot);
+            }
+        }
+    }
+
+    cJSON* is_race_week = cJSON_GetObjectItemCaseSensitive(root, "is_race_week");
+    if (cJSON_IsBool(is_race_week)) {
+        const bool v = cJSON_IsTrue(is_race_week);
+        is_race_week_ = v;
+        refresh_interval_ms_ = v ? (10LL * 60 * 1000) : (60LL * 60 * 1000);
+        RestartRefreshTimerLocked();
+    }
+
+    cJSON* details = cJSON_GetObjectItemCaseSensitive(root, "details");
+    if (details && cJSON_IsObject(details)) {
+        cJSON* wdc = cJSON_GetObjectItemCaseSensitive(details, "wdc");
+        if (wdc && cJSON_IsObject(wdc)) {
+            SetText(wdc_title_, GetStringOrEmpty(wdc, "title"));
+            wdc_rows_.clear();
+            cJSON* pages_arr = cJSON_GetObjectItemCaseSensitive(wdc, "pages");
+            if (pages_arr && cJSON_IsArray(pages_arr)) {
+                wdc_page_count_ = cJSON_GetArraySize(pages_arr);
+                if (wdc_page_count_ < 1) {
+                    wdc_page_count_ = 1;
+                }
+                const int pages_n = cJSON_GetArraySize(pages_arr);
+                for (int pi = 0; pi < pages_n; pi++) {
+                    cJSON* page = cJSON_GetArrayItem(pages_arr, pi);
+                    cJSON* rows = page ? cJSON_GetObjectItemCaseSensitive(page, "rows") : nullptr;
+                    if (!rows || !cJSON_IsArray(rows)) {
+                        continue;
+                    }
+                    const int rn = cJSON_GetArraySize(rows);
+                    for (int ri = 0; ri < rn; ri++) {
+                        cJSON* row = cJSON_GetArrayItem(rows, ri);
+                        if (!row || !cJSON_IsObject(row)) {
+                            continue;
+                        }
+                        const int pos = GetIntOrNeg(row, "pos");
+                        const int pts = GetIntOrNeg(row, "points");
+                        char posbuf[16];
+                        char ptsbuf[12];
+                        snprintf(posbuf, sizeof(posbuf), "%02d", pos >= 0 ? pos : 0);
+                        snprintf(ptsbuf, sizeof(ptsbuf), "%d", pts >= 0 ? pts : 0);
+                        std::array<std::string, kWdcCols> r;
+                        r[0] = posbuf;
+                        r[1] = GetStringOrEmpty(row, "driver");
+                        r[2] = GetStringOrEmpty(row, "team");
+                        r[3] = ptsbuf;
+                        r[4] = GetStringOrEmpty(row, "trend");
+                        wdc_rows_.push_back(std::move(r));
+                    }
+                }
+            } else {
+                wdc_page_count_ = 1;
+            }
+            ApplyWdcPageLocked();
+        }
+
+        cJSON* wcc = cJSON_GetObjectItemCaseSensitive(details, "wcc");
+        if (wcc && cJSON_IsObject(wcc)) {
+            SetText(wcc_title_, GetStringOrEmpty(wcc, "title"));
+            wcc_rows_.clear();
+            cJSON* pages_arr = cJSON_GetObjectItemCaseSensitive(wcc, "pages");
+            if (pages_arr && cJSON_IsArray(pages_arr)) {
+                wcc_page_count_ = cJSON_GetArraySize(pages_arr);
+                if (wcc_page_count_ < 1) {
+                    wcc_page_count_ = 1;
+                }
+                const int pages_n = cJSON_GetArraySize(pages_arr);
+                for (int pi = 0; pi < pages_n; pi++) {
+                    cJSON* page = cJSON_GetArrayItem(pages_arr, pi);
+                    cJSON* rows = page ? cJSON_GetObjectItemCaseSensitive(page, "rows") : nullptr;
+                    if (!rows || !cJSON_IsArray(rows)) {
+                        continue;
+                    }
+                    const int rn = cJSON_GetArraySize(rows);
+                    for (int ri = 0; ri < rn; ri++) {
+                        cJSON* row = cJSON_GetArrayItem(rows, ri);
+                        if (!row || !cJSON_IsObject(row)) {
+                            continue;
+                        }
+                        const int pos = GetIntOrNeg(row, "pos");
+                        const int pts = GetIntOrNeg(row, "points");
+                        const char* gap = GetStringOrEmpty(row, "gap");
+                        const char* bar = GetStringOrEmpty(row, "split_bar");
+                        const char* val = GetStringOrEmpty(row, "split_value");
+                        char posbuf[16];
+                        char ptsbuf[12];
+                        snprintf(posbuf, sizeof(posbuf), "%02d", pos >= 0 ? pos : 0);
+                        snprintf(ptsbuf, sizeof(ptsbuf), "%d", pts >= 0 ? pts : 0);
+                        std::array<std::string, kWccCols> r;
+                        r[0] = posbuf;
+                        r[1] = GetStringOrEmpty(row, "constructor");
+                        r[2] = ptsbuf;
+                        r[3] = gap ? gap : "";
+                        r[4] = bar ? bar : "";
+                        r[5] = val ? val : "";
+                        wcc_rows_.push_back(std::move(r));
+                    }
+                }
+            } else {
+                wcc_page_count_ = 1;
+            }
+            ApplyWccPageLocked();
+        }
+    }
+
+    if (race_day && cJSON_IsObject(race_day)) {
+        cJSON* header = cJSON_GetObjectItemCaseSensitive(race_day, "header");
+        SetText(status_time_, GetStringOrEmpty(header, "left"));
+        SetText(status_date_, GetStringOrEmpty(header, "center"));
+        SetText(status_battery_, GetStringOrEmpty(header, "right"));
+
+        cJSON* race = cJSON_GetObjectItemCaseSensitive(race_day, "race");
+        SetText(race_gp_, GetStringOrEmpty(race, "grand_prix"));
+        SetText(race_round_, GetStringOrEmpty(race, "round"));
+
+        cJSON* next_session = cJSON_GetObjectItemCaseSensitive(race_day, "next_session");
+        SetText(race_next_label_, GetStringOrEmpty(next_session, "label"));
+        SetText(race_countdown_, GetStringOrEmpty(next_session, "countdown"));
+
+        cJSON* next_gp = cJSON_GetObjectItemCaseSensitive(race_day, "next_gp");
+        SetText(race_next_gp_, GetStringOrEmpty(next_gp, "text"));
+        RenderRaceRightFormula1Locked();
+
+        cJSON* sched = cJSON_GetObjectItemCaseSensitive(race_day, "schedule");
+        cJSON* rows = sched ? cJSON_GetObjectItemCaseSensitive(sched, "rows") : nullptr;
+        for (int i = 0; i < kScheduleRows; i++) {
+            const char* session = "";
+            const char* day = "";
+            const char* time = "";
+            const char* status = "";
+            cJSON* row = (rows && cJSON_IsArray(rows)) ? cJSON_GetArrayItem(rows, i) : nullptr;
+            if (row && cJSON_IsObject(row)) {
+                session = GetStringOrEmpty(row, "session");
+                day = GetStringOrEmpty(row, "day");
+                time = GetStringOrEmpty(row, "time");
+                status = GetStringOrEmpty(row, "status");
+            }
+            SetText(schedule_cells_[i][0], session);
+            SetText(schedule_cells_[i][1], day);
+            SetText(schedule_cells_[i][2], time);
+            SetText(schedule_cells_[i][3], status);
+        }
+
+        cJSON* weather = cJSON_GetObjectItemCaseSensitive(race_day, "weather");
+        cJSON* w_rows = weather ? cJSON_GetObjectItemCaseSensitive(weather, "rows") : nullptr;
+        for (int i = 0; i < kWeatherRows; i++) {
+            const char* k = "";
+            const char* v = "";
+            cJSON* row = (w_rows && cJSON_IsArray(w_rows)) ? cJSON_GetArrayItem(w_rows, i) : nullptr;
+            if (row && cJSON_IsObject(row)) {
+                k = GetStringOrEmpty(row, "k");
+                v = GetStringOrEmpty(row, "v");
+            }
+            SetText(weather_k_[i], k);
+            SetText(weather_v_[i], v);
+        }
+
+        cJSON* circuit = cJSON_GetObjectItemCaseSensitive(race_day, "circuit");
+        circuit_name_ = GetStringOrEmpty(circuit, "circuit_name");
+        circuit_gp_ = GetStringOrEmpty(circuit, "name");
+        circuit_map_url_small_ = GetStringOrEmpty(circuit, "map_image_url");
+        circuit_map_url_detail_ = GetStringOrEmpty(circuit, "map_image_url_detail");
+        ESP_LOGI(kTag, "circuit urls small=%s detail=%s",
+                 circuit_map_url_small_.c_str(),
+                 circuit_map_url_detail_.c_str());
+        circuit_length_km_ = GetDoubleOrNeg(circuit, "circuit_length_km");
+        race_distance_km_ = GetDoubleOrNeg(circuit, "race_distance_km");
+        number_of_laps_ = GetIntOrNeg(circuit, "number_of_laps");
+        first_grand_prix_year_ = GetIntOrNeg(circuit, "first_grand_prix_year");
+        fastest_lap_time_ = GetStringOrEmpty(circuit, "fastest_lap_time");
+        fastest_lap_driver_ = GetStringOrEmpty(circuit, "fastest_lap_driver");
+        fastest_lap_year_ = GetIntOrNeg(circuit, "fastest_lap_year");
+
+        StartCircuitFetchIfNeededLocked(circuit_map_url_small_.c_str());
+        StartCircuitDetailFetchIfNeededLocked(circuit_map_url_detail_.c_str());
+        if (view_index_ == 4) {
+            ApplyCircuitDetailLocked();
+        }
+    }
+
+    if (off_week && cJSON_IsObject(off_week)) {
+        cJSON* header = cJSON_GetObjectItemCaseSensitive(off_week, "header");
+        SetText(standings_header_left_, GetStringOrEmpty(header, "left"));
+        SetText(standings_header_right_, GetStringOrEmpty(header, "right"));
+
+        cJSON* days = cJSON_GetObjectItemCaseSensitive(off_week, "days");
+        int dval = GetIntOrNeg(days, "value");
+        const char* until = GetStringOrEmpty(days, "until");
+        if (dval >= 0) {
+            char buf[96];
+            snprintf(buf, sizeof(buf), "%d\nDAYS\nUNTIL %s", dval, until ? until : "");
+            SetText(standings_days_, buf);
+        } else {
+            SetText(standings_days_, "");
+        }
+
+        cJSON* dt = cJSON_GetObjectItemCaseSensitive(off_week, "drivers_table");
+        cJSON* dt_rows = dt ? cJSON_GetObjectItemCaseSensitive(dt, "rows") : nullptr;
+        for (int i = 0; i < kDriverRows; i++) {
+            cJSON* row = (dt_rows && cJSON_IsArray(dt_rows)) ? cJSON_GetArrayItem(dt_rows, i) : nullptr;
+            if (row && cJSON_IsObject(row)) {
+                const int pos = GetIntOrNeg(row, "pos");
+                if (pos >= 0) {
+                    SetTextFmt(driver_cells_[i][0], "%d.", pos);
+                } else {
+                    SetText(driver_cells_[i][0], "");
+                }
+                SetText(driver_cells_[i][1], GetStringOrEmpty(row, "name"));
+                SetText(driver_cells_[i][2], GetStringOrEmpty(row, "code"));
+                const int pts = GetIntOrNeg(row, "points");
+                if (pts >= 0) {
+                    SetTextFmt(driver_cells_[i][3], "%d", pts);
+                } else {
+                    SetText(driver_cells_[i][3], "");
+                }
+            } else {
+                for (int c = 0; c < kDriverCols; c++) {
+                    SetText(driver_cells_[i][c], "");
+                }
+            }
+        }
+
+        cJSON* ct = cJSON_GetObjectItemCaseSensitive(off_week, "constructors_table");
+        cJSON* ct_rows = ct ? cJSON_GetObjectItemCaseSensitive(ct, "rows") : nullptr;
+        for (int i = 0; i < kConstructorRows; i++) {
+            cJSON* row = (ct_rows && cJSON_IsArray(ct_rows)) ? cJSON_GetArrayItem(ct_rows, i) : nullptr;
+            if (row && cJSON_IsObject(row)) {
+                const int pos = GetIntOrNeg(row, "pos");
+                if (pos >= 0) {
+                    SetTextFmt(constructor_cells_[i][0], "%d.", pos);
+                } else {
+                    SetText(constructor_cells_[i][0], "");
+                }
+                SetText(constructor_cells_[i][1], GetStringOrEmpty(row, "name"));
+                const int pts = GetIntOrNeg(row, "points");
+                if (pts >= 0) {
+                    SetTextFmt(constructor_cells_[i][2], "%d", pts);
+                } else {
+                    SetText(constructor_cells_[i][2], "");
+                }
+            } else {
+                for (int c = 0; c < kConstructorCols; c++) {
+                    SetText(constructor_cells_[i][c], "");
+                }
+            }
+        }
+
+        cJSON* news = cJSON_GetObjectItemCaseSensitive(off_week, "news");
+        const char* title = GetStringOrEmpty(news, "title");
+        const char* url = GetStringOrEmpty(news, "url");
+        if (title && title[0]) {
+            char buf[256];
+            snprintf(buf, sizeof(buf), "NEWS FLASH:\n%s", title);
+            SetText(news_, buf);
+        } else {
+            SetText(news_, "NEWS FLASH:");
+        }
+
+        const char* news_id = GetStringOrEmpty(news, "id");
+        std::string effective_id;
+        if (news_id && news_id[0]) {
+            effective_id = news_id;
+        } else if (title && title[0]) {
+            char tmp[384];
+            snprintf(tmp, sizeof(tmp), "%s|%s", title, url ? url : "");
+            char hex[16];
+            snprintf(hex, sizeof(hex), "%08x", static_cast<unsigned>(Fnv1a32(tmp)));
+            effective_id = hex;
+        }
+
+        if (!effective_id.empty()) {
+            Settings s("f1", true);
+            const std::string last_id = s.GetString("last_news_id", "");
+            bool need_play = false;
+            if (!news_beeped_this_boot_) {
+                need_play = true;
+                news_beeped_this_boot_ = true;
+            } else if (last_id != effective_id) {
+                need_play = true;
+            }
+            if (need_play) {
+                (void)PlayJuWav();
+            }
+            if (last_id != effective_id) {
+                s.SetString("last_news_id", effective_id);
+            }
+        }
+    }
+
+    cJSON_Delete(root);
+    return true;
+}

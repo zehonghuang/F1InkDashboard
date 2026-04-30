@@ -1,0 +1,424 @@
+[0;32mI (102) cpu_start: GPIO 44 and 43 are used as console UART I/O pESP-ROM:esp32s3-20210327[0m
+Build:Mar 27 2021
+rst:0x15 (USB_UART_CHIP_RESET),boot:0x9 (SPI_FAST_FLASH_BOOT)
+Saved PC:0x40041a7c
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x56c
+load:0x403c8700,len:0x4
+load:0x403c8704,len:0xc30
+load:0x403cb700,len:0x2e2c
+entry 0x403c890c
+[0;32mI (34) octal_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (35) octal_psram: dev id       : 0x02 (generation 3)[0m
+[0;32mI (35) octal_psram: density      : 0x03 (64 Mbit)[0m
+[0;32mI (37) octal_psram: good-die     : 0x01 (Pass)[0m
+[0;32mI (41) octal_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (45) octal_psram: VCC          : 0x01 (3V)[0m
+[0;32mI (49) octal_psram: SRF          : 0x01 (Fast Refresh)[0m
+[0;32mI (54) octal_psram: BurstType    : 0x01 (Hybrid Wrap)[0m
+[0;32mI (59) octal_psram: BurstLen     : 0x01 (32 Byte)[0m
+[0;32mI (63) octal_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (68) octal_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (73) MSPI Timing: PSRAM timing tuning index: 5[0m
+[0;32mI (77) esp_psram: Found 8MB PSRAM device[0m
+[0;32mI (80) esp_psram: Speed: 80MHz[0m
+[0;32mI (83) cpu_start: Multicore app[0m
+[0;32mI (97) cpu_start: GPIO 44 and 43 are used as console UART I/O pins[0m
+[0;32mI (98) cpu_start: Pro cpu start user code[0m
+[0;32mI (98) cpu_start: cpu freq: 240000000 Hz[0m
+[0;32mI (99) app_init: Application information:[0m
+[0;32mI (103) app_init: Project name:     xiaozhi[0m
+[0;32mI (107) app_init: App version:      2.2.3[0m
+[0;32mI (111) app_init: Compile time:     Apr 25 2026 00:48:17[0m
+[0;32mI (116) app_init: ELF file SHA256:  8e4d59cf1...[0m
+[0;32mI (120) app_init: ESP-IDF:          v5.4.4[0m
+[0;32mI (124) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (128) efuse_init: Max chip rev:     v0.99 [0m
+[0;32mI (132) efuse_init: Chip rev:         v0.2[0m
+[0;32mI (135) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (142) heap_init: At 3FCA8440 len 000412D0 (260 KiB): RAM[0m
+[0;32mI (147) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM[0m
+[0;32mI (152) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM[0m
+[0;32mI (157) heap_init: At 600FE000 len 00001FD8 (7 KiB): RTCRAM[0m
+[0;32mI (163) esp_psram: Adding pool of 8192K of PSRAM memory to heap allocator[0m
+[0;32mI (170) spi_flash: detected chip: generic[0m
+[0;32mI (173) spi_flash: flash io: qio[0m
+[0;32mI (176) sleep_gpio: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (182) sleep_gpio: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (189) main_task: Started on CPU0[0m
+[0;32mI (199) esp_psram: Reserving pool of 64K of internal memory for DMA/internal allocations[0m
+[0;32mI (199) main_task: Calling app_main()[0m
+[0;32mI (209) main: NVS stats: used=81 free=423 total=504 (16%) namespaces=4[0m
+[0;32mI (209) Board: EFUSE_UUID=f2 86 5d 67 ac c7 58 5f 1e f7 e0 4b f5 f9 7f a7[0m
+[0;32mI (219) Board: UUID=3e057a60-b5ab-4024-bd7c-ed478027adae SKU=zectrix-s3-epaper-4.2 device_key=f2865d67acc7585f1ef7e04bf5f97fa7[0m
+[0;32mI (229) gpio: GPIO[39]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (239) button: IoT Button Version: 4.1.5[0m
+[0;32mI (239) gpio: GPIO[18]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (249) gpio: GPIO[0]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (259) gpio: GPIO[6]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (259) gpio: GPIO[17]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (269) gpio: GPIO[42]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (279) gpio: GPIO[46]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (289) gpio: GPIO[3]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (299) gpio: GPIO[5]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (309) gpio: GPIO[21]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (309) gpio: GPIO[7]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:3 [0m
+[0;32mI (349) ZectrixNfc: NFC init: addr=0x55 power_gpio=21 fd_gpio=7 fd_active=0 capacity=880 field=0 uid_ret=ESP_OK uid=04:F5:52:C4:28:02:69[0m
+[0;32mI (349) gpio: GPIO[1]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (359) gpio: GPIO[2]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (369) CustomLcdDisplay: Initialize SPI[0m
+[0;32mI (369) gpio: GPIO[9]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (379) gpio: GPIO[10]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (389) gpio: GPIO[11]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (399) gpio: GPIO[8]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (409) CustomLcdDisplay: Initialize LVGL library[0m
+[0;32mI (409) LVGL: Starting LVGL task[0m
+[0;32mI (419) CustomLcdDisplay: EPD init[0m
+[0;32mI (469) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (469) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (479) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (479) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (2249) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (2249) CustomLcdDisplay: ui start[0m
+[0;32mI (2259) Application: State 0 -> 1[0m
+[0;32mI (2259) Es8311AudioCodec: Duplex channels created[0m
+[0;32mI (2259) gpio: GPIO[46]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (2269) ES8311: Work in Slave mode[0m
+[0;32mI (2269) Es8311AudioCodec: Es8311AudioCodec initialized[0m
+[0;32mI (2279) AudioCodec: Set input enable to true[0m
+[0;32mI (2279) I2S_IF: STD mode, dir: TX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (2289) I2S_IF: STD mode, dir: RX, data_bit: 16, slot_bit: 16 active_channel: 1, slot_mask: 0x1[0m
+[0;32mI (2309) Adev_Codec: Open codec device OK[0m
+[0;32mI (2309) AudioCodec: Set output enable to true[0m
+[0;32mI (2309) AudioCodec: Audio codec started[0m
+[0;32mI (2309) Application: State 1 -> 3[0m
+[0;32mI (2319) WifiManager: Initializing...[0m
+[0;32mI (2319) pp: pp rom version: e7ae62f[0m
+[0;32mI (2319) net80211: net80211 rom version: e7ae62f[0m
+[0;32mI (2339) wifi:wifi driver task: 3fcd7e24, prio:23, stack:6656, core=0[0m
+[0;32mI (2339) wifi:wifi firmware version: 8896d66[0m
+[0;32mI (2339) wifi:wifi certification version: v7.0[0m
+[0;32mI (2339) wifi:config NVS flash: disabled[0m
+[0;32mI (2339) wifi:config nano formatting: disabled[0m
+[0;32mI (2349) wifi:Init data frame dynamic rx buffer num: 6[0m
+[0;32mI (2349) wifi:Init dynamic rx mgmt buffer num: 5[0m
+[0;32mI (2359) wifi:Init management short buffer num: 32[0m
+[0;32mI (2359) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (2369) wifi:Init static tx FG buffer num: 2[0m
+[0;32mI (2369) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (2369) wifi:Init static rx buffer num: 3[0m
+[0;32mI (2379) wifi:Init dynamic rx buffer num: 6[0m
+[0;32mI (2379) wifi_init: rx ba win: 3[0m
+[0;32mI (2389) wifi_init: accept mbox: 6[0m
+[0;32mI (2389) wifi_init: tcpip mbox: 16[0m
+[0;32mI (2389) wifi_init: udp mbox: 6[0m
+[0;32mI (2389) wifi_init: tcp mbox: 6[0m
+[0;32mI (2399) wifi_init: tcp tx win: 5760[0m
+[0;32mI (2399) wifi_init: tcp rx win: 5760[0m
+[0;32mI (2399) wifi_init: tcp mss: 1440[0m
+[0;32mI (2409) WifiManager: Initialized[0m
+[0;32mI (2409) WifiManager: Starting station[0m
+[0;32mI (2409) FAST_RC: stage=wifi event=station_start path=slow t_ms=2249 fast_enable=1[0m
+[0;32mI (2419) phy_init: phy_version 711,97bcf0a2,Aug 25 2025,19:04:10[0m
+[0;32mI (2459) wifi:mode : sta (9c:13:9e:b5:7d:a0)[0m
+[0;32mI (2459) wifi:enable tsf[0m
+[0;32mI (2459) FAST_RC: stage=wifi event=sta_start path=slow t_ms=2296[0m
+[0;32mI (2459) FAST_RC: stage=wifi event=fast_cache path=fast t_ms=2296 have=0 ssid=- channel=0 bssid=00:00:00:00:00:00 last_age_ms=-1 fail_count=0[0m
+[0;32mI (2469) FAST_RC: stage=wifi event=fast_direct_connect_skip path=fast t_ms=2296 reason=cache_miss[0m
+[0;32mI (2849) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (3189) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (3239) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (3239) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (3249) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (3259) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (4889) WifiStation: Found AP: FUFU吃大米, BSSID: a4:ba:70:58:3d:d9, RSSI: -33, Channel: 2, Authmode: 3[0m
+[0;33mW (4889) wifi:Password length matches WPA2 standards, authmode threshold changes from OPEN to WPA2[0m
+[0;32mI (4969) CustomLcdDisplay: [REFRESH] Got dirty rect: x=8, y=41, w=384, h=144, area=55296[0m
+[0;32mI (4999) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (5109) wifi:new:<2,0>, old:<1,0>, ap:<255,255>, sta:<2,0>, prof:1, snd_ch_cfg:0x0[0m
+[0;32mI (5109) wifi:state: init -> auth (0xb0)[0m
+[0;32mI (5119) wifi:state: auth -> assoc (0x0)[0m
+[0;32mI (5179) wifi:state: assoc -> run (0x10)[0m
+[0;32mI (5209) wifi:connected with FUFU吃大米, aid = 1, channel 2, BW20, bssid = a4:ba:70:58:3d:d9[0m
+[0;32mI (5209) wifi:security: WPA2-PSK, phy: bgn, rssi: -33, cipher(pairwise:0x3, group:0x3), pmf:0[0m
+[0;32mI (5209) wifi:pm start, type: 1[0m
+
+[0;32mI (5219) wifi:dp: 1, bi: 102400, li: 10, scale listen interval from 1024000 us to 1024000 us[0m
+[0;32mI (5219) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000[0m
+[0;32mI (5229) FAST_RC: stage=wifi event=sta_connected path=slow t_ms=5070[0m
+[0;32mI (5239) FAST_RC: stage=ip event=fast_skip path=fast t_ms=5070 reason=cache_miss[0m
+[0;32mI (5239) wifi:<ba-add>idx:0 (ifx:0, a4:ba:70:58:3d:d9), tid:6, ssn:2, winSize:64[0m
+[0;32mI (5309) wifi:AP's beacon interval = 102400 us, DTIM period = 1[0m
+[0;32mI (6259) esp_netif_handlers: sta ip: 192.168.31.252, mask: 255.255.255.0, gw: 192.168.31.1[0m
+[0;32mI (6259) WifiStation: Got IP: 192.168.31.252[0m
+[0;32mI (6259) FAST_RC: stage=ip event=got_ip path=slow t_ms=6092 ip=192.168.31.252[0m
+[0;32mI (6259) FAST_RC: stage=wifi event=cache_writeback path=slow t_ms=6092 wrote=1 ssid=FUFU吃大米 channel=2 bssid=a4:ba:70:58:3d:d9[0m
+[0;32mI (6339) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=2 (full=1, partial=1, urgent=1), skip(throttle=2, nodiff=3, tiny=0, tiny_forced=0)[0m
+[0;32mI (6779) F1Page: fetch start force=0 race_week=0 interval_ms=3600000 url=http://192.168.31.110:8008/api/v1/ui/pages?tz=Asia/Shanghai[0m
+[0;32mI (6789) F1Page: timer started interval_ms=3600000[0m
+[0;32mI (6789) wifi:<ba-add>idx:1 (ifx:0, a4:ba:70:58:3d:d9), tid:0, ssn:0, winSize:64[0m
+[0;32mI (7159) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (7209) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (9129) F1Page: timer started interval_ms=3600000[0m
+[0;32mI (12589) F1Page: aJu.wav play bytes=122634[0m
+[0;32mI (12599) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (12609) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (12609) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=0[0m
+[0;32mI (12629) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (12679) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (12679) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (12689) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (12699) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (14409) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=4 (full=2, partial=2, urgent=2), skip(throttle=6, nodiff=7, tiny=0, tiny_forced=0)[0m
+[0;32mI (14409) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (14449) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (14499) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (14499) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (14509) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (14519) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (15309) AudioCodec: Set input enable to false[0m
+[0;32mI (17529) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=5 (full=3, partial=2, urgent=3), skip(throttle=9, nodiff=11, tiny=0, tiny_forced=0)[0m
+[0;32mI (19029) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (19059) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (19109) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (19109) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (19119) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (19129) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (20839) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=6 (full=4, partial=2, urgent=4), skip(throttle=13, nodiff=14, tiny=0, tiny_forced=0)[0m
+[0;32mI (20839) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (20879) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (20929) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (20929) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (20939) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (20949) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (23959) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=16, nodiff=18, tiny=0, tiny_forced=0)[0m
+[0;32mI (27159) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=24, nodiff=26, tiny=0, tiny_forced=0)[0m
+[0;32mI (28309) AudioCodec: Set output enable to false[0m
+[0;32mI (30359) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=32, nodiff=34, tiny=0, tiny_forced=0)[0m
+[0;32mI (33559) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=40, nodiff=42, tiny=0, tiny_forced=0)[0m
+[0;32mI (36759) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=48, nodiff=50, tiny=0, tiny_forced=0)[0m
+[0;32mI (39959) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=56, nodiff=58, tiny=0, tiny_forced=0)[0m
+[0;32mI (43159) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=64, nodiff=66, tiny=0, tiny_forced=0)[0m
+[0;32mI (46359) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=72, nodiff=74, tiny=0, tiny_forced=0)[0m
+[0;32mI (49559) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=80, nodiff=82, tiny=0, tiny_forced=0)[0m
+[0;32mI (52759) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=88, nodiff=90, tiny=0, tiny_forced=0)[0m
+[0;32mI (55959) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=96, nodiff=98, tiny=0, tiny_forced=0)[0m
+[0;32mI (59159) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=104, nodiff=106, tiny=0, tiny_forced=0)[0m
+[0;32mI (62359) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=112, nodiff=114, tiny=0, tiny_forced=0)[0m
+[0;32mI (65559) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=120, nodiff=122, tiny=0, tiny_forced=0)[0m
+[0;32mI (68759) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=128, nodiff=130, tiny=0, tiny_forced=0)[0m
+[0;32mI (71959) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=136, nodiff=138, tiny=0, tiny_forced=0)[0m
+[0;32mI (75159) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=144, nodiff=146, tiny=0, tiny_forced=0)[0m
+[0;32mI (78359) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=152, nodiff=154, tiny=0, tiny_forced=0)[0m
+[0;32mI (81559) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=160, nodiff=162, tiny=0, tiny_forced=0)[0m
+[0;32mI (84759) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=168, nodiff=170, tiny=0, tiny_forced=0)[0m
+[0;32mI (87959) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=176, nodiff=178, tiny=0, tiny_forced=0)[0m
+[0;32mI (91159) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=184, nodiff=186, tiny=0, tiny_forced=0)[0m
+[0;32mI (94359) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=192, nodiff=194, tiny=0, tiny_forced=0)[0m
+[0;32mI (97559) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=200, nodiff=202, tiny=0, tiny_forced=0)[0m
+[0;32mI (100759) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=208, nodiff=210, tiny=0, tiny_forced=0)[0m
+[0;32mI (103959) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=216, nodiff=218, tiny=0, tiny_forced=0)[0m
+[0;32mI (107159) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=224, nodiff=226, tiny=0, tiny_forced=0)[0m
+[0;32mI (110359) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=232, nodiff=234, tiny=0, tiny_forced=0)[0m
+[0;32mI (113559) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=240, nodiff=242, tiny=0, tiny_forced=0)[0m
+[0;32mI (116759) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=248, nodiff=250, tiny=0, tiny_forced=0)[0m
+[0;32mI (119959) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=256, nodiff=258, tiny=0, tiny_forced=0)[0m
+[0;32mI (123159) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=264, nodiff=266, tiny=0, tiny_forced=0)[0m
+[0;32mI (126359) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=272, nodiff=274, tiny=0, tiny_forced=0)[0m
+[0;32mI (129559) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=280, nodiff=282, tiny=0, tiny_forced=0)[0m
+[0;32mI (132759) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=288, nodiff=290, tiny=0, tiny_forced=0)[0m
+[0;32mI (135959) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=296, nodiff=298, tiny=0, tiny_forced=0)[0m
+[0;32mI (139159) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=304, nodiff=306, tiny=0, tiny_forced=0)[0m
+[0;32mI (142359) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=312, nodiff=314, tiny=0, tiny_forced=0)[0m
+[0;32mI (145559) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=320, nodiff=322, tiny=0, tiny_forced=0)[0m
+[0;32mI (148759) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=328, nodiff=330, tiny=0, tiny_forced=0)[0m
+[0;32mI (151959) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=336, nodiff=338, tiny=0, tiny_forced=0)[0m
+[0;32mI (155159) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=344, nodiff=346, tiny=0, tiny_forced=0)[0m
+[0;32mI (158359) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=352, nodiff=354, tiny=0, tiny_forced=0)[0m
+[0;32mI (161559) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=360, nodiff=362, tiny=0, tiny_forced=0)[0m
+[0;32mI (164759) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=368, nodiff=370, tiny=0, tiny_forced=0)[0m
+[0;32mI (167959) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=376, nodiff=378, tiny=0, tiny_forced=0)[0m
+[0;32mI (171159) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=384, nodiff=386, tiny=0, tiny_forced=0)[0m
+[0;32mI (174359) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=392, nodiff=394, tiny=0, tiny_forced=0)[0m
+[0;32mI (177559) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=400, nodiff=402, tiny=0, tiny_forced=0)[0m
+[0;32mI (180759) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=408, nodiff=410, tiny=0, tiny_forced=0)[0m
+[0;32mI (183959) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=416, nodiff=418, tiny=0, tiny_forced=0)[0m
+[0;32mI (187159) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=424, nodiff=426, tiny=0, tiny_forced=0)[0m
+[0;32mI (190359) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=432, nodiff=434, tiny=0, tiny_forced=0)[0m
+[0;32mI (193559) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=440, nodiff=442, tiny=0, tiny_forced=0)[0m
+[0;32mI (196759) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=448, nodiff=450, tiny=0, tiny_forced=0)[0m
+[0;32mI (199959) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=456, nodiff=458, tiny=0, tiny_forced=0)[0m
+[0;32mI (203159) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=464, nodiff=466, tiny=0, tiny_forced=0)[0m
+[0;32mI (206359) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=472, nodiff=474, tiny=0, tiny_forced=0)[0m
+[0;32mI (209559) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=480, nodiff=482, tiny=0, tiny_forced=0)[0m
+[0;32mI (212759) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=488, nodiff=490, tiny=0, tiny_forced=0)[0m
+[0;32mI (215959) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=496, nodiff=498, tiny=0, tiny_forced=0)[0m
+[0;32mI (219159) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=504, nodiff=506, tiny=0, tiny_forced=0)[0m
+[0;32mI (222359) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=512, nodiff=514, tiny=0, tiny_forced=0)[0m
+[0;32mI (225559) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=520, nodiff=522, tiny=0, tiny_forced=0)[0m
+[0;32mI (228759) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=528, nodiff=530, tiny=0, tiny_forced=0)[0m
+[0;32mI (231959) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=536, nodiff=538, tiny=0, tiny_forced=0)[0m
+[0;32mI (235159) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=544, nodiff=546, tiny=0, tiny_forced=0)[0m
+[0;32mI (238359) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=552, nodiff=554, tiny=0, tiny_forced=0)[0m
+[0;32mI (241559) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=560, nodiff=562, tiny=0, tiny_forced=0)[0m
+[0;32mI (244759) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=568, nodiff=570, tiny=0, tiny_forced=0)[0m
+[0;32mI (247959) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=576, nodiff=578, tiny=0, tiny_forced=0)[0m
+[0;32mI (251159) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=584, nodiff=586, tiny=0, tiny_forced=0)[0m
+[0;32mI (254359) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=592, nodiff=594, tiny=0, tiny_forced=0)[0m
+[0;32mI (257559) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=600, nodiff=602, tiny=0, tiny_forced=0)[0m
+[0;32mI (260759) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=7 (full=5, partial=2, urgent=5), skip(throttle=608, nodiff=610, tiny=0, tiny_forced=0)[0m
+[0;32mI (262339) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (263059) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (263109) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (264439) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=614, nodiff=615, tiny=0, tiny_forced=0)[0m
+[0;32mI (267739) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=622, nodiff=624, tiny=0, tiny_forced=0)[0m
+[0;32mI (270939) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=630, nodiff=632, tiny=0, tiny_forced=0)[0m
+[0;32mI (274139) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=638, nodiff=640, tiny=0, tiny_forced=0)[0m
+[0;32mI (277339) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=646, nodiff=648, tiny=0, tiny_forced=0)[0m
+[0;32mI (280539) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=654, nodiff=656, tiny=0, tiny_forced=0)[0m
+[0;32mI (283739) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=662, nodiff=664, tiny=0, tiny_forced=0)[0m
+[0;32mI (286939) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=670, nodiff=672, tiny=0, tiny_forced=0)[0m
+[0;32mI (290139) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=678, nodiff=680, tiny=0, tiny_forced=0)[0m
+[0;32mI (293339) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=686, nodiff=688, tiny=0, tiny_forced=0)[0m
+[0;32mI (296539) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=694, nodiff=696, tiny=0, tiny_forced=0)[0m
+[0;32mI (299739) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=702, nodiff=704, tiny=0, tiny_forced=0)[0m
+[0;32mI (302939) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=710, nodiff=712, tiny=0, tiny_forced=0)[0m
+[0;32mI (306139) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=718, nodiff=720, tiny=0, tiny_forced=0)[0m
+[0;32mI (309339) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=726, nodiff=728, tiny=0, tiny_forced=0)[0m
+[0;32mI (312539) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=734, nodiff=736, tiny=0, tiny_forced=0)[0m
+[0;32mI (315739) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=742, nodiff=744, tiny=0, tiny_forced=0)[0m
+[0;32mI (318939) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=750, nodiff=752, tiny=0, tiny_forced=0)[0m
+[0;32mI (322139) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=758, nodiff=760, tiny=0, tiny_forced=0)[0m
+[0;32mI (325339) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=766, nodiff=768, tiny=0, tiny_forced=0)[0m
+[0;32mI (328539) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=774, nodiff=776, tiny=0, tiny_forced=0)[0m
+[0;32mI (331739) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=782, nodiff=784, tiny=0, tiny_forced=0)[0m
+[0;32mI (334939) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=790, nodiff=792, tiny=0, tiny_forced=0)[0m
+[0;32mI (338139) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=798, nodiff=800, tiny=0, tiny_forced=0)[0m
+[0;32mI (341339) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=806, nodiff=808, tiny=0, tiny_forced=0)[0m
+[0;32mI (344539) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=814, nodiff=816, tiny=0, tiny_forced=0)[0m
+[0;32mI (347739) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=822, nodiff=824, tiny=0, tiny_forced=0)[0m
+[0;32mI (350939) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=830, nodiff=832, tiny=0, tiny_forced=0)[0m
+[0;32mI (354139) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=838, nodiff=840, tiny=0, tiny_forced=0)[0m
+[0;32mI (357339) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=846, nodiff=848, tiny=0, tiny_forced=0)[0m
+[0;32mI (360539) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=854, nodiff=856, tiny=0, tiny_forced=0)[0m
+[0;32mI (363739) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=862, nodiff=864, tiny=0, tiny_forced=0)[0m
+[0;32mI (366939) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=870, nodiff=872, tiny=0, tiny_forced=0)[0m
+[0;32mI (370139) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=878, nodiff=880, tiny=0, tiny_forced=0)[0m
+[0;32mI (373339) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=886, nodiff=888, tiny=0, tiny_forced=0)[0m
+[0;32mI (376539) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=894, nodiff=896, tiny=0, tiny_forced=0)[0m
+[0;32mI (379739) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=902, nodiff=904, tiny=0, tiny_forced=0)[0m
+[0;32mI (382939) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=910, nodiff=912, tiny=0, tiny_forced=0)[0m
+[0;32mI (386139) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=918, nodiff=920, tiny=0, tiny_forced=0)[0m
+[0;32mI (389339) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=926, nodiff=928, tiny=0, tiny_forced=0)[0m
+[0;32mI (392539) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=934, nodiff=936, tiny=0, tiny_forced=0)[0m
+[0;32mI (395739) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=942, nodiff=944, tiny=0, tiny_forced=0)[0m
+[0;32mI (398939) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=950, nodiff=952, tiny=0, tiny_forced=0)[0m
+[0;32mI (402139) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=958, nodiff=960, tiny=0, tiny_forced=0)[0m
+[0;32mI (405339) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=966, nodiff=968, tiny=0, tiny_forced=0)[0m
+[0;32mI (408539) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=974, nodiff=976, tiny=0, tiny_forced=0)[0m
+[0;32mI (411739) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=982, nodiff=984, tiny=0, tiny_forced=0)[0m
+[0;32mI (414939) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=990, nodiff=992, tiny=0, tiny_forced=0)[0m
+[0;32mI (418139) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=998, nodiff=1000, tiny=0, tiny_forced=0)[0m
+[0;32mI (421339) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=1006, nodiff=1008, tiny=0, tiny_forced=0)[0m
+[0;32mI (424539) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=1014, nodiff=1016, tiny=0, tiny_forced=0)[0m
+[0;32mI (427739) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=8 (full=5, partial=3, urgent=5), skip(throttle=1022, nodiff=1024, tiny=0, tiny_forced=0)[0m
+[0;32mI (428079) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (428109) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (428159) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (428169) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (428169) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (428179) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (429889) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (429919) CustomLcdDisplay: [REFRESH] Performing FULL refresh[0m
+[0;32mI (429969) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (429969) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (429979) gpio: GPIO[13]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (429989) gpio: GPIO[12]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (431699) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=10 (full=7, partial=3, urgent=7), skip(throttle=1023, nodiff=1024, tiny=0, tiny_forced=0)[0m
+[0;32mI (432169) UiPageRegistry: UI_PAGE event type=0 consumed=1 only_active=1[0m
+[0;32mI (432499) CustomLcdDisplay: [REFRESH] Got dirty rect: x=0, y=0, w=400, h=300, area=120000[0m
+[0;32mI (432549) CustomLcdDisplay: [REFRESH] Performing PARTIAL refresh[0m
+[0;32mI (434779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1027, nodiff=1029, tiny=0, tiny_forced=0)[0m
+[0;32mI (437979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1035, nodiff=1037, tiny=0, tiny_forced=0)[0m
+[0;32mI (441179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1043, nodiff=1045, tiny=0, tiny_forced=0)[0m
+[0;32mI (444379) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1051, nodiff=1053, tiny=0, tiny_forced=0)[0m
+[0;32mI (447579) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1059, nodiff=1061, tiny=0, tiny_forced=0)[0m
+[0;32mI (450779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1067, nodiff=1069, tiny=0, tiny_forced=0)[0m
+[0;32mI (453979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1075, nodiff=1077, tiny=0, tiny_forced=0)[0m
+[0;32mI (457179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1083, nodiff=1085, tiny=0, tiny_forced=0)[0m
+[0;32mI (460379) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1091, nodiff=1093, tiny=0, tiny_forced=0)[0m
+[0;32mI (463579) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1099, nodiff=1101, tiny=0, tiny_forced=0)[0m
+[0;32mI (466779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1107, nodiff=1109, tiny=0, tiny_forced=0)[0m
+[0;32mI (469979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1115, nodiff=1117, tiny=0, tiny_forced=0)[0m
+[0;32mI (473179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1123, nodiff=1125, tiny=0, tiny_forced=0)[0m
+[0;32mI (476379) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1131, nodiff=1133, tiny=0, tiny_forced=0)[0m
+[0;32mI (479579) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1139, nodiff=1141, tiny=0, tiny_forced=0)[0m
+[0;32mI (482779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1147, nodiff=1149, tiny=0, tiny_forced=0)[0m
+[0;32mI (485979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1155, nodiff=1157, tiny=0, tiny_forced=0)[0m
+[0;32mI (489179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1163, nodiff=1165, tiny=0, tiny_forced=0)[0m
+[0;32mI (492379) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1171, nodiff=1173, tiny=0, tiny_forced=0)[0m
+[0;32mI (495579) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1179, nodiff=1181, tiny=0, tiny_forced=0)[0m
+[0;32mI (498779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1187, nodiff=1189, tiny=0, tiny_forced=0)[0m
+[0;32mI (501979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1195, nodiff=1197, tiny=0, tiny_forced=0)[0m
+[0;32mI (505179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1203, nodiff=1205, tiny=0, tiny_forced=0)[0m
+[0;32mI (508379) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1211, nodiff=1213, tiny=0, tiny_forced=0)[0m
+[0;32mI (511579) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1219, nodiff=1221, tiny=0, tiny_forced=0)[0m
+[0;32mI (514779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1227, nodiff=1229, tiny=0, tiny_forced=0)[0m
+[0;32mI (517979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1235, nodiff=1237, tiny=0, tiny_forced=0)[0m
+[0;32mI (521179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1243, nodiff=1245, tiny=0, tiny_forced=0)[0m
+[0;32mI (524379) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1251, nodiff=1253, tiny=0, tiny_forced=0)[0m
+[0;32mI (527579) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1259, nodiff=1261, tiny=0, tiny_forced=0)[0m
+[0;32mI (530779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1267, nodiff=1269, tiny=0, tiny_forced=0)[0m
+[0;32mI (533979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1275, nodiff=1277, tiny=0, tiny_forced=0)[0m
+[0;32mI (537179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1283, nodiff=1285, tiny=0, tiny_forced=0)[0m
+[0;32mI (540379) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1291, nodiff=1293, tiny=0, tiny_forced=0)[0m
+[0;32mI (543579) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1299, nodiff=1301, tiny=0, tiny_forced=0)[0m
+[0;32mI (546779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1307, nodiff=1309, tiny=0, tiny_forced=0)[0m
+[0;32mI (549979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1315, nodiff=1317, tiny=0, tiny_forced=0)[0m
+[0;32mI (553179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1323, nodiff=1325, tiny=0, tiny_forced=0)[0m
+[0;32mI (556379) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1331, nodiff=1333, tiny=0, tiny_forced=0)[0m
+[0;32mI (559579) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1339, nodiff=1341, tiny=0, tiny_forced=0)[0m
+[0;32mI (562779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1347, nodiff=1349, tiny=0, tiny_forced=0)[0m
+[0;32mI (565979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1355, nodiff=1357, tiny=0, tiny_forced=0)[0m
+[0;32mI (569179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1363, nodiff=1365, tiny=0, tiny_forced=0)[0m
+[0;32mI (572379) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1371, nodiff=1373, tiny=0, tiny_forced=0)[0m
+[0;32mI (575579) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1379, nodiff=1381, tiny=0, tiny_forced=0)[0m
+[0;32mI (578779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1387, nodiff=1389, tiny=0, tiny_forced=0)[0m
+[0;32mI (581979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1395, nodiff=1397, tiny=0, tiny_forced=0)[0m
+[0;32mI (585179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1403, nodiff=1405, tiny=0, tiny_forced=0)[0m
+[0;32mI (588379) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1411, nodiff=1413, tiny=0, tiny_forced=0)[0m
+[0;32mI (591579) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1419, nodiff=1421, tiny=0, tiny_forced=0)[0m
+[0;32mI (594779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1427, nodiff=1429, tiny=0, tiny_forced=0)[0m
+[0;32mI (597979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1435, nodiff=1437, tiny=0, tiny_forced=0)[0m
+[0;32mI (601179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1443, nodiff=1445, tiny=0, tiny_forced=0)[0m
+[0;32mI (604379) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1451, nodiff=1453, tiny=0, tiny_forced=0)[0m
+[0;32mI (607579) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1459, nodiff=1461, tiny=0, tiny_forced=0)[0m
+[0;32mI (610779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1467, nodiff=1469, tiny=0, tiny_forced=0)[0m
+[0;32mI (613979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1475, nodiff=1477, tiny=0, tiny_forced=0)[0m
+[0;32mI (617179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1483, nodiff=1485, tiny=0, tiny_forced=0)[0m
+[0;32mI (620379) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1491, nodiff=1493, tiny=0, tiny_forced=0)[0m
+[0;32mI (623579) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1499, nodiff=1501, tiny=0, tiny_forced=0)[0m
+[0;32mI (626779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1507, nodiff=1509, tiny=0, tiny_forced=0)[0m
+[0;32mI (629979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1515, nodiff=1517, tiny=0, tiny_forced=0)[0m
+[0;32mI (633179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1523, nodiff=1525, tiny=0, tiny_forced=0)[0m
+[0;32mI (636379) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1531, nodiff=1533, tiny=0, tiny_forced=0)[0m
+[0;32mI (639579) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1539, nodiff=1541, tiny=0, tiny_forced=0)[0m
+[0;32mI (642779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1547, nodiff=1549, tiny=0, tiny_forced=0)[0m
+[0;32mI (645979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1555, nodiff=1557, tiny=0, tiny_forced=0)[0m
+[0;32mI (649179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1563, nodiff=1565, tiny=0, tiny_forced=0)[0m
+[0;32mI (652379) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1571, nodiff=1573, tiny=0, tiny_forced=0)[0m
+[0;32mI (655579) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1579, nodiff=1581, tiny=0, tiny_forced=0)[0m
+[0;32mI (658779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1587, nodiff=1589, tiny=0, tiny_forced=0)[0m
+[0;32mI (661979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1595, nodiff=1597, tiny=0, tiny_forced=0)[0m
+[0;32mI (665179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1603, nodiff=1605, tiny=0, tiny_forced=0)[0m
+[0;32mI (668379) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1611, nodiff=1613, tiny=0, tiny_forced=0)[0m
+[0;32mI (671579) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1619, nodiff=1621, tiny=0, tiny_forced=0)[0m
+[0;32mI (674779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1627, nodiff=1629, tiny=0, tiny_forced=0)[0m
+[0;32mI (677979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1635, nodiff=1637, tiny=0, tiny_forced=0)[0m
+[0;32mI (681179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1643, nodiff=1645, tiny=0, tiny_forced=0)[0m
+[0;32mI (684379) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1651, nodiff=1653, tiny=0, tiny_forced=0)[0m
+[0;32mI (687579) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1659, nodiff=1661, tiny=0, tiny_forced=0)[0m
+[0;32mI (690779) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1667, nodiff=1669, tiny=0, tiny_forced=0)[0m
+[0;32mI (693979) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1675, nodiff=1677, tiny=0, tiny_forced=0)[0m
+[0;32mI (697179) CustomLcdDisplay: [REFRESH] Stat 3s: refresh=11 (full=7, partial=4, urgent=7), skip(throttle=1683, nodiff=1685, tiny=0, tiny_forced=0)[0m

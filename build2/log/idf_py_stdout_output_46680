@@ -1,0 +1,92 @@
+[1/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/lvgl_display/lvgl_font.cc.obj
+[2/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/audio/processors/audio_debugger.cc.obj
+[3/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/settings.cc.obj
+[4/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/system_info.cc.obj
+[5/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/common/i2c_bus_lock.cc.obj
+[6/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/common/button.cc.obj
+[7/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/assets_fs.cc.obj
+[8/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/audio/audio_codec.cc.obj
+[9/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/audio/processors/no_audio_processor.cc.obj
+[10/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/common/i2c_device.cc.obj
+[11/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/zectrix-s3-epaper-4.2/i2c_power_hook.cc.obj
+[12/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/audio/codecs/es8311_audio_codec.cc.obj
+[13/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/zectrix-s3-epaper-4.2/charge_status.cc.obj
+[14/42] Performing build step for 'bootloader'
+[1/1] C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Users\GinTonic\Desktop\zectrix\build2\bootloader\esp-idf\esptool_py && C:\Espressif\tools\python\v5.4.4\venv\Scripts\python.exe C:/esp/v5.4.4/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x0 C:/Users/GinTonic/Desktop/zectrix/build2/bootloader/bootloader.bin"
+Bootloader binary size 0x4030 bytes. 0x3fd0 bytes (50%) free.
+[15/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/zectrix-s3-epaper-4.2/board_power_bsp.cc.obj
+[16/42] No install step for 'bootloader'
+[17/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/zectrix-s3-epaper-4.2/rtc_pcf8563.cc.obj
+[18/42] Completed 'bootloader'
+[19/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/display.cc.obj
+[20/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/lvgl_display/lvgl_display.cc.obj
+[21/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/main.cc.obj
+[22/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/lvgl_display/lvgl_theme.cc.obj
+[23/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/common/sleep_manager.cc.obj
+[24/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/pages/factory_test_page_adapter.cc.obj
+[25/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/application.cc.obj
+[26/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/pages/wifi_setup_page_adapter.cc.obj
+[27/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/ui_page_registry.cc.obj
+C:/Users/GinTonic/Desktop/zectrix/main/display/ui_page_registry.cc: In member function 'bool UiPageRegistry::SwitchTo(UiPageId)':
+C:/Users/GinTonic/Desktop/zectrix/main/display/ui_page_registry.cc:79:20: warning: unused variable 'from_id' [-Wunused-variable]
+   79 |     const UiPageId from_id = active_id_;
+      |                    ^~~~~~~
+[28/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/common/board.cc.obj
+[29/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/zectrix-s3-epaper-4.2/FT/acoustic_selftest.cc.obj
+[30/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/lcd_display.cc.obj
+[31/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/display/pages/f1_page_adapter.cc.obj
+[32/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/zectrix/zectrix_nfc.cc.obj
+[33/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/audio/audio_service.cc.obj
+[34/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc.obj
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc: In member function 'void CustomLcdDisplay::refresh_task_loop()':
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:557:22: warning: unused variable 'total_bits' [-Wunused-variable]
+  557 |         const size_t total_bits = total_bytes * 8;
+      |                      ^~~~~~~~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc: In member function 'void CustomLcdDisplay::EPD_Display()':
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:872:18: warning: unused variable 'row' [-Wunused-variable]
+  872 |     unsigned int row, col;
+      |                  ^~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:872:23: warning: unused variable 'col' [-Wunused-variable]
+  872 |     unsigned int row, col;
+      |                       ^~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:873:18: warning: unused variable 'pcnt' [-Wunused-variable]
+  873 |     unsigned int pcnt;
+      |                  ^~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:874:25: warning: unused variable 'temp2' [-Wunused-variable]
+  874 |     unsigned char temp1,temp2,tempvalue;
+      |                         ^~~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc: In member function 'void CustomLcdDisplay::WRITE_WHITE_TO_HLINE()':
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1017:20: warning: variable 'pcnt' set but not used [-Wunused-but-set-variable]
+ 1017 |   unsigned int i,j,pcnt,pcnt1;
+      |                    ^~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1017:25: warning: unused variable 'pcnt1' [-Wunused-variable]
+ 1017 |   unsigned int i,j,pcnt,pcnt1;
+      |                         ^~~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc: In member function 'void CustomLcdDisplay::WRITE_HLINE_TO_VLINE()':
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1038:20: warning: variable 'pcnt' set but not used [-Wunused-but-set-variable]
+ 1038 |   unsigned int i,j,pcnt,pcnt1;
+      |                    ^~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1038:25: warning: unused variable 'pcnt1' [-Wunused-variable]
+ 1038 |   unsigned int i,j,pcnt,pcnt1;
+      |                         ^~~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc: In member function 'void CustomLcdDisplay::WRITE_VLINE_TO_HLINE()':
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1074:20: warning: variable 'pcnt' set but not used [-Wunused-but-set-variable]
+ 1074 |   unsigned int i,j,pcnt,pcnt1;
+      |                    ^~~~
+C:/Users/GinTonic/Desktop/zectrix/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc:1074:25: warning: unused variable 'pcnt1' [-Wunused-variable]
+ 1074 |   unsigned int i,j,pcnt,pcnt1;
+      |                         ^~~~~
+[35/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/zectrix-s3-epaper-4.2/zectrix-s3-epaper-4.2.cc.obj
+[36/42] Building CXX object esp-idf/main/CMakeFiles/__idf_main.dir/boards/zectrix-s3-epaper-4.2/FT/factory_test_service.cc.obj
+[37/42] Linking C static library esp-idf\main\libmain.a
+[38/42] Generating ld/sections.ld
+[39/42] Building C object CMakeFiles/xiaozhi.elf.dir/project_elf_src_esp32s3.c.obj
+[40/42] Linking CXX executable xiaozhi.elf
+[41/42] Generating binary image from built executable
+esptool.py v4.11.0
+Creating esp32s3 image...
+Merged 2 ELF sections
+Successfully created esp32s3 image.
+Generated C:/Users/GinTonic/Desktop/zectrix/build2/xiaozhi.bin
+[42/42] C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Users\GinTonic\Desktop\zectrix\build2\esp-idf\esptool_py && C:\Espressif\tools\python\v5.4.4\venv\Scripts\python.exe C:/esp/v5.4.4/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 partition --type app C:/Users/GinTonic/Desktop/zectrix/build2/partition_table/partition-table.bin C:/Users/GinTonic/Desktop/zectrix/build2/xiaozhi.bin"
+xiaozhi.bin binary size 0x25f370 bytes. Smallest app partition is 0x3f0000 bytes. 0x190c90 bytes (40%) free.

@@ -1,0 +1,73 @@
+[1/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/3dtexture/lv_3dtexture.c.obj
+[2/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/animimage/lv_animimage.c.obj
+[3/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/tick/lv_tick.c.obj
+[4/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/button/lv_button.c.obj
+[5/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/chart/lv_chart.c.obj
+[6/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/calendar/lv_calendar_header_arrow.c.obj
+[7/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/calendar/lv_calendar_chinese.c.obj
+[8/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/calendar/lv_calendar_header_dropdown.c.obj
+[9/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/themes/mono/lv_theme_mono.c.obj
+[10/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/keyboard/lv_keyboard.c.obj
+[11/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/bar/lv_bar.c.obj
+[12/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/calendar/lv_calendar.c.obj
+[13/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/themes/simple/lv_theme_simple.c.obj
+[14/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/imagebutton/lv_imagebutton.c.obj
+[15/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/canvas/lv_canvas.c.obj
+[16/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/themes/lv_theme.c.obj
+[17/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/checkbox/lv_checkbox.c.obj
+[18/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/led/lv_led.c.obj
+[19/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/arc/lv_arc.c.obj
+[20/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/menu/lv_menu.c.obj
+[21/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/lottie/lv_lottie.c.obj
+[22/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/list/lv_list.c.obj
+[23/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/property/lv_animimage_properties.c.obj
+[24/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/msgbox/lv_msgbox.c.obj
+[25/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/buttonmatrix/lv_buttonmatrix.c.obj
+[26/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/dropdown/lv_dropdown.c.obj
+[27/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/themes/default/lv_theme_default.c.obj
+[28/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/property/lv_keyboard_properties.c.obj
+[29/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/property/lv_dropdown_properties.c.obj
+[30/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/line/lv_line.c.obj
+[31/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/image/lv_image.c.obj
+[32/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/property/lv_obj_properties.c.obj
+[33/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/property/lv_image_properties.c.obj
+[34/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/property/lv_style_properties.c.obj
+[35/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/property/lv_label_properties.c.obj
+[36/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/property/lv_roller_properties.c.obj
+[37/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/property/lv_slider_properties.c.obj
+[38/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/property/lv_textarea_properties.c.obj
+[39/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/libs/svg/lv_svg_parser.c.obj
+FAILED: esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/libs/svg/lv_svg_parser.c.obj 
+C:\Espressif\tools\xtensa-esp-elf\esp-14.2.0_20260121\xtensa-esp-elf\bin\xtensa-esp32s3-elf-gcc.exe -DESP_PLATFORM -DIDF_VER=\"v5.4.4\" -DLV_CONF_INCLUDE_SIMPLE -DSOC_MMU_PAGE_SIZE=CONFIG_MMU_PAGE_SIZE -DSOC_XTAL_FREQ_MHZ=CONFIG_XTAL_FREQ -D_GLIBCXX_HAVE_POSIX_SEMAPHORE -D_GLIBCXX_USE_POSIX_SEMAPHORE -D_GNU_SOURCE -D_POSIX_READER_WRITER_LOCKS -IC:/Users/GinTonic/Desktop/zectrix/build2/config -IC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl -IC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src -IC:/Users/GinTonic/Desktop/zectrix/managed_components -IC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/examples -IC:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/demos -IC:/esp/v5.4.4/esp-idf/components/freertos/FreeRTOS-Kernel/include/freertos -IC:/esp/v5.4.4/esp-idf/components/newlib/platform_include -IC:/esp/v5.4.4/esp-idf/components/freertos/config/include -IC:/esp/v5.4.4/esp-idf/components/freertos/config/include/freertos -IC:/esp/v5.4.4/esp-idf/components/freertos/config/xtensa/include -IC:/esp/v5.4.4/esp-idf/components/freertos/FreeRTOS-Kernel/include -IC:/esp/v5.4.4/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include -IC:/esp/v5.4.4/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos -IC:/esp/v5.4.4/esp-idf/components/freertos/esp_additions/include -IC:/esp/v5.4.4/esp-idf/components/esp_hw_support/include -IC:/esp/v5.4.4/esp-idf/components/esp_hw_support/include/soc -IC:/esp/v5.4.4/esp-idf/components/esp_hw_support/include/soc/esp32s3 -IC:/esp/v5.4.4/esp-idf/components/esp_hw_support/dma/include -IC:/esp/v5.4.4/esp-idf/components/esp_hw_support/ldo/include -IC:/esp/v5.4.4/esp-idf/components/esp_hw_support/debug_probe/include -IC:/esp/v5.4.4/esp-idf/components/esp_hw_support/port/esp32s3/. -IC:/esp/v5.4.4/esp-idf/components/esp_hw_support/port/esp32s3/include -IC:/esp/v5.4.4/esp-idf/components/heap/include -IC:/esp/v5.4.4/esp-idf/components/heap/tlsf -IC:/esp/v5.4.4/esp-idf/components/log/include -IC:/esp/v5.4.4/esp-idf/components/soc/include -IC:/esp/v5.4.4/esp-idf/components/soc/esp32s3 -IC:/esp/v5.4.4/esp-idf/components/soc/esp32s3/include -IC:/esp/v5.4.4/esp-idf/components/soc/esp32s3/register -IC:/esp/v5.4.4/esp-idf/components/hal/platform_port/include -IC:/esp/v5.4.4/esp-idf/components/hal/esp32s3/include -IC:/esp/v5.4.4/esp-idf/components/hal/include -IC:/esp/v5.4.4/esp-idf/components/esp_rom/include -IC:/esp/v5.4.4/esp-idf/components/esp_rom/esp32s3/include -IC:/esp/v5.4.4/esp-idf/components/esp_rom/esp32s3/include/esp32s3 -IC:/esp/v5.4.4/esp-idf/components/esp_rom/esp32s3 -IC:/esp/v5.4.4/esp-idf/components/esp_common/include -IC:/esp/v5.4.4/esp-idf/components/esp_system/include -IC:/esp/v5.4.4/esp-idf/components/esp_system/port/soc -IC:/esp/v5.4.4/esp-idf/components/esp_system/port/include/private -IC:/esp/v5.4.4/esp-idf/components/xtensa/esp32s3/include -IC:/esp/v5.4.4/esp-idf/components/xtensa/include -IC:/esp/v5.4.4/esp-idf/components/xtensa/deprecated_include -IC:/esp/v5.4.4/esp-idf/components/esp_timer/include -IC:/esp/v5.4.4/esp-idf/components/lwip/include -IC:/esp/v5.4.4/esp-idf/components/lwip/include/apps -IC:/esp/v5.4.4/esp-idf/components/lwip/include/apps/sntp -IC:/esp/v5.4.4/esp-idf/components/lwip/lwip/src/include -IC:/esp/v5.4.4/esp-idf/components/lwip/port/include -IC:/esp/v5.4.4/esp-idf/components/lwip/port/freertos/include -IC:/esp/v5.4.4/esp-idf/components/lwip/port/esp32xx/include -IC:/esp/v5.4.4/esp-idf/components/lwip/port/esp32xx/include/arch -IC:/esp/v5.4.4/esp-idf/components/lwip/port/esp32xx/include/sys -mlongcalls  -fno-builtin-memcpy -fno-builtin-memset -fno-builtin-bzero -fno-builtin-stpcpy -fno-builtin-strncpy -fdiagnostics-color=always -Wno-missing-field-initializers -Wno-error=format -Wno-error=format-signedness -Wno-error=format-truncation -Wno-error=format-overflow -fdiagnostics-color=always -ffunction-sections -fdata-sections -Wall -Werror=all -Wno-error=unused-function -Wno-error=unused-variable -Wno-error=unused-but-set-variable -Wno-error=deprecated-declarations -Wextra -Wno-error=extra -Wno-unused-parameter -Wno-sign-compare -Wno-enum-conversion -gdwarf-4 -ggdb -mdisable-hardware-atomics -Os -freorder-blocks -fmacro-prefix-map=C:/Users/GinTonic/Desktop/zectrix=. -fmacro-prefix-map=C:/esp/v5.4.4/esp-idf=/IDF -fstrict-volatile-bitfields -fno-jump-tables -fno-tree-switch-conversion -std=gnu17 -Wno-old-style-declaration -MD -MT esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/libs/svg/lv_svg_parser.c.obj -MF esp-idf\lvgl__lvgl\CMakeFiles\__idf_lvgl__lvgl.dir\src\libs\svg\lv_svg_parser.c.obj.d -o esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/libs/svg/lv_svg_parser.c.obj -c C:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/libs/svg/lv_svg_parser.c
+In file included from C:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/libs/svg/lv_svg_parser.c:13:
+C:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/libs/svg/lv_svg_parser.c: In function '_skip_space':
+C:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/libs/svg/lv_svg_parser.c:425:38: error: array subscript has type 'char' [-Werror=char-subscripts]
+  425 |     while((str < str_end) && isspace(*str)) {
+      |                                      ^~~~
+C:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/libs/svg/lv_svg_parser.c: In function '_skip_space_and_separators':
+C:/Users/GinTonic/Desktop/zectrix/managed_components/lvgl__lvgl/src/libs/svg/lv_svg_parser.c:438:39: error: array subscript has type 'char' [-Werror=char-subscripts]
+  438 |     while((str < str_end) && (isspace(*str) || _is_separators(*str))) {
+      |                                       ^~~~
+cc1.exe: some warnings being treated as errors
+[40/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/span/lv_span.c.obj
+[41/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/spinbox/lv_spinbox.c.obj
+[42/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/tileview/lv_tileview.c.obj
+[43/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/label/lv_label.c.obj
+[44/738] Building C object esp-idf/78__esp-opus/CMakeFiles/__idf_78__esp-opus.dir/celt/entcode.c.obj
+[45/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/switch/lv_switch.c.obj
+[46/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/spinner/lv_spinner.c.obj
+[47/738] Building C object esp-idf/78__esp-opus/CMakeFiles/__idf_78__esp-opus.dir/celt/entdec.c.obj
+[48/738] Building C object esp-idf/78__esp-opus/CMakeFiles/__idf_78__esp-opus.dir/celt/cwrs.c.obj
+[49/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/win/lv_win.c.obj
+[50/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/slider/lv_slider.c.obj
+[51/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/tabview/lv_tabview.c.obj
+[52/738] Building C object esp-idf/78__esp-opus/CMakeFiles/__idf_78__esp-opus.dir/celt/entenc.c.obj
+[53/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/roller/lv_roller.c.obj
+[54/738] Building C object esp-idf/78__esp-opus/CMakeFiles/__idf_78__esp-opus.dir/celt/celt.c.obj
+[55/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/table/lv_table.c.obj
+[56/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/textarea/lv_textarea.c.obj
+[57/738] Building C object esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/scale/lv_scale.c.obj
+[58/738] Building C object esp-idf/78__esp-opus/CMakeFiles/__idf_78__esp-opus.dir/celt/celt_decoder.c.obj
+[59/738] Building C object esp-idf/78__esp-opus/CMakeFiles/__idf_78__esp-opus.dir/celt/bands.c.obj
+[60/738] Building C object esp-idf/78__esp-opus/CMakeFiles/__idf_78__esp-opus.dir/celt/celt_encoder.c.obj
+ninja: build stopped: subcommand failed.

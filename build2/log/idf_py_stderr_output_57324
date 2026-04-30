@@ -1,0 +1,15 @@
+CMake Error at C:/esp/v5.4.4/esp-idf/components/xtensa/project_include.cmake:18 (if):
+  if given arguments:
+
+    "NOT" "(" "Generic" "STREQUAL" "Generic" "AND" "MATCHES" "xtensa" ")"
+
+  Unknown arguments specified
+Call Stack (most recent call first):
+  C:/esp/v5.4.4/esp-idf/tools/cmake/build.cmake:469 (include)
+  C:/esp/v5.4.4/esp-idf/tools/cmake/build.cmake:719 (__build_process_project_includes)
+  C:/esp/v5.4.4/esp-idf/tools/cmake/project.cmake:722 (idf_build_process)
+  CMakeLists.txt:20 (project)
+
+
+ninja: fatal: GetOverlappedResult: The operation completed successfully.
+
