@@ -48,9 +48,11 @@ lv_obj_t* CreateCellLabel(lv_obj_t* parent,
 
 void CreateHeader(lv_obj_t* parent,
                   const lv_font_t* font,
+                  const lv_font_t* icon_font,
                   lv_obj_t** out_time,
                   lv_obj_t** out_date,
-                  lv_obj_t** out_batt) {
+                  lv_obj_t** out_batt_icon,
+                  lv_obj_t** out_batt_pct) {
     lv_obj_t* bar = lv_obj_create(parent);
     lv_obj_set_size(bar, kPageWidth, kHeaderH);
     lv_obj_align(bar, LV_ALIGN_TOP_MID, 0, 0);
@@ -77,12 +79,27 @@ void CreateHeader(lv_obj_t* parent,
     lv_obj_align(d, LV_ALIGN_CENTER, 0, 0);
     lv_label_set_text(d, "SUN APR 19, 2026");
 
-    lv_obj_t* b = lv_label_create(bar);
-    if (font != nullptr) {
-        lv_obj_set_style_text_font(b, font, 0);
+    lv_obj_t* batt = lv_obj_create(bar);
+    lv_obj_set_style_bg_opa(batt, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(batt, 0, 0);
+    lv_obj_set_style_pad_all(batt, 0, 0);
+    lv_obj_set_style_pad_column(batt, 4, 0);
+    lv_obj_set_layout(batt, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(batt, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(batt, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_align(batt, LV_ALIGN_RIGHT_MID, 0, 0);
+
+    lv_obj_t* bi = lv_label_create(batt);
+    if (icon_font != nullptr) {
+        lv_obj_set_style_text_font(bi, icon_font, 0);
     }
-    lv_obj_align(b, LV_ALIGN_RIGHT_MID, 0, 0);
-    lv_label_set_text(b, "[||||] 85%");
+    lv_label_set_text(bi, "");
+
+    lv_obj_t* bp = lv_label_create(batt);
+    if (font != nullptr) {
+        lv_obj_set_style_text_font(bp, font, 0);
+    }
+    lv_label_set_text(bp, "--%");
 
     if (out_time) {
         *out_time = t;
@@ -90,8 +107,11 @@ void CreateHeader(lv_obj_t* parent,
     if (out_date) {
         *out_date = d;
     }
-    if (out_batt) {
-        *out_batt = b;
+    if (out_batt_icon) {
+        *out_batt_icon = bi;
+    }
+    if (out_batt_pct) {
+        *out_batt_pct = bp;
     }
 }
 
@@ -111,4 +131,3 @@ bool PlayJuWav() {
 }
 
 }  // namespace f1_page_internal
-

@@ -204,10 +204,11 @@ static BdfFont& Formula1Font16() {
 void F1PageAdapter::BuildRaceLocked() {
     auto* lvgl_theme = static_cast<LvglTheme*>(host_->current_theme_);
     const lv_font_t* cn_font = lvgl_theme && lvgl_theme->text_font() ? lvgl_theme->text_font()->font() : nullptr;
+    const lv_font_t* icon_font = lvgl_theme && lvgl_theme->icon_font() ? lvgl_theme->icon_font()->font() : nullptr;
     const lv_font_t* small_font = cn_font ? cn_font : LV_FONT_DEFAULT;
     const lv_font_t* record_font = small_font;
 
-    CreateHeader(race_root_, small_font, &status_time_, &status_date_, &status_battery_);
+    CreateHeader(race_root_, small_font, icon_font, &status_time_, &status_date_, &status_batt_icon_, &status_batt_pct_);
 
     lv_obj_t* mid_left = lv_obj_create(race_root_);
     StyleBox(mid_left);

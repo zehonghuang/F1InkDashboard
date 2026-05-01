@@ -9,6 +9,7 @@ using namespace f1_page_internal;
 void F1PageAdapter::BuildMenuLocked() {
     auto* lvgl_theme = static_cast<LvglTheme*>(host_->current_theme_);
     const lv_font_t* cn_font = lvgl_theme && lvgl_theme->text_font() ? lvgl_theme->text_font()->font() : nullptr;
+    const lv_font_t* icon_font = lvgl_theme && lvgl_theme->icon_font() ? lvgl_theme->icon_font()->font() : nullptr;
     const lv_font_t* small_font = &lv_font_montserrat_14;
     const lv_font_t* font = cn_font ? cn_font : small_font;
 
@@ -37,11 +38,31 @@ void F1PageAdapter::BuildMenuLocked() {
     lv_obj_align(menu_header_left_, LV_ALIGN_LEFT_MID, 0, 0);
     lv_label_set_text(menu_header_left_, "[ MENU ]  SYSTEM CONFIGURATION");
 
-    menu_header_right_ = lv_label_create(header);
-    lv_obj_set_style_text_font(menu_header_right_, font, 0);
-    lv_label_set_long_mode(menu_header_right_, LV_LABEL_LONG_CLIP);
+    menu_header_right_ = lv_obj_create(header);
+    lv_obj_set_style_bg_opa(menu_header_right_, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(menu_header_right_, 0, 0);
+    lv_obj_set_style_pad_all(menu_header_right_, 0, 0);
+    lv_obj_set_style_pad_column(menu_header_right_, 6, 0);
+    lv_obj_set_layout(menu_header_right_, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(menu_header_right_, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(menu_header_right_, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_align(menu_header_right_, LV_ALIGN_RIGHT_MID, 0, 0);
-    lv_label_set_text(menu_header_right_, "22:59 [|||]");
+
+    menu_header_time_ = lv_label_create(menu_header_right_);
+    lv_obj_set_style_text_font(menu_header_time_, font, 0);
+    lv_label_set_long_mode(menu_header_time_, LV_LABEL_LONG_CLIP);
+    lv_label_set_text(menu_header_time_, "--:--");
+
+    menu_header_batt_icon_ = lv_label_create(menu_header_right_);
+    if (icon_font != nullptr) {
+        lv_obj_set_style_text_font(menu_header_batt_icon_, icon_font, 0);
+    }
+    lv_label_set_text(menu_header_batt_icon_, "");
+
+    menu_header_batt_pct_ = lv_label_create(menu_header_right_);
+    lv_obj_set_style_text_font(menu_header_batt_pct_, font, 0);
+    lv_label_set_long_mode(menu_header_batt_pct_, LV_LABEL_LONG_CLIP);
+    lv_label_set_text(menu_header_batt_pct_, "--%");
 
     const lv_coord_t footer_h = 22;
     lv_obj_t* footer = lv_obj_create(menu_root_);

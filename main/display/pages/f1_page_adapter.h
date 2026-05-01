@@ -67,6 +67,7 @@ private:
     void SetRootVisible(lv_obj_t* root, bool visible);
     void ApplyMenuSelectionLocked();
     void UpdateMenuStatusLocked();
+    void UpdateBatteryUiLocked();
     void ApplyWdcPageLocked();
     void ApplyWccPageLocked();
     void BuildCircuitDetailLocked();
@@ -114,7 +115,8 @@ private:
 
     lv_obj_t* status_time_ = nullptr;
     lv_obj_t* status_date_ = nullptr;
-    lv_obj_t* status_battery_ = nullptr;
+    lv_obj_t* status_batt_icon_ = nullptr;
+    lv_obj_t* status_batt_pct_ = nullptr;
 
     lv_obj_t* race_gp_ = nullptr;
     lv_obj_t* race_round_ = nullptr;
@@ -231,6 +233,9 @@ private:
 
     lv_obj_t* menu_header_left_ = nullptr;
     lv_obj_t* menu_header_right_ = nullptr;
+    lv_obj_t* menu_header_time_ = nullptr;
+    lv_obj_t* menu_header_batt_icon_ = nullptr;
+    lv_obj_t* menu_header_batt_pct_ = nullptr;
     std::array<lv_obj_t*, 7> menu_item_boxes_{};
     std::array<lv_obj_t*, 7> menu_item_left_{};
     std::array<lv_obj_t*, 7> menu_item_right_{};

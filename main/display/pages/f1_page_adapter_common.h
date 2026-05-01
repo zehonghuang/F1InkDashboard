@@ -32,13 +32,14 @@ lv_obj_t* CreateCellLabel(lv_obj_t* parent,
                           lv_label_long_mode_t long_mode);
 void CreateHeader(lv_obj_t* parent,
                   const lv_font_t* font,
+                  const lv_font_t* icon_font,
                   lv_obj_t** out_time,
                   lv_obj_t** out_date,
-                  lv_obj_t** out_batt);
+                  lv_obj_t** out_batt_icon,
+                  lv_obj_t** out_batt_pct);
 int64_t NowMs();
 bool PlayJuWav();
 
 }  // namespace f1_page_internal
 
 #endif  // F1_PAGE_ADAPTER_COMMON_H
-

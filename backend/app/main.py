@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from .cache import TtlCache
 from .epd_frame import build_epd_frame
 from .f1_circuit_assets import fetch_f1_circuit_assets
+from .openf1_stream import OpenF1Relay, OpenF1RelayConfig
 from .third_party import (
     build_pages_payload,
     build_sessions_payload,
@@ -45,9 +46,20 @@ STATIC_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 DEFAULT_DEVICE_WS_URL = os.getenv("ZECTRIX_DEVICE_WS_URL", "ws://192.168.4.1:8080/ws")
+openf1 = OpenF1Relay(OpenF1RelayConfig.from_env())
 
 ws_clients: set[WebSocket] = set()
 ws_clients_lock = asyncio.Lock()
+
+
+@app.on_event("startup")
+async def _startup() -> None:
+    await openf1.start()
+
+
+@app.on_event("shutdown")
+async def _shutdown() -> None:
+    await openf1.stop()
 
 
 def _load_circuit_assets_from_disk(season: int) -> dict | None:
@@ -160,6 +172,25 @@ async def ws_endpoint(ws: WebSocket):
     finally:
         async with ws_clients_lock:
             ws_clients.discard(ws)
+
+
+@app.websocket("/ws/openf1")
+async def ws_openf1(ws: WebSocket):
+    await ws.accept()
+    await openf1.register_ws(ws)
+    try:
+        await ws.send_text(json.dumps({"type": "hello", "source": "openf1", "status": openf1.status()}, ensure_ascii=False))
+        while True:
+            await ws.receive_text()
+    except WebSocketDisconnect:
+        pass
+    finally:
+        await openf1.unregister_ws(ws)
+
+
+@app.get("/api/v1/openf1/status")
+async def openf1_status() -> dict:
+    return openf1.status()
 
 
 @app.get("/api/v1/ws/status")

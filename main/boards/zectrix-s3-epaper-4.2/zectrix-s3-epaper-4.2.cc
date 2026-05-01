@@ -231,6 +231,19 @@ public:
         return ok;
     }
 
+    bool ReadBatteryStatusForUi(int* level, int* voltage_mv) {
+        if (level == nullptr || voltage_mv == nullptr) {
+            return false;
+        }
+
+        uint16_t v_mv = 0;
+        uint8_t percent = 0;
+        const bool ok = ReadBatteryStatus(v_mv, percent);
+        *level = static_cast<int>(percent);
+        *voltage_mv = static_cast<int>(v_mv);
+        return ok;
+    }
+
     void SetFactoryLedOverride(bool enabled, bool blink) {
         if (power_ != nullptr) {
             power_->SetFactoryLedOverride(enabled, blink);
@@ -841,6 +854,11 @@ extern "C" ChargeStatus::Snapshot ZectrixRefreshChargeSnapshotForFactoryTest() {
 extern "C" bool ZectrixReadBatteryPercentForFactoryTest(int* level) {
     auto& board = static_cast<CustomBoard&>(Board::GetInstance());
     return board.ReadBatteryPercentForFactoryTest(level);
+}
+
+extern "C" bool ZectrixReadBatteryStatusForUi(int* level, int* voltage_mv) {
+    auto& board = static_cast<CustomBoard&>(Board::GetInstance());
+    return board.ReadBatteryStatusForUi(level, voltage_mv);
 }
 
 extern "C" void ZectrixSetFactoryLedOverride(bool enabled, bool blink) {

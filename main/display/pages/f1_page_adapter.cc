@@ -31,10 +31,59 @@
 extern "C" bool ZectrixReadBatteryPercentForFactoryTest(int* level);
 #include "boards/zectrix-s3-epaper-4.2/rtc_pcf8563.h"
 extern "C" RtcPcf8563* ZectrixGetRtc();
+extern "C" bool ZectrixReadBatteryStatusForUi(int* level, int* voltage_mv);
+#include "boards/zectrix-s3-epaper-4.2/charge_status.h"
+extern "C" ChargeStatus::Snapshot ZectrixGetChargeSnapshot();
 
 using namespace f1_page_internal;
 
 namespace {
+
+static int ClampBatteryPct(int v) {
+    if (v < 0) return 0;
+    if (v > 100) return 100;
+    return v;
+}
+
+static const char* SelectBatteryIcon(int pct, const ChargeStatus::Snapshot& cs) {
+    if (cs.no_battery) {
+        return FONT_ZECTRIX_BATTERY_EMPTY;
+    }
+    if (cs.full) {
+        return FONT_ZECTRIX_BATTERY_FULL;
+    }
+    if (cs.power_present && cs.charging) {
+        return FONT_ZECTRIX_BATTERY_CHARGING;
+    }
+    if (pct >= 90) {
+        return FONT_ZECTRIX_BATTERY_FULL;
+    }
+    if (pct >= 65) {
+        return FONT_ZECTRIX_BATTERY_75;
+    }
+    if (pct >= 40) {
+        return FONT_ZECTRIX_BATTERY_50;
+    }
+    if (pct >= 15) {
+        return FONT_ZECTRIX_BATTERY_25;
+    }
+    return FONT_ZECTRIX_BATTERY_EMPTY;
+}
+
+static void SetBatteryWidgets(lv_obj_t* icon, lv_obj_t* pct_label, bool ok_pct, int pct, const ChargeStatus::Snapshot& cs) {
+    if (icon != nullptr) {
+        lv_label_set_text(icon, SelectBatteryIcon(pct, cs));
+    }
+    if (pct_label != nullptr) {
+        if (!ok_pct || cs.no_battery) {
+            lv_label_set_text(pct_label, "--%");
+        } else {
+            char buf[8];
+            snprintf(buf, sizeof(buf), "%d%%", pct);
+            lv_label_set_text(pct_label, buf);
+        }
+    }
+}
 
 struct PngleDrawCtx {
     uint16_t* dst = nullptr;
@@ -666,6 +715,7 @@ lv_obj_t* F1PageAdapter::Screen() const {
 void F1PageAdapter::OnShow() {
     active_ = true;
     ApplyViewLocked();
+    UpdateBatteryUiLocked();
     StartFetchIfNeededLocked(false);
     RestartRefreshTimerLocked();
 }
@@ -943,6 +993,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
             StartSessionsFetchIfNeededLocked(false);
         }
         MaybeAutoEnterRaceLiveLocked();
+        UpdateBatteryUiLocked();
         if (menu_visible_) {
             UpdateMenuStatusLocked();
         }
@@ -952,7 +1003,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
 }
 
 void F1PageAdapter::UpdateMenuStatusLocked() {
-    if (!built_ || menu_header_right_ == nullptr) {
+    if (!built_ || menu_header_time_ == nullptr) {
         return;
     }
 
@@ -969,25 +1020,39 @@ void F1PageAdapter::UpdateMenuStatusLocked() {
         }
     }
 
-    int batt = -1;
-    (void)ZectrixReadBatteryPercentForFactoryTest(&batt);
-    if (batt < 0) {
-        batt = 0;
-    }
-    if (batt > 100) {
-        batt = 100;
+    const char* t = has_time ? time_buf : (status_time_ ? lv_label_get_text(status_time_) : "--:--");
+    SetText(menu_header_time_, t);
+    UpdateBatteryUiLocked();
+}
+
+void F1PageAdapter::UpdateBatteryUiLocked() {
+    if (!built_) {
+        return;
     }
 
-    const char* t = has_time ? time_buf : (status_time_ ? lv_label_get_text(status_time_) : "");
-    const char* b = status_battery_ ? lv_label_get_text(status_battery_) : "";
+    int pct = -1;
+    int mv = 0;
+    const bool ok_pct = ZectrixReadBatteryStatusForUi(&pct, &mv);
+    pct = ClampBatteryPct(pct);
+    const ChargeStatus::Snapshot cs = ZectrixGetChargeSnapshot();
 
-    char right[48];
-    if (b && b[0]) {
-        snprintf(right, sizeof(right), "%s %s", t ? t : "", b);
-    } else {
-        snprintf(right, sizeof(right), "%s [||||] %d%%", t ? t : "", batt);
+    SetBatteryWidgets(status_batt_icon_, status_batt_pct_, ok_pct, pct, cs);
+    SetBatteryWidgets(race_sessions_header_batt_icon_, race_sessions_header_batt_pct_, ok_pct, pct, cs);
+    SetBatteryWidgets(live_header_batt_icon_, live_header_batt_pct_, ok_pct, pct, cs);
+    SetBatteryWidgets(menu_header_batt_icon_, menu_header_batt_pct_, ok_pct, pct, cs);
+
+    lv_obj_t* r = menu_item_right_[4];
+    if (r != nullptr) {
+        if (!ok_pct || cs.no_battery || mv <= 0) {
+            SetText(r, "Now: --% / --.--V");
+        } else {
+            char buf[48];
+            const int v_int = mv / 1000;
+            const int v_frac = (mv % 1000) / 10;
+            snprintf(buf, sizeof(buf), "Now: %d%% / %d.%02dV", pct, v_int, v_frac);
+            SetText(r, buf);
+        }
     }
-    SetText(menu_header_right_, right);
 }
 
 void F1PageAdapter::ApplyViewLocked() {
@@ -1666,33 +1731,7 @@ bool F1PageAdapter::ApplySessionsJsonLocked(const char* json_text, size_t len) {
             sessions_generated_at_utc_s_ = now_utc_s;
         }
     }
-
-    int batt = -1;
-    (void)ZectrixReadBatteryPercentForFactoryTest(&batt);
-    if (batt < 0) {
-        batt = 0;
-    }
-    if (batt > 100) {
-        batt = 100;
-    }
-    if (race_sessions_header_batt_pct_ != nullptr) {
-        char pct[8];
-        snprintf(pct, sizeof(pct), "%d%%", batt);
-        lv_label_set_text(race_sessions_header_batt_pct_, pct);
-    }
-    if (race_sessions_header_batt_icon_ != nullptr) {
-        const char* ico = FONT_ZECTRIX_BATTERY_EMPTY;
-        if (batt >= 90) {
-            ico = FONT_ZECTRIX_BATTERY_FULL;
-        } else if (batt >= 65) {
-            ico = FONT_ZECTRIX_BATTERY_75;
-        } else if (batt >= 40) {
-            ico = FONT_ZECTRIX_BATTERY_50;
-        } else if (batt >= 15) {
-            ico = FONT_ZECTRIX_BATTERY_25;
-        }
-        lv_label_set_text(race_sessions_header_batt_icon_, ico);
-    }
+    UpdateBatteryUiLocked();
 
     const bool is_no_data = cJSON_IsBool(no_data) && cJSON_IsTrue(no_data);
     if (race_sessions_no_data_ != nullptr) {
@@ -2116,7 +2155,7 @@ bool F1PageAdapter::ApplyUiJsonLocked(const char* json_text, size_t len) {
         cJSON* header = cJSON_GetObjectItemCaseSensitive(race_day, "header");
         SetText(status_time_, GetStringOrEmpty(header, "left"));
         SetText(status_date_, GetStringOrEmpty(header, "center"));
-        SetText(status_battery_, GetStringOrEmpty(header, "right"));
+        UpdateBatteryUiLocked();
 
         cJSON* race = cJSON_GetObjectItemCaseSensitive(race_day, "race");
         SetText(race_gp_, GetStringOrEmpty(race, "grand_prix"));
