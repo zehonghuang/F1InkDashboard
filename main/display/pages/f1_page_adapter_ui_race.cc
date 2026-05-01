@@ -375,7 +375,7 @@ void F1PageAdapter::BuildRaceLocked() {
     race_q2_ = mid_left;
     race_q3_ = bottom_left;
     race_q4_ = bottom_right;
-    race_day_focus_ = 1;
+    race_day_focus_ = 2;
 }
 
 void F1PageAdapter::UpdateRaceDaySelectionLocked() {

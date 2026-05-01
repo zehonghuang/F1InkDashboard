@@ -17,6 +17,8 @@
 #include <string_view>
 #include <vector>
 
+#include <font_zectrix.h>
+
 #include "cJSON.h"
 #include "esp_http_client.h"
 #include "esp_log.h"
@@ -746,7 +748,52 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         }
         return true;
     }
+    if (id == UiPageCustomEventId::PagePrevDoubleClick) {
+        if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
+            const int cur = race_sessions_page_;
+            const int next = (cur + 3) % 4;
+            race_sessions_page_ = next;
+            ApplyRaceSessionsLocked();
+            StartSessionsFetchIfNeededLocked(true);
+            if (host_ != nullptr) {
+                host_->RequestUrgentFullRefresh();
+            }
+            return true;
+        }
+    }
+    if (id == UiPageCustomEventId::PageNextDoubleClick) {
+        if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
+            const int cur = race_sessions_page_;
+            const int next = (cur + 1) % 4;
+            race_sessions_page_ = next;
+            ApplyRaceSessionsLocked();
+            StartSessionsFetchIfNeededLocked(true);
+            if (host_ != nullptr) {
+                host_->RequestUrgentFullRefresh();
+            }
+            return true;
+        }
+    }
     if (id == UiPageCustomEventId::PagePrev || id == UiPageCustomEventId::GalleryPrev) {
+        if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
+            const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p == RaceSessionsSubPage::QualiResult) {
+                if (quali_result_page_count_ > 1) {
+                    quali_result_page_ = (quali_result_page_ + (quali_result_page_count_ - 1)) % quali_result_page_count_;
+                    ApplyQualiResultPageLocked();
+                }
+            } else if (p == RaceSessionsSubPage::RaceResult) {
+                if (race_result_page_count_ > 1) {
+                    race_result_page_ = (race_result_page_ + (race_result_page_count_ - 1)) % race_result_page_count_;
+                    ApplyRaceResultPageLocked();
+                }
+            }
+            ApplyRaceSessionsLocked();
+            if (host_ != nullptr) {
+                host_->RequestDebouncedRefresh(150);
+            }
+            return true;
+        }
         nav_.Prev();
         if (host_ != nullptr) {
             host_->RequestDebouncedRefresh(150);
@@ -754,6 +801,25 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         return true;
     }
     if (id == UiPageCustomEventId::PageNext || id == UiPageCustomEventId::GalleryNext) {
+        if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
+            const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p == RaceSessionsSubPage::QualiResult) {
+                if (quali_result_page_count_ > 1) {
+                    quali_result_page_ = (quali_result_page_ + 1) % quali_result_page_count_;
+                    ApplyQualiResultPageLocked();
+                }
+            } else if (p == RaceSessionsSubPage::RaceResult) {
+                if (race_result_page_count_ > 1) {
+                    race_result_page_ = (race_result_page_ + 1) % race_result_page_count_;
+                    ApplyRaceResultPageLocked();
+                }
+            }
+            ApplyRaceSessionsLocked();
+            if (host_ != nullptr) {
+                host_->RequestDebouncedRefresh(150);
+            }
+            return true;
+        }
         nav_.Next();
         if (host_ != nullptr) {
             host_->RequestDebouncedRefresh(150);
@@ -799,6 +865,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         if (payload) {
             (void)ApplyUiJsonLocked(payload->c_str(), payload->size());
         }
+        MaybeAutoEnterRaceLiveLocked();
         if (pending_sessions_force_fetch_) {
             pending_sessions_force_fetch_ = false;
             StartSessionsFetchIfNeededLocked(true);
@@ -819,6 +886,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         if (payload) {
             (void)ApplySessionsJsonLocked(payload->c_str(), payload->size());
         }
+        MaybeAutoEnterRaceLiveLocked();
         if (host_ != nullptr) {
             host_->RequestUrgentFullRefresh();
         }
@@ -874,6 +942,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         if (view_index_ == 5) {
             StartSessionsFetchIfNeededLocked(false);
         }
+        MaybeAutoEnterRaceLiveLocked();
         if (menu_visible_) {
             UpdateMenuStatusLocked();
         }
@@ -974,6 +1043,31 @@ void F1PageAdapter::ApplyViewLocked() {
     }
 }
 
+void F1PageAdapter::MaybeAutoEnterRaceLiveLocked() {
+    if (!active_) {
+        return;
+    }
+    if (race_live_start_ms_ <= 0) {
+        return;
+    }
+    if (race_live_auto_entered_) {
+        return;
+    }
+    const int64_t now = NowMs();
+    if (now < race_live_start_ms_) {
+        return;
+    }
+    race_live_auto_entered_ = true;
+    race_day_focus_ = 2;
+    nav_.SetRoot(NavNode::RaceRoot);
+    nav_.Enter();
+    race_sessions_page_ = static_cast<int>(RaceSessionsSubPage::RaceLive);
+    ApplyRaceSessionsLocked();
+    if (host_ != nullptr) {
+        host_->RequestUrgentFullRefresh();
+    }
+}
+
 void F1PageAdapter::SetRootVisible(lv_obj_t* root, bool visible) {
     if (root == nullptr) {
         return;
@@ -1041,13 +1135,7 @@ bool F1PageAdapter::UiNavPrev(NavNode node) {
         return false;
     }
     if (node == NavNode::RaceSessions) {
-        if (race_sessions_page_ > 0) {
-            race_sessions_page_--;
-            ApplyRaceSessionsLocked();
-            StartSessionsFetchIfNeededLocked(true);
-            return true;
-        }
-        return false;
+        return true;
     }
     return true;
 }
@@ -1075,11 +1163,7 @@ void F1PageAdapter::UiNavNext(NavNode node) {
         return;
     }
     if (node == NavNode::RaceSessions) {
-        if (race_sessions_page_ < 1) {
-            race_sessions_page_ = 1;
-            ApplyRaceSessionsLocked();
-            StartSessionsFetchIfNeededLocked(true);
-        }
+        return;
     }
 }
 
@@ -1093,7 +1177,7 @@ void F1PageAdapter::UiNavActivate(NavNode node) {
     } else if (node == NavNode::Circuit) {
         ApplyCircuitDetailLocked();
     } else if (node == NavNode::RaceSessions) {
-        race_sessions_page_ = 0;
+        race_sessions_page_ = static_cast<int>(RaceSessionsSubPage::QualiResult);
         ApplyRaceSessionsLocked();
         StartSessionsFetchIfNeededLocked(true);
     }
@@ -1398,6 +1482,112 @@ static cJSON* GetArr(cJSON* obj, const char* key) {
     return cJSON_IsArray(it) ? it : nullptr;
 }
 
+static int64_t DaysFromCivil(int y, unsigned m, unsigned d) {
+    y -= m <= 2;
+    const int era = (y >= 0 ? y : y - 399) / 400;
+    const unsigned yoe = static_cast<unsigned>(y - era * 400);
+    const unsigned doy = (153U * (m + (m > 2 ? static_cast<unsigned>(-3) : 9)) + 2) / 5 + d - 1;
+    const unsigned doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+    return static_cast<int64_t>(era) * 146097 + static_cast<int64_t>(doe) - 719468;
+}
+
+static bool ParseIso8601UtcToUnixSeconds(const char* s, int64_t& out) {
+    if (s == nullptr) {
+        return false;
+    }
+    auto is_digit = [](char c) { return c >= '0' && c <= '9'; };
+    auto read_n = [&](const char*& p, int n, int& out_v) -> bool {
+        int v = 0;
+        for (int i = 0; i < n; i++) {
+            if (!is_digit(p[i])) {
+                return false;
+            }
+            v = v * 10 + (p[i] - '0');
+        }
+        p += n;
+        out_v = v;
+        return true;
+    };
+
+    const char* p = s;
+    int y = 0, mo = 0, d = 0, hh = 0, mm = 0, ss = 0;
+    if (!read_n(p, 4, y) || *p++ != '-' || !read_n(p, 2, mo) || *p++ != '-' || !read_n(p, 2, d)) {
+        return false;
+    }
+    if (*p != 'T' && *p != 't') {
+        return false;
+    }
+    p++;
+    if (!read_n(p, 2, hh) || *p++ != ':' || !read_n(p, 2, mm) || *p++ != ':' || !read_n(p, 2, ss)) {
+        return false;
+    }
+    if (*p == '.') {
+        p++;
+        while (is_digit(*p)) {
+            p++;
+        }
+    }
+
+    char tz_sign = *p;
+    int tzh = 0;
+    int tzm = 0;
+    if (tz_sign == 'Z' || tz_sign == 'z' || tz_sign == '\0') {
+        tz_sign = '+';
+        tzh = 0;
+        tzm = 0;
+    } else if (tz_sign == '+' || tz_sign == '-') {
+        p++;
+        if (!read_n(p, 2, tzh) || *p++ != ':' || !read_n(p, 2, tzm)) {
+            return false;
+        }
+    } else {
+        tz_sign = '+';
+        tzh = 0;
+        tzm = 0;
+    }
+
+    const int64_t days = DaysFromCivil(y, static_cast<unsigned>(mo), static_cast<unsigned>(d));
+    int64_t sec = days * 86400 + hh * 3600 + mm * 60 + ss;
+    const int tz_off = (tzh * 3600 + tzm * 60) * (tz_sign == '-' ? -1 : 1);
+    sec -= tz_off;
+    out = sec;
+    return true;
+}
+
+static std::string Upper(std::string s) {
+    for (char& c : s) {
+        if (c >= 'a' && c <= 'z') {
+            c = static_cast<char>(c - 'a' + 'A');
+        }
+    }
+    return s;
+}
+
+static std::string NormalizeGpName(std::string s) {
+    s = Upper(std::move(s));
+    auto trim_ws = [](std::string& x) {
+        while (!x.empty() && (x.front() == ' ' || x.front() == '\t')) {
+            x.erase(x.begin());
+        }
+        while (!x.empty() && (x.back() == ' ' || x.back() == '\t')) {
+            x.pop_back();
+        }
+    };
+    trim_ws(s);
+    const char* kGp = "GRAND PRIX";
+    const size_t pos = s.find(kGp);
+    if (pos != std::string::npos) {
+        s.replace(pos, strlen(kGp), "GP");
+    } else if (s.size() < 2 || s.rfind("GP") != s.size() - 2) {
+        if (!s.empty()) {
+            s += " ";
+        }
+        s += "GP";
+    }
+    trim_ws(s);
+    return s;
+}
+
 bool F1PageAdapter::ApplySessionsJsonLocked(const char* json_text, size_t len) {
     if (json_text == nullptr || len == 0 || len > kMaxJsonBytes) {
         return false;
@@ -1410,6 +1600,7 @@ bool F1PageAdapter::ApplySessionsJsonLocked(const char* json_text, size_t len) {
     cJSON* race = GetObj(root, "race");
     cJSON* sess = GetObj(root, "session");
     cJSON* no_data = cJSON_GetObjectItemCaseSensitive(root, "no_data");
+    cJSON* generated_at_utc = cJSON_GetObjectItemCaseSensitive(root, "generated_at_utc");
     const char* country = race ? GetStringOrEmpty(race, "country") : "";
     const char* label = sess ? GetStringOrEmpty(sess, "label") : "";
     const char* kind = sess ? GetStringOrEmpty(sess, "kind") : "";
@@ -1428,15 +1619,80 @@ bool F1PageAdapter::ApplySessionsJsonLocked(const char* json_text, size_t len) {
     } else {
         snprintf(left, sizeof(left), "SESSION");
     }
+    const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+    if (p == RaceSessionsSubPage::QualiResult && kind && strcmp(kind, "qualifying") == 0) {
+        const char* rn = race ? GetStringOrEmpty(race, "name") : "";
+        if (rn == nullptr || rn[0] == 0) {
+            rn = country ? country : "";
+        }
+        const std::string name = NormalizeGpName(rn ? rn : "");
+        snprintf(left, sizeof(left), "[QUALI] %s", name.c_str());
+    } else if (p == RaceSessionsSubPage::RaceResult && kind && strcmp(kind, "race") == 0) {
+        const char* rn = race ? GetStringOrEmpty(race, "name") : "";
+        if (rn == nullptr || rn[0] == 0) {
+            rn = country ? country : "";
+        }
+        const std::string name = NormalizeGpName(rn ? rn : "");
+        snprintf(left, sizeof(left), "[FINAL] %s", name.c_str());
+    }
     SetText(race_sessions_header_left_, left);
 
     char center[48];
-    if (time_remain && time_remain[0]) {
-        snprintf(center, sizeof(center), "TIME REMAIN: %s", time_remain);
+    if ((p == RaceSessionsSubPage::QualiResult && kind && strcmp(kind, "qualifying") == 0) ||
+        (p == RaceSessionsSubPage::RaceResult && kind && strcmp(kind, "race") == 0)) {
+        tm local_tm = {};
+        bool ok_tm = false;
+        auto* rtc = ZectrixGetRtc();
+        if (rtc != nullptr && rtc->GetTime(local_tm)) {
+            ok_tm = true;
+        }
+        if (ok_tm) {
+            snprintf(center, sizeof(center), "%02d:%02d", local_tm.tm_hour, local_tm.tm_min);
+        } else {
+            snprintf(center, sizeof(center), "--:--");
+        }
     } else {
-        snprintf(center, sizeof(center), "TIME REMAIN: --:--");
+        if (time_remain && time_remain[0]) {
+            snprintf(center, sizeof(center), "TIME REMAIN: %s", time_remain);
+        } else {
+            snprintf(center, sizeof(center), "TIME REMAIN: --:--");
+        }
     }
     SetText(race_sessions_header_center_, center);
+
+    int64_t now_utc_s = 0;
+    if (cJSON_IsString(generated_at_utc) && generated_at_utc->valuestring != nullptr) {
+        if (ParseIso8601UtcToUnixSeconds(generated_at_utc->valuestring, now_utc_s)) {
+            sessions_generated_at_utc_s_ = now_utc_s;
+        }
+    }
+
+    int batt = -1;
+    (void)ZectrixReadBatteryPercentForFactoryTest(&batt);
+    if (batt < 0) {
+        batt = 0;
+    }
+    if (batt > 100) {
+        batt = 100;
+    }
+    if (race_sessions_header_batt_pct_ != nullptr) {
+        char pct[8];
+        snprintf(pct, sizeof(pct), "%d%%", batt);
+        lv_label_set_text(race_sessions_header_batt_pct_, pct);
+    }
+    if (race_sessions_header_batt_icon_ != nullptr) {
+        const char* ico = FONT_ZECTRIX_BATTERY_EMPTY;
+        if (batt >= 90) {
+            ico = FONT_ZECTRIX_BATTERY_FULL;
+        } else if (batt >= 65) {
+            ico = FONT_ZECTRIX_BATTERY_75;
+        } else if (batt >= 40) {
+            ico = FONT_ZECTRIX_BATTERY_50;
+        } else if (batt >= 15) {
+            ico = FONT_ZECTRIX_BATTERY_25;
+        }
+        lv_label_set_text(race_sessions_header_batt_icon_, ico);
+    }
 
     const bool is_no_data = cJSON_IsBool(no_data) && cJSON_IsTrue(no_data);
     if (race_sessions_no_data_ != nullptr) {
@@ -1446,13 +1702,6 @@ bool F1PageAdapter::ApplySessionsJsonLocked(const char* json_text, size_t len) {
             lv_obj_add_flag(race_sessions_no_data_, LV_OBJ_FLAG_HIDDEN);
         }
     }
-
-    if (kind && strcmp(kind, "practice") == 0) {
-        race_sessions_page_ = 0;
-    } else if (kind && strcmp(kind, "qualifying") == 0) {
-        race_sessions_page_ = 1;
-    }
-    ApplyRaceSessionsLocked();
 
     cJSON* table = GetObj(root, "table");
     cJSON* rows = table ? GetArr(table, "rows") : nullptr;
@@ -1475,91 +1724,261 @@ bool F1PageAdapter::ApplySessionsJsonLocked(const char* json_text, size_t len) {
     if (is_no_data) {
         clear_practice();
         clear_quali();
+        quali_result_rows_.clear();
+        race_result_rows_.clear();
+        quali_result_page_ = 0;
+        race_result_page_ = 0;
+        quali_result_page_count_ = 1;
+        race_result_page_count_ = 1;
         if (sessions_drop_zone_ != nullptr) {
             lv_obj_add_flag(sessions_drop_zone_, LV_OBJ_FLAG_HIDDEN);
         }
+        ApplyRaceSessionsLocked();
         cJSON_Delete(root);
         return true;
     }
 
     if (kind && strcmp(kind, "qualifying") == 0) {
-        clear_quali();
-        const int n = rows ? cJSON_GetArraySize(rows) : 0;
-        auto fill_slot = [&](int slot, cJSON* row) {
-            if (slot < 0 || slot >= kSessionsQualiRows || row == nullptr) {
-                return;
-            }
-            if (!cJSON_IsObject(row)) {
-                return;
-            }
-            SetText(sessions_quali_cells_[static_cast<size_t>(slot)][0], GetStringOrEmpty(row, "pos"));
-            SetText(sessions_quali_cells_[static_cast<size_t>(slot)][1], GetStringOrEmpty(row, "no"));
-            SetText(sessions_quali_cells_[static_cast<size_t>(slot)][2], GetStringOrEmpty(row, "drv"));
-            SetText(sessions_quali_cells_[static_cast<size_t>(slot)][3], GetStringOrEmpty(row, "lap_time"));
-            SetText(sessions_quali_cells_[static_cast<size_t>(slot)][4], GetStringOrEmpty(row, "gap"));
-            SetText(sessions_quali_cells_[static_cast<size_t>(slot)][5], GetStringOrEmpty(row, "st"));
-            SetText(sessions_quali_cells_[static_cast<size_t>(slot)][6], GetStringOrEmpty(row, "sec123"));
-        };
-
-        if (n >= 13) {
-            for (int i = 0; i < 6; i++) {
-                fill_slot(i, cJSON_GetArrayItem(rows, i));
-            }
-            SetText(sessions_quali_cells_[6][0], "..");
-            SetText(sessions_quali_cells_[6][1], "..");
-            SetText(sessions_quali_cells_[6][2], "..........");
-            SetText(sessions_quali_cells_[6][3], ".........");
-            SetText(sessions_quali_cells_[6][4], "......");
-            SetText(sessions_quali_cells_[6][5], "...");
-            SetText(sessions_quali_cells_[6][6], "...");
-
-            fill_slot(7, cJSON_GetArrayItem(rows, 9));
-            fill_slot(8, cJSON_GetArrayItem(rows, 10));
-            fill_slot(9, cJSON_GetArrayItem(rows, 11));
-            fill_slot(10, cJSON_GetArrayItem(rows, 12));
-        } else {
-            const int top = n < 8 ? n : 8;
-            for (int i = 0; i < top; i++) {
-                fill_slot(i, cJSON_GetArrayItem(rows, i));
-            }
-            int bottom = n - top;
-            if (bottom > 3) {
-                bottom = 3;
-            }
-            for (int i = 0; i < bottom; i++) {
-                fill_slot(8 + i, cJSON_GetArrayItem(rows, top + i));
+        const int rnd = GetIntOrNeg(race, "round");
+        int64_t quali_start_utc_s = 0;
+        if (p == RaceSessionsSubPage::QualiResult && now_utc_s > 0 && rnd > 1) {
+            cJSON* schedule = GetArr(root, "schedule");
+            if (schedule != nullptr) {
+                const int n = cJSON_GetArraySize(schedule);
+                for (int i = 0; i < n; i++) {
+                    cJSON* it = cJSON_GetArrayItem(schedule, i);
+                    if (!cJSON_IsObject(it)) {
+                        continue;
+                    }
+                    const char* k = GetStringOrEmpty(it, "key");
+                    if (k == nullptr || strcmp(k, "QUALI") != 0) {
+                        continue;
+                    }
+                    const char* s = GetStringOrEmpty(it, "starts_at_utc");
+                    if (s != nullptr && s[0] && ParseIso8601UtcToUnixSeconds(s, quali_start_utc_s)) {
+                        break;
+                    }
+                }
             }
         }
-        if (sessions_drop_zone_ != nullptr) {
-            lv_obj_clear_flag(sessions_drop_zone_, LV_OBJ_FLAG_HIDDEN);
-        }
-    } else if (kind && strcmp(kind, "practice") == 0) {
-        clear_practice();
+
+        quali_result_rows_.clear();
         const int n = rows ? cJSON_GetArraySize(rows) : 0;
-        const int cap = n < kSessionsPracticeRows ? n : kSessionsPracticeRows;
-        for (int i = 0; i < cap; i++) {
+        for (int i = 0; i < n; i++) {
             cJSON* row = cJSON_GetArrayItem(rows, i);
             if (!cJSON_IsObject(row)) {
                 continue;
             }
-            SetText(sessions_practice_cells_[static_cast<size_t>(i)][0], GetStringOrEmpty(row, "pos"));
-            SetText(sessions_practice_cells_[static_cast<size_t>(i)][1], GetStringOrEmpty(row, "no"));
-            SetText(sessions_practice_cells_[static_cast<size_t>(i)][2], GetStringOrEmpty(row, "drv"));
-            const char* best = GetStringOrEmpty(row, "best_time");
-            if (best == nullptr || best[0] == 0) {
-                best = GetStringOrEmpty(row, "best");
-            }
-            SetText(sessions_practice_cells_[static_cast<size_t>(i)][3], best);
-            SetText(sessions_practice_cells_[static_cast<size_t>(i)][4], GetStringOrEmpty(row, "gap"));
-            SetText(sessions_practice_cells_[static_cast<size_t>(i)][5], GetStringOrEmpty(row, "laps"));
+            std::array<std::string, kSessionsQualiCols> r;
+            r[0] = GetStringOrEmpty(row, "pos");
+            r[1] = GetStringOrEmpty(row, "no");
+            r[2] = GetStringOrEmpty(row, "drv");
+            r[3] = GetStringOrEmpty(row, "lap_time");
+            r[4] = GetStringOrEmpty(row, "gap");
+            r[5] = GetStringOrEmpty(row, "st");
+            r[6] = GetStringOrEmpty(row, "sec123");
+            quali_result_rows_.push_back(std::move(r));
         }
-        if (sessions_drop_zone_ != nullptr) {
-            lv_obj_add_flag(sessions_drop_zone_, LV_OBJ_FLAG_HIDDEN);
+        quali_result_page_count_ = (n + (kSessionsQualiRows - 1)) / kSessionsQualiRows;
+        if (quali_result_page_count_ < 1) {
+            quali_result_page_count_ = 1;
+        }
+        if (quali_result_page_ < 0) {
+            quali_result_page_ = 0;
+        }
+        if (quali_result_page_ >= quali_result_page_count_) {
+            quali_result_page_ = quali_result_page_count_ - 1;
+        }
+        ApplyQualiResultPageLocked();
+
+        if (p == RaceSessionsSubPage::QualiResult && now_utc_s > 0 && quali_start_utc_s > 0 && rnd > 1) {
+            if (now_utc_s < quali_start_utc_s) {
+                const int prev_rnd = rnd - 1;
+                if (!sessions_quali_use_prev_round_ || sessions_quali_prev_round_ != prev_rnd) {
+                    sessions_quali_use_prev_round_ = true;
+                    sessions_quali_prev_round_ = prev_rnd;
+                    sessions_quali_prev_round_until_utc_s_ = quali_start_utc_s;
+                    StartSessionsFetchIfNeededLocked(true);
+                }
+            }
+        }
+    } else if (kind && (strcmp(kind, "race") == 0 || strcmp(kind, "practice") == 0)) {
+        const int rnd = GetIntOrNeg(race, "round");
+        int64_t race_start_utc_s = 0;
+        if (p == RaceSessionsSubPage::RaceResult && now_utc_s > 0 && rnd > 1) {
+            cJSON* schedule = GetArr(root, "schedule");
+            if (schedule != nullptr) {
+                const int n = cJSON_GetArraySize(schedule);
+                for (int i = 0; i < n; i++) {
+                    cJSON* it = cJSON_GetArrayItem(schedule, i);
+                    if (!cJSON_IsObject(it)) {
+                        continue;
+                    }
+                    const char* k = GetStringOrEmpty(it, "key");
+                    if (k == nullptr || strcmp(k, "RACE") != 0) {
+                        continue;
+                    }
+                    const char* s = GetStringOrEmpty(it, "starts_at_utc");
+                    if (s != nullptr && s[0] && ParseIso8601UtcToUnixSeconds(s, race_start_utc_s)) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        race_result_rows_.clear();
+        race_result_dnf_.clear();
+        const int n = rows ? cJSON_GetArraySize(rows) : 0;
+        bool has_dnf = false;
+        int dnf_n = 0;
+        for (int i = 0; i < n; i++) {
+            cJSON* row = cJSON_GetArrayItem(rows, i);
+            if (!cJSON_IsObject(row)) {
+                continue;
+            }
+            std::array<std::string, kSessionsPracticeCols> r;
+            r[0] = GetStringOrEmpty(row, "pos");
+            r[1] = GetStringOrEmpty(row, "no");
+            r[2] = GetStringOrEmpty(row, "drv");
+            if (kind && strcmp(kind, "race") == 0) {
+                const char* gap_status = GetStringOrEmpty(row, "gap_status");
+                if (gap_status == nullptr || gap_status[0] == 0) {
+                    gap_status = GetStringOrEmpty(row, "status");
+                }
+                r[3] = gap_status ? gap_status : "";
+                r[4] = GetStringOrEmpty(row, "pts");
+                r[5] = GetStringOrEmpty(row, "pit");
+
+                const char* st = GetStringOrEmpty(row, "status");
+                const bool finished =
+                    st == nullptr || st[0] == 0 || strcmp(st, "Finished") == 0 || st[0] == '+' || strstr(st, "Lap") != nullptr;
+                if (!finished) {
+                    if (!has_dnf) {
+                        race_result_dnf_ = "DNF: ";
+                        has_dnf = true;
+                    } else {
+                        race_result_dnf_ += ", ";
+                    }
+                    race_result_dnf_ += r[2];
+                    race_result_dnf_ += " (";
+                    race_result_dnf_ += st;
+                    race_result_dnf_ += ")";
+                    dnf_n++;
+                    if (dnf_n >= 6) {
+                        break;
+                    }
+                }
+            } else {
+                const char* best = GetStringOrEmpty(row, "best_time");
+                if (best == nullptr || best[0] == 0) {
+                    best = GetStringOrEmpty(row, "best");
+                }
+                r[3] = best ? best : "";
+                r[4] = GetStringOrEmpty(row, "gap");
+                r[5] = GetStringOrEmpty(row, "laps");
+            }
+            race_result_rows_.push_back(std::move(r));
+        }
+        race_result_page_count_ = (n + (kSessionsPracticeRows - 1)) / kSessionsPracticeRows;
+        if (race_result_page_count_ < 1) {
+            race_result_page_count_ = 1;
+        }
+        if (race_result_page_ < 0) {
+            race_result_page_ = 0;
+        }
+        if (race_result_page_ >= race_result_page_count_) {
+            race_result_page_ = race_result_page_count_ - 1;
+        }
+        ApplyRaceResultPageLocked();
+
+        if (p == RaceSessionsSubPage::RaceResult && now_utc_s > 0 && race_start_utc_s > 0 && rnd > 1) {
+            if (now_utc_s < race_start_utc_s) {
+                const int prev_rnd = rnd - 1;
+                if (!sessions_race_use_prev_round_ || sessions_race_prev_round_ != prev_rnd) {
+                    sessions_race_use_prev_round_ = true;
+                    sessions_race_prev_round_ = prev_rnd;
+                    sessions_race_prev_round_until_utc_s_ = race_start_utc_s;
+                    StartSessionsFetchIfNeededLocked(true);
+                }
+            }
         }
     }
 
+    ApplyRaceSessionsLocked();
     cJSON_Delete(root);
     return true;
+}
+
+void F1PageAdapter::ApplyQualiResultPageLocked() {
+    for (auto& r : sessions_quali_cells_) {
+        for (auto* c : r) {
+            SetText(c, "");
+        }
+    }
+    if (sessions_drop_zone_ != nullptr) {
+        lv_obj_add_flag(sessions_drop_zone_, LV_OBJ_FLAG_HIDDEN);
+    }
+
+    const int n = static_cast<int>(quali_result_rows_.size());
+    if (n <= 0) {
+        return;
+    }
+    if (quali_result_page_count_ < 1) {
+        quali_result_page_count_ = 1;
+    }
+    if (quali_result_page_ < 0) {
+        quali_result_page_ = 0;
+    }
+    if (quali_result_page_ >= quali_result_page_count_) {
+        quali_result_page_ = quali_result_page_count_ - 1;
+    }
+    const int start = quali_result_page_ * kSessionsQualiRows;
+    for (int slot = 0; slot < kSessionsQualiRows; slot++) {
+        const int idx = start + slot;
+        if (idx < 0 || idx >= n) {
+            continue;
+        }
+        const auto& row = quali_result_rows_[static_cast<size_t>(idx)];
+        for (int c = 0; c < kSessionsQualiCols; c++) {
+            SetText(sessions_quali_cells_[static_cast<size_t>(slot)][static_cast<size_t>(c)], row[static_cast<size_t>(c)].c_str());
+        }
+    }
+}
+
+void F1PageAdapter::ApplyRaceResultPageLocked() {
+    for (auto& r : sessions_practice_cells_) {
+        for (auto* c : r) {
+            SetText(c, "");
+        }
+    }
+
+    const int n = static_cast<int>(race_result_rows_.size());
+    if (n <= 0) {
+        return;
+    }
+    if (race_result_page_count_ < 1) {
+        race_result_page_count_ = 1;
+    }
+    if (race_result_page_ < 0) {
+        race_result_page_ = 0;
+    }
+    if (race_result_page_ >= race_result_page_count_) {
+        race_result_page_ = race_result_page_count_ - 1;
+    }
+    const int start = race_result_page_ * kSessionsPracticeRows;
+    for (int slot = 0; slot < kSessionsPracticeRows; slot++) {
+        const int idx = start + slot;
+        if (idx < 0 || idx >= n) {
+            continue;
+        }
+        const auto& row = race_result_rows_[static_cast<size_t>(idx)];
+        for (int c = 0; c < kSessionsPracticeCols; c++) {
+            SetText(sessions_practice_cells_[static_cast<size_t>(slot)][static_cast<size_t>(c)], row[static_cast<size_t>(c)].c_str());
+        }
+    }
+    if (race_sessions_race_dnf_ != nullptr) {
+        lv_label_set_text(race_sessions_race_dnf_, race_result_dnf_.c_str());
+    }
 }
 
 bool F1PageAdapter::ApplyUiJsonLocked(const char* json_text, size_t len) {

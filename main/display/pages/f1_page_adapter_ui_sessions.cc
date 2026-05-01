@@ -4,15 +4,21 @@
 #include "lvgl_theme.h"
 #include "pages/f1_page_adapter_common.h"
 
+#include <font_zectrix.h>
+
+#include <cstdio>
+
 using namespace f1_page_internal;
 
 void F1PageAdapter::BuildRaceSessionsLocked() {
     auto* lvgl_theme = static_cast<LvglTheme*>(host_->current_theme_);
     const lv_font_t* cn_font = lvgl_theme && lvgl_theme->text_font() ? lvgl_theme->text_font()->font() : nullptr;
+    const lv_font_t* icon_font = lvgl_theme && lvgl_theme->icon_font() ? lvgl_theme->icon_font()->font() : nullptr;
     const lv_font_t* small_font = &lv_font_montserrat_14;
     const lv_font_t* font = cn_font ? cn_font : small_font;
 
     lv_obj_t* header = lv_obj_create(race_sessions_root_);
+    race_sessions_header_root_ = header;
     lv_obj_set_size(header, kPageWidth, kHeaderH);
     lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_style_bg_opa(header, LV_OPA_TRANSP, 0);
@@ -35,10 +41,25 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
     lv_obj_align(race_sessions_header_center_, LV_ALIGN_CENTER, 0, 0);
     lv_label_set_text(race_sessions_header_center_, "TIME REMAIN: 12:45");
 
-    race_sessions_header_right_ = lv_label_create(header);
-    lv_obj_set_style_text_font(race_sessions_header_right_, font, 0);
+    race_sessions_header_right_ = lv_obj_create(header);
+    lv_obj_set_size(race_sessions_header_right_, 88, kHeaderH - 2);
     lv_obj_align(race_sessions_header_right_, LV_ALIGN_RIGHT_MID, 0, 0);
-    lv_label_set_text(race_sessions_header_right_, "16:14  [||||] 85%");
+    lv_obj_set_style_bg_opa(race_sessions_header_right_, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(race_sessions_header_right_, 0, 0);
+    lv_obj_set_style_pad_all(race_sessions_header_right_, 0, 0);
+    lv_obj_set_style_pad_column(race_sessions_header_right_, 4, 0);
+    lv_obj_set_flex_flow(race_sessions_header_right_, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(race_sessions_header_right_, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+    race_sessions_header_batt_icon_ = lv_label_create(race_sessions_header_right_);
+    if (icon_font != nullptr) {
+        lv_obj_set_style_text_font(race_sessions_header_batt_icon_, icon_font, 0);
+    }
+    lv_label_set_text(race_sessions_header_batt_icon_, FONT_ZECTRIX_BATTERY_FULL);
+
+    race_sessions_header_batt_pct_ = lv_label_create(race_sessions_header_right_);
+    lv_obj_set_style_text_font(race_sessions_header_batt_pct_, font, 0);
+    lv_label_set_text(race_sessions_header_batt_pct_, "95%");
 
     constexpr lv_coord_t bottom_h = 24;
     const lv_coord_t body_h = kPageHeight - kHeaderH - bottom_h;
@@ -106,9 +127,15 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
         lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_practice_left_, 0, 0, kPosW, "POS", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
         lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_practice_left_, no_x, 0, kNoW, "NO.", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
         lv_obj_set_style_pad_left(CreateCellLabel(race_sessions_practice_left_, drv_x, 0, kDriverW, "", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP), 2, 0);
-        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_practice_left_, best_x, 0, kBestW, "BEST", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
-        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_practice_left_, gap_x, 0, kGapW, "GAP", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
-        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_practice_left_, laps_x, 0, kLapsW, "LAPS", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
+        race_sessions_race_hdr_best_ =
+            CreateCellLabel(race_sessions_practice_left_, best_x, 0, kBestW, "STATUS", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+        lv_obj_set_style_pad_right(race_sessions_race_hdr_best_, 2, 0);
+        race_sessions_race_hdr_gap_ =
+            CreateCellLabel(race_sessions_practice_left_, gap_x, 0, kGapW, "", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+        lv_obj_set_style_pad_right(race_sessions_race_hdr_gap_, 2, 0);
+        race_sessions_race_hdr_laps_ =
+            CreateCellLabel(race_sessions_practice_left_, laps_x, 0, kLapsW, "", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+        lv_obj_set_style_pad_right(race_sessions_race_hdr_laps_, 2, 0);
 
         CreateCellLabel(
             race_sessions_practice_left_,
@@ -480,7 +507,86 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
         }
     }
 
+    race_sessions_race_result_body_ = lv_obj_create(race_sessions_root_);
+    StyleBox(race_sessions_race_result_body_);
+    lv_obj_set_size(race_sessions_race_result_body_, kPageWidth, body_h);
+    lv_obj_align(race_sessions_race_result_body_, LV_ALIGN_TOP_LEFT, 0, kHeaderH);
+    lv_obj_set_style_border_side(race_sessions_race_result_body_, LV_BORDER_SIDE_BOTTOM, 0);
+
+    {
+        const lv_coord_t inner_w = kPageWidth - 8;
+        constexpr lv_coord_t kPosW = 26;
+        constexpr lv_coord_t kNoW = 28;
+        constexpr lv_coord_t kDriverW = 104;
+        constexpr lv_coord_t kGapW = 118;
+        constexpr lv_coord_t kPtsW = 34;
+        const lv_coord_t kPitW = inner_w - (kPosW + kNoW + kDriverW + kGapW + kPtsW);
+
+        const lv_coord_t no_x = kPosW;
+        const lv_coord_t drv_x = no_x + kNoW;
+        const lv_coord_t gap_x = drv_x + kDriverW;
+        const lv_coord_t pts_x = gap_x + kGapW;
+        const lv_coord_t pit_x = pts_x + kPtsW;
+
+        auto add_cell = [&](lv_coord_t x, lv_coord_t y, lv_coord_t w, const char* text, lv_text_align_t align) {
+            lv_obj_t* l = CreateCellLabel(race_sessions_race_result_body_, x, y, w, text, font, align, LV_LABEL_LONG_CLIP);
+            if (align == LV_TEXT_ALIGN_LEFT) {
+                lv_obj_set_style_pad_left(l, 2, 0);
+            } else if (align == LV_TEXT_ALIGN_RIGHT) {
+                lv_obj_set_style_pad_right(l, 2, 0);
+            }
+            return l;
+        };
+
+        add_cell(0, 0, kPosW, "POS", LV_TEXT_ALIGN_RIGHT);
+        add_cell(no_x, 0, kNoW, "NO.", LV_TEXT_ALIGN_RIGHT);
+        add_cell(drv_x, 0, kDriverW, "", LV_TEXT_ALIGN_LEFT);
+        add_cell(gap_x, 0, kGapW, "GAP/STATUS", LV_TEXT_ALIGN_RIGHT);
+        add_cell(pts_x, 0, kPtsW, "PTS", LV_TEXT_ALIGN_RIGHT);
+        add_cell(pit_x, 0, kPitW, "PIT", LV_TEXT_ALIGN_RIGHT);
+
+        lv_obj_t* sep = lv_obj_create(race_sessions_race_result_body_);
+        lv_obj_set_size(sep, inner_w, 2);
+        lv_obj_align(sep, LV_ALIGN_TOP_LEFT, 0, kRowH + 1);
+        lv_obj_set_style_bg_color(sep, lv_color_black(), 0);
+        lv_obj_set_style_bg_opa(sep, LV_OPA_COVER, 0);
+        lv_obj_set_style_border_width(sep, 0, 0);
+
+        const lv_coord_t base_y = kRowH + 4;
+
+        auto add_row_cell = [&](int row, int col, lv_coord_t x, lv_coord_t y, lv_coord_t w, lv_text_align_t align) {
+            if (row < 0 || row >= kSessionsPracticeRows || col < 0 || col >= kSessionsPracticeCols) {
+                return;
+            }
+            lv_obj_t* l = CreateCellLabel(race_sessions_race_result_body_, x, y, w, "", font, align, LV_LABEL_LONG_CLIP);
+            if (align == LV_TEXT_ALIGN_LEFT) {
+                lv_obj_set_style_pad_left(l, 2, 0);
+            } else if (align == LV_TEXT_ALIGN_RIGHT) {
+                lv_obj_set_style_pad_right(l, 2, 0);
+            }
+            sessions_practice_cells_[static_cast<size_t>(row)][static_cast<size_t>(col)] = l;
+        };
+
+        for (int r = 0; r < kSessionsPracticeRows; r++) {
+            const lv_coord_t y = base_y + r * kRowH;
+            add_row_cell(r, 0, 0, y, kPosW, LV_TEXT_ALIGN_RIGHT);
+            add_row_cell(r, 1, no_x, y, kNoW, LV_TEXT_ALIGN_RIGHT);
+            add_row_cell(r, 2, drv_x, y, kDriverW, LV_TEXT_ALIGN_LEFT);
+            add_row_cell(r, 3, gap_x, y, kGapW, LV_TEXT_ALIGN_RIGHT);
+            add_row_cell(r, 4, pts_x, y, kPtsW, LV_TEXT_ALIGN_RIGHT);
+            add_row_cell(r, 5, pit_x, y, kPitW, LV_TEXT_ALIGN_RIGHT);
+        }
+
+        race_sessions_race_dnf_ = lv_label_create(race_sessions_race_result_body_);
+        lv_obj_set_style_text_font(race_sessions_race_dnf_, font, 0);
+        lv_label_set_long_mode(race_sessions_race_dnf_, LV_LABEL_LONG_WRAP);
+        lv_obj_set_width(race_sessions_race_dnf_, LV_PCT(100));
+        lv_obj_align(race_sessions_race_dnf_, LV_ALIGN_BOTTOM_LEFT, 0, -2);
+        lv_label_set_text(race_sessions_race_dnf_, "");
+    }
+
     lv_obj_t* ticker = lv_obj_create(race_sessions_root_);
+    race_sessions_footer_root_ = ticker;
     lv_obj_set_size(ticker, kPageWidth, bottom_h);
     lv_obj_align(ticker, LV_ALIGN_TOP_LEFT, 0, kHeaderH + body_h);
     lv_obj_set_style_bg_opa(ticker, LV_OPA_TRANSP, 0);
@@ -496,8 +602,33 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
     lv_obj_set_style_text_font(race_sessions_ticker_, font, 0);
     lv_label_set_long_mode(race_sessions_ticker_, LV_LABEL_LONG_CLIP);
     lv_obj_set_width(race_sessions_ticker_, LV_PCT(100));
-    lv_obj_align(race_sessions_ticker_, LV_ALIGN_LEFT_MID, 0, 0);
+    lv_obj_set_style_text_align(race_sessions_ticker_, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(race_sessions_ticker_, LV_ALIGN_CENTER, 0, 0);
     lv_label_set_text(race_sessions_ticker_, "[NEWS] STROLL REPORTING STEERING ISSUES");
+
+    race_sessions_quali_live_root_ = lv_obj_create(race_sessions_root_);
+    lv_obj_set_size(race_sessions_quali_live_root_, kPageWidth, kPageHeight);
+    lv_obj_align(race_sessions_quali_live_root_, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_bg_opa(race_sessions_quali_live_root_, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(race_sessions_quali_live_root_, 0, 0);
+    lv_obj_set_style_pad_all(race_sessions_quali_live_root_, 0, 0);
+    {
+        lv_obj_t* msg = lv_label_create(race_sessions_quali_live_root_);
+        lv_obj_set_style_text_font(msg, font, 0);
+        lv_label_set_long_mode(msg, LV_LABEL_LONG_WRAP);
+        lv_obj_set_width(msg, LV_PCT(100));
+        lv_obj_set_style_text_align(msg, LV_TEXT_ALIGN_CENTER, 0);
+        lv_obj_align(msg, LV_ALIGN_CENTER, 0, 0);
+        lv_label_set_text(msg, "QUALI LIVE\n(N/A)");
+    }
+
+    race_sessions_race_live_root_ = lv_obj_create(race_sessions_root_);
+    lv_obj_set_size(race_sessions_race_live_root_, kPageWidth, kPageHeight);
+    lv_obj_align(race_sessions_race_live_root_, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_bg_opa(race_sessions_race_live_root_, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(race_sessions_race_live_root_, 0, 0);
+    lv_obj_set_style_pad_all(race_sessions_race_live_root_, 0, 0);
+    BuildRaceLiveLocked();
 
     ApplyRaceSessionsLocked();
 }
@@ -506,56 +637,102 @@ void F1PageAdapter::ApplyRaceSessionsLocked() {
     if (!built_) {
         return;
     }
-    const bool is_practice = race_sessions_page_ == 0;
+    const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+    const bool show_quali_result = p == RaceSessionsSubPage::QualiResult;
+    const bool show_race_result = p == RaceSessionsSubPage::RaceResult;
+    const bool show_quali_live = p == RaceSessionsSubPage::QualiLive;
+    const bool show_race_live = p == RaceSessionsSubPage::RaceLive;
+
+    if (race_sessions_header_root_ != nullptr) {
+        if (show_race_live) {
+            lv_obj_add_flag(race_sessions_header_root_, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_clear_flag(race_sessions_header_root_, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+    if (race_sessions_footer_root_ != nullptr) {
+        if (show_race_live) {
+            lv_obj_add_flag(race_sessions_footer_root_, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_clear_flag(race_sessions_footer_root_, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
 
     if (race_sessions_body_left_ != nullptr) {
-        if (is_practice) {
-            lv_obj_clear_flag(race_sessions_body_left_, LV_OBJ_FLAG_HIDDEN);
-        } else {
-            lv_obj_add_flag(race_sessions_body_left_, LV_OBJ_FLAG_HIDDEN);
-        }
+        lv_obj_add_flag(race_sessions_body_left_, LV_OBJ_FLAG_HIDDEN);
     }
     if (race_sessions_body_right_ != nullptr) {
-        if (is_practice) {
-            lv_obj_clear_flag(race_sessions_body_right_, LV_OBJ_FLAG_HIDDEN);
-        } else {
-            lv_obj_add_flag(race_sessions_body_right_, LV_OBJ_FLAG_HIDDEN);
-        }
+        lv_obj_add_flag(race_sessions_body_right_, LV_OBJ_FLAG_HIDDEN);
     }
     if (race_sessions_qualifying_body_ != nullptr) {
-        if (!is_practice) {
+        if (show_quali_result) {
             lv_obj_clear_flag(race_sessions_qualifying_body_, LV_OBJ_FLAG_HIDDEN);
         } else {
             lv_obj_add_flag(race_sessions_qualifying_body_, LV_OBJ_FLAG_HIDDEN);
         }
     }
+    if (race_sessions_race_result_body_ != nullptr) {
+        if (show_race_result) {
+            lv_obj_clear_flag(race_sessions_race_result_body_, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_add_flag(race_sessions_race_result_body_, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
 
     if (race_sessions_practice_left_ != nullptr) {
-        if (is_practice) {
-            lv_obj_clear_flag(race_sessions_practice_left_, LV_OBJ_FLAG_HIDDEN);
-        } else {
-            lv_obj_add_flag(race_sessions_practice_left_, LV_OBJ_FLAG_HIDDEN);
-        }
+        lv_obj_add_flag(race_sessions_practice_left_, LV_OBJ_FLAG_HIDDEN);
     }
     if (race_sessions_qualifying_left_ != nullptr) {
-        if (!is_practice) {
-            lv_obj_clear_flag(race_sessions_qualifying_left_, LV_OBJ_FLAG_HIDDEN);
-        } else {
-            lv_obj_add_flag(race_sessions_qualifying_left_, LV_OBJ_FLAG_HIDDEN);
-        }
+        lv_obj_add_flag(race_sessions_qualifying_left_, LV_OBJ_FLAG_HIDDEN);
     }
     if (race_sessions_practice_right_ != nullptr) {
-        if (is_practice) {
-            lv_obj_clear_flag(race_sessions_practice_right_, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(race_sessions_practice_right_, LV_OBJ_FLAG_HIDDEN);
+    }
+
+    if (race_sessions_qualifying_right_ != nullptr) {
+        lv_obj_add_flag(race_sessions_qualifying_right_, LV_OBJ_FLAG_HIDDEN);
+    }
+
+    if (race_sessions_quali_live_root_ != nullptr) {
+        if (show_quali_live) {
+            lv_obj_clear_flag(race_sessions_quali_live_root_, LV_OBJ_FLAG_HIDDEN);
         } else {
-            lv_obj_add_flag(race_sessions_practice_right_, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(race_sessions_quali_live_root_, LV_OBJ_FLAG_HIDDEN);
         }
     }
-    if (race_sessions_qualifying_right_ != nullptr) {
-        if (!is_practice) {
-            lv_obj_clear_flag(race_sessions_qualifying_right_, LV_OBJ_FLAG_HIDDEN);
+
+    if (race_sessions_race_live_root_ != nullptr) {
+        if (show_race_live) {
+            lv_obj_clear_flag(race_sessions_race_live_root_, LV_OBJ_FLAG_HIDDEN);
         } else {
-            lv_obj_add_flag(race_sessions_qualifying_right_, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(race_sessions_race_live_root_, LV_OBJ_FLAG_HIDDEN);
         }
+    }
+
+    int cur = 1;
+    int total = 1;
+    if (p == RaceSessionsSubPage::QualiResult) {
+        cur = quali_result_page_ + 1;
+        total = quali_result_page_count_;
+    } else if (p == RaceSessionsSubPage::RaceResult) {
+        cur = race_result_page_ + 1;
+        total = race_result_page_count_;
+    }
+    if (cur < 1) {
+        cur = 1;
+    }
+    if (total < 1) {
+        total = 1;
+    }
+    if (cur > total) {
+        cur = total;
+    }
+    char page[32];
+    snprintf(page, sizeof(page), "PAGE %d/%d", cur, total);
+    if (race_sessions_ticker_ != nullptr && !show_race_live) {
+        lv_label_set_text(race_sessions_ticker_, page);
+    }
+    if (live_page_ != nullptr && show_race_live) {
+        lv_label_set_text(live_page_, page);
     }
 }

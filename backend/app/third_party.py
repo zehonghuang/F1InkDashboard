@@ -564,14 +564,92 @@ async def build_sessions_payload(
         races = data.get("MRData", {}).get("RaceTable", {}).get("Races", []) or []
         res = (races[0].get("Results") or []) if races else []
 
+        def _parse_race_time_ms(s: str) -> Optional[int]:
+            s = (s or "").strip()
+            if not s:
+                return None
+            try:
+                parts = s.split(":")
+                if len(parts) == 3:
+                    h = int(parts[0])
+                    m = int(parts[1])
+                    sec_part = parts[2]
+                elif len(parts) == 2:
+                    h = 0
+                    m = int(parts[0])
+                    sec_part = parts[1]
+                else:
+                    return None
+                if "." in sec_part:
+                    sec_s, ms_s = sec_part.split(".", 1)
+                    sec = int(sec_s)
+                    ms = int((ms_s + "000")[:3])
+                else:
+                    sec = int(sec_part)
+                    ms = 0
+                return ((h * 3600 + m * 60 + sec) * 1000) + ms
+            except Exception:
+                return None
+
         rows: List[Dict[str, Any]] = []
+        winner_ms = None
+        winner_time = ""
+        if res:
+            t0 = (res[0].get("Time") or {})
+            try:
+                if t0.get("millis"):
+                    winner_ms = int(t0.get("millis"))
+            except Exception:
+                winner_ms = None
+            winner_time = (t0.get("time") or "") if isinstance(t0, dict) else ""
+            if not winner_time:
+                winner_time = res[0].get("status") or ""
+            if winner_ms is None and winner_time:
+                winner_ms = _parse_race_time_ms(winner_time)
+
         for it in res:
             drv = it.get("Driver") or {}
             code = (drv.get("code") or (drv.get("driverId") or "").upper()[:3]).upper()
             no = drv.get("permanentNumber") or ""
             pos = str(it.get("position") or "").zfill(2) if str(it.get("position") or "").isdigit() else str(it.get("position") or "")
             status = it.get("status") or ""
-            rows.append({"pos": pos, "no": str(no), "drv": code, "status": status})
+            pts = it.get("points") or ""
+            t = (it.get("Time") or {}) if isinstance(it.get("Time"), dict) else {}
+            gap_status = ""
+            if pos in ("01", "1", "P1"):
+                gap_status = (t.get("time") or "") if isinstance(t, dict) else ""
+                if not gap_status:
+                    gap_status = winner_time or status
+            else:
+                if isinstance(status, str) and status.startswith("+"):
+                    gap_status = status
+                elif isinstance(status, str) and status and status != "Finished":
+                    gap_status = status
+                else:
+                    ms = None
+                    try:
+                        if t.get("millis"):
+                            ms = int(t.get("millis"))
+                    except Exception:
+                        ms = None
+                    if ms is None:
+                        ms = _parse_race_time_ms(t.get("time") or "")
+                    if ms is not None and winner_ms is not None and ms >= winner_ms:
+                        gap_status = f"+{(ms - winner_ms) / 1000.0:.3f}"
+                    else:
+                        gap_status = status
+
+            rows.append(
+                {
+                    "pos": pos,
+                    "no": str(no),
+                    "drv": code,
+                    "gap_status": gap_status,
+                    "status": status,
+                    "pts": str(pts),
+                    "pit": "",
+                }
+            )
             if len(rows) >= limit:
                 break
         out["table"] = {"kind": "race", "rows": rows}

@@ -1,7 +1,7 @@
 #include "pages/f1_page_adapter.h"
 
+#include "backend_url.h"
 #include "lcd_display.h"
-#include "settings.h"
 #include "pages/f1_page_adapter_common.h"
 #include "pages/f1_page_adapter_net.h"
 #include "pages/f1_page_adapter_payloads.h"
@@ -81,6 +81,7 @@ void SessionsFetchTask(void* arg) {
 
     std::vector<uint8_t> bytes;
     if (HttpGetToBuffer(a->url, bytes, kMaxJsonBytes)) {
+        a->page->MarkSessionsFetchDone();
         UiPageEvent e{};
         e.type = UiPageEventType::Custom;
         e.i32 = static_cast<int32_t>(UiPageCustomEventId::F1SessionsData);
@@ -89,9 +90,8 @@ void SessionsFetchTask(void* arg) {
         a->host->DispatchPageEvent(e, false);
     } else {
         ESP_LOGW(kTag, "sessions fetch failed url=%s", a->url.c_str());
+        a->page->MarkSessionsFetchDone();
     }
-
-    a->page->MarkSessionsFetchDone();
     vTaskDelete(nullptr);
 }
 
@@ -195,8 +195,7 @@ void F1PageAdapter::StartFetchIfNeededLocked(bool force) {
         }
     }
 
-    Settings s("f1");
-    std::string url = s.GetString("api_url", "http://192.168.31.110:8008/api/v1/ui/pages?tz=Asia/Shanghai");
+    std::string url = GetF1PagesApiUrl();
     url = TrimUrl(url);
     if (url.empty()) {
         return;
@@ -237,16 +236,43 @@ void F1PageAdapter::StartSessionsFetchIfNeededLocked(bool force) {
 
     std::string base = BaseUrlFromApiUrl(api_url_);
     if (base.empty()) {
-        Settings s("f1");
-        std::string url = s.GetString("api_url", "http://192.168.31.110:8008/api/v1/ui/pages?tz=Asia/Shanghai");
-        url = TrimUrl(url);
-        base = BaseUrlFromApiUrl(url);
+        base = GetBackendBaseUrl();
     }
     if (base.empty()) {
         return;
     }
 
-    std::string url = JoinUrl(base, "/api/v1/f1/sessions/current?tz=Asia/Shanghai&limit=13");
+    const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+    if (p == RaceSessionsSubPage::QualiResult) {
+        if (sessions_quali_use_prev_round_ && sessions_generated_at_utc_s_ > 0 &&
+            sessions_generated_at_utc_s_ >= sessions_quali_prev_round_until_utc_s_) {
+            sessions_quali_use_prev_round_ = false;
+        }
+    } else if (p == RaceSessionsSubPage::RaceResult) {
+        if (sessions_race_use_prev_round_ && sessions_generated_at_utc_s_ > 0 &&
+            sessions_generated_at_utc_s_ >= sessions_race_prev_round_until_utc_s_) {
+            sessions_race_use_prev_round_ = false;
+        }
+    }
+
+    std::string path = "/api/v1/f1/sessions/current?tz=Asia/Shanghai&limit=30";
+    if (p == RaceSessionsSubPage::QualiResult) {
+        path = "/api/v1/f1/sessions?tz=Asia/Shanghai&session=qualifying&q=3&limit=30";
+        if (sessions_quali_use_prev_round_ && sessions_quali_prev_round_ > 0) {
+            char buf[128];
+            snprintf(buf, sizeof(buf), "%s&round=%d", path.c_str(), sessions_quali_prev_round_);
+            path = buf;
+        }
+    } else if (p == RaceSessionsSubPage::RaceResult) {
+        path = "/api/v1/f1/sessions?tz=Asia/Shanghai&session=race&limit=30";
+        if (sessions_race_use_prev_round_ && sessions_race_prev_round_ > 0) {
+            char buf[128];
+            snprintf(buf, sizeof(buf), "%s&round=%d", path.c_str(), sessions_race_prev_round_);
+            path = buf;
+        }
+    }
+
+    std::string url = JoinUrl(base, path);
     url = TrimUrl(url);
     if (url.empty()) {
         return;
@@ -286,7 +312,10 @@ void F1PageAdapter::StartCircuitFetchIfNeededLocked(const char* map_url) {
         return;
     }
     std::string path = TrimUrl(map_url);
-    const std::string base = BaseUrlFromApiUrl(api_url_);
+    std::string base = BaseUrlFromApiUrl(api_url_);
+    if (base.empty()) {
+        base = GetBackendBaseUrl();
+    }
     const std::string full = JoinUrl(base, path);
     if (full.empty()) {
         return;
@@ -353,7 +382,10 @@ void F1PageAdapter::StartCircuitDetailFetchIfNeededLocked(const char* map_url) {
         return;
     }
     std::string path = TrimUrl(map_url);
-    const std::string base = BaseUrlFromApiUrl(api_url_);
+    std::string base = BaseUrlFromApiUrl(api_url_);
+    if (base.empty()) {
+        base = GetBackendBaseUrl();
+    }
     const std::string full = JoinUrl(base, path);
     if (full.empty()) {
         return;

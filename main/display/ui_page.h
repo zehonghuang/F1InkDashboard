@@ -26,6 +26,8 @@ enum class UiPageCustomEventId : int32_t {
     ConfirmClick = 110,
     ConfirmLongPress = 111,
     ConfirmDoubleClick = 112,
+    PagePrevDoubleClick = 113,
+    PageNextDoubleClick = 114,
     ComboUpDown = 120,
     ComboUpConfirm = 121,
     ComboDownConfirm = 122,

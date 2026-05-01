@@ -771,6 +771,7 @@ void CustomLcdDisplay::refresh_task_loop() {
     const TickType_t kUrgentDebounceTicks = pdMS_TO_TICKS(30);
     const float kMinDiffBitRatio = 0.001f;  // 0.1%
     const float kForceFullDiffRatio = 0.30f;  // 30%
+    const int kPartialToFullThreshold = 6;
     const int kTinyMaxStreak = 4;
     const size_t kTinyMaxAccumBits = 64 * 8;
     const TickType_t kTinyMaxHoldTicks = pdMS_TO_TICKS(1200);
@@ -943,8 +944,10 @@ void CustomLcdDisplay::refresh_task_loop() {
             should_full = true;
             ESP_LOGI(TAG, "[STRATEGY] diff_ratio>=30%% -> FULL");
         }
-        if (!should_full && partial_since_full >= 10) {
+        if (kPartialToFullThreshold > 0 && partial_since_full >= kPartialToFullThreshold) {
+            force_full = true;
             should_full = true;
+            ESP_LOGI(TAG, "[STRATEGY] partial_since_full=%d -> FULL", partial_since_full);
         }
         // Prefer PARTIAL unless explicitly forced FULL. FULL refresh path has shown unstable behavior on this panel.
         if (!force_full) {

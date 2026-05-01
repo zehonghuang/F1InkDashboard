@@ -1,5 +1,6 @@
 set(SOURCES
     "application.cc"
+    "backend_url.cc"
     "main.cc"
     "settings.cc"
     "system_info.cc"
@@ -21,6 +22,7 @@ set(SOURCES
     "display/pages/f1_page_adapter_ui_race.cc"
     "display/pages/f1_page_adapter_ui_offweek.cc"
     "display/pages/f1_page_adapter_ui_sessions.cc"
+    "display/pages/f1_page_adapter_ui_live.cc"
     "display/pages/f1_page_adapter_ui_menu.cc"
     "display/pages/wifi_setup_page_adapter.cc"
     "display/lvgl_display/lvgl_display.cc"

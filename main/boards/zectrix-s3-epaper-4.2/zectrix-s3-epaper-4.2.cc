@@ -537,6 +537,22 @@ private:
             }
             FactoryTestService::Instance().HandleButton(FactoryTestButton::kUpClick);
         });
+        up_button_.OnDoubleClick([this]() {
+            if (suppress_up_) {
+                return;
+            }
+            if (display_ != nullptr && display_->IsWsOverlayVisible()) {
+                return;
+            }
+            if (display_ != nullptr && display_->GetActivePageId() == UiPageId::F1) {
+                UiPageEvent e;
+                e.type = UiPageEventType::Custom;
+                e.i32 = static_cast<int32_t>(UiPageCustomEventId::PagePrevDoubleClick);
+                display_->DispatchPageEvent(e, true);
+                display_->RequestUrgentFullRefresh();
+                return;
+            }
+        });
         up_button_.OnLongPress([this]() {
             if (suppress_up_) {
                 return;
@@ -577,6 +593,22 @@ private:
                 return;
             }
             FactoryTestService::Instance().HandleButton(FactoryTestButton::kDownClick);
+        });
+        down_button_.OnDoubleClick([this]() {
+            if (suppress_down_) {
+                return;
+            }
+            if (display_ != nullptr && display_->IsWsOverlayVisible()) {
+                return;
+            }
+            if (display_ != nullptr && display_->GetActivePageId() == UiPageId::F1) {
+                UiPageEvent e;
+                e.type = UiPageEventType::Custom;
+                e.i32 = static_cast<int32_t>(UiPageCustomEventId::PageNextDoubleClick);
+                display_->DispatchPageEvent(e, true);
+                display_->RequestUrgentFullRefresh();
+                return;
+            }
         });
         down_button_.OnLongPress([this]() {
             if (suppress_down_) {

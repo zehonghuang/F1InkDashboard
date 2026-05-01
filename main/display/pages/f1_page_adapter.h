@@ -38,9 +38,12 @@ private:
 
     enum class NavNode : uint8_t { RaceRoot = 0, OffRoot = 1, Wdc = 2, Wcc = 3, Circuit = 4, RaceSessions = 5 };
 
+    enum class RaceSessionsSubPage : uint8_t { QualiResult = 0, RaceResult = 1, QualiLive = 2, RaceLive = 3 };
+
     static void RefreshTimerCallback(void* arg);
 
     void BuildRaceLocked();
+    void BuildRaceLiveLocked();
     void BuildStandingsLocked();
     void BuildWdcDetailLocked();
     void BuildWccDetailLocked();
@@ -69,6 +72,9 @@ private:
     void BuildCircuitDetailLocked();
     void ApplyCircuitDetailLocked();
     void ApplyRaceSessionsLocked();
+    void ApplyQualiResultPageLocked();
+    void ApplyRaceResultPageLocked();
+    void MaybeAutoEnterRaceLiveLocked();
     int UiNavRootSlotCount(NavNode root);
     int UiNavRootFocus(NavNode root);
     void UiNavSetRootFocus(NavNode root, int focus);
@@ -100,6 +106,8 @@ private:
     int circuit_page_ = 0;
     int race_day_focus_ = 0;
     int race_sessions_page_ = 0;
+    int64_t race_live_start_ms_ = 0;
+    bool race_live_auto_entered_ = false;
     std::array<int8_t, 4> nav_children_race_{};
     std::array<int8_t, 4> nav_children_off_{};
     UiNavController<NavNode, F1PageAdapter> nav_;
@@ -200,14 +208,25 @@ private:
     lv_obj_t* race_sessions_header_left_ = nullptr;
     lv_obj_t* race_sessions_header_center_ = nullptr;
     lv_obj_t* race_sessions_header_right_ = nullptr;
+    lv_obj_t* race_sessions_header_root_ = nullptr;
+    lv_obj_t* race_sessions_header_batt_icon_ = nullptr;
+    lv_obj_t* race_sessions_header_batt_pct_ = nullptr;
     lv_obj_t* race_sessions_body_left_ = nullptr;
     lv_obj_t* race_sessions_body_right_ = nullptr;
     lv_obj_t* race_sessions_qualifying_body_ = nullptr;
+    lv_obj_t* race_sessions_race_result_body_ = nullptr;
+    lv_obj_t* race_sessions_race_dnf_ = nullptr;
     lv_obj_t* race_sessions_practice_left_ = nullptr;
     lv_obj_t* race_sessions_qualifying_left_ = nullptr;
     lv_obj_t* race_sessions_practice_right_ = nullptr;
     lv_obj_t* race_sessions_qualifying_right_ = nullptr;
+    lv_obj_t* race_sessions_race_hdr_best_ = nullptr;
+    lv_obj_t* race_sessions_race_hdr_gap_ = nullptr;
+    lv_obj_t* race_sessions_race_hdr_laps_ = nullptr;
+    lv_obj_t* race_sessions_quali_live_root_ = nullptr;
+    lv_obj_t* race_sessions_race_live_root_ = nullptr;
     lv_obj_t* race_sessions_ticker_ = nullptr;
+    lv_obj_t* race_sessions_footer_root_ = nullptr;
     lv_obj_t* race_sessions_no_data_ = nullptr;
 
     lv_obj_t* menu_header_left_ = nullptr;
@@ -219,6 +238,21 @@ private:
     int menu_focus_ = 0;
     bool menu_visible_ = false;
 
+    lv_obj_t* live_header_left_ = nullptr;
+    lv_obj_t* live_header_center_ = nullptr;
+    lv_obj_t* live_header_time_ = nullptr;
+    lv_obj_t* live_header_batt_icon_ = nullptr;
+    lv_obj_t* live_header_batt_pct_ = nullptr;
+
+    static constexpr int kLiveRows = 10;
+    static constexpr int kLiveCols = 5;
+    std::array<std::array<lv_obj_t*, kLiveCols>, kLiveRows> live_cells_{};
+
+    lv_obj_t* live_track_status_ = nullptr;
+    lv_obj_t* live_fastest_lap_ = nullptr;
+    lv_obj_t* live_temps_ = nullptr;
+    lv_obj_t* live_page_ = nullptr;
+
     static constexpr int kSessionsPracticeRows = 10;
     static constexpr int kSessionsPracticeCols = 6;
     std::array<std::array<lv_obj_t*, kSessionsPracticeCols>, kSessionsPracticeRows> sessions_practice_cells_{};
@@ -228,9 +262,25 @@ private:
     std::array<std::array<lv_obj_t*, kSessionsQualiCols>, kSessionsQualiRows> sessions_quali_cells_{};
     lv_obj_t* sessions_drop_zone_ = nullptr;
 
+    int quali_result_page_ = 0;
+    int quali_result_page_count_ = 1;
+    std::vector<std::array<std::string, kSessionsQualiCols>> quali_result_rows_{};
+
+    int race_result_page_ = 0;
+    int race_result_page_count_ = 1;
+    std::vector<std::array<std::string, kSessionsPracticeCols>> race_result_rows_{};
+    std::string race_result_dnf_{};
+
     std::atomic<bool> sessions_fetch_inflight_{false};
     int64_t last_sessions_fetch_ms_ = 0;
     std::string sessions_url_;
+    int64_t sessions_generated_at_utc_s_ = 0;
+    bool sessions_quali_use_prev_round_ = false;
+    int sessions_quali_prev_round_ = -1;
+    int64_t sessions_quali_prev_round_until_utc_s_ = 0;
+    bool sessions_race_use_prev_round_ = false;
+    int sessions_race_prev_round_ = -1;
+    int64_t sessions_race_prev_round_until_utc_s_ = 0;
 
     bool active_ = false;
     std::string circuit_name_;

@@ -1,5 +1,6 @@
 #include "ws_client_service.h"
 
+#include "backend_url.h"
 #include "display/lcd_display.h"
 
 #include <memory>
@@ -129,10 +130,7 @@ void WsClientService::HandleIncomingText(const std::string& text) {
             if (!payload.empty()) {
                 std::string url = payload;
                 if (payload.rfind("http://", 0) != 0 && payload.rfind("https://", 0) != 0) {
-                    Settings f1("f1", false);
-                    std::string api_url =
-                        TrimUrl(f1.GetString("api_url", "http://192.168.31.110:8008/api/v1/ui/pages?tz=Asia/Shanghai"));
-                    const std::string base = BaseUrlFromApiUrl(api_url);
+                    const std::string base = GetBackendBaseUrl();
                     url = JoinUrl(base, payload);
                 }
                 auto* args = new EpdArgs();
@@ -168,10 +166,7 @@ void WsClientService::TaskLoop() {
             url_ = s.GetString("url", "");
             url_ = TrimUrl(url_);
             if (url_.empty()) {
-                Settings f1("f1", false);
-                std::string api_url =
-                    TrimUrl(f1.GetString("api_url", "http://192.168.31.110:8008/api/v1/ui/pages?tz=Asia/Shanghai"));
-                const std::string base = BaseUrlFromApiUrl(api_url);
+                const std::string base = GetBackendBaseUrl();
                 if (!base.empty()) {
                     const bool https = base.rfind("https://", 0) == 0;
                     const std::string ws_base = (https ? "wss://" : "ws://") + base.substr(https ? 8 : 7);
