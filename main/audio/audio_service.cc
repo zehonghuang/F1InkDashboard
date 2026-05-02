@@ -63,7 +63,10 @@ void AudioService::Start() {
     service_stopped_ = false;
     xEventGroupClearBits(event_group_, AS_EVENT_AUDIO_TESTING_RUNNING | AS_EVENT_WAKE_WORD_RUNNING | AS_EVENT_AUDIO_PROCESSOR_RUNNING);
 
-    esp_timer_start_periodic(audio_power_timer_, 1000000);
+    const auto now = std::chrono::steady_clock::now();
+    last_input_time_ = now;
+    last_output_time_ = now;
+    esp_timer_start_periodic(audio_power_timer_, AUDIO_POWER_CHECK_INTERVAL_MS * 1000);
 
 #if CONFIG_USE_AUDIO_PROCESSOR
     /* Start the audio input task */
@@ -123,6 +126,7 @@ bool AudioService::ReadAudioData(std::vector<int16_t>& data, int sample_rate, in
         esp_timer_stop(audio_power_timer_);
         esp_timer_start_periodic(audio_power_timer_, AUDIO_POWER_CHECK_INTERVAL_MS * 1000);
         codec_->EnableInput(true);
+        last_input_time_ = std::chrono::steady_clock::now();
     }
 
     if (codec_->input_sample_rate() != sample_rate) {
@@ -271,6 +275,7 @@ void AudioService::AudioOutputTask() {
             esp_timer_stop(audio_power_timer_);
             esp_timer_start_periodic(audio_power_timer_, AUDIO_POWER_CHECK_INTERVAL_MS * 1000);
             codec_->EnableOutput(true);
+            last_output_time_ = std::chrono::steady_clock::now();
         }
         codec_->OutputData(task->pcm);
 
@@ -529,6 +534,7 @@ void AudioService::PlaySound(const std::string_view& ogg) {
         esp_timer_stop(audio_power_timer_);
         esp_timer_start_periodic(audio_power_timer_, AUDIO_POWER_CHECK_INTERVAL_MS * 1000);
         codec_->EnableOutput(true);
+        last_output_time_ = std::chrono::steady_clock::now();
     }
 
     const uint8_t* buf = reinterpret_cast<const uint8_t*>(ogg.data());
@@ -644,6 +650,7 @@ void AudioService::PlaySound(const std::string_view& ogg, int duration_ms) {
         esp_timer_stop(audio_power_timer_);
         esp_timer_start_periodic(audio_power_timer_, AUDIO_POWER_CHECK_INTERVAL_MS * 1000);
         codec_->EnableOutput(true);
+        last_output_time_ = std::chrono::steady_clock::now();
     }
 
     const uint8_t* buf = reinterpret_cast<const uint8_t*>(ogg.data());
@@ -776,6 +783,7 @@ void AudioService::PlayWav(const std::vector<uint8_t>& wav) {
         esp_timer_stop(audio_power_timer_);
         esp_timer_start_periodic(audio_power_timer_, AUDIO_POWER_CHECK_INTERVAL_MS * 1000);
         codec_->EnableOutput(true);
+        last_output_time_ = std::chrono::steady_clock::now();
     }
 
     auto read_u16 = [&](size_t off) -> uint16_t {

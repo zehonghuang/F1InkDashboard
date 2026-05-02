@@ -170,7 +170,7 @@ void MemeAudioFetchTask(void* arg) {
         vTaskDelete(nullptr);
         return;
     }
-    vTaskDelay(pdMS_TO_TICKS(200));
+    vTaskDelay(pdMS_TO_TICKS(2000));
     std::vector<uint8_t> audio;
     const std::string full = ResolveAssetUrl(args->audio_url);
     if (!full.empty() && LooksLikeWav(full, args->audio_mime)) {
