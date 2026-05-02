@@ -216,7 +216,7 @@ void F1PageAdapter::BuildRaceLocked() {
     lv_obj_align(mid_left, LV_ALIGN_TOP_LEFT, 0, kHeaderH);
     lv_obj_set_style_border_side(
         mid_left,
-        static_cast<lv_border_side_t>(LV_BORDER_SIDE_LEFT | LV_BORDER_SIDE_RIGHT | LV_BORDER_SIDE_BOTTOM),
+        static_cast<lv_border_side_t>(LV_BORDER_SIDE_LEFT),
         0);
 
     race_track_box_ = lv_obj_create(mid_left);
@@ -245,11 +245,11 @@ void F1PageAdapter::BuildRaceLocked() {
 
     lv_obj_t* mid_right = lv_obj_create(race_root_);
     StyleBox(mid_right);
-    lv_obj_set_size(mid_right, kColW, kMidH);
-    lv_obj_align(mid_right, LV_ALIGN_TOP_LEFT, kColW, kHeaderH);
+    lv_obj_set_size(mid_right, kColW - 1, kMidH);
+    lv_obj_align(mid_right, LV_ALIGN_TOP_LEFT, kColW + 1, kHeaderH);
     lv_obj_set_style_border_side(
         mid_right,
-        static_cast<lv_border_side_t>(LV_BORDER_SIDE_RIGHT | LV_BORDER_SIDE_BOTTOM),
+        static_cast<lv_border_side_t>(LV_BORDER_SIDE_RIGHT),
         0);
 
     race_gp_ = lv_label_create(mid_right);
@@ -322,11 +322,11 @@ void F1PageAdapter::BuildRaceLocked() {
 
     lv_obj_t* bottom_left = lv_obj_create(race_root_);
     StyleBox(bottom_left);
-    lv_obj_set_size(bottom_left, kColW, kBottomH - 2);
-    lv_obj_align(bottom_left, LV_ALIGN_TOP_LEFT, 0, kHeaderH + kMidH + 2);
+    lv_obj_set_size(bottom_left, kColW, kBottomH - 1);
+    lv_obj_align(bottom_left, LV_ALIGN_TOP_LEFT, 0, kHeaderH + kMidH + 1);
     lv_obj_set_style_border_side(
         bottom_left,
-        static_cast<lv_border_side_t>(LV_BORDER_SIDE_LEFT | LV_BORDER_SIDE_RIGHT | LV_BORDER_SIDE_BOTTOM),
+        static_cast<lv_border_side_t>(LV_BORDER_SIDE_LEFT | LV_BORDER_SIDE_BOTTOM),
         0);
 
     constexpr lv_coord_t kSchedSessionW = 44;
@@ -355,8 +355,8 @@ void F1PageAdapter::BuildRaceLocked() {
 
     lv_obj_t* bottom_right = lv_obj_create(race_root_);
     StyleBox(bottom_right);
-    lv_obj_set_size(bottom_right, kColW, kBottomH - 2);
-    lv_obj_align(bottom_right, LV_ALIGN_TOP_LEFT, kColW, kHeaderH + kMidH + 2);
+    lv_obj_set_size(bottom_right, kColW - 1, kBottomH - 1);
+    lv_obj_align(bottom_right, LV_ALIGN_TOP_LEFT, kColW + 1, kHeaderH + kMidH + 1);
     lv_obj_set_style_border_side(
         bottom_right,
         static_cast<lv_border_side_t>(LV_BORDER_SIDE_RIGHT | LV_BORDER_SIDE_BOTTOM),
@@ -371,6 +371,20 @@ void F1PageAdapter::BuildRaceLocked() {
         weather_k_[i] = CreateCellLabel(bottom_right, 0, y, kKvKeyW, "", record_font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
         weather_v_[i] = CreateCellLabel(bottom_right, kKvKeyW, y, kKvValW, "", record_font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_DOT);
     }
+
+    lv_obj_t* vline = lv_obj_create(race_root_);
+    lv_obj_set_size(vline, 1, kMidH + kBottomH);
+    lv_obj_align(vline, LV_ALIGN_TOP_LEFT, kColW, kHeaderH);
+    lv_obj_set_style_bg_color(vline, lv_color_black(), 0);
+    lv_obj_set_style_bg_opa(vline, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(vline, 0, 0);
+
+    lv_obj_t* hline = lv_obj_create(race_root_);
+    lv_obj_set_size(hline, kPageWidth, 1);
+    lv_obj_align(hline, LV_ALIGN_TOP_LEFT, 0, kHeaderH + kMidH);
+    lv_obj_set_style_bg_color(hline, lv_color_black(), 0);
+    lv_obj_set_style_bg_opa(hline, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(hline, 0, 0);
 
     race_q1_ = mid_right;
     race_q2_ = mid_left;
@@ -397,6 +411,19 @@ void F1PageAdapter::UpdateRaceDaySelectionLocked() {
         const bool sel = it.idx == race_day_focus_;
         lv_obj_set_style_border_width(it.obj, sel ? 4 : 1, 0);
         lv_obj_set_style_border_color(it.obj, lv_color_black(), 0);
+        if (sel) {
+            lv_obj_set_style_border_side(it.obj, LV_BORDER_SIDE_FULL, 0);
+        } else {
+            lv_border_side_t sides = LV_BORDER_SIDE_NONE;
+            switch (it.idx) {
+                case 0: sides = LV_BORDER_SIDE_RIGHT; break;
+                case 1: sides = LV_BORDER_SIDE_LEFT; break;
+                case 2: sides = static_cast<lv_border_side_t>(LV_BORDER_SIDE_LEFT | LV_BORDER_SIDE_BOTTOM); break;
+                case 3: sides = static_cast<lv_border_side_t>(LV_BORDER_SIDE_RIGHT | LV_BORDER_SIDE_BOTTOM); break;
+                default: sides = LV_BORDER_SIDE_NONE; break;
+            }
+            lv_obj_set_style_border_side(it.obj, sides, 0);
+        }
     }
 }
 
