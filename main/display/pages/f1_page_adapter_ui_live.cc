@@ -174,11 +174,12 @@ void F1PageAdapter::BuildRaceLiveLocked() {
         lv_obj_set_style_border_width(status_box, 1, 0);
         lv_obj_set_style_border_color(status_box, lv_color_black(), 0);
         lv_obj_set_style_bg_color(status_box, lv_color_black(), 0);
-        lv_obj_set_style_bg_opa(status_box, LV_OPA_10, 0);
+        lv_obj_set_style_bg_opa(status_box, LV_OPA_COVER, 0);
         lv_obj_set_style_pad_all(status_box, 0, 0);
 
         live_track_status_ = lv_label_create(status_box);
         lv_obj_set_style_text_font(live_track_status_, font, 0);
+        lv_obj_set_style_text_color(live_track_status_, lv_color_white(), 0);
         lv_obj_set_style_text_align(live_track_status_, LV_TEXT_ALIGN_CENTER, 0);
         lv_obj_set_width(live_track_status_, LV_PCT(100));
         lv_obj_align(live_track_status_, LV_ALIGN_CENTER, 0, 0);
