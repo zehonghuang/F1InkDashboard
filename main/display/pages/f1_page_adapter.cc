@@ -1161,23 +1161,52 @@ int F1PageAdapter::UiNavRootSlotCount(NavNode root) {
 }
 
 int F1PageAdapter::UiNavRootFocus(NavNode root) {
-    return root == NavNode::RaceRoot ? race_day_focus_ : off_week_focus_;
+    const int physical = root == NavNode::RaceRoot ? race_day_focus_ : off_week_focus_;
+    static constexpr std::array<int, 4> kRaceSeq = {1, 0, 3, 2};
+    static constexpr std::array<int, 4> kOffSeq = {0, 1, 3, 2};
+    const auto& seq = root == NavNode::RaceRoot ? kRaceSeq : kOffSeq;
+    for (int i = 0; i < 4; i++) {
+        if (seq[static_cast<size_t>(i)] == physical) {
+            return i;
+        }
+    }
+    return 0;
 }
 
 void F1PageAdapter::UiNavSetRootFocus(NavNode root, int focus) {
+    static constexpr std::array<int, 4> kRaceSeq = {1, 0, 3, 2};
+    static constexpr std::array<int, 4> kOffSeq = {0, 1, 3, 2};
+    if (focus < 0) {
+        focus = 0;
+    }
+    if (focus >= 4) {
+        focus %= 4;
+    }
+    const auto& seq = root == NavNode::RaceRoot ? kRaceSeq : kOffSeq;
+    const int physical = seq[static_cast<size_t>(focus)];
     if (root == NavNode::RaceRoot) {
-        race_day_focus_ = focus;
+        race_day_focus_ = physical;
     } else {
-        off_week_focus_ = focus;
+        off_week_focus_ = physical;
     }
 }
 
 bool F1PageAdapter::UiNavResolveChild(NavNode root, int focus, NavNode& out) {
     const auto& table = root == NavNode::RaceRoot ? nav_children_race_ : nav_children_off_;
-    if (focus < 0 || focus >= static_cast<int>(table.size())) {
+    static constexpr std::array<int, 4> kRaceSeq = {1, 0, 3, 2};
+    static constexpr std::array<int, 4> kOffSeq = {0, 1, 3, 2};
+    if (focus < 0) {
+        focus = 0;
+    }
+    if (focus >= 4) {
+        focus %= 4;
+    }
+    const auto& seq = root == NavNode::RaceRoot ? kRaceSeq : kOffSeq;
+    const int physical = seq[static_cast<size_t>(focus)];
+    if (physical < 0 || physical >= static_cast<int>(table.size())) {
         return false;
     }
-    const int8_t child = table[static_cast<size_t>(focus)];
+    const int8_t child = table[static_cast<size_t>(physical)];
     if (child < 0) {
         return false;
     }

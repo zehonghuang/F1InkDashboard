@@ -193,6 +193,10 @@ def _session_kind_from_key(key: str) -> str:
         return "practice"
     if k in ("QUALI", "QUALIFYING", "Q"):
         return "qualifying"
+    if k in ("SQ", "SPRINT_QUALI", "SPRINT_QUALIFYING", "SPRINT_QUALIFY", "SPRINT_SHOOTOUT", "SS"):
+        return "qualifying"
+    if k in ("SPRINT",):
+        return "race"
     if k == "RACE":
         return "race"
     return "unknown"
@@ -272,10 +276,13 @@ def _select_race_and_sessions(
 
     sessions: List[Dict[str, Any]] = []
     if race is not None:
+        items: List[tuple[datetime, str, Dict[str, Any]]] = []
         s_map = [
             ("FP1", race.get("FirstPractice")),
             ("FP2", race.get("SecondPractice")),
             ("FP3", race.get("ThirdPractice")),
+            ("SQ", race.get("SprintQualifying") or race.get("SprintShootout")),
+            ("SPRINT", race.get("Sprint")),
             ("QUALI", race.get("Qualifying")),
             ("RACE", {"date": race.get("date"), "time": race.get("time")}),
         ]
@@ -285,13 +292,10 @@ def _select_race_and_sessions(
             if not s.get("date"):
                 continue
             dt = _parse_ergast_dt(s.get("date", ""), s.get("time"))
-            sessions.append(
-                {
-                    "key": key,
-                    "starts_at_utc": dt.isoformat(),
-                    "when": f"{_fmt_day(dt, tz)} {_fmt_hhmm(dt, tz)}",
-                }
-            )
+            items.append((dt, key, s))
+        items.sort(key=lambda x: x[0])
+        for dt, key, _s in items:
+            sessions.append({"key": key, "starts_at_utc": dt.isoformat(), "when": f"{_fmt_day(dt, tz)} {_fmt_hhmm(dt, tz)}"})
 
     return race, sessions, tz_name
 
@@ -302,6 +306,10 @@ def _choose_session_key(now_utc: datetime, sessions: List[Dict[str, Any]], sessi
         return s.upper()
     if s in ("q", "quali", "qualifying"):
         return "QUALI"
+    if s in ("sq", "sprintquali", "sprint_qualifying", "sprint_qualify", "sprintshootout", "shootout", "ss"):
+        return "SQ"
+    if s in ("sprint", "spr"):
+        return "SPRINT"
     if s in ("race", "r"):
         return "RACE"
     if s in ("auto", ""):
@@ -370,6 +378,10 @@ def _session_duration_s(key: str) -> int:
         return 60 * 60
     if k == "QUALI":
         return (18 + 7 + 15 + 7 + 12) * 60
+    if k == "SQ":
+        return 60 * 60
+    if k == "SPRINT":
+        return 60 * 60
     if k == "RACE":
         return 2 * 60 * 60
     return 60 * 60
@@ -922,10 +934,13 @@ def build_pages_payload(
 
     sessions = []
     if display_race:
+        items: List[tuple[datetime, str]] = []
         s_map = [
             ("FP1", display_race.get("FirstPractice")),
             ("FP2", display_race.get("SecondPractice")),
             ("FP3", display_race.get("ThirdPractice")),
+            ("SQ", display_race.get("SprintQualifying") or display_race.get("SprintShootout")),
+            ("SPRINT", display_race.get("Sprint")),
             ("QUALI", display_race.get("Qualifying")),
             ("RACE", {"date": display_race.get("date"), "time": display_race.get("time")}),
         ]
@@ -936,15 +951,12 @@ def build_pages_payload(
             if not s.get("date"):
                 continue
             dt = _parse_ergast_dt(s.get("date", ""), s.get("time"))
+            items.append((dt, key))
+
+        items.sort(key=lambda x: x[0])
+        for dt, key in items:
             status = "DONE" if dt <= now_utc else "UPCOMING"
-            sessions.append(
-                {
-                    "key": key,
-                    "when": f"{_fmt_day(dt, tz)} {_fmt_hhmm(dt, tz)}",
-                    "status": status,
-                    "utc": dt.isoformat(),
-                }
-            )
+            sessions.append({"key": key, "when": f"{_fmt_day(dt, tz)} {_fmt_hhmm(dt, tz)}", "status": status, "utc": dt.isoformat()})
 
     next_session = None
     for s in sessions:
