@@ -74,6 +74,13 @@ cd backend
 .venv/Scripts/python scripts/openf1_mock_push.py --base-url http://127.0.0.1:8008 --token devtoken --interval 0.2
 ```
 
+让 mock 更“长”（重复播放同一份 jsonl）：
+
+```bash
+cd backend
+.venv/Scripts/python scripts/openf1_mock_push.py --base-url http://127.0.0.1:8008 --token devtoken --interval 0.2 --repeat 50
+```
+
 ## News WS Mock
 
 用于“突发新闻”推送的 WS：客户端订阅 `WS /ws/news`，后端推送 topic=`v1/breaking` 的消息。

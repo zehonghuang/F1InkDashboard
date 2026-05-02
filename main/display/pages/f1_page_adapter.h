@@ -308,6 +308,10 @@ private:
         double gap_to_leader = -1;
         double interval = -1;
         std::string acronym;
+        std::string tyre_compound;
+        int tyre_age_at_start = -1;
+        int stint_lap_start = -1;
+        int stint_number = -1;
     };
     std::unordered_map<int, LiveDriver> live_drivers_{};
     std::string live_header_left_text_{};

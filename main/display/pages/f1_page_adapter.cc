@@ -2011,6 +2011,28 @@ bool F1PageAdapter::ApplyOpenF1WsJsonLocked(const char* json_text, size_t len) {
                 live_drivers_[no].interval = interval;
             }
         }
+    } else if (strcmp(topic, "v1/stints") == 0) {
+        const int no = GetIntOrNeg(payload, "driver_number");
+        const char* compound = GetStringOrEmpty(payload, "compound");
+        const int lap_start = GetIntOrNeg(payload, "lap_start");
+        const int lap_end = GetIntOrNeg(payload, "lap_end");
+        const int tyre_age_at_start = GetIntOrNeg(payload, "tyre_age_at_start");
+        const int stint_number = GetIntOrNeg(payload, "stint_number");
+        if (no > 0 && compound && compound[0]) {
+            if (lap_end <= 0) {
+                auto& d = live_drivers_[no];
+                if (stint_number > 0 && (d.stint_number < 0 || stint_number >= d.stint_number)) {
+                    d.stint_number = stint_number;
+                }
+                d.tyre_compound = compound;
+                if (tyre_age_at_start >= 0) {
+                    d.tyre_age_at_start = tyre_age_at_start;
+                }
+                if (lap_start > 0) {
+                    d.stint_lap_start = lap_start;
+                }
+            }
+        }
     } else if (strcmp(topic, "v1/weather") == 0) {
         {
             const double t = GetDoubleOrNeg(payload, "track_temperature");
@@ -2096,6 +2118,7 @@ void F1PageAdapter::ApplyLiveFromStateLocked() {
         double gap = -1;
         double interval = -1;
         std::string acr;
+        std::string tyre;
     };
     std::vector<Row> rows;
     rows.reserve(live_drivers_.size());
@@ -2111,6 +2134,44 @@ void F1PageAdapter::ApplyLiveFromStateLocked() {
         r.gap = d.gap_to_leader;
         r.interval = d.interval;
         r.acr = d.acronym;
+        if (!d.tyre_compound.empty()) {
+            char c = d.tyre_compound[0];
+            if (d.tyre_compound == "SOFT") {
+                c = 'S';
+            } else if (d.tyre_compound == "MEDIUM") {
+                c = 'M';
+            } else if (d.tyre_compound == "HARD") {
+                c = 'H';
+            } else if (d.tyre_compound == "INTERMEDIATE") {
+                c = 'I';
+            } else if (d.tyre_compound == "WET") {
+                c = 'W';
+            }
+            int age = -1;
+            if (live_lap_number_ > 0 && d.stint_lap_start > 0) {
+                age = live_lap_number_ - d.stint_lap_start;
+                if (age < 0) {
+                    age = 0;
+                }
+                if (d.tyre_age_at_start >= 0) {
+                    age += d.tyre_age_at_start;
+                }
+            } else if (d.tyre_age_at_start >= 0) {
+                age = d.tyre_age_at_start;
+            }
+            if (age >= 0) {
+                if (age > 99) {
+                    age = 99;
+                }
+                char buf[8];
+                snprintf(buf, sizeof(buf), "%c%d", c, age);
+                r.tyre = buf;
+            } else {
+                r.tyre = std::string(1, c);
+            }
+        } else {
+            r.tyre = "--";
+        }
         rows.push_back(std::move(r));
     }
     std::sort(rows.begin(), rows.end(), [](const Row& a, const Row& b) {
@@ -2153,7 +2214,7 @@ void F1PageAdapter::ApplyLiveFromStateLocked() {
         SetText(live_cells_[static_cast<size_t>(i)][1], no);
         SetText(live_cells_[static_cast<size_t>(i)][2], acr.c_str());
         SetText(live_cells_[static_cast<size_t>(i)][3], gap.c_str());
-        SetText(live_cells_[static_cast<size_t>(i)][4], "");
+        SetText(live_cells_[static_cast<size_t>(i)][4], r.tyre.c_str());
     }
 
     if (live_fastest_lap_ != nullptr) {
