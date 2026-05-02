@@ -27,6 +27,7 @@ class OpenF1RelayConfig:
     topics: tuple[str, ...]
     max_queue: int
     ingest_token: str | None
+    push_hz: float
 
     @staticmethod
     def from_env() -> "OpenF1RelayConfig":
@@ -49,6 +50,13 @@ class OpenF1RelayConfig:
         mqtt_username = os.getenv("OPENF1_MQTT_USERNAME", "zectrix").strip() or "zectrix"
         token_url = os.getenv("OPENF1_TOKEN_URL", "https://api.openf1.org/token").strip()
         max_queue = int(os.getenv("OPENF1_MAX_QUEUE", "2048"))
+        push_hz_raw = os.getenv("OPENF1_PUSH_HZ", "5").strip()
+        try:
+            push_hz = float(push_hz_raw)
+        except Exception:
+            push_hz = 5.0
+        if push_hz <= 0:
+            push_hz = 5.0
         return OpenF1RelayConfig(
             enabled=enabled,
             mode=mode,
@@ -64,13 +72,15 @@ class OpenF1RelayConfig:
             topics=topics,
             max_queue=max_queue,
             ingest_token=ingest_token,
+            push_hz=push_hz,
         )
 
 
 class OpenF1Relay:
     def __init__(self, cfg: OpenF1RelayConfig):
         self._cfg = cfg
-        self._ws_clients: set[WebSocket] = set()
+        self._ws_clients_fw: set[WebSocket] = set()
+        self._ws_clients_raw: set[WebSocket] = set()
         self._ws_lock = asyncio.Lock()
 
         self._loop: asyncio.AbstractEventLoop | None = None
@@ -89,6 +99,9 @@ class OpenF1Relay:
 
         self._access_token: str | None = cfg.access_token
         self._token_expires_at: datetime | None = None
+
+        self._latest: dict[str, dict[str, Any]] = {}
+        self._dirty: set[str] = set()
 
     @property
     def enabled(self) -> bool:
@@ -111,7 +124,8 @@ class OpenF1Relay:
                 "expires_at_utc": self._token_expires_at.isoformat() if self._token_expires_at else None,
             },
             "clients": {
-                "ws": len(self._ws_clients),
+                "ws_fw": len(self._ws_clients_fw),
+                "ws_raw": len(self._ws_clients_raw),
             },
             "last_message_at_utc": self._last_message_at_utc,
             "last_error": self._last_error,
@@ -164,11 +178,16 @@ class OpenF1Relay:
 
     async def register_ws(self, ws: WebSocket) -> None:
         async with self._ws_lock:
-            self._ws_clients.add(ws)
+            self._ws_clients_fw.add(ws)
+
+    async def register_ws_raw(self, ws: WebSocket) -> None:
+        async with self._ws_lock:
+            self._ws_clients_raw.add(ws)
 
     async def unregister_ws(self, ws: WebSocket) -> None:
         async with self._ws_lock:
-            self._ws_clients.discard(ws)
+            self._ws_clients_fw.discard(ws)
+            self._ws_clients_raw.discard(ws)
 
     def verify_ingest_token(self, token: str | None) -> bool:
         if not self._cfg.ingest_token:
@@ -201,6 +220,14 @@ class OpenF1Relay:
             except Exception:
                 return False
         return True
+
+    @staticmethod
+    def _cache_key(topic: str, payload: Any) -> str:
+        if isinstance(payload, dict):
+            dn = payload.get("driver_number")
+            if isinstance(dn, int) and dn > 0:
+                return f"{topic}:{dn}"
+        return topic
 
     async def _ensure_token(self, force: bool) -> bool:
         if self._access_token and not force:
@@ -382,20 +409,65 @@ class OpenF1Relay:
                 continue
 
     async def _broadcast_loop(self) -> None:
+        flush_interval = 1.0 / max(0.5, float(self._cfg.push_hz))
         while self._enabled_runtime:
             q = self._queue
             if q is None:
                 await asyncio.sleep(0.05)
                 continue
-            event = await q.get()
+
+            try:
+                event = await asyncio.wait_for(q.get(), timeout=flush_interval)
+                payload = event.get("payload")
+                topic = str(event.get("topic") or "")
+                if topic:
+                    k = self._cache_key(topic, payload)
+                    self._latest[k] = event
+                    self._dirty.add(k)
+                while True:
+                    try:
+                        e = q.get_nowait()
+                    except Exception:
+                        break
+                    payload = e.get("payload")
+                    topic = str(e.get("topic") or "")
+                    if topic:
+                        k = self._cache_key(topic, payload)
+                        self._latest[k] = e
+                        self._dirty.add(k)
+            except asyncio.TimeoutError:
+                pass
+
             async with self._ws_lock:
-                clients = list(self._ws_clients)
-            if not clients:
+                fw_clients = list(self._ws_clients_fw)
+                raw_clients = list(self._ws_clients_raw)
+                dirty_keys = list(self._dirty)
+                self._dirty.clear()
+
+            if raw_clients:
+                for k in dirty_keys:
+                    e = self._latest.get(k)
+                    if not e:
+                        continue
+                    msg = json.dumps(e, ensure_ascii=False, separators=(",", ":"))
+                    for c in raw_clients:
+                        try:
+                            await c.send_text(msg)
+                        except Exception:
+                            async with self._ws_lock:
+                                self._ws_clients_raw.discard(c)
+
+            if not fw_clients:
                 continue
-            msg = json.dumps(event, ensure_ascii=False, separators=(",", ":"))
-            for c in clients:
-                try:
-                    await c.send_text(msg)
-                except Exception:
-                    async with self._ws_lock:
-                        self._ws_clients.discard(c)
+
+            for k in dirty_keys:
+                e = self._latest.get(k)
+                if not e:
+                    continue
+                msg = json.dumps(e, ensure_ascii=False, separators=(",", ":"))
+                for c in fw_clients:
+                    try:
+                        await c.send_text(msg)
+                    except Exception:
+                        async with self._ws_lock:
+                            self._ws_clients_fw.discard(c)

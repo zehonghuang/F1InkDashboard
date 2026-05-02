@@ -12,6 +12,7 @@ enum class UiPageId : uint8_t {
     WifiSetup = 1,
     F1 = 2,
     BreakingNews = 3,
+    Meme = 4,
     Gallery = F1,
 };
 

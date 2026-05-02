@@ -15,6 +15,7 @@ class FactoryTestPageAdapter;
 class WifiSetupPageAdapter;
 class F1PageAdapter;
 class BreakingNewsPageAdapter;
+class MemePageAdapter;
 
 class LcdDisplay : public LvglDisplay {
 protected:
@@ -24,6 +25,7 @@ protected:
     lv_obj_t* wifi_setup_screen_ = nullptr;
     lv_obj_t* f1_screen_ = nullptr;
     lv_obj_t* breaking_news_screen_ = nullptr;
+    lv_obj_t* meme_screen_ = nullptr;
 
     UiPageRegistry page_registry_;
     std::vector<UiPageId> page_stack_;
@@ -31,6 +33,7 @@ protected:
     WifiSetupPageAdapter* wifi_setup_page_adapter_ = nullptr;
     F1PageAdapter* f1_page_adapter_ = nullptr;
     BreakingNewsPageAdapter* breaking_news_page_adapter_ = nullptr;
+    MemePageAdapter* meme_page_adapter_ = nullptr;
     bool ui_setup_done_ = false;
     bool raw_1bpp_visible_ = false;
 
@@ -48,6 +51,7 @@ protected:
     friend class WifiSetupPageAdapter;
     friend class F1PageAdapter;
     friend class BreakingNewsPageAdapter;
+    friend class MemePageAdapter;
 
     LcdDisplay(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_handle_t panel, int width, int height);
 
@@ -72,6 +76,7 @@ public:
     FactoryTestPageAdapter* GetFactoryTestPageAdapter() { return factory_test_page_adapter_; }
 
     void ShowWsOverlay(const std::string& text);
+    void ShowMemeOverlay(const std::string& title, std::vector<uint8_t> png_bytes);
     bool HideWsOverlayIfVisible();
     bool IsWsOverlayVisible() const;
 

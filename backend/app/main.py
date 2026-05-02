@@ -49,7 +49,7 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 DEFAULT_DEVICE_WS_URL = os.getenv("ZECTRIX_DEVICE_WS_URL", "ws://192.168.4.1:8080/ws")
 openf1 = OpenF1Relay(OpenF1RelayConfig.from_env())
-news_ws = NewsRelay(NewsRelayConfig.from_env())
+news_ws = NewsRelay(NewsRelayConfig.from_env(), static_dir=STATIC_DIR)
 
 ws_clients: set[WebSocket] = set()
 ws_clients_lock = asyncio.Lock()
@@ -182,7 +182,23 @@ async def ws_endpoint(ws: WebSocket):
 @app.websocket("/ws/openf1")
 async def ws_openf1(ws: WebSocket):
     await ws.accept()
+    await openf1.start()
     await openf1.register_ws(ws)
+    try:
+        await ws.send_text(json.dumps({"type": "hello", "source": "openf1", "status": openf1.status()}, ensure_ascii=False))
+        while True:
+            await ws.receive_text()
+    except WebSocketDisconnect:
+        pass
+    finally:
+        await openf1.unregister_ws(ws)
+
+
+@app.websocket("/ws/openf1/raw")
+async def ws_openf1_raw(ws: WebSocket):
+    await ws.accept()
+    await openf1.start()
+    await openf1.register_ws_raw(ws)
     try:
         await ws.send_text(json.dumps({"type": "hello", "source": "openf1", "status": openf1.status()}, ensure_ascii=False))
         while True:
@@ -298,6 +314,27 @@ async def news_ws_ingest(
     return {"ok": True}
 
 
+@app.post("/api/v1/news/meme/ws/ingest")
+async def news_meme_ws_ingest(
+    title: str = Form(..., min_length=1, max_length=200),
+    image: UploadFile | None = File(default=None),
+    audio: UploadFile | None = File(default=None),
+    token: str | None = Query(default=None),
+) -> dict:
+    if not news_ws.enabled:
+        raise HTTPException(
+            status_code=400,
+            detail="news ws is disabled (set NEWS_WS_ENABLED=1 or NEWS_INGEST_TOKEN and restart backend process)",
+        )
+    if not news_ws.verify_ingest_token(token):
+        raise HTTPException(status_code=401, detail="invalid ingest token")
+    await news_ws.start()
+    ok = await news_ws.publish_meme_from_upload(title=title, image=image, audio=audio)
+    if not ok:
+        raise HTTPException(status_code=500, detail="publish failed")
+    return {"ok": True}
+
+
 @app.post("/api/v1/news/ingest")
 async def news_ingest_json(
     data: object = Body(...),
@@ -312,9 +349,13 @@ async def news_ingest_json(
         raise HTTPException(status_code=401, detail="invalid ingest token")
     await news_ws.start()
 
+    topic = "v1/breaking"
     payload: object = data
-    if isinstance(data, dict) and "payload" in data:
-        payload = data.get("payload")
+    if isinstance(data, dict):
+        if isinstance(data.get("topic"), str) and data.get("topic"):
+            topic = data["topic"]
+        if "payload" in data:
+            payload = data.get("payload")
     if not isinstance(payload, dict):
         raise HTTPException(status_code=400, detail="invalid payload")
 
@@ -328,22 +369,57 @@ async def news_ingest_json(
     image_obj = payload.get("image")
     image_bytes = None
     image_mime = None
+    image_url = None
     if isinstance(image_obj, dict):
+        url = image_obj.get("url")
+        if isinstance(url, str) and url.strip():
+            image_url = url.strip()
         enc = image_obj.get("encoding")
         data_b64 = image_obj.get("data")
         image_mime = image_obj.get("mime")
-        if enc == "base64" and isinstance(data_b64, str) and data_b64:
+        if image_url is None and enc == "base64" and isinstance(data_b64, str) and data_b64:
             try:
                 image_bytes = base64.b64decode(data_b64, validate=True)
             except Exception:
                 raise HTTPException(status_code=400, detail="invalid image base64")
 
-    ok = await news_ws.publish_breaking(
-        date_utc=date_utc,
-        title=title.strip(),
-        image_bytes=image_bytes,
-        image_mime=image_mime if isinstance(image_mime, str) else None,
-    )
+    if topic == "v1/breaking":
+        ok = await news_ws.publish_breaking(
+            date_utc=date_utc,
+            title=title.strip(),
+            image_bytes=image_bytes,
+            image_mime=image_mime if isinstance(image_mime, str) else None,
+            image_url=image_url,
+        )
+    elif topic == "v1/meme":
+        audio_obj = payload.get("audio")
+        audio_bytes = None
+        audio_mime = None
+        audio_url = None
+        if isinstance(audio_obj, dict):
+            url = audio_obj.get("url")
+            if isinstance(url, str) and url.strip():
+                audio_url = url.strip()
+            enc = audio_obj.get("encoding")
+            data_b64 = audio_obj.get("data")
+            audio_mime = audio_obj.get("mime")
+            if audio_url is None and enc == "base64" and isinstance(data_b64, str) and data_b64:
+                try:
+                    audio_bytes = base64.b64decode(data_b64, validate=True)
+                except Exception:
+                    raise HTTPException(status_code=400, detail="invalid audio base64")
+        ok = await news_ws.publish_meme(
+            date_utc=date_utc,
+            title=title.strip(),
+            image_bytes=image_bytes,
+            image_mime=image_mime if isinstance(image_mime, str) else None,
+            audio_bytes=audio_bytes,
+            audio_mime=audio_mime if isinstance(audio_mime, str) else None,
+            image_url=image_url,
+            audio_url=audio_url,
+        )
+    else:
+        raise HTTPException(status_code=400, detail="unsupported topic")
     if not ok:
         raise HTTPException(status_code=500, detail="publish failed")
     return {"ok": True}

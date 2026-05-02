@@ -1,6 +1,7 @@
 #include "lcd_display.h"
 
 #include "lvgl_theme.h"
+#include "pages/meme_page_adapter.h"
 #include "pages/f1_page_adapter.h"
 #include "pages/breaking_news_page_adapter.h"
 #include "pages/factory_test_page_adapter.h"
@@ -85,6 +86,7 @@ LcdDisplay::~LcdDisplay() {
         wifi_setup_page_adapter_ = nullptr;
         f1_page_adapter_ = nullptr;
         breaking_news_page_adapter_ = nullptr;
+        meme_page_adapter_ = nullptr;
         ui_setup_done_ = false;
         if (factory_test_screen_ != nullptr) {
             lv_obj_del(factory_test_screen_);
@@ -101,6 +103,10 @@ LcdDisplay::~LcdDisplay() {
         if (breaking_news_screen_ != nullptr) {
             lv_obj_del(breaking_news_screen_);
             breaking_news_screen_ = nullptr;
+        }
+        if (meme_screen_ != nullptr) {
+            lv_obj_del(meme_screen_);
+            meme_screen_ = nullptr;
         }
     }
 
@@ -204,9 +210,21 @@ void LcdDisplay::ShowWsOverlay(const std::string& text) {
     (void)NavigateToLocked(UiPageId::BreakingNews);
 }
 
+void LcdDisplay::ShowMemeOverlay(const std::string& title, std::vector<uint8_t> png_bytes) {
+    SetupUI();
+    DisplayLockGuard lock(this);
+    if (meme_page_adapter_ != nullptr) {
+        meme_page_adapter_->Update(title, std::move(png_bytes));
+    }
+    (void)NavigateToLocked(UiPageId::Meme);
+}
+
 bool LcdDisplay::HideWsOverlayIfVisible() {
     DisplayLockGuard lock(this);
     if (page_registry_.HasActive() && page_registry_.ActiveId() == UiPageId::BreakingNews) {
+        return BackLocked();
+    }
+    if (page_registry_.HasActive() && page_registry_.ActiveId() == UiPageId::Meme) {
         return BackLocked();
     }
     return false;
@@ -214,7 +232,8 @@ bool LcdDisplay::HideWsOverlayIfVisible() {
 
 bool LcdDisplay::IsWsOverlayVisible() const {
     DisplayLockGuard lock(const_cast<LcdDisplay*>(this));
-    return page_registry_.HasActive() && page_registry_.ActiveId() == UiPageId::BreakingNews;
+    return page_registry_.HasActive() &&
+        (page_registry_.ActiveId() == UiPageId::BreakingNews || page_registry_.ActiveId() == UiPageId::Meme);
 }
 
 void LcdDisplay::ShowRaw1bppFrame(const uint8_t* data, size_t len) {
@@ -313,6 +332,13 @@ void LcdDisplay::SetupUI() {
     breaking_news_page_adapter_ = breaking.get();
     if (!RegisterPageLocked(std::move(breaking))) {
         breaking_news_page_adapter_ = nullptr;
+        return;
+    }
+
+    auto meme = std::make_unique<MemePageAdapter>(this);
+    meme_page_adapter_ = meme.get();
+    if (!RegisterPageLocked(std::move(meme))) {
+        meme_page_adapter_ = nullptr;
         return;
     }
 

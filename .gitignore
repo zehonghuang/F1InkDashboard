@@ -23,6 +23,7 @@ venv/
 env/
 backend/.venv/
 backend/.deps/
+backend/static/news/
 
 Thumbs.db
 Desktop.ini
