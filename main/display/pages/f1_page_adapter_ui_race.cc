@@ -332,7 +332,8 @@ void F1PageAdapter::BuildRaceLocked() {
     constexpr lv_coord_t kSchedSessionW = 44;
     constexpr lv_coord_t kSchedDayW = 36;
     constexpr lv_coord_t kSchedTimeW = 52;
-    const lv_coord_t kSchedStatusW = (kColW - 8) - (kSchedSessionW + kSchedDayW + kSchedTimeW);
+    constexpr lv_coord_t kSchedStatusPad = 6;
+    const lv_coord_t kSchedStatusW = (kColW - 8) - (kSchedSessionW + kSchedDayW + kSchedTimeW) - kSchedStatusPad;
 
     const lv_coord_t row_gap = 2;
     const lv_coord_t base_y = 0;
