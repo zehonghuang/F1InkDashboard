@@ -220,14 +220,18 @@ void F1PageAdapter::BuildRaceLocked() {
         0);
 
     race_track_box_ = lv_obj_create(mid_left);
-    lv_obj_set_size(race_track_box_, kColW - 8, kMidH - 8);
-    lv_obj_align(race_track_box_, LV_ALIGN_TOP_LEFT, 0, 0);
+    const lv_coord_t track_w = (kColW - 8) - 32;
+    const lv_coord_t track_h = (kMidH - 8) - 32;
+    lv_obj_set_size(race_track_box_, track_w, track_h);
+    lv_obj_align(race_track_box_, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_border_width(race_track_box_, 0, 0);
     lv_obj_set_style_bg_opa(race_track_box_, LV_OPA_TRANSP, 0);
     lv_obj_set_style_pad_all(race_track_box_, 0, 0);
+    lv_obj_clear_flag(race_track_box_, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_scrollbar_mode(race_track_box_, LV_SCROLLBAR_MODE_OFF);
 
     race_track_image_ = lv_image_create(race_track_box_);
-    lv_obj_align(race_track_image_, LV_ALIGN_CENTER, -3, -3);
+    lv_obj_align(race_track_image_, LV_ALIGN_CENTER, 0, 0);
     lv_obj_add_flag(race_track_image_, LV_OBJ_FLAG_HIDDEN);
     lv_image_set_antialias(race_track_image_, false);
 
@@ -239,7 +243,7 @@ void F1PageAdapter::BuildRaceLocked() {
     lv_label_set_long_mode(race_track_placeholder_, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(race_track_placeholder_, LV_PCT(100));
     lv_obj_set_style_text_align(race_track_placeholder_, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(race_track_placeholder_, LV_ALIGN_CENTER, -3, -3);
+    lv_obj_align(race_track_placeholder_, LV_ALIGN_CENTER, 0, 0);
 
     ApplyCircuitImageLocked();
 
@@ -328,6 +332,8 @@ void F1PageAdapter::BuildRaceLocked() {
         bottom_left,
         static_cast<lv_border_side_t>(LV_BORDER_SIDE_LEFT | LV_BORDER_SIDE_BOTTOM),
         0);
+    lv_obj_clear_flag(bottom_left, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_scrollbar_mode(bottom_left, LV_SCROLLBAR_MODE_OFF);
 
     constexpr lv_coord_t kSchedSessionW = 44;
     constexpr lv_coord_t kSchedDayW = 36;
@@ -362,6 +368,8 @@ void F1PageAdapter::BuildRaceLocked() {
         bottom_right,
         static_cast<lv_border_side_t>(LV_BORDER_SIDE_RIGHT | LV_BORDER_SIDE_BOTTOM),
         0);
+    lv_obj_clear_flag(bottom_right, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_scrollbar_mode(bottom_right, LV_SCROLLBAR_MODE_OFF);
 
     constexpr lv_coord_t kKvKeyW = 78;
     const lv_coord_t kKvValW = (kColW - 8) - kKvKeyW;
