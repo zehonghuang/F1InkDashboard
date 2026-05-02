@@ -320,13 +320,23 @@ private:
                 UpdateWifiSetupPage("状态：正在连接 WiFi...", false);
                 break;
             case WifiEvent::Connected:
-                if (ws_client_ == nullptr && display_ != nullptr) {
-                    ws_client_ = std::make_unique<WsClientService>(display_);
+                if (display_ != nullptr) {
+                    if (ws_openf1_ == nullptr) {
+                        ws_openf1_ = std::make_unique<WsClientService>(display_, WsClientService::Mode::OpenF1);
+                    }
+                    if (ws_news_ == nullptr) {
+                        ws_news_ = std::make_unique<WsClientService>(display_, WsClientService::Mode::News);
+                    }
                 }
-                if (ws_client_ != nullptr) {
+                if (ws_openf1_ != nullptr) {
                     Settings s("websocket", false);
                     const std::string url = s.GetString("url", "");
-                    ws_client_->Start(url);
+                    ws_openf1_->Start(url);
+                }
+                if (ws_news_ != nullptr) {
+                    Settings s("websocket", false);
+                    const std::string url = s.GetString("url", "");
+                    ws_news_->Start(url);
                 }
                 if (display_ != nullptr) {
                     wifi_onboarding_active_ = false;
@@ -336,19 +346,32 @@ private:
                 }
                 break;
             case WifiEvent::Disconnected:
-                if (ws_client_ != nullptr) {
-                    ws_client_->Stop();
+                if (ws_openf1_ != nullptr) {
+                    ws_openf1_->Stop();
+                }
+                if (ws_news_ != nullptr) {
+                    ws_news_->Stop();
                 }
                 UpdateWifiSetupPage("状态：WiFi 已断开，正在重试...", false);
                 break;
             case WifiEvent::ConfigModeEnter:
-                if (ws_client_ == nullptr && display_ != nullptr) {
-                    ws_client_ = std::make_unique<WsClientService>(display_);
+                if (display_ != nullptr) {
+                    if (ws_openf1_ == nullptr) {
+                        ws_openf1_ = std::make_unique<WsClientService>(display_, WsClientService::Mode::OpenF1);
+                    }
+                    if (ws_news_ == nullptr) {
+                        ws_news_ = std::make_unique<WsClientService>(display_, WsClientService::Mode::News);
+                    }
                 }
-                if (ws_client_ != nullptr) {
+                if (ws_openf1_ != nullptr) {
                     Settings s("websocket", false);
                     const std::string url = s.GetString("url", "");
-                    ws_client_->Start(url);
+                    ws_openf1_->Start(url);
+                }
+                if (ws_news_ != nullptr) {
+                    Settings s("websocket", false);
+                    const std::string url = s.GetString("url", "");
+                    ws_news_->Start(url);
                 }
                 UpdateWifiSetupPage("状态：已进入配网模式，等待手机连接热点", false);
                 break;
@@ -805,7 +828,8 @@ private:
     i2c_master_bus_handle_t i2c_bus_ = nullptr;
     std::unique_ptr<RtcPcf8563> rtc_;
     std::unique_ptr<ZectrixNfc> nfc_;
-    std::unique_ptr<WsClientService> ws_client_;
+    std::unique_ptr<WsClientService> ws_openf1_;
+    std::unique_ptr<WsClientService> ws_news_;
     ChargeStatus charge_status_;
     Button up_button_;
     Button down_button_;

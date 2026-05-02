@@ -6,6 +6,7 @@
 
 #include <array>
 #include <atomic>
+#include <unordered_map>
 #include <string>
 #include <vector>
 
@@ -58,6 +59,8 @@ private:
     void ApplyCircuitDetailImageLocked();
     bool ApplyUiJsonLocked(const char* json_text, size_t len);
     bool ApplySessionsJsonLocked(const char* json_text, size_t len);
+    bool ApplyOpenF1WsJsonLocked(const char* json_text, size_t len);
+    void ApplyLiveFromStateLocked();
     void RenderRaceRightFormula1Locked();
     void SetText(lv_obj_t* label, const char* text);
     void SetTextFmt(lv_obj_t* label, const char* fmt, int v);
@@ -299,6 +302,23 @@ private:
     std::string fastest_lap_time_;
     std::string fastest_lap_driver_;
     int fastest_lap_year_ = -1;
+
+    struct LiveDriver {
+        int pos = -1;
+        double gap_to_leader = -1;
+        double interval = -1;
+        std::string acronym;
+    };
+    std::unordered_map<int, LiveDriver> live_drivers_{};
+    std::string live_header_left_text_{};
+    std::string live_track_status_text_{"[ GREEN ]"};
+    double live_track_temp_c_ = -1000;
+    double live_air_temp_c_ = -1000;
+    int live_humidity_ = -1;
+    int live_lap_number_ = -1;
+    double live_best_lap_s_ = -1;
+    int live_best_lap_driver_ = -1;
+    int live_best_lap_number_ = -1;
 };
 
 #endif  // F1_PAGE_ADAPTER_H

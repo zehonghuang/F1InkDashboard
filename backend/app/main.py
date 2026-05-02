@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import json
 import os
 from datetime import datetime, timezone
@@ -6,7 +7,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import httpx
-from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import Body, FastAPI, File, Form, HTTPException, Query, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -14,6 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from .cache import TtlCache
 from .epd_frame import build_epd_frame
 from .f1_circuit_assets import fetch_f1_circuit_assets
+from .news_stream import NewsRelay, NewsRelayConfig
 from .openf1_stream import OpenF1Relay, OpenF1RelayConfig
 from .third_party import (
     build_pages_payload,
@@ -47,6 +49,7 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 DEFAULT_DEVICE_WS_URL = os.getenv("ZECTRIX_DEVICE_WS_URL", "ws://192.168.4.1:8080/ws")
 openf1 = OpenF1Relay(OpenF1RelayConfig.from_env())
+news_ws = NewsRelay(NewsRelayConfig.from_env())
 
 ws_clients: set[WebSocket] = set()
 ws_clients_lock = asyncio.Lock()
@@ -55,11 +58,13 @@ ws_clients_lock = asyncio.Lock()
 @app.on_event("startup")
 async def _startup() -> None:
     await openf1.start()
+    await news_ws.start()
 
 
 @app.on_event("shutdown")
 async def _shutdown() -> None:
     await openf1.stop()
+    await news_ws.stop()
 
 
 def _load_circuit_assets_from_disk(season: int) -> dict | None:
@@ -192,6 +197,156 @@ async def ws_openf1(ws: WebSocket):
 async def openf1_status() -> dict:
     return openf1.status()
 
+
+@app.post("/api/v1/openf1/ingest")
+async def openf1_ingest(
+    data: object = Body(...),
+    token: str | None = Query(default=None),
+) -> dict:
+    if not openf1.enabled:
+        raise HTTPException(
+            status_code=400,
+            detail="openf1 is disabled (set OPENF1_MODE=mock or OPENF1_ENABLED=1 and restart backend process)",
+        )
+    if not openf1.verify_ingest_token(token):
+        raise HTTPException(status_code=401, detail="invalid ingest token")
+    await openf1.start()
+
+    topic = "mock"
+    payload: object = data
+    if isinstance(data, dict):
+        if isinstance(data.get("topic"), str):
+            topic = data["topic"]
+        if "payload" in data:
+            payload = data.get("payload")
+    ok = await openf1.publish(topic=topic, payload=payload, source="mock")
+    if not ok:
+        raise HTTPException(status_code=500, detail="publish failed")
+    return {"ok": True}
+
+
+@app.websocket("/ws/openf1/ingest")
+async def ws_openf1_ingest(ws: WebSocket):
+    if not openf1.enabled:
+        await ws.close(code=1008)
+        return
+    token = ws.query_params.get("token")
+    if not openf1.verify_ingest_token(token):
+        await ws.close(code=1008)
+        return
+    await openf1.start()
+    await ws.accept()
+    try:
+        while True:
+            raw = await ws.receive_text()
+            try:
+                data = json.loads(raw)
+            except Exception:
+                data = {"payload": raw}
+            topic = "mock"
+            payload: object = data
+            if isinstance(data, dict):
+                if isinstance(data.get("topic"), str):
+                    topic = data["topic"]
+                if "payload" in data:
+                    payload = data.get("payload")
+            await openf1.publish(topic=topic, payload=payload, source="mock")
+    except WebSocketDisconnect:
+        pass
+
+
+@app.get("/api/v1/news/ws/status")
+async def news_ws_status() -> dict:
+    return news_ws.status()
+
+
+@app.websocket("/ws/news")
+async def ws_news(ws: WebSocket):
+    if not news_ws.enabled:
+        await ws.close(code=1008)
+        return
+    await news_ws.start()
+    await ws.accept()
+    await news_ws.register_ws(ws)
+    try:
+        await ws.send_text(json.dumps({"type": "hello", "source": "news", "status": news_ws.status()}, ensure_ascii=False))
+        while True:
+            await ws.receive_text()
+    except WebSocketDisconnect:
+        pass
+    finally:
+        await news_ws.unregister_ws(ws)
+
+
+@app.post("/api/v1/news/ws/ingest")
+async def news_ws_ingest(
+    title: str = Form(..., min_length=1, max_length=200),
+    image: UploadFile | None = File(default=None),
+    token: str | None = Query(default=None),
+) -> dict:
+    if not news_ws.enabled:
+        raise HTTPException(
+            status_code=400,
+            detail="news ws is disabled (set NEWS_WS_ENABLED=1 or NEWS_INGEST_TOKEN and restart backend process)",
+        )
+    if not news_ws.verify_ingest_token(token):
+        raise HTTPException(status_code=401, detail="invalid ingest token")
+    await news_ws.start()
+    ok = await news_ws.publish_breaking_from_upload(title=title, image=image)
+    if not ok:
+        raise HTTPException(status_code=500, detail="publish failed")
+    return {"ok": True}
+
+
+@app.post("/api/v1/news/ingest")
+async def news_ingest_json(
+    data: object = Body(...),
+    token: str | None = Query(default=None),
+) -> dict:
+    if not news_ws.enabled:
+        raise HTTPException(
+            status_code=400,
+            detail="news ws is disabled (set NEWS_WS_ENABLED=1 or NEWS_INGEST_TOKEN and restart backend process)",
+        )
+    if not news_ws.verify_ingest_token(token):
+        raise HTTPException(status_code=401, detail="invalid ingest token")
+    await news_ws.start()
+
+    payload: object = data
+    if isinstance(data, dict) and "payload" in data:
+        payload = data.get("payload")
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="invalid payload")
+
+    title = payload.get("title")
+    if not isinstance(title, str) or not title.strip():
+        raise HTTPException(status_code=400, detail="missing title")
+    date_utc = payload.get("date")
+    if not isinstance(date_utc, str) or not date_utc.strip():
+        date_utc = datetime.now(timezone.utc).isoformat()
+
+    image_obj = payload.get("image")
+    image_bytes = None
+    image_mime = None
+    if isinstance(image_obj, dict):
+        enc = image_obj.get("encoding")
+        data_b64 = image_obj.get("data")
+        image_mime = image_obj.get("mime")
+        if enc == "base64" and isinstance(data_b64, str) and data_b64:
+            try:
+                image_bytes = base64.b64decode(data_b64, validate=True)
+            except Exception:
+                raise HTTPException(status_code=400, detail="invalid image base64")
+
+    ok = await news_ws.publish_breaking(
+        date_utc=date_utc,
+        title=title.strip(),
+        image_bytes=image_bytes,
+        image_mime=image_mime if isinstance(image_mime, str) else None,
+    )
+    if not ok:
+        raise HTTPException(status_code=500, detail="publish failed")
+    return {"ok": True}
 
 @app.get("/api/v1/ws/status")
 async def ws_status() -> dict:

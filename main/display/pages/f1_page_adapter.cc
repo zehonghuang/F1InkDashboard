@@ -798,6 +798,17 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         }
         return true;
     }
+    if (id == UiPageCustomEventId::F1OpenF1WsEvent) {
+        std::unique_ptr<std::string> payload(static_cast<std::string*>(event.ptr));
+        if (payload && !payload->empty()) {
+            (void)ApplyOpenF1WsJsonLocked(payload->c_str(), payload->size());
+            ApplyLiveFromStateLocked();
+            if (host_ != nullptr) {
+                host_->RequestDebouncedRefresh(150);
+            }
+        }
+        return true;
+    }
     if (id == UiPageCustomEventId::PagePrevDoubleClick) {
         if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
             const int cur = race_sessions_page_;
@@ -1946,6 +1957,228 @@ bool F1PageAdapter::ApplySessionsJsonLocked(const char* json_text, size_t len) {
     ApplyRaceSessionsLocked();
     cJSON_Delete(root);
     return true;
+}
+
+bool F1PageAdapter::ApplyOpenF1WsJsonLocked(const char* json_text, size_t len) {
+    if (json_text == nullptr || len == 0 || len > (64 * 1024)) {
+        return false;
+    }
+    cJSON* root = cJSON_ParseWithLength(json_text, len);
+    if (root == nullptr) {
+        return false;
+    }
+
+    const char* topic = GetStringOrEmpty(root, "topic");
+    cJSON* payload = GetObj(root, "payload");
+    if (topic == nullptr || topic[0] == 0 || payload == nullptr) {
+        cJSON_Delete(root);
+        return false;
+    }
+
+    if (strcmp(topic, "v1/sessions") == 0) {
+        const char* circuit = GetStringOrEmpty(payload, "circuit_short_name");
+        const char* session_name = GetStringOrEmpty(payload, "session_name");
+        char buf[96];
+        if (session_name && session_name[0] && circuit && circuit[0]) {
+            snprintf(buf, sizeof(buf), "[LIVE] %s %s", session_name, circuit);
+        } else if (circuit && circuit[0]) {
+            snprintf(buf, sizeof(buf), "[LIVE] %s", circuit);
+        } else {
+            snprintf(buf, sizeof(buf), "[LIVE]");
+        }
+        live_header_left_text_ = buf;
+    } else if (strcmp(topic, "v1/drivers") == 0) {
+        const int no = GetIntOrNeg(payload, "driver_number");
+        const char* acr = GetStringOrEmpty(payload, "name_acronym");
+        if (no > 0 && acr && acr[0]) {
+            live_drivers_[no].acronym = acr;
+        }
+    } else if (strcmp(topic, "v1/position") == 0) {
+        const int no = GetIntOrNeg(payload, "driver_number");
+        const int pos = GetIntOrNeg(payload, "position");
+        if (no > 0 && pos > 0) {
+            live_drivers_[no].pos = pos;
+        }
+    } else if (strcmp(topic, "v1/intervals") == 0) {
+        const int no = GetIntOrNeg(payload, "driver_number");
+        const double gap = GetDoubleOrNeg(payload, "gap_to_leader");
+        const double interval = GetDoubleOrNeg(payload, "interval");
+        if (no > 0) {
+            if (gap >= 0) {
+                live_drivers_[no].gap_to_leader = gap;
+            }
+            if (interval >= 0) {
+                live_drivers_[no].interval = interval;
+            }
+        }
+    } else if (strcmp(topic, "v1/weather") == 0) {
+        {
+            const double t = GetDoubleOrNeg(payload, "track_temperature");
+            if (t >= 0) {
+                live_track_temp_c_ = t;
+            }
+        }
+        {
+            const double t = GetDoubleOrNeg(payload, "air_temperature");
+            if (t >= 0) {
+                live_air_temp_c_ = t;
+            }
+        }
+        {
+            const int v = GetIntOrNeg(payload, "humidity");
+            if (v >= 0) {
+                live_humidity_ = v;
+            }
+        }
+    } else if (strcmp(topic, "v1/race_control") == 0) {
+        const char* category = GetStringOrEmpty(payload, "category");
+        const char* flag = GetStringOrEmpty(payload, "flag");
+        const int lap = GetIntOrNeg(payload, "lap_number");
+        if (lap > 0) {
+            live_lap_number_ = lap;
+        }
+        if (category && strcmp(category, "Flag") == 0 && flag && flag[0]) {
+            char buf[32];
+            snprintf(buf, sizeof(buf), "[ %s ]", flag);
+            live_track_status_text_ = buf;
+        }
+    } else if (strcmp(topic, "v1/laps") == 0) {
+        const int no = GetIntOrNeg(payload, "driver_number");
+        const int lap_no = GetIntOrNeg(payload, "lap_number");
+        const double lap_s = GetDoubleOrNeg(payload, "lap_duration");
+        if (no > 0 && lap_no > 0 && lap_s > 0) {
+            if (live_best_lap_s_ < 0 || lap_s < live_best_lap_s_) {
+                live_best_lap_s_ = lap_s;
+                live_best_lap_driver_ = no;
+                live_best_lap_number_ = lap_no;
+            }
+        }
+    }
+
+    cJSON_Delete(root);
+    return true;
+}
+
+void F1PageAdapter::ApplyLiveFromStateLocked() {
+    if (live_header_left_ != nullptr) {
+        if (!live_header_left_text_.empty()) {
+            SetText(live_header_left_, live_header_left_text_.c_str());
+        }
+    }
+    if (live_header_center_ != nullptr) {
+        char buf[48];
+        if (live_lap_number_ > 0) {
+            snprintf(buf, sizeof(buf), "LAP %d", live_lap_number_);
+        } else {
+            snprintf(buf, sizeof(buf), "LAP --");
+        }
+        SetText(live_header_center_, buf);
+    }
+    if (live_track_status_ != nullptr) {
+        SetText(live_track_status_, live_track_status_text_.c_str());
+    }
+    if (live_temps_ != nullptr) {
+        char buf[64];
+        const int track = (live_track_temp_c_ > -100) ? static_cast<int>(live_track_temp_c_ + 0.5) : -1;
+        const int air = (live_air_temp_c_ > -100) ? static_cast<int>(live_air_temp_c_ + 0.5) : -1;
+        const int hum = live_humidity_;
+        snprintf(buf, sizeof(buf),
+                 "TRACK: %s\nAIR:   %s\nHUM:   %s",
+                 track >= 0 ? (std::to_string(track) + "C").c_str() : "--",
+                 air >= 0 ? (std::to_string(air) + "C").c_str() : "--",
+                 hum >= 0 ? (std::to_string(hum) + "%").c_str() : "--");
+        SetText(live_temps_, buf);
+    }
+
+    struct Row {
+        int no = -1;
+        int pos = -1;
+        double gap = -1;
+        double interval = -1;
+        std::string acr;
+    };
+    std::vector<Row> rows;
+    rows.reserve(live_drivers_.size());
+    for (const auto& kv : live_drivers_) {
+        const int no = kv.first;
+        const auto& d = kv.second;
+        if (no <= 0 || d.pos <= 0) {
+            continue;
+        }
+        Row r;
+        r.no = no;
+        r.pos = d.pos;
+        r.gap = d.gap_to_leader;
+        r.interval = d.interval;
+        r.acr = d.acronym;
+        rows.push_back(std::move(r));
+    }
+    std::sort(rows.begin(), rows.end(), [](const Row& a, const Row& b) {
+        return a.pos < b.pos;
+    });
+
+    auto fmt_gap = [&](const Row& r) -> std::string {
+        if (r.pos == 1) {
+            return "---";
+        }
+        const double v = (r.interval >= 0) ? r.interval : r.gap;
+        if (v < 0) {
+            return "+--";
+        }
+        char b[24];
+        snprintf(b, sizeof(b), "+%.3f", v);
+        return b;
+    };
+
+    for (int i = 0; i < kLiveRows; i++) {
+        if (live_cells_[static_cast<size_t>(i)][0] == nullptr) {
+            continue;
+        }
+        if (i >= static_cast<int>(rows.size())) {
+            SetText(live_cells_[static_cast<size_t>(i)][0], "");
+            SetText(live_cells_[static_cast<size_t>(i)][1], "");
+            SetText(live_cells_[static_cast<size_t>(i)][2], "");
+            SetText(live_cells_[static_cast<size_t>(i)][3], "");
+            SetText(live_cells_[static_cast<size_t>(i)][4], "");
+            continue;
+        }
+        const Row& r = rows[static_cast<size_t>(i)];
+        char pos[8];
+        char no[8];
+        snprintf(pos, sizeof(pos), "%02d", r.pos);
+        snprintf(no, sizeof(no), "%02d", r.no);
+        const std::string acr = !r.acr.empty() ? r.acr : ("#" + std::to_string(r.no));
+        const std::string gap = fmt_gap(r);
+        SetText(live_cells_[static_cast<size_t>(i)][0], pos);
+        SetText(live_cells_[static_cast<size_t>(i)][1], no);
+        SetText(live_cells_[static_cast<size_t>(i)][2], acr.c_str());
+        SetText(live_cells_[static_cast<size_t>(i)][3], gap.c_str());
+        SetText(live_cells_[static_cast<size_t>(i)][4], "");
+    }
+
+    if (live_fastest_lap_ != nullptr) {
+        if (live_best_lap_s_ > 0 && live_best_lap_driver_ > 0) {
+            const double s = live_best_lap_s_;
+            const int mm = static_cast<int>(s / 60.0);
+            const double ss = s - (mm * 60.0);
+            const int ssi = static_cast<int>(ss);
+            const int ms = static_cast<int>((ss - ssi) * 1000.0 + 0.5);
+            char t[32];
+            snprintf(t, sizeof(t), "%d:%02d.%03d", mm, ssi, ms);
+            const auto it = live_drivers_.find(live_best_lap_driver_);
+            const std::string acr = (it != live_drivers_.end() && !it->second.acronym.empty())
+                                        ? it->second.acronym
+                                        : ("#" + std::to_string(live_best_lap_driver_));
+            char buf[96];
+            snprintf(buf, sizeof(buf),
+                     "#%d %s\n%s (L%d)",
+                     live_best_lap_driver_,
+                     acr.c_str(),
+                     t,
+                     live_best_lap_number_ > 0 ? live_best_lap_number_ : 0);
+            SetText(live_fastest_lap_, buf);
+        }
+    }
 }
 
 void F1PageAdapter::ApplyQualiResultPageLocked() {

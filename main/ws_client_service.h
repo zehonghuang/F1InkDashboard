@@ -14,7 +14,12 @@ class LcdDisplay;
 
 class WsClientService {
 public:
-    explicit WsClientService(LcdDisplay* display);
+    enum class Mode : uint8_t {
+        OpenF1 = 0,
+        News = 1,
+    };
+
+    explicit WsClientService(LcdDisplay* display, Mode mode);
     ~WsClientService();
 
     void Start(const std::string& url);
@@ -26,8 +31,10 @@ private:
     void TaskLoop();
     void HandleIncomingText(const std::string& text);
     void ShowOverlay(const std::string& text);
+    std::string ResolveUrl();
 
     LcdDisplay* display_ = nullptr;
+    Mode mode_{Mode::OpenF1};
     std::atomic<bool> stop_{false};
     std::atomic<bool> running_{false};
     TaskHandle_t task_ = nullptr;

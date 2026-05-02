@@ -2,15 +2,16 @@
 
 #include "backend_url.h"
 #include "display/lcd_display.h"
+#include "display/ui_page.h"
+#include "display/pages/f1_page_adapter_net.h"
 
 #include <memory>
 #include <string>
-#include <vector>
 
+#include <cJSON.h>
 #include <esp_log.h>
 
 #include "settings.h"
-#include "display/pages/f1_page_adapter_net.h"
 #include "esp_network.h"
 #include "web_socket.h"
 
@@ -35,47 +36,9 @@ void ShowOverlayAsync(void* arg) {
     args->display->RequestUrgentFullRefresh();
 }
 
-struct EpdArgs {
-    LcdDisplay* display = nullptr;
-    std::string* url = nullptr;
-};
-
-void ShowRawFrameTask(void* arg) {
-    std::unique_ptr<EpdArgs> args(static_cast<EpdArgs*>(arg));
-    if (!args || args->display == nullptr || args->url == nullptr) {
-        vTaskDelete(nullptr);
-        return;
-    }
-    const std::string url = *args->url;
-    delete args->url;
-
-    std::vector<uint8_t> buf;
-    const int w = args->display->width();
-    const int h = args->display->height();
-    const size_t expected = static_cast<size_t>((w + 7) >> 3) * static_cast<size_t>(h);
-    const size_t max_bytes = expected;
-    if (!HttpGetToBuffer(url, buf, max_bytes)) {
-        ESP_LOGW(kTag, "epd fetch failed url=%s", url.c_str());
-        vTaskDelete(nullptr);
-        return;
-    }
-    if (buf.size() != expected) {
-        ESP_LOGW(kTag, "epd size mismatch url=%s got=%u exp=%u",
-                 url.c_str(),
-                 static_cast<unsigned>(buf.size()),
-                 static_cast<unsigned>(expected));
-        vTaskDelete(nullptr);
-        return;
-    }
-
-    args->display->ShowRaw1bppFrame(buf.data(), buf.size());
-    std::vector<uint8_t>().swap(buf);
-    vTaskDelete(nullptr);
-}
-
 }  // namespace
 
-WsClientService::WsClientService(LcdDisplay* display) : display_(display) {
+WsClientService::WsClientService(LcdDisplay* display, Mode mode) : display_(display), mode_(mode) {
     event_group_ = xEventGroupCreate();
 }
 
@@ -123,26 +86,41 @@ void WsClientService::TaskEntry(void* arg) {
 }
 
 void WsClientService::HandleIncomingText(const std::string& text) {
-    ESP_LOGI(kTag, "rx len=%u", static_cast<unsigned>(text.size()));
-    if (text.rfind("FULL:", 0) != 0) {
-        if (text.rfind("EPD:", 0) == 0) {
-            const std::string payload = TrimUrl(text.substr(4));
-            if (!payload.empty()) {
-                std::string url = payload;
-                if (payload.rfind("http://", 0) != 0 && payload.rfind("https://", 0) != 0) {
-                    const std::string base = GetBackendBaseUrl();
-                    url = JoinUrl(base, payload);
-                }
-                auto* args = new EpdArgs();
-                args->display = display_;
-                args->url = new std::string(url);
-                xTaskCreate(&ShowRawFrameTask, "epd_frame", 6144, args, 4, nullptr);
-            }
-        }
+    if (text.empty()) {
         return;
     }
-    ESP_LOGI(kTag, "rx FULL");
-    ShowOverlay(text.substr(5));
+
+    cJSON* root = cJSON_ParseWithLength(text.c_str(), text.size());
+    if (root == nullptr) {
+        return;
+    }
+    const cJSON* topic = cJSON_GetObjectItemCaseSensitive(root, "topic");
+    const cJSON* payload = cJSON_GetObjectItemCaseSensitive(root, "payload");
+
+    if (mode_ == Mode::News) {
+        if (cJSON_IsString(topic) && topic->valuestring != nullptr &&
+            std::string(topic->valuestring) == "v1/breaking") {
+            const cJSON* title = (payload != nullptr) ? cJSON_GetObjectItemCaseSensitive(payload, "title") : nullptr;
+            if (cJSON_IsString(title) && title->valuestring != nullptr) {
+                ShowOverlay(title->valuestring);
+            }
+        }
+        cJSON_Delete(root);
+        return;
+    }
+
+    if (mode_ == Mode::OpenF1) {
+        if (display_ != nullptr) {
+            UiPageEvent e{};
+            e.type = UiPageEventType::Custom;
+            e.i32 = static_cast<int32_t>(UiPageCustomEventId::F1OpenF1WsEvent);
+            e.ptr = new std::string(text);
+            display_->DispatchPageEvent(e, false);
+            display_->RequestDebouncedRefresh(150);
+        }
+    }
+
+    cJSON_Delete(root);
 }
 
 void WsClientService::ShowOverlay(const std::string& text) {
@@ -158,27 +136,53 @@ void WsClientService::ShowOverlay(const std::string& text) {
     (void)lv_async_call(&ShowOverlayAsync, args);
 }
 
+std::string WsClientService::ResolveUrl() {
+    std::string url = TrimUrl(url_);
+    if (url.empty()) {
+        Settings ws("websocket", false);
+        url = TrimUrl(ws.GetString("url", ""));
+    }
+
+    if (url.empty()) {
+        const std::string base = GetBackendBaseUrl();
+        if (base.empty()) {
+            return {};
+        }
+        const bool https = base.rfind("https://", 0) == 0;
+        const std::string ws_base = (https ? "wss://" : "ws://") + base.substr(https ? 8 : 7);
+        if (mode_ == Mode::News) {
+            return ws_base + "/ws/news";
+        }
+        return ws_base + "/ws/openf1";
+    }
+
+    const std::string suffix = (mode_ == Mode::News) ? "/ws/news" : "/ws/openf1";
+    const bool is_ws = url.rfind("ws://", 0) == 0 || url.rfind("wss://", 0) == 0;
+    if (!is_ws) {
+        const std::string base = TrimUrl(BaseUrlFromApiUrl(url));
+        if (base.empty()) {
+            return {};
+        }
+        const bool https = base.rfind("https://", 0) == 0;
+        const std::string ws_base = (https ? "wss://" : "ws://") + base.substr(https ? 8 : 7);
+        return ws_base + suffix;
+    }
+
+    const size_t q = url.find('?');
+    const std::string no_query = (q == std::string::npos) ? url : url.substr(0, q);
+    if (no_query.size() >= 3 && no_query.rfind("/ws", no_query.size() - 3) != std::string::npos) {
+        return no_query.substr(0, no_query.size() - 3) + suffix;
+    }
+    return url;
+}
+
 void WsClientService::TaskLoop() {
     ESP_LOGI(kTag, "start");
     while (!stop_.load()) {
-        if (url_.empty()) {
-            Settings s("websocket", false);
-            url_ = s.GetString("url", "");
-            url_ = TrimUrl(url_);
-            if (url_.empty()) {
-                const std::string base = GetBackendBaseUrl();
-                if (!base.empty()) {
-                    const bool https = base.rfind("https://", 0) == 0;
-                    const std::string ws_base = (https ? "wss://" : "ws://") + base.substr(https ? 8 : 7);
-                    url_ = ws_base + "/ws";
-                    ESP_LOGI(kTag, "url derived=%s", url_.c_str());
-                } else {
-                    ESP_LOGI(kTag, "url empty (waiting)");
-                }
-                vTaskDelay(pdMS_TO_TICKS(500));
-                continue;
-            }
-            ESP_LOGI(kTag, "url loaded=%s", url_.c_str());
+        const std::string url = ResolveUrl();
+        if (url.empty()) {
+            vTaskDelay(pdMS_TO_TICKS(500));
+            continue;
         }
         xEventGroupClearBits(event_group_, kEvtDisconnected);
 
@@ -211,7 +215,6 @@ void WsClientService::TaskLoop() {
             }
         });
 
-        const std::string url = url_;
         ESP_LOGI(kTag, "connect url=%s", url.c_str());
         if (!ws->Connect(url.c_str())) {
             vTaskDelay(pdMS_TO_TICKS(2000));

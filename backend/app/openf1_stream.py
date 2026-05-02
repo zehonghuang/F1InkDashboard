@@ -14,6 +14,7 @@ from fastapi import WebSocket
 @dataclass(frozen=True)
 class OpenF1RelayConfig:
     enabled: bool
+    mode: str
     token_url: str
     mqtt_host: str
     mqtt_port: int
@@ -25,15 +26,20 @@ class OpenF1RelayConfig:
     access_token: str | None
     topics: tuple[str, ...]
     max_queue: int
+    ingest_token: str | None
 
     @staticmethod
     def from_env() -> "OpenF1RelayConfig":
+        mode = os.getenv("OPENF1_MODE", "auto").strip().lower()
+        if mode not in {"auto", "openf1", "mock"}:
+            mode = "auto"
         enabled = os.getenv("OPENF1_ENABLED", "").strip().lower() in {"1", "true", "yes", "on"}
         username = os.getenv("OPENF1_USERNAME")
         password = os.getenv("OPENF1_PASSWORD")
         access_token = os.getenv("OPENF1_ACCESS_TOKEN")
+        ingest_token = os.getenv("OPENF1_INGEST_TOKEN")
         if not enabled:
-            enabled = bool(access_token or (username and password))
+            enabled = bool(access_token or (username and password) or ingest_token or mode in {"openf1", "mock"})
         topics_raw = os.getenv("OPENF1_TOPICS", "v1/#")
         topics = tuple([t.strip() for t in topics_raw.split(",") if t.strip()])
         transport = os.getenv("OPENF1_MQTT_TRANSPORT", "websockets").strip().lower()
@@ -45,6 +51,7 @@ class OpenF1RelayConfig:
         max_queue = int(os.getenv("OPENF1_MAX_QUEUE", "2048"))
         return OpenF1RelayConfig(
             enabled=enabled,
+            mode=mode,
             token_url=token_url,
             mqtt_host=mqtt_host,
             mqtt_port=mqtt_port,
@@ -56,6 +63,7 @@ class OpenF1RelayConfig:
             access_token=access_token,
             topics=topics,
             max_queue=max_queue,
+            ingest_token=ingest_token,
         )
 
 
@@ -89,6 +97,7 @@ class OpenF1Relay:
     def status(self) -> dict:
         return {
             "enabled": self._cfg.enabled,
+            "mode": self._cfg.mode,
             "running": self._enabled_runtime,
             "connected": self._connected,
             "mqtt": {
@@ -100,6 +109,9 @@ class OpenF1Relay:
             "token": {
                 "has_token": bool(self._access_token),
                 "expires_at_utc": self._token_expires_at.isoformat() if self._token_expires_at else None,
+            },
+            "clients": {
+                "ws": len(self._ws_clients),
             },
             "last_message_at_utc": self._last_message_at_utc,
             "last_error": self._last_error,
@@ -113,20 +125,18 @@ class OpenF1Relay:
 
         self._loop = asyncio.get_running_loop()
         self._queue = asyncio.Queue(maxsize=max(8, self._cfg.max_queue))
-
-        ok = await self._ensure_token(force=False)
-        if not ok:
-            self._enabled_runtime = False
-            return
-
-        mqtt_ok = self._start_mqtt()
-        if not mqtt_ok:
-            self._enabled_runtime = False
-            return
-
         self._enabled_runtime = True
         self._broadcast_task = asyncio.create_task(self._broadcast_loop())
-        self._token_task = asyncio.create_task(self._token_refresh_loop())
+
+        if self._cfg.mode == "mock":
+            self._last_error = None
+            return
+
+        ok = await self._ensure_token(force=False)
+        if ok:
+            self._start_mqtt()
+        if not self._cfg.access_token and (self._cfg.username and self._cfg.password):
+            self._token_task = asyncio.create_task(self._token_refresh_loop())
 
     async def stop(self) -> None:
         self._enabled_runtime = False
@@ -159,6 +169,38 @@ class OpenF1Relay:
     async def unregister_ws(self, ws: WebSocket) -> None:
         async with self._ws_lock:
             self._ws_clients.discard(ws)
+
+    def verify_ingest_token(self, token: str | None) -> bool:
+        if not self._cfg.ingest_token:
+            return True
+        return bool(token) and token == self._cfg.ingest_token
+
+    async def publish(self, topic: str, payload: Any, source: str = "mock") -> bool:
+        if not self._enabled_runtime:
+            return False
+        q = self._queue
+        if q is None:
+            return False
+        now = datetime.now(timezone.utc).isoformat()
+        event = {
+            "topic": topic,
+            "payload": payload,
+            "source": source,
+            "received_at_utc": now,
+        }
+        self._last_message_at_utc = now
+        try:
+            q.put_nowait(event)
+        except asyncio.QueueFull:
+            try:
+                q.get_nowait()
+            except Exception:
+                pass
+            try:
+                q.put_nowait(event)
+            except Exception:
+                return False
+        return True
 
     async def _ensure_token(self, force: bool) -> bool:
         if self._access_token and not force:
@@ -255,6 +297,7 @@ class OpenF1Relay:
                 event = {
                     "topic": msg.topic,
                     "payload": payload,
+                    "source": "openf1",
                     "received_at_utc": datetime.now(timezone.utc).isoformat(),
                 }
                 self._last_message_at_utc = event["received_at_utc"]

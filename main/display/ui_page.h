@@ -38,6 +38,7 @@ enum class UiPageCustomEventId : int32_t {
     F1CircuitDetailImage = 203,
     F1SessionsData = 204,
     F1ForceSessionsFetch = 205,
+    F1OpenF1WsEvent = 206,
     WsOverlayShow = 300,
     GalleryPrev = PagePrev,
     GalleryNext = PageNext,
