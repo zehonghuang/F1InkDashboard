@@ -2,6 +2,7 @@
 
 #include "lvgl_theme.h"
 #include "pages/f1_page_adapter.h"
+#include "pages/breaking_news_page_adapter.h"
 #include "pages/factory_test_page_adapter.h"
 #include "pages/wifi_setup_page_adapter.h"
 #include "settings.h"
@@ -83,6 +84,7 @@ LcdDisplay::~LcdDisplay() {
         factory_test_page_adapter_ = nullptr;
         wifi_setup_page_adapter_ = nullptr;
         f1_page_adapter_ = nullptr;
+        breaking_news_page_adapter_ = nullptr;
         ui_setup_done_ = false;
         if (factory_test_screen_ != nullptr) {
             lv_obj_del(factory_test_screen_);
@@ -95,6 +97,10 @@ LcdDisplay::~LcdDisplay() {
         if (f1_screen_ != nullptr) {
             lv_obj_del(f1_screen_);
             f1_screen_ = nullptr;
+        }
+        if (breaking_news_screen_ != nullptr) {
+            lv_obj_del(breaking_news_screen_);
+            breaking_news_screen_ = nullptr;
         }
     }
 
@@ -192,27 +198,23 @@ void LcdDisplay::DispatchPageEvent(const UiPageEvent& e, bool only_active) {
 void LcdDisplay::ShowWsOverlay(const std::string& text) {
     SetupUI();
     DisplayLockGuard lock(this);
-    if (ws_overlay_root_ == nullptr || ws_overlay_label_ == nullptr) {
-        return;
+    if (breaking_news_page_adapter_ != nullptr) {
+        breaking_news_page_adapter_->UpdateText(text);
     }
-    lv_label_set_text(ws_overlay_label_, text.c_str());
-    lv_obj_clear_flag(ws_overlay_root_, LV_OBJ_FLAG_HIDDEN);
-    ws_overlay_visible_ = true;
+    (void)NavigateToLocked(UiPageId::BreakingNews);
 }
 
 bool LcdDisplay::HideWsOverlayIfVisible() {
     DisplayLockGuard lock(this);
-    if (!ws_overlay_visible_ || ws_overlay_root_ == nullptr) {
-        return false;
+    if (page_registry_.HasActive() && page_registry_.ActiveId() == UiPageId::BreakingNews) {
+        return BackLocked();
     }
-    lv_obj_add_flag(ws_overlay_root_, LV_OBJ_FLAG_HIDDEN);
-    ws_overlay_visible_ = false;
-    return true;
+    return false;
 }
 
 bool LcdDisplay::IsWsOverlayVisible() const {
     DisplayLockGuard lock(const_cast<LcdDisplay*>(this));
-    return ws_overlay_visible_;
+    return page_registry_.HasActive() && page_registry_.ActiveId() == UiPageId::BreakingNews;
 }
 
 void LcdDisplay::ShowRaw1bppFrame(const uint8_t* data, size_t len) {
@@ -307,30 +309,19 @@ void LcdDisplay::SetupUI() {
         return;
     }
 
+    auto breaking = std::make_unique<BreakingNewsPageAdapter>(this);
+    breaking_news_page_adapter_ = breaking.get();
+    if (!RegisterPageLocked(std::move(breaking))) {
+        breaking_news_page_adapter_ = nullptr;
+        return;
+    }
+
     if (!SwitchPageLocked(UiPageId::FactoryTest)) {
         ESP_LOGW(kTag, "Failed to switch to FT page");
         return;
     }
     page_stack_.clear();
     page_stack_.push_back(UiPageId::FactoryTest);
-
-    ws_overlay_root_ = lv_obj_create(lv_layer_top());
-    lv_obj_set_size(ws_overlay_root_, width_, height_);
-    lv_obj_align(ws_overlay_root_, LV_ALIGN_TOP_LEFT, 0, 0);
-    lv_obj_set_style_bg_color(ws_overlay_root_, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_set_style_bg_opa(ws_overlay_root_, LV_OPA_COVER, 0);
-    lv_obj_set_style_border_width(ws_overlay_root_, 0, 0);
-    lv_obj_set_style_pad_all(ws_overlay_root_, 12, 0);
-    ws_overlay_label_ = lv_label_create(ws_overlay_root_);
-    lv_obj_set_width(ws_overlay_label_, width_ - 24);
-    lv_label_set_long_mode(ws_overlay_label_, LV_LABEL_LONG_WRAP);
-    lv_obj_align(ws_overlay_label_, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_style_text_color(ws_overlay_label_, lv_color_hex(0x000000), 0);
-    lv_obj_set_style_text_font(ws_overlay_label_, &BUILTIN_TEXT_FONT, 0);
-    lv_label_set_text(ws_overlay_label_, "");
-    lv_obj_add_flag(ws_overlay_root_, LV_OBJ_FLAG_HIDDEN);
-    ws_overlay_visible_ = false;
-
     ui_setup_done_ = true;
 }
 

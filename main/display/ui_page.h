@@ -11,6 +11,7 @@ enum class UiPageId : uint8_t {
     FactoryTest = 0,
     WifiSetup = 1,
     F1 = 2,
+    BreakingNews = 3,
     Gallery = F1,
 };
 
