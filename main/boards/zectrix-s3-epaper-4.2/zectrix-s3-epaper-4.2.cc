@@ -28,6 +28,7 @@
 #include "settings.h"
 #include "wifi_manager.h"
 #include "ws_client_service.h"
+#include "common/time_sync.h"
 
 namespace {
 
@@ -170,6 +171,13 @@ public:
             return false;
         }
         return rtc_->GetTime(out_local_tm);
+    }
+
+    bool SetLocalTime(const tm& local_tm) override {
+        if (rtc_ == nullptr) {
+            return false;
+        }
+        return rtc_->SetTime(local_tm);
     }
 
     void EnterNormalFlow() override {
@@ -348,6 +356,7 @@ private:
                 UpdateWifiSetupPage("状态：正在连接 WiFi...", false);
                 break;
             case WifiEvent::Connected:
+                TimeSyncService::Instance().RequestSync();
                 if (display_ != nullptr) {
                     if (ws_openf1_ == nullptr) {
                         ws_openf1_ = std::make_unique<WsClientService>(display_, WsClientService::Mode::OpenF1);

@@ -4,6 +4,7 @@
 #include "lcd_display.h"
 #include "lvgl_theme.h"
 #include "settings.h"
+#include "common/time_sync.h"
 #include "pages/f1_page_adapter_common.h"
 #include "pages/f1_page_adapter_net.h"
 #include "pages/f1_page_adapter_payloads.h"
@@ -707,8 +708,8 @@ void F1PageAdapter::Build() {
 
     host_->RegisterStatusBarWidgetsInLock({status_time_, status_date_, status_batt_icon_, status_batt_pct_});
     host_->RegisterStatusBarWidgetsInLock({nullptr, nullptr, race_sessions_header_batt_icon_, race_sessions_header_batt_pct_});
-    host_->RegisterStatusBarWidgetsInLock({nullptr, nullptr, live_header_batt_icon_, live_header_batt_pct_});
-    host_->RegisterStatusBarWidgetsInLock({nullptr, nullptr, menu_header_batt_icon_, menu_header_batt_pct_});
+    host_->RegisterStatusBarWidgetsInLock({live_header_time_, nullptr, live_header_batt_icon_, live_header_batt_pct_});
+    host_->RegisterStatusBarWidgetsInLock({menu_header_time_, nullptr, menu_header_batt_icon_, menu_header_batt_pct_});
     host_->UpdateStatusBarInLock(true);
 
     built_ = true;
@@ -1027,23 +1028,21 @@ void F1PageAdapter::UpdateMenuStatusLocked() {
     if (!built_ || menu_header_time_ == nullptr) {
         return;
     }
-
-    char time_buf[16] = {};
-    bool has_time = false;
-    {
-        auto* rtc = ZectrixGetRtc();
-        if (rtc != nullptr) {
-            tm local_tm = {};
-            if (rtc->GetTime(local_tm)) {
-                snprintf(time_buf, sizeof(time_buf), "%02d:%02d", local_tm.tm_hour, local_tm.tm_min);
-                has_time = true;
-            }
-        }
+    if (host_ != nullptr) {
+        host_->UpdateStatusBarInLock(false);
     }
 
-    const char* t = has_time ? time_buf : (status_time_ ? lv_label_get_text(status_time_) : "--:--");
-    SetText(menu_header_time_, t);
-    UpdateBatteryUiLocked();
+    lv_obj_t* sys = menu_item_right_[3];
+    if (sys != nullptr) {
+        const TimeSyncSnapshot s = TimeSyncService::Instance().GetSnapshot();
+        const char* state = "IDLE";
+        if (s.state == TimeSyncState::Syncing) state = "SYNCING";
+        if (s.state == TimeSyncState::Synced) state = "OK";
+        if (s.state == TimeSyncState::Failed) state = "FAIL";
+        char buf[64];
+        snprintf(buf, sizeof(buf), "WiFi, Screen, Sleep, Time: %s", state);
+        SetText(sys, buf);
+    }
 }
 
 void F1PageAdapter::UpdateBatteryUiLocked() {

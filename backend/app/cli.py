@@ -1,10 +1,22 @@
 import argparse
 import asyncio
+import json
 from pathlib import Path
 
 import httpx
 
 from .f1_circuit_assets import fetch_f1_circuit_assets
+from .third_party import (
+    ergast_constructor_standings_for_season,
+    ergast_schedule_for_season,
+    ergast_driver_standings_for_season,
+)
+from .db_mysql import mysql_connect
+from .ergast_ingest_mysql import (
+    ingest_constructor_standings_json,
+    ingest_driver_standings_json,
+    ingest_schedule_json,
+)
 
 
 def _parse_args() -> argparse.Namespace:
@@ -20,6 +32,11 @@ def _parse_args() -> argparse.Namespace:
     u.add_argument("--height", type=int, default=130)
     u.add_argument("--detail-width", type=int, default=400)
     u.add_argument("--detail-height", type=int, default=300)
+
+    i = sub.add_parser("ingest-ergast")
+    i.add_argument("--season", type=int, default=2026)
+    i.add_argument("--schedule", action="store_true", default=False, help="ingest schedule only")
+    i.add_argument("--standings", action="store_true", default=False, help="ingest standings only")
     return p.parse_args()
 
 
@@ -44,10 +61,39 @@ async def _run_update_circuits(args: argparse.Namespace) -> None:
         )
 
 
+async def _run_ingest_ergast(args: argparse.Namespace) -> None:
+    season = int(args.season)
+    only_schedule = bool(args.schedule)
+    only_standings = bool(args.standings)
+    do_schedule = only_schedule or (not only_schedule and not only_standings)
+    do_standings = only_standings or (not only_schedule and not only_standings)
+
+    timeout = httpx.Timeout(20.0, connect=10.0)
+    async with httpx.AsyncClient(timeout=timeout, headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
+        conn = mysql_connect()
+        try:
+            if do_schedule:
+                schedule_json = await ergast_schedule_for_season(client, season)
+                r = ingest_schedule_json(conn, schedule_json)
+                print(json.dumps({"kind": "schedule", "season": season, "result": r}, ensure_ascii=False))
+            if do_standings:
+                drv_json = await ergast_driver_standings_for_season(client, season)
+                r1 = ingest_driver_standings_json(conn, drv_json)
+                print(json.dumps({"kind": "driver_standings", "season": season, "result": r1}, ensure_ascii=False))
+                cst_json = await ergast_constructor_standings_for_season(client, season)
+                r2 = ingest_constructor_standings_json(conn, cst_json)
+                print(json.dumps({"kind": "constructor_standings", "season": season, "result": r2}, ensure_ascii=False))
+        finally:
+            conn.close()
+
+
+
 def main() -> None:
     args = _parse_args()
     if args.cmd == "update-circuits":
         asyncio.run(_run_update_circuits(args))
+    elif args.cmd == "ingest-ergast":
+        asyncio.run(_run_ingest_ergast(args))
 
 
 if __name__ == "__main__":

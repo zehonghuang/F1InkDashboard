@@ -1,4 +1,4 @@
-# Zectrix Backend
+# toinc_F1 Backend
 
 提供 F1 两个页面所需数据的 HTTP API。数据来源为第三方公开接口（赛历/积分榜/天气/新闻），并做轻量缓存以降低请求频率。
 
