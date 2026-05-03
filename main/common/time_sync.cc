@@ -15,6 +15,8 @@
 
 #include <esp_sntp.h>
 
+#include "common/sleep_manager.h"
+
 namespace {
 
 constexpr char kTag[] = "TimeSync";
@@ -42,6 +44,7 @@ static State g;
 static void SyncTask(void*) {
     g.state = TimeSyncState::Syncing;
     g.last_error = 0;
+    sm_set_busy(SleepBusySrc::Net, true);
 
     ApplyTimeZoneFromSettings();
 
@@ -75,6 +78,7 @@ static void SyncTask(void*) {
         g.state = TimeSyncState::Failed;
         g.last_error = static_cast<int>(ESP_ERR_TIMEOUT);
         esp_sntp_stop();
+        sm_set_busy(SleepBusySrc::Net, false);
         g.task_running = false;
         vTaskDelete(nullptr);
         return;
@@ -90,6 +94,7 @@ static void SyncTask(void*) {
     g.state = TimeSyncState::Synced;
     g.last_sync_ms = esp_timer_get_time() / 1000;
     esp_sntp_stop();
+    sm_set_busy(SleepBusySrc::Net, false);
     g.task_running = false;
     vTaskDelete(nullptr);
 }
@@ -126,4 +131,3 @@ TimeSyncSnapshot TimeSyncService::GetSnapshot() const {
     s.last_error = g.last_error;
     return s;
 }
-

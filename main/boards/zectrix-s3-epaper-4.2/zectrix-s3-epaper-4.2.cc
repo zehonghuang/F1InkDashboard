@@ -29,6 +29,7 @@
 #include "wifi_manager.h"
 #include "ws_client_service.h"
 #include "common/time_sync.h"
+#include "common/sleep_manager.h"
 
 namespace {
 
@@ -564,6 +565,7 @@ private:
 
     void InitializeButtons() {
         up_button_.OnPressDown([this]() {
+            sm_kick(30 * 1000, "btn");
             const int64_t now = GetNowMs();
             up_down_ = true;
             up_down_ms_ = now;
@@ -575,6 +577,7 @@ private:
         });
 
         down_button_.OnPressDown([this]() {
+            sm_kick(30 * 1000, "btn");
             const int64_t now = GetNowMs();
             down_down_ = true;
             down_down_ms_ = now;
@@ -586,6 +589,7 @@ private:
         });
 
         confirm_button_.OnPressDown([this]() {
+            sm_kick(30 * 1000, "btn");
             const int64_t now = GetNowMs();
             confirm_down_ = true;
             confirm_down_ms_ = now;

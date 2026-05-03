@@ -14,6 +14,7 @@
 #include <font_zectrix.h>
 
 #include <algorithm>
+#include <cstring>
 #include <ctime>
 
 LV_FONT_DECLARE(BUILTIN_TEXT_FONT);
@@ -136,6 +137,17 @@ void LcdDisplay::UpdateStatusBarLocked(bool update_all) {
         }
     }
 
+    auto set_label_if_changed = [](lv_obj_t* label, const char* next) {
+        if (label == nullptr) {
+            return;
+        }
+        const char* cur = lv_label_get_text(label);
+        if (cur != nullptr && next != nullptr && strcmp(cur, next) == 0) {
+            return;
+        }
+        lv_label_set_text(label, next ? next : "");
+    };
+
     for (auto it = status_bar_widgets_.begin(); it != status_bar_widgets_.end();) {
         const StatusBarWidgets w = *it;
         const bool valid =
@@ -147,18 +159,10 @@ void LcdDisplay::UpdateStatusBarLocked(bool update_all) {
             it = status_bar_widgets_.erase(it);
             continue;
         }
-        if (w.time != nullptr) {
-            lv_label_set_text(w.time, time_buf);
-        }
-        if (w.date != nullptr) {
-            lv_label_set_text(w.date, date_buf);
-        }
-        if (w.batt_icon != nullptr) {
-            lv_label_set_text(w.batt_icon, batt_icon);
-        }
-        if (w.batt_pct != nullptr) {
-            lv_label_set_text(w.batt_pct, batt_pct_buf);
-        }
+        set_label_if_changed(w.time, time_buf);
+        set_label_if_changed(w.date, date_buf);
+        set_label_if_changed(w.batt_icon, batt_icon);
+        set_label_if_changed(w.batt_pct, batt_pct_buf);
         ++it;
     }
 }

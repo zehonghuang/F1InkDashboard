@@ -5,6 +5,7 @@
 #include "pages/f1_page_adapter_common.h"
 #include "pages/f1_page_adapter_net.h"
 #include "pages/f1_page_adapter_payloads.h"
+#include "common/sleep_manager.h"
 
 #include <memory>
 #include <string>
@@ -167,18 +168,42 @@ void CircuitDetailFetchTask(void* arg) {
 
 void F1PageAdapter::MarkFetchDone() {
     fetch_inflight_.store(false);
+    const bool busy =
+        fetch_inflight_.load() ||
+        sessions_fetch_inflight_.load() ||
+        circuit_fetch_inflight_.load() ||
+        circuit_detail_fetch_inflight_.load();
+    sm_set_busy(SleepBusySrc::Net, busy);
 }
 
 void F1PageAdapter::MarkCircuitFetchDone() {
     circuit_fetch_inflight_.store(false);
+    const bool busy =
+        fetch_inflight_.load() ||
+        sessions_fetch_inflight_.load() ||
+        circuit_fetch_inflight_.load() ||
+        circuit_detail_fetch_inflight_.load();
+    sm_set_busy(SleepBusySrc::Net, busy);
 }
 
 void F1PageAdapter::MarkCircuitDetailFetchDone() {
     circuit_detail_fetch_inflight_.store(false);
+    const bool busy =
+        fetch_inflight_.load() ||
+        sessions_fetch_inflight_.load() ||
+        circuit_fetch_inflight_.load() ||
+        circuit_detail_fetch_inflight_.load();
+    sm_set_busy(SleepBusySrc::Net, busy);
 }
 
 void F1PageAdapter::MarkSessionsFetchDone() {
     sessions_fetch_inflight_.store(false);
+    const bool busy =
+        fetch_inflight_.load() ||
+        sessions_fetch_inflight_.load() ||
+        circuit_fetch_inflight_.load() ||
+        circuit_detail_fetch_inflight_.load();
+    sm_set_busy(SleepBusySrc::Net, busy);
 }
 
 void F1PageAdapter::StartFetchIfNeededLocked(bool force) {
@@ -220,6 +245,7 @@ void F1PageAdapter::StartFetchIfNeededLocked(bool force) {
         return;
     }
     fetch_inflight_.store(true);
+    sm_set_busy(SleepBusySrc::Net, true);
     last_fetch_ms_ = now;
 }
 
@@ -269,6 +295,7 @@ void F1PageAdapter::StartSessionsFetchIfNeededLocked(bool force) {
         return;
     }
     sessions_fetch_inflight_.store(true);
+    sm_set_busy(SleepBusySrc::Net, true);
     last_sessions_fetch_ms_ = now;
 }
 
@@ -340,6 +367,7 @@ void F1PageAdapter::StartCircuitFetchIfNeededLocked(const char* map_url) {
         return;
     }
     circuit_fetch_inflight_.store(true);
+    sm_set_busy(SleepBusySrc::Net, true);
 }
 
 void F1PageAdapter::StartCircuitDetailFetchIfNeededLocked(const char* map_url) {
@@ -410,4 +438,5 @@ void F1PageAdapter::StartCircuitDetailFetchIfNeededLocked(const char* map_url) {
         return;
     }
     circuit_detail_fetch_inflight_.store(true);
+    sm_set_busy(SleepBusySrc::Net, true);
 }

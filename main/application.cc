@@ -2,12 +2,19 @@
 
 #include "board.h"
 #include "display.h"
+#include "settings.h"
+#include "boards/zectrix-s3-epaper-4.2/config.h"
 
 #include <esp_log.h>
 #include <esp_timer.h>
+#include <esp_sleep.h>
+#include <driver/gpio.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
+
+#include "common/sleep_manager.h"
+#include "display/lcd_display.h"
 
 namespace {
 
@@ -15,6 +22,22 @@ constexpr char kTag[] = "Application";
 
 static int64_t NowMs() {
     return esp_timer_get_time() / 1000;
+}
+
+static bool IsOnDemandLightSleepEnabled() {
+    Settings s("sleep", false);
+    return s.GetBool("light_sleep", true);
+}
+
+static void ConfigureWakeSources() {
+    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
+
+    (void)esp_sleep_enable_timer_wakeup(10ULL * 1000 * 1000);
+
+    (void)esp_sleep_enable_gpio_wakeup();
+    gpio_wakeup_enable(BOOT_BUTTON_GPIO, GPIO_INTR_LOW_LEVEL);
+    gpio_wakeup_enable(CHARGE_DETECT_GPIO, GPIO_INTR_LOW_LEVEL);
+    gpio_wakeup_enable(RTC_INT_GPIO, GPIO_INTR_LOW_LEVEL);
 }
 
 }  // namespace
@@ -55,6 +78,8 @@ void Application::Initialize() {
     } else {
         board.EnterNormalFlow();
     }
+
+    sm_kick(30 * 1000, "boot");
 }
 
 void Application::Run() {
@@ -177,6 +202,33 @@ void Application::Tick() {
         }
         low_battery_notified_ = true;
     }
+
+    if (!IsOnDemandLightSleepEnabled()) {
+        return;
+    }
+    if (!sm_prepare_for_light_sleep()) {
+        return;
+    }
+
+    auto* lcd = static_cast<LcdDisplay*>(display);
+    if (lcd == nullptr) {
+        return;
+    }
+    if (lcd->IsWsOverlayVisible() || lcd->IsRaw1bppFrameVisible()) {
+        sm_kick(30 * 1000, "overlay");
+        return;
+    }
+    const UiPageId pid = lcd->GetActivePageId();
+    if (pid != UiPageId::F1) {
+        sm_kick(30 * 1000, "not_f1");
+        return;
+    }
+
+    ConfigureWakeSources();
+    ESP_LOGI(kTag, "enter light sleep");
+    (void)esp_light_sleep_start();
+    ESP_LOGI(kTag, "woke from light sleep cause=%d", static_cast<int>(esp_sleep_get_wakeup_cause()));
+    sm_kick(5 * 1000, "wake_window");
 }
 
 void Application::PlaySound(const std::string_view& sound) {
@@ -196,5 +248,11 @@ void Application::StopSound() {
 }
 
 bool Application::CanEnterSleepMode() const {
-    return false;
+    if (in_recovery_) {
+        return false;
+    }
+    if (Board::GetInstance().IsFactoryTestMode()) {
+        return false;
+    }
+    return IsOnDemandLightSleepEnabled();
 }

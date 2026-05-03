@@ -5,6 +5,7 @@
 #include "display/ui_page.h"
 #include "display/pages/f1_page_adapter_net.h"
 #include "application.h"
+#include "common/sleep_manager.h"
 
 #include <memory>
 #include <string>
@@ -68,6 +69,7 @@ void ShowOverlayAsync(void* arg) {
     }
     const std::string text = *args->text;
     delete args->text;
+    sm_kick(30 * 1000, "ws_overlay");
     args->display->ShowWsOverlay(text);
     args->display->RequestUrgentFullRefresh();
 }
@@ -89,6 +91,7 @@ void ShowMemeAsync(void* arg) {
         audio = std::move(*args->audio);
         delete args->audio;
     }
+    sm_kick(30 * 1000, "ws_meme");
     args->display->ShowMemeOverlay(title, std::move(image));
     if (!audio.empty()) {
         Application::GetInstance().GetAudioService().PlayWav(audio);
