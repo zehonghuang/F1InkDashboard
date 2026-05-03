@@ -192,6 +192,8 @@ def ingest_schedule_json(conn: pymysql.Connection, schedule_json: Dict[str, Any]
                 "FirstPractice": "FP1",
                 "SecondPractice": "FP2",
                 "ThirdPractice": "FP3",
+                "SprintQualifying": "SQ",
+                "SprintShootout": "SQ",
                 "Qualifying": "Q",
                 "Sprint": "SPRINT",
             }
@@ -387,4 +389,3 @@ def ingest_constructor_standings_json(conn: pymysql.Connection, standings_json: 
 
     conn.commit()
     return out
-
