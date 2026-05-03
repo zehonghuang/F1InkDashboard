@@ -1,6 +1,7 @@
 #include "lcd_display.h"
 
 #include "lvgl_theme.h"
+#include "board.h"
 #include "pages/meme_page_adapter.h"
 #include "pages/f1_page_adapter.h"
 #include "pages/breaking_news_page_adapter.h"
@@ -11,6 +12,9 @@
 #include <esp_log.h>
 #include <esp_lvgl_port.h>
 #include <font_zectrix.h>
+
+#include <algorithm>
+#include <ctime>
 
 LV_FONT_DECLARE(BUILTIN_TEXT_FONT);
 LV_FONT_DECLARE(BUILTIN_ICON_FONT);
@@ -59,6 +63,105 @@ void InitializeLcdThemes() {
 }
 
 }  // namespace
+
+void LcdDisplay::RegisterStatusBarWidgetsLocked(const StatusBarWidgets& w) {
+    const bool has_any = w.time != nullptr || w.date != nullptr || w.batt_icon != nullptr || w.batt_pct != nullptr;
+    if (!has_any) {
+        return;
+    }
+    for (const auto& it : status_bar_widgets_) {
+        if (it.time == w.time && it.date == w.date && it.batt_icon == w.batt_icon && it.batt_pct == w.batt_pct) {
+            return;
+        }
+    }
+    status_bar_widgets_.push_back(w);
+}
+
+void LcdDisplay::RegisterStatusBarWidgets(const StatusBarWidgets& w) {
+    DisplayLockGuard lock(this);
+    RegisterStatusBarWidgetsLocked(w);
+}
+
+void LcdDisplay::UpdateStatusBarLocked(bool update_all) {
+    const int64_t now_ms = esp_timer_get_time() / 1000;
+    if (!update_all && status_bar_last_update_ms_ > 0 && (now_ms - status_bar_last_update_ms_) < 1000) {
+        return;
+    }
+    status_bar_last_update_ms_ = now_ms;
+
+    auto& board = Board::GetInstance();
+    int level = 0;
+    bool charging = false;
+    bool discharging = false;
+    const bool ok_batt = board.GetBatteryLevel(level, charging, discharging);
+    level = std::clamp(level, 0, 100);
+
+    const char* batt_icon = "";
+    if (charging) {
+        batt_icon = FONT_ZECTRIX_BATTERY_CHARGING;
+    } else if (level >= 90) {
+        batt_icon = FONT_ZECTRIX_BATTERY_FULL;
+    } else if (level >= 65) {
+        batt_icon = FONT_ZECTRIX_BATTERY_75;
+    } else if (level >= 40) {
+        batt_icon = FONT_ZECTRIX_BATTERY_50;
+    } else if (level >= 15) {
+        batt_icon = FONT_ZECTRIX_BATTERY_25;
+    } else {
+        batt_icon = FONT_ZECTRIX_BATTERY_EMPTY;
+    }
+
+    char batt_pct_buf[8] = {};
+    if (ok_batt) {
+        snprintf(batt_pct_buf, sizeof(batt_pct_buf), "%d%%", level);
+    } else {
+        snprintf(batt_pct_buf, sizeof(batt_pct_buf), "--%%");
+    }
+
+    char time_buf[16] = "--:--";
+    char date_buf[32] = "--";
+    {
+        time_t now_s = 0;
+        time(&now_s);
+        tm local_tm = {};
+        if (now_s > 1600000000 && localtime_r(&now_s, &local_tm) != nullptr) {
+            snprintf(time_buf, sizeof(time_buf), "%02d:%02d", local_tm.tm_hour, local_tm.tm_min);
+            (void)strftime(date_buf, sizeof(date_buf), "%a %b %d, %Y", &local_tm);
+        }
+    }
+
+    for (auto it = status_bar_widgets_.begin(); it != status_bar_widgets_.end();) {
+        const StatusBarWidgets w = *it;
+        const bool valid =
+            (w.time == nullptr || lv_obj_is_valid(w.time)) &&
+            (w.date == nullptr || lv_obj_is_valid(w.date)) &&
+            (w.batt_icon == nullptr || lv_obj_is_valid(w.batt_icon)) &&
+            (w.batt_pct == nullptr || lv_obj_is_valid(w.batt_pct));
+        if (!valid) {
+            it = status_bar_widgets_.erase(it);
+            continue;
+        }
+        if (w.time != nullptr) {
+            lv_label_set_text(w.time, time_buf);
+        }
+        if (w.date != nullptr) {
+            lv_label_set_text(w.date, date_buf);
+        }
+        if (w.batt_icon != nullptr) {
+            lv_label_set_text(w.batt_icon, batt_icon);
+        }
+        if (w.batt_pct != nullptr) {
+            lv_label_set_text(w.batt_pct, batt_pct_buf);
+        }
+        ++it;
+    }
+}
+
+void LcdDisplay::UpdateStatusBar(bool update_all) {
+    SetupUI();
+    DisplayLockGuard lock(this);
+    UpdateStatusBarLocked(update_all);
+}
 
 LcdDisplay::LcdDisplay(esp_lcd_panel_io_handle_t panel_io,
                        esp_lcd_panel_handle_t panel,

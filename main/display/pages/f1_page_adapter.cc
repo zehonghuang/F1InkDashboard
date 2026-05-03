@@ -704,6 +704,12 @@ void F1PageAdapter::Build() {
     (void)text_font;
     (void)small_font;
 
+    host_->RegisterStatusBarWidgetsInLock({status_time_, status_date_, status_batt_icon_, status_batt_pct_});
+    host_->RegisterStatusBarWidgetsInLock({nullptr, nullptr, race_sessions_header_batt_icon_, race_sessions_header_batt_pct_});
+    host_->RegisterStatusBarWidgetsInLock({nullptr, nullptr, live_header_batt_icon_, live_header_batt_pct_});
+    host_->RegisterStatusBarWidgetsInLock({nullptr, nullptr, menu_header_batt_icon_, menu_header_batt_pct_});
+    host_->UpdateStatusBarInLock(true);
+
     built_ = true;
     ApplyViewLocked();
 }
@@ -1041,19 +1047,17 @@ void F1PageAdapter::UpdateBatteryUiLocked() {
         return;
     }
 
-    int pct = -1;
-    int mv = 0;
-    const bool ok_pct = ZectrixReadBatteryStatusForUi(&pct, &mv);
-    pct = ClampBatteryPct(pct);
-    const ChargeStatus::Snapshot cs = ZectrixGetChargeSnapshot();
-
-    SetBatteryWidgets(status_batt_icon_, status_batt_pct_, ok_pct, pct, cs);
-    SetBatteryWidgets(race_sessions_header_batt_icon_, race_sessions_header_batt_pct_, ok_pct, pct, cs);
-    SetBatteryWidgets(live_header_batt_icon_, live_header_batt_pct_, ok_pct, pct, cs);
-    SetBatteryWidgets(menu_header_batt_icon_, menu_header_batt_pct_, ok_pct, pct, cs);
+    if (host_ != nullptr) {
+        host_->UpdateStatusBarInLock(false);
+    }
 
     lv_obj_t* r = menu_item_right_[4];
     if (r != nullptr) {
+        int pct = -1;
+        int mv = 0;
+        const bool ok_pct = ZectrixReadBatteryStatusForUi(&pct, &mv);
+        pct = ClampBatteryPct(pct);
+        const ChargeStatus::Snapshot cs = ZectrixGetChargeSnapshot();
         if (!ok_pct || cs.no_battery || mv <= 0) {
             SetText(r, "Now: --% / --.--V");
         } else {
@@ -2461,9 +2465,6 @@ bool F1PageAdapter::ApplyUiJsonLocked(const char* json_text, size_t len) {
     }
 
     if (race_day && cJSON_IsObject(race_day)) {
-        cJSON* header = cJSON_GetObjectItemCaseSensitive(race_day, "header");
-        SetText(status_time_, GetStringOrEmpty(header, "left"));
-        SetText(status_date_, GetStringOrEmpty(header, "center"));
         UpdateBatteryUiLocked();
 
         cJSON* race = cJSON_GetObjectItemCaseSensitive(race_day, "race");

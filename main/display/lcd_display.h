@@ -18,6 +18,14 @@ class BreakingNewsPageAdapter;
 class MemePageAdapter;
 
 class LcdDisplay : public LvglDisplay {
+public:
+    struct StatusBarWidgets {
+        lv_obj_t* time = nullptr;
+        lv_obj_t* date = nullptr;
+        lv_obj_t* batt_icon = nullptr;
+        lv_obj_t* batt_pct = nullptr;
+    };
+
 protected:
     esp_lcd_panel_io_handle_t panel_io_ = nullptr;
     esp_lcd_panel_handle_t panel_ = nullptr;
@@ -37,12 +45,17 @@ protected:
     bool ui_setup_done_ = false;
     bool raw_1bpp_visible_ = false;
 
+    std::vector<StatusBarWidgets> status_bar_widgets_;
+    int64_t status_bar_last_update_ms_ = 0;
+
     void ShowScreen(lv_obj_t* scr);
     bool RegisterPageLocked(std::unique_ptr<IUiPage> page);
     bool SwitchPageLocked(UiPageId id);
     bool NavigateToLocked(UiPageId id);
     bool BackLocked();
     void SetupUI();
+    void RegisterStatusBarWidgetsLocked(const StatusBarWidgets& w);
+    void UpdateStatusBarLocked(bool update_all);
 
     bool Lock(int timeout_ms = 0) override;
     void Unlock() override;
@@ -62,6 +75,7 @@ public:
     void SetChatMessage(const char* role, const char* content) override;
     void SetPreviewImage(std::unique_ptr<LvglImage> image);
     void SetTheme(Theme* theme) override;
+    void UpdateStatusBar(bool update_all = false) override;
 
     bool RegisterPage(std::unique_ptr<IUiPage> page);
     bool SwitchPage(UiPageId id);
@@ -69,6 +83,9 @@ public:
     bool Back();
     UiPageId GetActivePageId() const;
     void DispatchPageEvent(const UiPageEvent& e, bool only_active = true);
+    void RegisterStatusBarWidgets(const StatusBarWidgets& w);
+    void RegisterStatusBarWidgetsInLock(const StatusBarWidgets& w) { RegisterStatusBarWidgetsLocked(w); }
+    void UpdateStatusBarInLock(bool update_all = false) { UpdateStatusBarLocked(update_all); }
     void ShowFactoryTestPage();
     void ShowWifiSetupPage(const std::string& ap_ssid, const std::string& web_url, const std::string& status);
     void ShowF1Page();
