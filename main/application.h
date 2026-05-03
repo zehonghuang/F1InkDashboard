@@ -31,14 +31,42 @@ public:
     void StopSound();
     bool CanEnterSleepMode() const;
 
+    void NotifyNetworkConnected();
+    void NotifyNetworkDisconnected();
+    void RequestRecoveryMode();
+    void RequestNormalMode();
+
     AudioService& GetAudioService() { return audio_service_; }
 
 private:
     Application();
     ~Application();
 
+    enum class AppEventType : uint8_t {
+        Tick = 0,
+        NetworkConnected = 1,
+        NetworkDisconnected = 2,
+        EnterRecovery = 3,
+        EnterNormal = 4,
+    };
+
+    struct AppEvent {
+        AppEventType type = AppEventType::Tick;
+        int32_t arg = 0;
+    };
+
+    void PostEvent(AppEventType type, int32_t arg = 0);
+    void HandleEvent(const AppEvent& e);
+    void Tick();
+
     std::atomic<DeviceState> state_{kDeviceStateUnknown};
     AudioService audio_service_;
+    void* event_queue_ = nullptr;
+    int64_t last_connected_ms_ = 0;
+    int64_t last_disconnect_ms_ = 0;
+    int disconnect_burst_ = 0;
+    bool low_battery_notified_ = false;
+    bool in_recovery_ = false;
 };
 
 #endif  // _APPLICATION_H_

@@ -357,6 +357,7 @@ private:
                 break;
             case WifiEvent::Connected:
                 TimeSyncService::Instance().RequestSync();
+                Application::GetInstance().NotifyNetworkConnected();
                 if (display_ != nullptr) {
                     if (ws_openf1_ == nullptr) {
                         ws_openf1_ = std::make_unique<WsClientService>(display_, WsClientService::Mode::OpenF1);
@@ -383,6 +384,7 @@ private:
                 }
                 break;
             case WifiEvent::Disconnected:
+                Application::GetInstance().NotifyNetworkDisconnected();
                 if (ws_openf1_ != nullptr) {
                     ws_openf1_->Stop();
                 }
