@@ -56,6 +56,8 @@ $env:NEWS_INGEST_TOKEN="devtoken"
 $env:OPENF1_MODE="mock"          
 $env:OPENF1_ENABLED="1"   
 $env:OPENF1_INGEST_TOKEN="devtoken"
+
+$env:TOINC_F1_MYSQL_ENABLED="1"
 ```
 
 ## OpenF1 Mock

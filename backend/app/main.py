@@ -17,6 +17,8 @@ from .epd_frame import build_epd_frame
 from .f1_circuit_assets import fetch_f1_circuit_assets
 from .news_stream import NewsRelay, NewsRelayConfig
 from .openf1_stream import OpenF1Relay, OpenF1RelayConfig
+from .db_mysql import mysql_connect, mysql_enabled
+from .f1_db_read import circuit_assets_payload_from_db, schedule_json_from_db
 from .third_party import (
     build_pages_payload,
     build_sessions_payload,
@@ -91,11 +93,26 @@ async def _build_pages(
     except ZoneInfoNotFoundError:
         tz_name = "UTC"
     async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
-        schedule = await cache.get_or_set(
-            f"ergast:schedule:{int(season)}",
-            lambda: ergast_schedule_for_season(client, int(season)),
-            ttl_s=300,
-        )
+        schedule = None
+        schedule_source = "ergast"
+        if mysql_enabled():
+            try:
+                conn = mysql_connect()
+                try:
+                    schedule = await asyncio.to_thread(schedule_json_from_db, conn, int(season))
+                    schedule_source = "mysql"
+                finally:
+                    conn.close()
+            except Exception:
+                schedule = None
+                schedule_source = "ergast"
+
+        if schedule is None:
+            schedule = await cache.get_or_set(
+                f"ergast:schedule:{int(season)}",
+                lambda: ergast_schedule_for_season(client, int(season)),
+                ttl_s=300,
+            )
         if int(season) == int(now_utc.year):
             drivers = await cache.get_or_set(
                 "ergast:driver_standings:current",
@@ -123,9 +140,24 @@ async def _build_pages(
         air_c = await cache.get_or_set("weather:air", lambda: open_meteo_current_temp_c(client), ttl_s=120)
         news = await cache.get_or_set("news:rss", lambda: fetch_rss_first_title(client), ttl_s=300)
         circuit_assets = None
+        circuit_source = None
         if include_circuit:
-            if not refresh_circuit:
+            if mysql_enabled() and not refresh_circuit:
+                try:
+                    conn = mysql_connect()
+                    try:
+                        circuit_assets = await asyncio.to_thread(circuit_assets_payload_from_db, conn, int(season))
+                    finally:
+                        conn.close()
+                    circuit_source = "mysql"
+                except Exception:
+                    circuit_assets = None
+
+            if circuit_assets is None and not refresh_circuit:
                 circuit_assets = _load_circuit_assets_from_disk(season)
+                if circuit_assets is not None:
+                    circuit_source = "disk"
+
             cache_key = f"f1:circuits:{season}"
             if circuit_assets is None:
                 circuit_assets = await cache.get_or_set(
@@ -138,7 +170,9 @@ async def _build_pages(
                     ),
                     ttl_s=6 * 3600,
                 )
-    return build_pages_payload(
+                circuit_source = "web"
+
+    pages = build_pages_payload(
         now_utc=now_utc,
         tz_name=tz_name,
         schedule_json=schedule,
@@ -150,6 +184,12 @@ async def _build_pages(
         news=news,
         circuit_assets=circuit_assets,
     )
+    pages["sources"] = {
+        "mysql_enabled": mysql_enabled(),
+        "schedule": schedule_source,
+        "circuit": circuit_source,
+    }
+    return pages
 
 
 @app.get("/health")
@@ -598,11 +638,22 @@ async def f1_sessions(
 ) -> dict:
     now_utc = datetime.now(timezone.utc)
     async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
-        schedule = await cache.get_or_set(
-            f"ergast:schedule:{season}",
-            lambda: ergast_schedule_for_season(client, season),
-            ttl_s=300,
-        )
+        schedule = None
+        if mysql_enabled():
+            try:
+                conn = mysql_connect()
+                try:
+                    schedule = await asyncio.to_thread(schedule_json_from_db, conn, int(season))
+                finally:
+                    conn.close()
+            except Exception:
+                schedule = None
+        if schedule is None:
+            schedule = await cache.get_or_set(
+                f"ergast:schedule:{season}",
+                lambda: ergast_schedule_for_season(client, season),
+                ttl_s=300,
+            )
         return await build_sessions_payload(
             client=client,
             now_utc=now_utc,
@@ -626,11 +677,22 @@ async def f1_sessions_current(
 ) -> dict:
     now_utc = datetime.now(timezone.utc)
     async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
-        schedule = await cache.get_or_set(
-            f"ergast:schedule:{season}",
-            lambda: ergast_schedule_for_season(client, season),
-            ttl_s=300,
-        )
+        schedule = None
+        if mysql_enabled():
+            try:
+                conn = mysql_connect()
+                try:
+                    schedule = await asyncio.to_thread(schedule_json_from_db, conn, int(season))
+                finally:
+                    conn.close()
+            except Exception:
+                schedule = None
+        if schedule is None:
+            schedule = await cache.get_or_set(
+                f"ergast:schedule:{season}",
+                lambda: ergast_schedule_for_season(client, season),
+                ttl_s=300,
+            )
         data = await build_sessions_payload(
             client=client,
             now_utc=now_utc,
@@ -663,11 +725,22 @@ async def f1_sessions_compat(
         session_name = session_name[: -len(".json")]
     now_utc = datetime.now(timezone.utc)
     async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
-        schedule = await cache.get_or_set(
-            f"ergast:schedule:{season}",
-            lambda: ergast_schedule_for_season(client, season),
-            ttl_s=300,
-        )
+        schedule = None
+        if mysql_enabled():
+            try:
+                conn = mysql_connect()
+                try:
+                    schedule = await asyncio.to_thread(schedule_json_from_db, conn, int(season))
+                finally:
+                    conn.close()
+            except Exception:
+                schedule = None
+        if schedule is None:
+            schedule = await cache.get_or_set(
+                f"ergast:schedule:{season}",
+                lambda: ergast_schedule_for_season(client, season),
+                ttl_s=300,
+            )
         return await build_sessions_payload(
             client=client,
             now_utc=now_utc,

@@ -1549,6 +1549,7 @@ def build_ui_pages_payload(pages_payload: Dict[str, Any]) -> Dict[str, Any]:
         "generated_at_utc": pages_payload.get("generated_at_utc"),
         "tz": tz_name,
         "format": "ui.v1",
+        "sources": pages_payload.get("sources"),
         "decision_tz": decision_tz,
         "is_race_week": is_race_week,
         "default_page": default_page,

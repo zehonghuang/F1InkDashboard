@@ -32,11 +32,15 @@ class MySqlConfig:
         )
 
 
+def mysql_enabled() -> bool:
+    return (os.getenv("TOINC_F1_MYSQL_ENABLED", "").strip().lower() in {"1", "true", "yes", "on"})
+
+
+
 def mysql_connect(cfg: Optional[MySqlConfig] = None) -> pymysql.Connection:
     cfg = cfg or MySqlConfig.from_env()
     return pymysql.connect(
         host=cfg.host,
-        port=cfg.port,
         user=cfg.user,
         password=cfg.password,
         database=cfg.database,
@@ -89,4 +93,3 @@ def mysql_fetch_all(
         cur.execute(sql, args)
         rows = cur.fetchall()
         return [r for r in rows if isinstance(r, dict)]
-
