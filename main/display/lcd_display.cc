@@ -8,6 +8,7 @@
 #include "pages/factory_test_page_adapter.h"
 #include "pages/wifi_setup_page_adapter.h"
 #include "settings.h"
+#include "common/sleep_manager.h"
 
 #include <esp_log.h>
 #include <esp_lvgl_port.h>
@@ -121,6 +122,7 @@ void LcdDisplay::UpdateStatusBarLocked(bool update_all) {
 
     char time_buf[16] = "--:--";
     char date_buf[32] = "--";
+    bool allow_clock_update = update_all || !sm_can_sleep_now();
     {
         tm local_tm = {};
         bool ok_tm = board.GetLocalTime(local_tm);
@@ -159,8 +161,10 @@ void LcdDisplay::UpdateStatusBarLocked(bool update_all) {
             it = status_bar_widgets_.erase(it);
             continue;
         }
-        set_label_if_changed(w.time, time_buf);
-        set_label_if_changed(w.date, date_buf);
+        if (allow_clock_update) {
+            set_label_if_changed(w.time, time_buf);
+            set_label_if_changed(w.date, date_buf);
+        }
         set_label_if_changed(w.batt_icon, batt_icon);
         set_label_if_changed(w.batt_pct, batt_pct_buf);
         ++it;
