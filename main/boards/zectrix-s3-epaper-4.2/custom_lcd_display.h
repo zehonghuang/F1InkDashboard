@@ -43,6 +43,11 @@ typedef struct {
 
 class CustomLcdDisplay : public LcdDisplay {
 public:
+    enum class BwDitherMode : uint8_t {
+        None = 0,
+        Bayer4 = 1,
+    };
+
     CustomLcdDisplay(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_handle_t panel,
                   int width, int height, int offset_x, int offset_y,
                   bool mirror_x, bool mirror_y, bool swap_xy,custom_lcd_spi_t _lcd_spi_data);
@@ -134,6 +139,7 @@ private:
     void WRITE_VLINE_TO_HLINE();
 
     uint8_t bw_threshold    = 200;
+    BwDitherMode bw_dither_mode_ = BwDitherMode::None;
 
     // -------------------------
     // Async refresh mechanism

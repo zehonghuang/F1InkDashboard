@@ -202,7 +202,7 @@ async def epd_frame_bin(
     png_url: str = Query(..., description="PNG URL (or any image URL Pillow can open)"),
     w: int = Query(400, ge=1, le=1200),
     h: int = Query(300, ge=1, le=1200),
-    dither: bool = Query(False),
+    dither: bool = Query(True),
 ) -> Response:
     async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
         frame = await build_epd_frame(client, png_url=png_url, w=w, h=h, dither=dither)
@@ -217,7 +217,7 @@ async def epd_frame_png(
     png_url: str = Query(..., description="PNG URL (or any image URL Pillow can open)"),
     w: int = Query(400, ge=1, le=1200),
     h: int = Query(300, ge=1, le=1200),
-    dither: bool = Query(False),
+    dither: bool = Query(True),
 ) -> Response:
     async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
         frame = await build_epd_frame(client, png_url=png_url, w=w, h=h, dither=dither)

@@ -39,7 +39,24 @@ def _mono_1bit(img: Image.Image, dither: bool) -> Image.Image:
     bg = Image.new("RGBA", img.size, (255, 255, 255, 255))
     img = Image.alpha_composite(bg, img).convert("RGB")
     if dither:
-        return img.convert("1")
+        g = img.convert("L")
+        w, h = g.size
+        src = g.load()
+        out = Image.new("1", (w, h), 1)
+        dst = out.load()
+        b4 = (
+            (0, 8, 2, 10),
+            (12, 4, 14, 6),
+            (3, 11, 1, 9),
+            (15, 7, 13, 5),
+        )
+        for y in range(h):
+            row = b4[y & 3]
+            for x in range(w):
+                v = int(src[x, y])
+                t = (row[x & 3] + 0.5) * (255.0 / 16.0)
+                dst[x, y] = 1 if v >= t else 0
+        return out
     return img.convert("1", dither=Image.Dither.NONE)
 
 
@@ -80,4 +97,3 @@ async def build_epd_frame(
 
     bin_1bpp_black1 = _pack_1bpp_black1(mono)
     return EpdFrame(w=w, h=h, bin_1bpp_black1=bin_1bpp_black1, preview_png=preview_png)
-

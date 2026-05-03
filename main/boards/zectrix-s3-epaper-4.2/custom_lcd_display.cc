@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <cstring>
 #include <algorithm>
+#include <cctype>
 
 #include <esp_log.h>
 #include <esp_heap_caps.h>
@@ -89,6 +90,32 @@ static inline uint8_t rgb565_luma(uint16_t c) {
     return (uint8_t)((77 * R + 150 * G + 29 * B) >> 8);
 }
 
+static inline bool rgb565_is_white_bayer4(uint16_t c, uint8_t thr_bias, int x, int y) {
+    static constexpr uint8_t b4[4][4] = {
+        {0, 8, 2, 10},
+        {12, 4, 14, 6},
+        {3, 11, 1, 9},
+        {15, 7, 13, 5},
+    };
+    int v = (int)rgb565_luma(c) + ((int)thr_bias - 128);
+    if (v < 0) v = 0;
+    if (v > 255) v = 255;
+    const uint8_t b = b4[(uint32_t)y & 3U][(uint32_t)x & 3U];
+    const int t = ((int)b * 2 + 1) * 255 / 32;
+    return v >= t;
+}
+
+static inline bool rgb565_is_white_mode(uint16_t c,
+                                       uint8_t thr,
+                                       CustomLcdDisplay::BwDitherMode mode,
+                                       int x,
+                                       int y) {
+    if (mode == CustomLcdDisplay::BwDitherMode::Bayer4) {
+        return rgb565_is_white_bayer4(c, thr, x, y);
+    }
+    return rgb565_is_white(c, thr);
+}
+
 //1=白，0=黑
 static inline void set_pixel_1bpp(uint8_t *fb, int width, int x, int y, bool white) {
     uint16_t bytes_per_row = (width + 7) >> 3;
@@ -170,7 +197,7 @@ void CustomLcdDisplay::lvgl_flush_cb(lv_display_t *disp, const lv_area_t *area, 
                         if (y < y_min) y_min = y;
                         if (y > y_max) y_max = y;
                         if (y < 250) n_dark++;
-                        const bool white = rgb565_is_white(row[xx], driver->bw_threshold);
+                        const bool white = rgb565_is_white_mode(row[xx], driver->bw_threshold, driver->bw_dither_mode_, xx + ix1, yy + iy1);
                         if (white) n_white++;
                         n++;
                     }
@@ -216,7 +243,7 @@ void CustomLcdDisplay::lvgl_flush_cb(lv_display_t *disp, const lv_area_t *area, 
         const uint16_t *row = src + (yy + (y1 - area->y1)) * src_w + (x1 - area->x1);
         for (int xx = 0; xx < w; xx++) {
             int x = x1 + xx;
-            bool white = rgb565_is_white(row[xx], driver->bw_threshold);
+            bool white = rgb565_is_white_mode(row[xx], driver->bw_threshold, driver->bw_dither_mode_, x, y);
             set_pixel_1bpp(driver->buffer, driver->Width, x, y, white);
         }
     }
@@ -440,7 +467,14 @@ CustomLcdDisplay::CustomLcdDisplay(esp_lcd_panel_io_handle_t panel_io, esp_lcd_p
             thr = 255;
         }
         bw_threshold = static_cast<uint8_t>(thr);
-        ESP_LOGI(TAG, "BW threshold=%d", (int)bw_threshold);
+        std::string dither = s.GetString("bw_dither", "none");
+        std::transform(dither.begin(), dither.end(), dither.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+        if (dither == "bayer4" || dither == "bayer") {
+            bw_dither_mode_ = BwDitherMode::Bayer4;
+        } else {
+            bw_dither_mode_ = BwDitherMode::None;
+        }
+        ESP_LOGI(TAG, "BW threshold=%d dither=%s", (int)bw_threshold, dither.c_str());
     }
 
     // async defaults

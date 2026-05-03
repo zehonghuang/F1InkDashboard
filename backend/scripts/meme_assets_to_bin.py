@@ -35,6 +35,29 @@ def _mono_1bit(img: Image.Image, dither: bool) -> Image.Image:
         return img.convert("1")
     return img.convert("1", dither=Image.Dither.NONE)
 
+def _mono_1bit_bayer4(img: Image.Image) -> Image.Image:
+    img = img.convert("RGBA")
+    bg = Image.new("RGBA", img.size, (255, 255, 255, 255))
+    rgb = Image.alpha_composite(bg, img).convert("RGB")
+    g = rgb.convert("L")
+    w, h = g.size
+    src = g.load()
+    out = Image.new("1", (w, h), 1)
+    dst = out.load()
+    b4 = (
+        (0, 8, 2, 10),
+        (12, 4, 14, 6),
+        (3, 11, 1, 9),
+        (15, 7, 13, 5),
+    )
+    for y in range(h):
+        row = b4[y & 3]
+        for x in range(w):
+            v = int(src[x, y])
+            t = (row[x & 3] + 0.5) * (255.0 / 16.0)
+            dst[x, y] = 1 if v >= t else 0
+    return out
+
 
 def _pack_1bpp_black1(img_1bit: Image.Image) -> bytes:
     img = img_1bit.convert("1")
@@ -47,6 +70,22 @@ def _pack_1bpp_black1(img_1bit: Image.Image) -> bytes:
             white = src[y * row_bytes + (x >> 3)] & (1 << (7 - (x & 7))) != 0
             if not white:
                 out[y * row_bytes + (x >> 3)] |= 1 << (7 - (x & 7))
+    return bytes(out)
+
+def _pack_2bpp_gray(img: Image.Image) -> bytes:
+    img = img.convert("RGBA")
+    bg = Image.new("RGBA", img.size, (255, 255, 255, 255))
+    g = Image.alpha_composite(bg, img).convert("L")
+    w, h = g.size
+    src = g.load()
+    row_bytes = (w + 3) >> 2
+    out = bytearray(row_bytes * h)
+    for y in range(h):
+        for x in range(w):
+            v = int(src[x, y])
+            lvl = int(((255 - v) * 3 + 127) // 255)
+            shift = 6 - 2 * (x & 3)
+            out[y * row_bytes + (x >> 2)] |= (lvl & 0x03) << shift
     return bytes(out)
 
 
@@ -99,6 +138,8 @@ def main() -> int:
     ap.add_argument("--w", type=int, default=384)
     ap.add_argument("--h", type=int, default=240)
     ap.add_argument("--dither", action="store_true")
+    ap.add_argument("--gray2bpp", action="store_true", help="export 2bpp grayscale bin (4 levels), packed MSB-first")
+    ap.add_argument("--bayer4", action="store_true", help="export 1bpp using Bayer 4x4 ordered dithering")
     ap.add_argument("--audio-ac", type=int, default=1)
     ap.add_argument("--audio-ar", type=int, default=16000)
     ap.add_argument("--ffmpeg", default=os.environ.get("FFMPEG_PATH"), help="path to ffmpeg executable (optional)")
@@ -113,13 +154,27 @@ def main() -> int:
             raise SystemExit(f"image not found: {img_path}")
         img = Image.open(img_path)
         img = _contain_resize(img, args.w, args.h)
-        mono = _mono_1bit(img, dither=args.dither)
-        bin_1bpp = _pack_1bpp_black1(mono)
+        if args.gray2bpp:
+            bin_gray = _pack_2bpp_gray(img)
+            name = f"{args.prefix}_{args.w}x{args.h}_g2"
+            (out_dir / f"{name}.bin").write_bytes(bin_gray)
+            img.convert("RGB").save(out_dir / f"{name}_preview.png", format="PNG", optimize=False)
+            sys.stdout.write(str(out_dir / f"{name}.bin") + "\n")
+        else:
+            if args.bayer4:
+                mono = _mono_1bit_bayer4(img)
+            else:
+                mono = _mono_1bit(img, dither=args.dither)
+            bin_1bpp = _pack_1bpp_black1(mono)
 
-        name = f"{args.prefix}_{args.w}x{args.h}"
-        (out_dir / f"{name}.bin").write_bytes(bin_1bpp)
-        mono.convert("RGB").save(out_dir / f"{name}_preview.png", format="PNG", optimize=False)
-        sys.stdout.write(str(out_dir / f"{name}.bin") + "\n")
+            name = f"{args.prefix}_{args.w}x{args.h}"
+            if args.bayer4:
+                name += "_b4"
+            elif args.dither:
+                name += "_fs"
+            (out_dir / f"{name}.bin").write_bytes(bin_1bpp)
+            mono.convert("RGB").save(out_dir / f"{name}_preview.png", format="PNG", optimize=False)
+            sys.stdout.write(str(out_dir / f"{name}.bin") + "\n")
 
     if args.audio:
         audio_path = Path(args.audio).expanduser().resolve()
