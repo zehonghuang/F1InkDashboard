@@ -7,6 +7,7 @@
 #include <esp_timer.h>
 
 #include <memory>
+#include <ctime>
 
 #include "FT/factory_test_service.h"
 #include "application.h"
@@ -162,6 +163,13 @@ public:
         Settings s("boot", false);
         const std::string mode = s.GetString("mode", "normal");
         return mode == "factory_test";
+    }
+
+    bool GetLocalTime(tm& out_local_tm) const override {
+        if (rtc_ == nullptr) {
+            return false;
+        }
+        return rtc_->GetTime(out_local_tm);
     }
 
     void EnterNormalFlow() override {

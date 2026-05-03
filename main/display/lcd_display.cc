@@ -121,10 +121,16 @@ void LcdDisplay::UpdateStatusBarLocked(bool update_all) {
     char time_buf[16] = "--:--";
     char date_buf[32] = "--";
     {
-        time_t now_s = 0;
-        time(&now_s);
         tm local_tm = {};
-        if (now_s > 1600000000 && localtime_r(&now_s, &local_tm) != nullptr) {
+        bool ok_tm = board.GetLocalTime(local_tm);
+        if (!ok_tm) {
+            time_t now_s = 0;
+            time(&now_s);
+            if (now_s > 1600000000 && localtime_r(&now_s, &local_tm) != nullptr) {
+                ok_tm = true;
+            }
+        }
+        if (ok_tm) {
             snprintf(time_buf, sizeof(time_buf), "%02d:%02d", local_tm.tm_hour, local_tm.tm_min);
             (void)strftime(date_buf, sizeof(date_buf), "%a %b %d, %Y", &local_tm);
         }

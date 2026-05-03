@@ -3,6 +3,7 @@
 
 #include <string>
 #include <functional>
+#include <ctime>
 
 /**
  * Network events for unified callback
@@ -74,6 +75,7 @@ public:
     // Request network (idempotent). Default calls StartNetwork().
     virtual void RequestNetwork() { StartNetwork(); }
     virtual bool IsFactoryTestMode() const { return false; }
+    virtual bool GetLocalTime(tm& out_local_tm) const { (void)out_local_tm; return false; }
     virtual void EnterNormalFlow() {}
     virtual void EnterFactoryTestFlow() {}
     virtual void SetNetworkEventCallback(NetworkEventCallback callback) { (void)callback; }
