@@ -8,7 +8,7 @@ from .f1_circuit_assets import fetch_f1_circuit_assets
 
 
 def _parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(prog="zectrix-backend")
+    p = argparse.ArgumentParser(prog="toinc_F1-backend")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     u = sub.add_parser("update-circuits")
@@ -30,7 +30,7 @@ async def _run_update_circuits(args: argparse.Namespace) -> None:
         else (Path(__file__).resolve().parent.parent / "static").resolve()
     )
     static_dir.mkdir(parents=True, exist_ok=True)
-    async with httpx.AsyncClient(headers={"User-Agent": "zectrix-backend/0.1"}) as client:
+    async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
         await fetch_f1_circuit_assets(
             client,
             int(args.season),

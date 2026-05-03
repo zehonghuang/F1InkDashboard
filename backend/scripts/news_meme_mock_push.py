@@ -10,7 +10,7 @@ import httpx
 
 async def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--base-url", default=os.getenv("ZECTRIX_BACKEND_URL", "http://127.0.0.1:8008"))
+    ap.add_argument("--base-url", default=os.getenv("TOINC_F1_BACKEND_URL") or os.getenv("ZECTRIX_BACKEND_URL", "http://127.0.0.1:8008"))
     ap.add_argument("--token", default=os.getenv("NEWS_INGEST_TOKEN"))
     ap.add_argument("--title", default="MEME TEST")
     ap.add_argument("--image", default=None, help="path to image (png/jpg)")

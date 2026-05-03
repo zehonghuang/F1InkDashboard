@@ -426,7 +426,7 @@ async def fetch_f1_circuit_assets(
         season_url,
         timeout=20,
         follow_redirects=True,
-        headers={"User-Agent": "zectrix-backend/0.1 (+circuit-fetcher)"},
+        headers={"User-Agent": "toinc_F1-backend/0.1 (+circuit-fetcher)"},
     )
     res.raise_for_status()
     html = res.text
@@ -463,7 +463,7 @@ async def fetch_f1_circuit_assets(
                     f1_url,
                     timeout=20,
                     follow_redirects=True,
-                    headers={"User-Agent": "zectrix-backend/0.1 (+circuit-fetcher)"},
+                    headers={"User-Agent": "toinc_F1-backend/0.1 (+circuit-fetcher)"},
                 )
                 if rp.status_code == 200 and rp.text:
                     page_html = rp.text

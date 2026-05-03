@@ -35,7 +35,7 @@ from .third_party import (
 )
 
 
-app = FastAPI(title="zectrix-backend", version="0.1.0")
+app = FastAPI(title="toinc_F1-backend", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -49,7 +49,7 @@ STATIC_DIR = (Path(__file__).resolve().parent.parent / "static").resolve()
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-DEFAULT_DEVICE_WS_URL = os.getenv("ZECTRIX_DEVICE_WS_URL", "ws://192.168.4.1:8080/ws")
+DEFAULT_DEVICE_WS_URL = os.getenv("TOINC_F1_DEVICE_WS_URL") or os.getenv("ZECTRIX_DEVICE_WS_URL", "ws://192.168.4.1:8080/ws")
 openf1 = OpenF1Relay(OpenF1RelayConfig.from_env())
 news_ws = NewsRelay(NewsRelayConfig.from_env(), static_dir=STATIC_DIR)
 
@@ -90,7 +90,7 @@ async def _build_pages(
         ZoneInfo(tz_name)
     except ZoneInfoNotFoundError:
         tz_name = "UTC"
-    async with httpx.AsyncClient(headers={"User-Agent": "zectrix-backend/0.1"}) as client:
+    async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
         schedule = await cache.get_or_set(
             f"ergast:schedule:{int(season)}",
             lambda: ergast_schedule_for_season(client, int(season)),
@@ -164,7 +164,7 @@ async def epd_frame_bin(
     h: int = Query(300, ge=1, le=1200),
     dither: bool = Query(False),
 ) -> Response:
-    async with httpx.AsyncClient(headers={"User-Agent": "zectrix-backend/0.1"}) as client:
+    async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
         frame = await build_epd_frame(client, png_url=png_url, w=w, h=h, dither=dither)
     expected = ((frame.w + 7) >> 3) * frame.h
     if len(frame.bin_1bpp_black1) != expected:
@@ -179,7 +179,7 @@ async def epd_frame_png(
     h: int = Query(300, ge=1, le=1200),
     dither: bool = Query(False),
 ) -> Response:
-    async with httpx.AsyncClient(headers={"User-Agent": "zectrix-backend/0.1"}) as client:
+    async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
         frame = await build_epd_frame(client, png_url=png_url, w=w, h=h, dither=dither)
     return Response(content=frame.preview_png, media_type="image/png")
 
@@ -578,7 +578,7 @@ async def ui_page_off_week(
 
 @app.get("/api/v1/news/breaking")
 async def news_breaking() -> dict:
-    async with httpx.AsyncClient(headers={"User-Agent": "zectrix-backend/0.1"}) as client:
+    async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
         item = await cache.get_or_set("news:rss:breaking", lambda: fetch_f1_breaking_rss(client), ttl_s=20)
     return {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -597,7 +597,7 @@ async def f1_sessions(
     limit: int = Query(default=13, ge=1, le=30),
 ) -> dict:
     now_utc = datetime.now(timezone.utc)
-    async with httpx.AsyncClient(headers={"User-Agent": "zectrix-backend/0.1"}) as client:
+    async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
         schedule = await cache.get_or_set(
             f"ergast:schedule:{season}",
             lambda: ergast_schedule_for_season(client, season),
@@ -625,7 +625,7 @@ async def f1_sessions_current(
     limit: int = Query(default=13, ge=1, le=30),
 ) -> dict:
     now_utc = datetime.now(timezone.utc)
-    async with httpx.AsyncClient(headers={"User-Agent": "zectrix-backend/0.1"}) as client:
+    async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
         schedule = await cache.get_or_set(
             f"ergast:schedule:{season}",
             lambda: ergast_schedule_for_season(client, season),
@@ -662,7 +662,7 @@ async def f1_sessions_compat(
     if session_name.lower().endswith(".json"):
         session_name = session_name[: -len(".json")]
     now_utc = datetime.now(timezone.utc)
-    async with httpx.AsyncClient(headers={"User-Agent": "zectrix-backend/0.1"}) as client:
+    async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
         schedule = await cache.get_or_set(
             f"ergast:schedule:{season}",
             lambda: ergast_schedule_for_season(client, season),

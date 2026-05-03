@@ -9,7 +9,7 @@ import httpx
 
 async def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--base-url", default=os.getenv("ZECTRIX_BACKEND_URL", "http://127.0.0.1:8008"))
+    ap.add_argument("--base-url", default=os.getenv("TOINC_F1_BACKEND_URL", "http://127.0.0.1:8008"))
     ap.add_argument("--token", default=os.getenv("NEWS_INGEST_TOKEN"))
     ap.add_argument("--file", default=str(Path(__file__).resolve().parent.parent / "mock" / "news_breaking_mock_packets.jsonl"))
     ap.add_argument("--interval", type=float, default=0.2)

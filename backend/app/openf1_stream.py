@@ -47,7 +47,7 @@ class OpenF1RelayConfig:
         mqtt_host = os.getenv("OPENF1_MQTT_HOST", "mqtt.openf1.org").strip()
         mqtt_port = int(os.getenv("OPENF1_MQTT_PORT", "8084" if transport == "websockets" else "8883"))
         mqtt_ws_path = os.getenv("OPENF1_MQTT_WS_PATH", "/mqtt").strip() or "/mqtt"
-        mqtt_username = os.getenv("OPENF1_MQTT_USERNAME", "zectrix").strip() or "zectrix"
+        mqtt_username = os.getenv("OPENF1_MQTT_USERNAME", "toinc_F1").strip() or "toinc_F1"
         token_url = os.getenv("OPENF1_TOKEN_URL", "https://api.openf1.org/token").strip()
         max_queue = int(os.getenv("OPENF1_MAX_QUEUE", "2048"))
         push_hz_raw = os.getenv("OPENF1_PUSH_HZ", "5").strip()
@@ -241,7 +241,7 @@ class OpenF1Relay:
             return False
 
         try:
-            async with httpx.AsyncClient(headers={"User-Agent": "zectrix-backend/0.1"}) as client:
+            async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
                 r = await client.post(
                     self._cfg.token_url,
                     data={"username": self._cfg.username, "password": self._cfg.password},
