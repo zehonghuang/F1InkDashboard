@@ -287,11 +287,36 @@ def _select_race_and_sessions(
             race = next_race
             race_dt = next_race_dt
         else:
-            # Sessions API should anchor around the upcoming event.
-            # Do not use local-week heuristics here because it breaks when race UTC time
-            # crosses into the next local day/week (e.g. Sunday UTC becomes Monday local).
-            race = next_race
-            race_dt = next_race_dt
+            decision_tz = "Asia/Shanghai"
+            try:
+                sh_tz = ZoneInfo(decision_tz)
+            except ZoneInfoNotFoundError:
+                sh_tz = ZoneInfo("UTC")
+
+            # Race week rule (Shanghai TZ):
+            # - From the Monday you get by counting back to Monday from race day.
+            # - If race day is Monday, count back one full week to the previous Monday.
+            now_sh = now_utc.astimezone(sh_tz)
+            is_race_week = False
+            try:
+                race_dt_sh = next_race_dt.astimezone(sh_tz)
+                wd = race_dt_sh.weekday()  # Mon=0..Sun=6
+                back_days = wd if wd > 0 else 7
+                start_d = race_dt_sh.date() - timedelta(days=back_days)
+                start_dt = datetime.combine(start_d, datetime.min.time(), tzinfo=sh_tz)
+                if start_dt <= now_sh <= race_dt_sh:
+                    is_race_week = True
+            except Exception:
+                is_race_week = False
+
+            # If not race week, anchor on the most recent round (last_race).
+            # If race week, anchor on current round (next_race).
+            if is_race_week:
+                race = next_race
+                race_dt = next_race_dt
+            else:
+                race = last_race
+                race_dt = last_race_dt
 
     sessions: List[Dict[str, Any]] = []
     if race is not None:
@@ -584,17 +609,6 @@ async def build_sessions_payload(
         rows = await _fetch_quali_rows(int(rnd))
         results_race = {"season": int(season), "round": int(rnd), "name": race_name, "country": country}
 
-        if not rows:
-            last_race = _last_race_before(schedule_json, now_utc)
-            last_rnd = (last_race or {}).get("round")
-            if last_race is not None and last_rnd is not None and str(last_rnd).isdigit() and int(last_rnd) != int(rnd):
-                lr_name = (last_race or {}).get("raceName") or ""
-                lr_country = ((last_race or {}).get("Circuit") or {}).get("Location", {}).get("country") or ""
-                lr_rows = await _fetch_quali_rows(int(last_rnd))
-                if lr_rows:
-                    rows = lr_rows
-                    results_race = {"season": int(season), "round": int(last_rnd), "name": lr_name, "country": lr_country}
-
         if len(rows) >= 10:
             dz_i = None
             for i, r in enumerate(rows):
@@ -705,20 +719,9 @@ async def build_sessions_payload(
 
         rows = await _fetch_race_rows(int(rnd))
         results_race = {"season": int(season), "round": int(rnd), "name": race_name, "country": country}
-
-        if not rows:
-            last_race = _last_race_before(schedule_json, now_utc)
-            last_rnd = (last_race or {}).get("round")
-            if last_race is not None and last_rnd is not None and str(last_rnd).isdigit() and int(last_rnd) != int(rnd):
-                lr_name = (last_race or {}).get("raceName") or ""
-                lr_country = ((last_race or {}).get("Circuit") or {}).get("Location", {}).get("country") or ""
-                lr_rows = await _fetch_race_rows(int(last_rnd))
-                if lr_rows:
-                    rows = lr_rows
-                    results_race = {"season": int(season), "round": int(last_rnd), "name": lr_name, "country": lr_country}
         out["table"] = {"kind": "race", "rows": rows}
-        return out
         out["results_race"] = results_race
+        return out
 
 
     def fmt_ms(ms: int) -> str:
