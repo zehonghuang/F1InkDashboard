@@ -35,7 +35,11 @@ void Application::Initialize() {
     }
 
     SetDeviceState(kDeviceStateIdle);
-    board.EnterFactoryTestFlow();
+    if (board.IsFactoryTestMode()) {
+        board.EnterFactoryTestFlow();
+    } else {
+        board.EnterNormalFlow();
+    }
 }
 
 void Application::Run() {

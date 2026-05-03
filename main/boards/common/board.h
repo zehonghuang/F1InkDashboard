@@ -74,6 +74,7 @@ public:
     // Request network (idempotent). Default calls StartNetwork().
     virtual void RequestNetwork() { StartNetwork(); }
     virtual bool IsFactoryTestMode() const { return false; }
+    virtual void EnterNormalFlow() {}
     virtual void EnterFactoryTestFlow() {}
     virtual void SetNetworkEventCallback(NetworkEventCallback callback) { (void)callback; }
     virtual const char* GetNetworkStateIcon() = 0;

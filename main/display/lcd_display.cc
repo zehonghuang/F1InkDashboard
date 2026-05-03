@@ -342,12 +342,6 @@ void LcdDisplay::SetupUI() {
         return;
     }
 
-    if (!SwitchPageLocked(UiPageId::FactoryTest)) {
-        ESP_LOGW(kTag, "Failed to switch to FT page");
-        return;
-    }
-    page_stack_.clear();
-    page_stack_.push_back(UiPageId::FactoryTest);
     ui_setup_done_ = true;
 }
 

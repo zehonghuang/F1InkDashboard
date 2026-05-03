@@ -159,7 +159,21 @@ public:
     }
 
     bool IsFactoryTestMode() const override {
-        return true;
+        Settings s("boot", false);
+        const std::string mode = s.GetString("mode", "normal");
+        return mode == "factory_test";
+    }
+
+    void EnterNormalFlow() override {
+        if (normal_flow_started_) {
+            return;
+        }
+        normal_flow_started_ = true;
+        if (!HasSavedWifiCredentials()) {
+            StartWifiOnboarding();
+            return;
+        }
+        StartStationConnecting();
     }
 
     void EnterFactoryTestFlow() override {
@@ -167,11 +181,11 @@ public:
             return;
         }
         factory_flow_started_ = true;
-        if (!HasSavedWifiCredentials()) {
-            StartWifiOnboarding();
-            return;
+        if (display_ != nullptr) {
+            display_->ShowFactoryTestPage();
+            display_->RequestUrgentFullRefresh();
         }
-        StartStationConnecting();
+        FactoryTestService::Instance().StartFlow();
     }
 
     const char* GetNetworkStateIcon() override {
@@ -195,11 +209,13 @@ public:
     }
 
     std::string GetBoardJson() override {
-        return R"({"type":"zectrix-s3-epaper-4.2","mode":"factory_test"})";
+        const char* mode = IsFactoryTestMode() ? "factory_test" : "normal";
+        return std::string(R"({"type":"zectrix-s3-epaper-4.2","mode":")") + mode + R"("})";
     }
 
     std::string GetDeviceStatusJson() override {
-        return R"({"mode":"factory_test"})";
+        const char* mode = IsFactoryTestMode() ? "factory_test" : "normal";
+        return std::string(R"({"mode":")") + mode + R"("})";
     }
 
     RtcPcf8563* GetRtc() {
@@ -848,6 +864,7 @@ private:
     bool suppress_confirm_ = false;
     bool wifi_onboarding_active_ = false;
     bool factory_flow_started_ = false;
+    bool normal_flow_started_ = false;
 };
 
 }  // namespace
