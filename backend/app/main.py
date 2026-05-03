@@ -22,9 +22,11 @@ from .third_party import (
     build_sessions_payload,
     build_ui_pages_payload,
     ergast_constructor_standings,
+    ergast_constructor_standings_for_season,
     ergast_current_schedule,
     ergast_schedule_for_season,
     ergast_driver_standings,
+    ergast_driver_standings_for_season,
     fetch_f1_breaking_rss,
     ergast_last_n_results,
     ergast_last_winner,
@@ -89,13 +91,33 @@ async def _build_pages(
     except ZoneInfoNotFoundError:
         tz_name = "UTC"
     async with httpx.AsyncClient(headers={"User-Agent": "zectrix-backend/0.1"}) as client:
-        schedule = await cache.get_or_set("ergast:current", lambda: ergast_current_schedule(client), ttl_s=300)
-        drivers = await cache.get_or_set(
-            "ergast:driver_standings", lambda: ergast_driver_standings(client), ttl_s=300
+        schedule = await cache.get_or_set(
+            f"ergast:schedule:{int(season)}",
+            lambda: ergast_schedule_for_season(client, int(season)),
+            ttl_s=300,
         )
-        constructors = await cache.get_or_set(
-            "ergast:constructor_standings", lambda: ergast_constructor_standings(client), ttl_s=300
-        )
+        if int(season) == int(now_utc.year):
+            drivers = await cache.get_or_set(
+                "ergast:driver_standings:current",
+                lambda: ergast_driver_standings(client),
+                ttl_s=300,
+            )
+            constructors = await cache.get_or_set(
+                "ergast:constructor_standings:current",
+                lambda: ergast_constructor_standings(client),
+                ttl_s=300,
+            )
+        else:
+            drivers = await cache.get_or_set(
+                f"ergast:driver_standings:{int(season)}",
+                lambda: ergast_driver_standings_for_season(client, int(season)),
+                ttl_s=300,
+            )
+            constructors = await cache.get_or_set(
+                f"ergast:constructor_standings:{int(season)}",
+                lambda: ergast_constructor_standings_for_season(client, int(season)),
+                ttl_s=300,
+            )
         last5 = await cache.get_or_set("ergast:last5", lambda: ergast_last_n_results(client, 5), ttl_s=300)
         winner = await cache.get_or_set("ergast:last_winner", lambda: ergast_last_winner(client), ttl_s=300)
         air_c = await cache.get_or_set("weather:air", lambda: open_meteo_current_temp_c(client), ttl_s=120)

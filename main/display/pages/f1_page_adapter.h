@@ -283,12 +283,6 @@ private:
     int64_t last_sessions_fetch_ms_ = 0;
     std::string sessions_url_;
     int64_t sessions_generated_at_utc_s_ = 0;
-    bool sessions_quali_use_prev_round_ = false;
-    int sessions_quali_prev_round_ = -1;
-    int64_t sessions_quali_prev_round_until_utc_s_ = 0;
-    bool sessions_race_use_prev_round_ = false;
-    int sessions_race_prev_round_ = -1;
-    int64_t sessions_race_prev_round_until_utc_s_ = 0;
 
     bool active_ = false;
     std::string circuit_name_;

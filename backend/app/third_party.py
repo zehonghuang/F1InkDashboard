@@ -57,8 +57,22 @@ async def ergast_driver_standings(client: httpx.AsyncClient) -> Dict[str, Any]:
     return r.json()
 
 
+async def ergast_driver_standings_for_season(client: httpx.AsyncClient, season: int) -> Dict[str, Any]:
+    season = int(season)
+    r = await client.get(f"https://api.jolpi.ca/ergast/f1/{season}/driverStandings.json", timeout=10)
+    r.raise_for_status()
+    return r.json()
+
+
 async def ergast_constructor_standings(client: httpx.AsyncClient) -> Dict[str, Any]:
     r = await client.get("https://api.jolpi.ca/ergast/f1/current/constructorStandings.json", timeout=10)
+    r.raise_for_status()
+    return r.json()
+
+
+async def ergast_constructor_standings_for_season(client: httpx.AsyncClient, season: int) -> Dict[str, Any]:
+    season = int(season)
+    r = await client.get(f"https://api.jolpi.ca/ergast/f1/{season}/constructorStandings.json", timeout=10)
     r.raise_for_status()
     return r.json()
 
@@ -202,6 +216,23 @@ def _session_kind_from_key(key: str) -> str:
     return "unknown"
 
 
+def _last_race_before(schedule_json: Dict[str, Any], now_utc: datetime) -> Optional[Dict[str, Any]]:
+    races: List[Dict[str, Any]] = schedule_json.get("MRData", {}).get("RaceTable", {}).get("Races", []) or []
+    last_race = None
+    last_dt = None
+    for r in races:
+        if not isinstance(r, dict) or not r.get("date"):
+            continue
+        try:
+            dt = _parse_ergast_dt(r.get("date", ""), r.get("time"))
+        except Exception:
+            continue
+        if dt <= now_utc and (last_dt is None or dt >= last_dt):
+            last_dt = dt
+            last_race = r
+    return last_race
+
+
 def _select_race_and_sessions(
     schedule_json: Dict[str, Any],
     now_utc: datetime,
@@ -249,15 +280,6 @@ def _select_race_and_sessions(
                 next_race = r
                 next_race_dt = dt
                 break
-        decision_tz = "Asia/Shanghai"
-        try:
-            sh_tz = ZoneInfo(decision_tz)
-        except ZoneInfoNotFoundError:
-            sh_tz = ZoneInfo("UTC")
-
-        def _week_start(d):
-            return d - timedelta(days=d.weekday())
-
         if next_race is None:
             race = last_race
             race_dt = last_race_dt
@@ -265,14 +287,11 @@ def _select_race_and_sessions(
             race = next_race
             race_dt = next_race_dt
         else:
-            now_d = now_utc.astimezone(sh_tz).date()
-            next_d = next_race_dt.astimezone(sh_tz).date()
-            if _week_start(now_d) < _week_start(next_d):
-                race = last_race
-                race_dt = last_race_dt
-            else:
-                race = next_race
-                race_dt = next_race_dt
+            # Sessions API should anchor around the upcoming event.
+            # Do not use local-week heuristics here because it breaks when race UTC time
+            # crosses into the next local day/week (e.g. Sunday UTC becomes Monday local).
+            race = next_race
+            race_dt = next_race_dt
 
     sessions: List[Dict[str, Any]] = []
     if race is not None:
@@ -523,42 +542,58 @@ async def build_sessions_payload(
         limit = 30
 
     if kind == "qualifying" and rnd is not None:
-        data = await ergast_qualifying_results(client, season, int(rnd))
-        races = data.get("MRData", {}).get("RaceTable", {}).get("Races", []) or []
-        qres = (races[0].get("QualifyingResults") or []) if races else []
+        async def _fetch_quali_rows(round_n: int) -> List[Dict[str, Any]]:
+            data = await ergast_qualifying_results(client, season, int(round_n))
+            races = data.get("MRData", {}).get("RaceTable", {}).get("Races", []) or []
+            qres = (races[0].get("QualifyingResults") or []) if races else []
 
-        rows: List[Dict[str, Any]] = []
-        best_ms = None
-        for it in qres:
-            drv = it.get("Driver") or {}
-            code = (drv.get("code") or (drv.get("driverId") or "").upper()[:3]).upper()
-            no = drv.get("permanentNumber") or ""
-            pos = str(it.get("position") or "").zfill(2) if str(it.get("position") or "").isdigit() else str(it.get("position") or "")
-            if int(q) == 1:
-                lap = it.get("Q1") or ""
-            elif int(q) == 2:
-                lap = it.get("Q2") or it.get("Q1") or ""
-            else:
-                lap = it.get("Q3") or it.get("Q2") or it.get("Q1") or ""
-            ms = _parse_lap_time_ms(lap)
-            if best_ms is None and ms is not None:
-                best_ms = ms
-            gap = _fmt_gap(None if best_ms is None or ms is None else ms - best_ms)
-            if pos in ("01", "1"):
-                gap = "---"
-            rows.append(
-                {
-                    "pos": pos,
-                    "no": str(no),
-                    "drv": code,
-                    "lap_time": lap,
-                    "gap": gap,
-                    "st": "---",
-                    "sec123": _sec123_synth(pos),
-                }
-            )
-            if len(rows) >= limit:
-                break
+            rows: List[Dict[str, Any]] = []
+            best_ms = None
+            for it in qres:
+                drv = it.get("Driver") or {}
+                code = (drv.get("code") or (drv.get("driverId") or "").upper()[:3]).upper()
+                no = drv.get("permanentNumber") or ""
+                pos = str(it.get("position") or "").zfill(2) if str(it.get("position") or "").isdigit() else str(it.get("position") or "")
+                if int(q) == 1:
+                    lap = it.get("Q1") or ""
+                elif int(q) == 2:
+                    lap = it.get("Q2") or it.get("Q1") or ""
+                else:
+                    lap = it.get("Q3") or it.get("Q2") or it.get("Q1") or ""
+                ms = _parse_lap_time_ms(lap)
+                if best_ms is None and ms is not None:
+                    best_ms = ms
+                gap = _fmt_gap(None if best_ms is None or ms is None else ms - best_ms)
+                if pos in ("01", "1"):
+                    gap = "---"
+                rows.append(
+                    {
+                        "pos": pos,
+                        "no": str(no),
+                        "drv": code,
+                        "lap_time": lap,
+                        "gap": gap,
+                        "st": "---",
+                        "sec123": _sec123_synth(pos),
+                    }
+                )
+                if len(rows) >= limit:
+                    break
+            return rows
+
+        rows = await _fetch_quali_rows(int(rnd))
+        results_race = {"season": int(season), "round": int(rnd), "name": race_name, "country": country}
+
+        if not rows:
+            last_race = _last_race_before(schedule_json, now_utc)
+            last_rnd = (last_race or {}).get("round")
+            if last_race is not None and last_rnd is not None and str(last_rnd).isdigit() and int(last_rnd) != int(rnd):
+                lr_name = (last_race or {}).get("raceName") or ""
+                lr_country = ((last_race or {}).get("Circuit") or {}).get("Location", {}).get("country") or ""
+                lr_rows = await _fetch_quali_rows(int(last_rnd))
+                if lr_rows:
+                    rows = lr_rows
+                    results_race = {"season": int(season), "round": int(last_rnd), "name": lr_name, "country": lr_country}
 
         if len(rows) >= 10:
             dz_i = None
@@ -569,13 +604,10 @@ async def build_sessions_payload(
             out["table"] = {"kind": "qualifying", "rows": rows, "drop_zone_after_index": dz_i, "q": q}
         else:
             out["table"] = {"kind": "qualifying", "rows": rows, "drop_zone_after_index": None, "q": q}
+        out["results_race"] = results_race
         return out
 
     if kind == "race" and rnd is not None:
-        data = await ergast_race_results(client, season, int(rnd))
-        races = data.get("MRData", {}).get("RaceTable", {}).get("Races", []) or []
-        res = (races[0].get("Results") or []) if races else []
-
         def _parse_race_time_ms(s: str) -> Optional[int]:
             s = (s or "").strip()
             if not s:
@@ -603,69 +635,91 @@ async def build_sessions_payload(
             except Exception:
                 return None
 
-        rows: List[Dict[str, Any]] = []
-        winner_ms = None
-        winner_time = ""
-        if res:
-            t0 = (res[0].get("Time") or {})
-            try:
-                if t0.get("millis"):
-                    winner_ms = int(t0.get("millis"))
-            except Exception:
-                winner_ms = None
-            winner_time = (t0.get("time") or "") if isinstance(t0, dict) else ""
-            if not winner_time:
-                winner_time = res[0].get("status") or ""
-            if winner_ms is None and winner_time:
-                winner_ms = _parse_race_time_ms(winner_time)
+        async def _fetch_race_rows(round_n: int) -> List[Dict[str, Any]]:
+            data = await ergast_race_results(client, season, int(round_n))
+            races = data.get("MRData", {}).get("RaceTable", {}).get("Races", []) or []
+            res = (races[0].get("Results") or []) if races else []
 
-        for it in res:
-            drv = it.get("Driver") or {}
-            code = (drv.get("code") or (drv.get("driverId") or "").upper()[:3]).upper()
-            no = drv.get("permanentNumber") or ""
-            pos = str(it.get("position") or "").zfill(2) if str(it.get("position") or "").isdigit() else str(it.get("position") or "")
-            status = it.get("status") or ""
-            pts = it.get("points") or ""
-            t = (it.get("Time") or {}) if isinstance(it.get("Time"), dict) else {}
-            gap_status = ""
-            if pos in ("01", "1", "P1"):
-                gap_status = (t.get("time") or "") if isinstance(t, dict) else ""
-                if not gap_status:
-                    gap_status = winner_time or status
-            else:
-                if isinstance(status, str) and status.startswith("+"):
-                    gap_status = status
-                elif isinstance(status, str) and status and status != "Finished":
-                    gap_status = status
+            rows: List[Dict[str, Any]] = []
+            winner_ms = None
+            winner_time = ""
+            if res:
+                t0 = (res[0].get("Time") or {})
+                try:
+                    if t0.get("millis"):
+                        winner_ms = int(t0.get("millis"))
+                except Exception:
+                    winner_ms = None
+                winner_time = (t0.get("time") or "") if isinstance(t0, dict) else ""
+                if not winner_time:
+                    winner_time = res[0].get("status") or ""
+                if winner_ms is None and winner_time:
+                    winner_ms = _parse_race_time_ms(winner_time)
+
+            for it in res:
+                drv = it.get("Driver") or {}
+                code = (drv.get("code") or (drv.get("driverId") or "").upper()[:3]).upper()
+                no = drv.get("permanentNumber") or ""
+                pos = str(it.get("position") or "").zfill(2) if str(it.get("position") or "").isdigit() else str(it.get("position") or "")
+                status = it.get("status") or ""
+                pts = it.get("points") or ""
+                t = (it.get("Time") or {}) if isinstance(it.get("Time"), dict) else {}
+                gap_status = ""
+                if pos in ("01", "1", "P1"):
+                    gap_status = (t.get("time") or "") if isinstance(t, dict) else ""
+                    if not gap_status:
+                        gap_status = winner_time or status
                 else:
-                    ms = None
-                    try:
-                        if t.get("millis"):
-                            ms = int(t.get("millis"))
-                    except Exception:
-                        ms = None
-                    if ms is None:
-                        ms = _parse_race_time_ms(t.get("time") or "")
-                    if ms is not None and winner_ms is not None and ms >= winner_ms:
-                        gap_status = f"+{(ms - winner_ms) / 1000.0:.3f}"
-                    else:
+                    if isinstance(status, str) and status.startswith("+"):
                         gap_status = status
+                    elif isinstance(status, str) and status and status != "Finished":
+                        gap_status = status
+                    else:
+                        ms = None
+                        try:
+                            if t.get("millis"):
+                                ms = int(t.get("millis"))
+                        except Exception:
+                            ms = None
+                        if ms is None:
+                            ms = _parse_race_time_ms(t.get("time") or "")
+                        if ms is not None and winner_ms is not None and ms >= winner_ms:
+                            gap_status = f"+{(ms - winner_ms) / 1000.0:.3f}"
+                        else:
+                            gap_status = status
 
-            rows.append(
-                {
-                    "pos": pos,
-                    "no": str(no),
-                    "drv": code,
-                    "gap_status": gap_status,
-                    "status": status,
-                    "pts": str(pts),
-                    "pit": "",
-                }
-            )
-            if len(rows) >= limit:
-                break
+                rows.append(
+                    {
+                        "pos": pos,
+                        "no": str(no),
+                        "drv": code,
+                        "gap_status": gap_status,
+                        "status": status,
+                        "pts": str(pts),
+                        "pit": "",
+                    }
+                )
+                if len(rows) >= limit:
+                    break
+            return rows
+
+        rows = await _fetch_race_rows(int(rnd))
+        results_race = {"season": int(season), "round": int(rnd), "name": race_name, "country": country}
+
+        if not rows:
+            last_race = _last_race_before(schedule_json, now_utc)
+            last_rnd = (last_race or {}).get("round")
+            if last_race is not None and last_rnd is not None and str(last_rnd).isdigit() and int(last_rnd) != int(rnd):
+                lr_name = (last_race or {}).get("raceName") or ""
+                lr_country = ((last_race or {}).get("Circuit") or {}).get("Location", {}).get("country") or ""
+                lr_rows = await _fetch_race_rows(int(last_rnd))
+                if lr_rows:
+                    rows = lr_rows
+                    results_race = {"season": int(season), "round": int(last_rnd), "name": lr_name, "country": lr_country}
         out["table"] = {"kind": "race", "rows": rows}
         return out
+        out["results_race"] = results_race
+
 
     def fmt_ms(ms: int) -> str:
         if ms < 0:

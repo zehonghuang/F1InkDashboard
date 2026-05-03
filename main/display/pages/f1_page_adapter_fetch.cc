@@ -243,33 +243,11 @@ void F1PageAdapter::StartSessionsFetchIfNeededLocked(bool force) {
     }
 
     const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
-    if (p == RaceSessionsSubPage::QualiResult) {
-        if (sessions_quali_use_prev_round_ && sessions_generated_at_utc_s_ > 0 &&
-            sessions_generated_at_utc_s_ >= sessions_quali_prev_round_until_utc_s_) {
-            sessions_quali_use_prev_round_ = false;
-        }
-    } else if (p == RaceSessionsSubPage::RaceResult) {
-        if (sessions_race_use_prev_round_ && sessions_generated_at_utc_s_ > 0 &&
-            sessions_generated_at_utc_s_ >= sessions_race_prev_round_until_utc_s_) {
-            sessions_race_use_prev_round_ = false;
-        }
-    }
-
     std::string path = "/api/v1/f1/sessions/current?tz=Asia/Shanghai&limit=30";
     if (p == RaceSessionsSubPage::QualiResult) {
         path = "/api/v1/f1/sessions?tz=Asia/Shanghai&session=qualifying&q=3&limit=30";
-        if (sessions_quali_use_prev_round_ && sessions_quali_prev_round_ > 0) {
-            char buf[128];
-            snprintf(buf, sizeof(buf), "%s&round=%d", path.c_str(), sessions_quali_prev_round_);
-            path = buf;
-        }
     } else if (p == RaceSessionsSubPage::RaceResult) {
         path = "/api/v1/f1/sessions?tz=Asia/Shanghai&session=race&limit=30";
-        if (sessions_race_use_prev_round_ && sessions_race_prev_round_ > 0) {
-            char buf[128];
-            snprintf(buf, sizeof(buf), "%s&round=%d", path.c_str(), sessions_race_prev_round_);
-            path = buf;
-        }
     }
 
     std::string url = JoinUrl(base, path);

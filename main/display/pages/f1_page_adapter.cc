@@ -1726,14 +1726,22 @@ bool F1PageAdapter::ApplySessionsJsonLocked(const char* json_text, size_t len) {
     }
     const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
     if (p == RaceSessionsSubPage::QualiResult && kind && strcmp(kind, "qualifying") == 0) {
-        const char* rn = race ? GetStringOrEmpty(race, "name") : "";
+        cJSON* results_race = GetObj(root, "results_race");
+        const char* rn = results_race ? GetStringOrEmpty(results_race, "name") : "";
+        if (rn == nullptr || rn[0] == 0) {
+            rn = race ? GetStringOrEmpty(race, "name") : "";
+        }
         if (rn == nullptr || rn[0] == 0) {
             rn = country ? country : "";
         }
         const std::string name = NormalizeGpName(rn ? rn : "");
         snprintf(left, sizeof(left), "[QUALI] %s", name.c_str());
     } else if (p == RaceSessionsSubPage::RaceResult && kind && strcmp(kind, "race") == 0) {
-        const char* rn = race ? GetStringOrEmpty(race, "name") : "";
+        cJSON* results_race = GetObj(root, "results_race");
+        const char* rn = results_race ? GetStringOrEmpty(results_race, "name") : "";
+        if (rn == nullptr || rn[0] == 0) {
+            rn = race ? GetStringOrEmpty(race, "name") : "";
+        }
         if (rn == nullptr || rn[0] == 0) {
             rn = country ? country : "";
         }
@@ -1870,17 +1878,6 @@ bool F1PageAdapter::ApplySessionsJsonLocked(const char* json_text, size_t len) {
         }
         ApplyQualiResultPageLocked();
 
-        if (p == RaceSessionsSubPage::QualiResult && now_utc_s > 0 && quali_start_utc_s > 0 && rnd > 1) {
-            if (now_utc_s < quali_start_utc_s) {
-                const int prev_rnd = rnd - 1;
-                if (!sessions_quali_use_prev_round_ || sessions_quali_prev_round_ != prev_rnd) {
-                    sessions_quali_use_prev_round_ = true;
-                    sessions_quali_prev_round_ = prev_rnd;
-                    sessions_quali_prev_round_until_utc_s_ = quali_start_utc_s;
-                    StartSessionsFetchIfNeededLocked(true);
-                }
-            }
-        }
     } else if (kind && (strcmp(kind, "race") == 0 || strcmp(kind, "practice") == 0)) {
         const int rnd = GetIntOrNeg(race, "round");
         int64_t race_start_utc_s = 0;
@@ -1970,17 +1967,6 @@ bool F1PageAdapter::ApplySessionsJsonLocked(const char* json_text, size_t len) {
         }
         ApplyRaceResultPageLocked();
 
-        if (p == RaceSessionsSubPage::RaceResult && now_utc_s > 0 && race_start_utc_s > 0 && rnd > 1) {
-            if (now_utc_s < race_start_utc_s) {
-                const int prev_rnd = rnd - 1;
-                if (!sessions_race_use_prev_round_ || sessions_race_prev_round_ != prev_rnd) {
-                    sessions_race_use_prev_round_ = true;
-                    sessions_race_prev_round_ = prev_rnd;
-                    sessions_race_prev_round_until_utc_s_ = race_start_utc_s;
-                    StartSessionsFetchIfNeededLocked(true);
-                }
-            }
-        }
     }
 
     ApplyRaceSessionsLocked();

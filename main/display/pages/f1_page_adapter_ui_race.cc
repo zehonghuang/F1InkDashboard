@@ -255,6 +255,8 @@ void F1PageAdapter::BuildRaceLocked() {
         mid_right,
         static_cast<lv_border_side_t>(LV_BORDER_SIDE_RIGHT),
         0);
+    lv_obj_clear_flag(mid_right, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_scrollbar_mode(mid_right, LV_SCROLLBAR_MODE_OFF);
 
     race_gp_ = lv_label_create(mid_right);
     lv_label_set_text(race_gp_, "BAHRAIN GRAND PRIX");
