@@ -1,5 +1,6 @@
 #include "pages/f1_page_adapter.h"
 
+#include "board.h"
 #include "lcd_display.h"
 #include "lvgl_theme.h"
 #include "settings.h"
@@ -794,6 +795,9 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
             if (menu_focus_ == 2) {
                 pending_sessions_force_fetch_ = true;
                 StartFetchIfNeededLocked(true);
+            }
+            if (menu_focus_ == 3) {
+                Board::GetInstance().EnterRecoveryFlow();
             }
             menu_visible_ = false;
             SetRootVisible(menu_root_, false);

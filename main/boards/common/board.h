@@ -77,6 +77,7 @@ public:
     virtual bool IsFactoryTestMode() const { return false; }
     virtual bool GetLocalTime(tm& out_local_tm) const { (void)out_local_tm; return false; }
     virtual void EnterNormalFlow() {}
+    virtual void EnterRecoveryFlow() {}
     virtual void EnterFactoryTestFlow() {}
     virtual void SetNetworkEventCallback(NetworkEventCallback callback) { (void)callback; }
     virtual const char* GetNetworkStateIcon() = 0;

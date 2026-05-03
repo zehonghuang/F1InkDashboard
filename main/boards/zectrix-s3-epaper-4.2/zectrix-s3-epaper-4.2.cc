@@ -184,6 +184,10 @@ public:
         StartStationConnecting();
     }
 
+    void EnterRecoveryFlow() override {
+        StartWifiOnboarding();
+    }
+
     void EnterFactoryTestFlow() override {
         if (factory_flow_started_) {
             return;
