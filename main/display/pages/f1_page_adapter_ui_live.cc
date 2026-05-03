@@ -91,17 +91,20 @@ void F1PageAdapter::BuildRaceLiveLocked() {
         constexpr lv_coord_t kPosW = 26;
         constexpr lv_coord_t kNoW = 28;
         constexpr lv_coord_t kDrvW = 62;
+        constexpr lv_coord_t kChgW = 24;
         constexpr lv_coord_t kGapW = 82;
-        const lv_coord_t kTyW = left_inner_w - (kPosW + kNoW + kDrvW + kGapW);
+        const lv_coord_t kTyW = left_inner_w - (kPosW + kNoW + kDrvW + kChgW + kGapW);
 
         const lv_coord_t no_x = kPosW;
         const lv_coord_t drv_x = no_x + kNoW;
-        const lv_coord_t gap_x = drv_x + kDrvW;
+        const lv_coord_t chg_x = drv_x + kDrvW;
+        const lv_coord_t gap_x = chg_x + kChgW;
         const lv_coord_t ty_x = gap_x + kGapW;
 
         lv_obj_set_style_pad_right(CreateCellLabel(left_box, 0, 0, kPosW, "POS", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
         lv_obj_set_style_pad_right(CreateCellLabel(left_box, no_x, 0, kNoW, "NO.", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
-        lv_obj_set_style_pad_left(CreateCellLabel(left_box, drv_x, 0, kDrvW, "", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP), 2, 0);
+        lv_obj_set_style_pad_left(CreateCellLabel(left_box, drv_x, 0, kDrvW, "", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP), 1, 0);
+        lv_obj_set_style_pad_right(CreateCellLabel(left_box, chg_x, 0, kChgW, "CHG", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
         lv_obj_set_style_pad_right(CreateCellLabel(left_box, gap_x, 0, kGapW, "GAP/INT", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
         lv_obj_set_style_pad_right(CreateCellLabel(left_box, ty_x, 0, kTyW, "TY", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
 
@@ -119,20 +122,21 @@ void F1PageAdapter::BuildRaceLiveLocked() {
             const char* pos;
             const char* no;
             const char* drv;
+            const char* chg;
             const char* gap;
             const char* ty;
         };
         const Row rows[] = {
-            {"01", "01", "VER", "---", "[H]"},
-            {"02", "04", "NOR", "+4.250", "[H]"},
-            {"03", "16", "LEC", "+1.502", "[M]"},
-            {"04", "81", "PIA", "+0.880", "[M]"},
-            {"05", "63", "RUS", "+12.44", "[H]"},
-            {"06", "44", "HAM", "+1.200", "[S]"},
-            {"07", "55", "SAI", "+3.115", "[H]"},
-            {"08", "14", "ALO", "+15.02", "[M]"},
-            {"09", "23", "ALB", "+2.440", "[H]"},
-            {"10", "27", "HUL", "+0.950", "[S]"},
+            {"01", "01", "VER", "0", "---", "[H]"},
+            {"02", "04", "NOR", "0", "+4.250", "[H]"},
+            {"03", "16", "LEC", "0", "+1.502", "[M]"},
+            {"04", "81", "PIA", "0", "+0.880", "[M]"},
+            {"05", "63", "RUS", "0", "+12.44", "[H]"},
+            {"06", "44", "HAM", "0", "+1.200", "[S]"},
+            {"07", "55", "SAI", "↑1", "+3.115", "[H]"},
+            {"08", "14", "ALO", "0", "+15.02", "[M]"},
+            {"09", "23", "ALB", "0", "+2.440", "[H]"},
+            {"10", "27", "HUL", "↓1", "+0.950", "[S]"},
         };
 
         auto add_cell = [&](int row, int col, lv_coord_t x, lv_coord_t y, lv_coord_t w, lv_text_align_t align) {
@@ -141,7 +145,7 @@ void F1PageAdapter::BuildRaceLiveLocked() {
             }
             lv_obj_t* l = CreateCellLabel(left_box, x, y, w, "", font, align, LV_LABEL_LONG_CLIP);
             if (align == LV_TEXT_ALIGN_LEFT) {
-                lv_obj_set_style_pad_left(l, 2, 0);
+                lv_obj_set_style_pad_left(l, 1, 0);
             } else if (align == LV_TEXT_ALIGN_RIGHT) {
                 lv_obj_set_style_pad_right(l, 2, 0);
             }
@@ -153,16 +157,18 @@ void F1PageAdapter::BuildRaceLiveLocked() {
             add_cell(i, 0, 0, y, kPosW, LV_TEXT_ALIGN_RIGHT);
             add_cell(i, 1, no_x, y, kNoW, LV_TEXT_ALIGN_RIGHT);
             add_cell(i, 2, drv_x, y, kDrvW, LV_TEXT_ALIGN_LEFT);
-            add_cell(i, 3, gap_x, y, kGapW, LV_TEXT_ALIGN_RIGHT);
-            add_cell(i, 4, ty_x, y, kTyW, LV_TEXT_ALIGN_RIGHT);
+            add_cell(i, 3, chg_x, y, kChgW, LV_TEXT_ALIGN_RIGHT);
+            add_cell(i, 4, gap_x, y, kGapW, LV_TEXT_ALIGN_RIGHT);
+            add_cell(i, 5, ty_x, y, kTyW, LV_TEXT_ALIGN_RIGHT);
         }
 
         for (int i = 0; i < kLiveRows; i++) {
             lv_label_set_text(live_cells_[static_cast<size_t>(i)][0], rows[i].pos);
             lv_label_set_text(live_cells_[static_cast<size_t>(i)][1], rows[i].no);
             lv_label_set_text(live_cells_[static_cast<size_t>(i)][2], rows[i].drv);
-            lv_label_set_text(live_cells_[static_cast<size_t>(i)][3], rows[i].gap);
-            lv_label_set_text(live_cells_[static_cast<size_t>(i)][4], rows[i].ty);
+            lv_label_set_text(live_cells_[static_cast<size_t>(i)][3], rows[i].chg);
+            lv_label_set_text(live_cells_[static_cast<size_t>(i)][4], rows[i].gap);
+            lv_label_set_text(live_cells_[static_cast<size_t>(i)][5], rows[i].ty);
         }
     }
 

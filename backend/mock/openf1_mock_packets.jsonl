@@ -125,6 +125,11 @@
 {"topic":"v1/intervals","payload":{"date":"2026-10-11T12:00:20+00:00","driver_number":23,"gap_to_leader":24.599,"interval":2.136,"meeting_key":1296,"session_key":10007,"_key":"10007_23","_id":1000700248}}
 {"topic":"v1/intervals","payload":{"date":"2026-10-11T12:00:20+00:00","driver_number":27,"gap_to_leader":25.390,"interval":0.791,"meeting_key":1296,"session_key":10007,"_key":"10007_27","_id":1000700249}}
 
+{"topic":"v1/position","payload":{"date":"2026-10-11T12:00:24+00:00","driver_number":55,"meeting_key":1296,"position":6,"initial_position":7,"position_change":1,"session_key":10007,"_key":"10007_55","_id":1000700150}}
+{"topic":"v1/position","payload":{"date":"2026-10-11T12:00:24+00:00","driver_number":44,"meeting_key":1296,"position":7,"initial_position":6,"position_change":-1,"session_key":10007,"_key":"10007_44","_id":1000700151}}
+{"topic":"v1/intervals","payload":{"date":"2026-10-11T12:00:24+00:00","driver_number":55,"gap_to_leader":4.880,"interval":0.479,"meeting_key":1296,"session_key":10007,"_key":"10007_55","_id":1000700250}}
+{"topic":"v1/intervals","payload":{"date":"2026-10-11T12:00:24+00:00","driver_number":44,"gap_to_leader":7.950,"interval":3.070,"meeting_key":1296,"session_key":10007,"_key":"10007_44","_id":1000700251}}
+
 {"topic":"v1/stints","payload":{"compound":"SOFT","date":"2026-10-11T12:00:02+00:00","driver_number":1,"lap_end":null,"lap_start":1,"meeting_key":1296,"session_key":10007,"stint_number":1,"tyre_age_at_start":0,"_key":"10007_1_1","_id":1000700600}}
 {"topic":"v1/stints","payload":{"compound":"SOFT","date":"2026-10-11T12:00:02+00:00","driver_number":4,"lap_end":null,"lap_start":1,"meeting_key":1296,"session_key":10007,"stint_number":1,"tyre_age_at_start":0,"_key":"10007_4_1","_id":1000700601}}
 {"topic":"v1/stints","payload":{"compound":"SOFT","date":"2026-10-11T12:00:02+00:00","driver_number":16,"lap_end":null,"lap_start":1,"meeting_key":1296,"session_key":10007,"stint_number":1,"tyre_age_at_start":0,"_key":"10007_16_1","_id":1000700602}}

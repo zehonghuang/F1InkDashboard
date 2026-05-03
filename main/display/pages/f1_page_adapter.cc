@@ -2020,7 +2020,11 @@ bool F1PageAdapter::ApplyOpenF1WsJsonLocked(const char* json_text, size_t len) {
         const int no = GetIntOrNeg(payload, "driver_number");
         const int pos = GetIntOrNeg(payload, "position");
         if (no > 0 && pos > 0) {
-            live_drivers_[no].pos = pos;
+            auto& d = live_drivers_[no];
+            if (d.initial_pos < 0) {
+                d.initial_pos = pos;
+            }
+            d.pos = pos;
         }
     } else if (strcmp(topic, "v1/intervals") == 0) {
         const int no = GetIntOrNeg(payload, "driver_number");
@@ -2138,6 +2142,7 @@ void F1PageAdapter::ApplyLiveFromStateLocked() {
     struct Row {
         int no = -1;
         int pos = -1;
+        int initial_pos = -1;
         double gap = -1;
         double interval = -1;
         std::string acr;
@@ -2154,6 +2159,7 @@ void F1PageAdapter::ApplyLiveFromStateLocked() {
         Row r;
         r.no = no;
         r.pos = d.pos;
+        r.initial_pos = d.initial_pos;
         r.gap = d.gap_to_leader;
         r.interval = d.interval;
         r.acr = d.acronym;
@@ -2224,20 +2230,40 @@ void F1PageAdapter::ApplyLiveFromStateLocked() {
             SetText(live_cells_[static_cast<size_t>(i)][2], "");
             SetText(live_cells_[static_cast<size_t>(i)][3], "");
             SetText(live_cells_[static_cast<size_t>(i)][4], "");
+            SetText(live_cells_[static_cast<size_t>(i)][5], "");
             continue;
         }
         const Row& r = rows[static_cast<size_t>(i)];
         char pos[8];
+        char chg[16];
         char no[8];
         snprintf(pos, sizeof(pos), "%02d", r.pos);
+        if (r.initial_pos > 0 && r.pos > 0) {
+            int delta = r.initial_pos - r.pos;
+            if (delta > 99) {
+                delta = 99;
+            } else if (delta < -99) {
+                delta = -99;
+            }
+            if (delta > 0) {
+                snprintf(chg, sizeof(chg), "↑%d", delta);
+            } else if (delta < 0) {
+                snprintf(chg, sizeof(chg), "↓%d", -delta);
+            } else {
+                snprintf(chg, sizeof(chg), "0");
+            }
+        } else {
+            snprintf(chg, sizeof(chg), "--");
+        }
         snprintf(no, sizeof(no), "%02d", r.no);
         const std::string acr = !r.acr.empty() ? r.acr : ("#" + std::to_string(r.no));
         const std::string gap = fmt_gap(r);
         SetText(live_cells_[static_cast<size_t>(i)][0], pos);
         SetText(live_cells_[static_cast<size_t>(i)][1], no);
         SetText(live_cells_[static_cast<size_t>(i)][2], acr.c_str());
-        SetText(live_cells_[static_cast<size_t>(i)][3], gap.c_str());
-        SetText(live_cells_[static_cast<size_t>(i)][4], r.tyre.c_str());
+        SetText(live_cells_[static_cast<size_t>(i)][3], chg);
+        SetText(live_cells_[static_cast<size_t>(i)][4], gap.c_str());
+        SetText(live_cells_[static_cast<size_t>(i)][5], r.tyre.c_str());
     }
 
     if (live_fastest_lap_ != nullptr) {

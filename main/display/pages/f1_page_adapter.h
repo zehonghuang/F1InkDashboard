@@ -253,7 +253,7 @@ private:
     lv_obj_t* live_header_batt_pct_ = nullptr;
 
     static constexpr int kLiveRows = 10;
-    static constexpr int kLiveCols = 5;
+    static constexpr int kLiveCols = 6;
     std::array<std::array<lv_obj_t*, kLiveCols>, kLiveRows> live_cells_{};
 
     lv_obj_t* live_track_status_ = nullptr;
@@ -299,6 +299,7 @@ private:
 
     struct LiveDriver {
         int pos = -1;
+        int initial_pos = -1;
         double gap_to_leader = -1;
         double interval = -1;
         std::string acronym;
