@@ -160,9 +160,21 @@ def _apply_auto_selects(sdkconfig_append: list[str]) -> list[str]:
 ################################################################################
 
 def _board_type_exists(board_type: str) -> bool:
+    # Prefer checking the actual board directory/config first (works for reduced repos
+    # that do not have BOARD_TYPE selection blocks in main/CMakeLists.txt).
+    board_dir = _BOARDS_DIR / board_type
+    if board_dir.is_dir() and board_type != "common":
+        if (board_dir / "config.json").exists():
+            return True
+    # Fallback to legacy check in main/CMakeLists.txt
     cmake_file = Path("main/CMakeLists.txt")
-    pattern = f'set(BOARD_TYPE "{board_type}")'
-    return pattern in cmake_file.read_text(encoding="utf-8")
+    if cmake_file.exists():
+        pattern = f'set(BOARD_TYPE "{board_type}")'
+        try:
+            return pattern in cmake_file.read_text(encoding="utf-8")
+        except Exception:
+            return False
+    return False
 
 ################################################################################
 # Compile implementation
@@ -207,7 +219,9 @@ def release(board_type: str, config_filename: str = "config.json", *, filter_nam
 
         # Process sdkconfig_append
         board_type_config = _find_board_config(board_type)
-        sdkconfig_append = [f"{board_type_config}=y"]
+        sdkconfig_append: list[str] = []
+        if board_type_config:
+            sdkconfig_append.append(f"{board_type_config}=y")
         sdkconfig_append.extend(build.get("sdkconfig_append", []))
         sdkconfig_append = _apply_auto_selects(sdkconfig_append)
 
