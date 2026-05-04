@@ -657,8 +657,8 @@ def _upsert_session_result(cur, rows: list[dict]) -> int:
         gap = it.get("gap_to_leader")
         duration_s = float(duration) if isinstance(duration, (int, float)) else None
         gap_s = float(gap) if isinstance(gap, (int, float)) else None
-        duration_json = _as_json(duration) if isinstance(duration, list) else None
-        gap_json = _as_json(gap) if isinstance(gap, list) else None
+        duration_json = _as_json(duration) if isinstance(duration, (list, str)) else None
+        gap_json = _as_json(gap) if isinstance(gap, (list, str)) else None
         ins.append(
             (
                 int(sk),

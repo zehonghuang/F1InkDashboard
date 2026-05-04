@@ -919,6 +919,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
                     telemetry_meta_s1_s_ = -1.0;
                     telemetry_meta_s2_s_ = -1.0;
                     telemetry_meta_s3_s_ = -1.0;
+                    telemetry_meta_driver_no_ = -1;
                     StartTelemetryAnalysisFetchLocked(true);
                     ApplyTelemetryLocked();
                     ApplyRaceSessionsLocked();
@@ -1056,6 +1057,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
                     telemetry_meta_s1_s_ = -1.0;
                     telemetry_meta_s2_s_ = -1.0;
                     telemetry_meta_s3_s_ = -1.0;
+                    telemetry_meta_driver_no_ = -1;
                     StartTelemetryAnalysisFetchLocked(true);
                     ApplyTelemetryLocked();
                     ApplyRaceSessionsLocked();
@@ -1186,6 +1188,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
                     telemetry_meta_s1_s_ = -1.0;
                     telemetry_meta_s2_s_ = -1.0;
                     telemetry_meta_s3_s_ = -1.0;
+                    telemetry_meta_driver_no_ = -1;
                     StartTelemetryAnalysisFetchLocked(true);
                     ApplyTelemetryLocked();
                     ApplyRaceSessionsLocked();
@@ -1208,6 +1211,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
                     telemetry_meta_s1_s_ = -1.0;
                     telemetry_meta_s2_s_ = -1.0;
                     telemetry_meta_s3_s_ = -1.0;
+                    telemetry_meta_driver_no_ = -1;
                     StartTelemetryAnalysisFetchLocked(true);
                     ApplyTelemetryLocked();
                     ApplyRaceSessionsLocked();
@@ -1326,17 +1330,22 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         telemetry_meta_s1_s_ = -1.0;
         telemetry_meta_s2_s_ = -1.0;
         telemetry_meta_s3_s_ = -1.0;
+        telemetry_meta_driver_no_ = -1;
         if (payload->status == 200 && !payload->json.empty()) {
             cJSON* root = cJSON_ParseWithLength(payload->json.c_str(), payload->json.size());
             if (root != nullptr) {
                 cJSON* ok = cJSON_GetObjectItemCaseSensitive(root, "ok");
                 cJSON* found = cJSON_GetObjectItemCaseSensitive(root, "found");
                 if (cJSON_IsBool(ok) && cJSON_IsTrue(ok) && cJSON_IsBool(found) && cJSON_IsTrue(found)) {
+                    cJSON* dn = cJSON_GetObjectItemCaseSensitive(root, "driver_number");
                     cJSON* ln = cJSON_GetObjectItemCaseSensitive(root, "lap_number");
                     cJSON* dur = cJSON_GetObjectItemCaseSensitive(root, "lap_duration_s");
                     cJSON* s1 = cJSON_GetObjectItemCaseSensitive(root, "s1_s");
                     cJSON* s2 = cJSON_GetObjectItemCaseSensitive(root, "s2_s");
                     cJSON* s3 = cJSON_GetObjectItemCaseSensitive(root, "s3_s");
+                    if (cJSON_IsNumber(dn)) {
+                        telemetry_meta_driver_no_ = static_cast<int>(dn->valuedouble);
+                    }
                     if (cJSON_IsNumber(ln)) {
                         telemetry_meta_lap_number_ = static_cast<int>(ln->valuedouble);
                     }

@@ -328,6 +328,7 @@ private:
     double telemetry_meta_s1_s_ = -1.0;
     double telemetry_meta_s2_s_ = -1.0;
     double telemetry_meta_s3_s_ = -1.0;
+    int telemetry_meta_driver_no_ = -1;
 
     std::atomic<bool> sessions_fetch_inflight_{false};
     int64_t last_sessions_fetch_ms_ = 0;

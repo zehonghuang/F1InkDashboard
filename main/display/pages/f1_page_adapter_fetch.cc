@@ -7,6 +7,8 @@
 #include "pages/f1_page_adapter_payloads.h"
 #include "common/sleep_manager.h"
 
+#include <algorithm>
+#include <cctype>
 #include <memory>
 #include <string>
 #include <vector>
@@ -418,10 +420,32 @@ void F1PageAdapter::StartTelemetryAnalysisFetchLocked(bool force) {
     if (base.empty()) {
         return;
     }
-    char png_url[256];
-    snprintf(png_url, sizeof(png_url), "%s/api/v1/charts/driver/%d/latest.png", base.c_str(), telemetry_driver_no_);
-    char meta_url[256];
-    snprintf(meta_url, sizeof(meta_url), "%s/api/v1/charts/driver/%d/latest.json", base.c_str(), telemetry_driver_no_);
+    std::string png_url = "";
+    std::string meta_url = "";
+
+    auto upper = race_sessions_header_left_text_;
+    std::transform(upper.begin(), upper.end(), upper.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+    const bool is_miami = (upper.find("MIAMI") != std::string::npos);
+    const auto prev = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(telemetry_prev_page_));
+    if (is_miami && prev == RaceSessionsSubPage::QualiResult) {
+        char buf[256];
+        snprintf(buf, sizeof(buf), "%s/static/assets/miami/miami_quali_driver_%d_final.png", base.c_str(), telemetry_driver_no_);
+        png_url = buf;
+        snprintf(buf, sizeof(buf), "%s/static/assets/miami/miami_quali_driver_%d_final.json", base.c_str(), telemetry_driver_no_);
+        meta_url = buf;
+    } else if (is_miami && prev == RaceSessionsSubPage::RaceResult) {
+        char buf[256];
+        snprintf(buf, sizeof(buf), "%s/static/assets/miami/miami_race_driver_%d_best.png", base.c_str(), telemetry_driver_no_);
+        png_url = buf;
+        snprintf(buf, sizeof(buf), "%s/static/assets/miami/miami_race_driver_%d_best.json", base.c_str(), telemetry_driver_no_);
+        meta_url = buf;
+    } else {
+        char buf[256];
+        snprintf(buf, sizeof(buf), "%s/api/v1/charts/driver/%d/latest.png", base.c_str(), telemetry_driver_no_);
+        png_url = buf;
+        snprintf(buf, sizeof(buf), "%s/api/v1/charts/driver/%d/latest.json", base.c_str(), telemetry_driver_no_);
+        meta_url = buf;
+    }
     telemetry_meta_url_ = meta_url;
 
     int w = 0;
@@ -442,7 +466,7 @@ void F1PageAdapter::StartTelemetryAnalysisFetchLocked(bool force) {
              sizeof(frame_url),
              "%s/api/v1/epd/frame.bin?png_url=%s&w=%d&h=%d&dither=0",
              base.c_str(),
-             png_url,
+             png_url.c_str(),
              w,
              h);
 

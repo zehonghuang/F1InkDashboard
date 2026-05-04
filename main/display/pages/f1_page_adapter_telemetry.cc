@@ -101,6 +101,8 @@ void F1PageAdapter::ApplyTelemetryLocked() {
         SetText(telemetry_title_, "");
     }
 
+    const bool is_miami_quali = (telemetry_meta_url_.find("/static/assets/miami/miami_quali_driver_") != std::string::npos);
+
     if (race_sessions_header_left_ != nullptr) {
         std::string gp = race_sessions_header_left_text_;
         const size_t pos = gp.find("] ");
@@ -116,15 +118,15 @@ void F1PageAdapter::ApplyTelemetryLocked() {
     }
 
     if (race_sessions_header_center_ != nullptr) {
+        char buf[96];
         const char* acr = telemetry_driver_acr_.empty() ? nullptr : telemetry_driver_acr_.c_str();
         const int pos = telemetry_driver_pos_;
-        char buf[96];
         const int ln = telemetry_meta_lap_number_;
-        if (acr != nullptr && acr[0] && pos > 0 && ln > 0) {
+        if (!is_miami_quali && acr != nullptr && acr[0] && pos > 0 && ln > 0) {
             snprintf(buf, sizeof(buf), "%s #%02d (LAP %d-FL)", acr, pos, ln);
-        } else if (acr != nullptr && acr[0] && ln > 0) {
+        } else if (!is_miami_quali && acr != nullptr && acr[0] && ln > 0) {
             snprintf(buf, sizeof(buf), "%s (LAP %d-FL)", acr, ln);
-        } else if (telemetry_driver_no_ > 0 && ln > 0) {
+        } else if (!is_miami_quali && telemetry_driver_no_ > 0 && ln > 0) {
             snprintf(buf, sizeof(buf), "#%d (LAP %d-FL)", telemetry_driver_no_, ln);
         } else if (acr != nullptr && acr[0] && pos > 0) {
             snprintf(buf, sizeof(buf), "%s #%02d", acr, pos);
@@ -150,6 +152,7 @@ void F1PageAdapter::ApplyTelemetryLocked() {
         char line[128];
         snprintf(line, sizeof(line), "TIME: %s | S1: %s | S2: %s | S3: %s", total.c_str(), s1.c_str(), s2.c_str(), s3.c_str());
         SetText(telemetry_meta_, line);
+        lv_obj_clear_flag(telemetry_meta_, LV_OBJ_FLAG_HIDDEN);
     }
 
     int x = 4;

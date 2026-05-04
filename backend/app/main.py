@@ -18,19 +18,20 @@ from .f1_circuit_assets import fetch_f1_circuit_assets
 from .news_stream import NewsRelay, NewsRelayConfig
 from .openf1_stream import OpenF1Relay, OpenF1RelayConfig
 from .db_mysql import mysql_connect, mysql_enabled
-from .f1_db_read import circuit_assets_payload_from_db, schedule_json_from_db
+from .f1_db_read import (
+    circuit_assets_payload_from_db,
+    openf1_constructor_standings_json_from_db,
+    openf1_driver_standings_json_from_db,
+    openf1_last_n_results_json_from_db,
+    openf1_latest_race_session_key_from_db,
+    openf1_schedule_json_from_db,
+)
 from .third_party import (
     build_pages_payload,
     build_sessions_payload,
     build_ui_pages_payload,
-    ergast_constructor_standings,
-    ergast_constructor_standings_for_season,
     ergast_current_schedule,
-    ergast_schedule_for_season,
-    ergast_driver_standings,
-    ergast_driver_standings_for_season,
     fetch_f1_breaking_rss,
-    ergast_last_n_results,
     ergast_last_winner,
     fetch_rss_first_title,
     open_meteo_current_temp_c,
@@ -192,48 +193,37 @@ async def _build_pages(
         tz_name = "UTC"
     async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
         schedule = None
-        schedule_source = "ergast"
-        if mysql_enabled():
+        schedule_source = "openf1_mysql"
+        if not mysql_enabled():
+            raise HTTPException(status_code=503, detail="mysql disabled (openf1 schedule required)")
+        try:
+            conn = mysql_connect()
             try:
-                conn = mysql_connect()
-                try:
-                    schedule = await asyncio.to_thread(schedule_json_from_db, conn, int(season))
-                    schedule_source = "mysql"
-                finally:
-                    conn.close()
-            except Exception:
-                schedule = None
-                schedule_source = "ergast"
-
-        if schedule is None:
-            schedule = await cache.get_or_set(
-                f"ergast:schedule:{int(season)}",
-                lambda: ergast_schedule_for_season(client, int(season)),
-                ttl_s=300,
-            )
-        if int(season) == int(now_utc.year):
-            drivers = await cache.get_or_set(
-                "ergast:driver_standings:current",
-                lambda: ergast_driver_standings(client),
-                ttl_s=300,
-            )
-            constructors = await cache.get_or_set(
-                "ergast:constructor_standings:current",
-                lambda: ergast_constructor_standings(client),
-                ttl_s=300,
-            )
-        else:
-            drivers = await cache.get_or_set(
-                f"ergast:driver_standings:{int(season)}",
-                lambda: ergast_driver_standings_for_season(client, int(season)),
-                ttl_s=300,
-            )
-            constructors = await cache.get_or_set(
-                f"ergast:constructor_standings:{int(season)}",
-                lambda: ergast_constructor_standings_for_season(client, int(season)),
-                ttl_s=300,
-            )
-        last5 = await cache.get_or_set("ergast:last5", lambda: ergast_last_n_results(client, 5), ttl_s=300)
+                schedule = await asyncio.to_thread(openf1_schedule_json_from_db, conn, int(season))
+            finally:
+                conn.close()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"openf1 schedule unavailable: {type(e).__name__}") from e
+        if not mysql_enabled():
+            raise HTTPException(status_code=503, detail="mysql disabled (openf1 standings required)")
+        try:
+            conn = mysql_connect()
+            try:
+                sk = await asyncio.to_thread(openf1_latest_race_session_key_from_db, conn, int(season))
+                drivers = await asyncio.to_thread(openf1_driver_standings_json_from_db, conn, int(sk))
+                constructors = await asyncio.to_thread(openf1_constructor_standings_json_from_db, conn, int(sk))
+            finally:
+                conn.close()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"openf1 standings unavailable: {type(e).__name__}") from e
+        try:
+            conn = mysql_connect()
+            try:
+                last5 = await asyncio.to_thread(openf1_last_n_results_json_from_db, conn, int(season), 5)
+            finally:
+                conn.close()
+        except Exception:
+            last5 = {"MRData": {"RaceTable": {"Races": []}}}
         winner = await cache.get_or_set("ergast:last_winner", lambda: ergast_last_winner(client), ttl_s=300)
         air_c = await cache.get_or_set("weather:air", lambda: open_meteo_current_temp_c(client), ttl_s=120)
         news = await cache.get_or_set("news:rss", lambda: fetch_rss_first_title(client), ttl_s=300)
@@ -1309,22 +1299,13 @@ async def f1_sessions(
 ) -> dict:
     now_utc = datetime.now(timezone.utc)
     async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
-        schedule = None
-        if mysql_enabled():
-            try:
-                conn = mysql_connect()
-                try:
-                    schedule = await asyncio.to_thread(schedule_json_from_db, conn, int(season))
-                finally:
-                    conn.close()
-            except Exception:
-                schedule = None
-        if schedule is None:
-            schedule = await cache.get_or_set(
-                f"ergast:schedule:{season}",
-                lambda: ergast_schedule_for_season(client, season),
-                ttl_s=300,
-            )
+        if not mysql_enabled():
+            raise HTTPException(status_code=503, detail="mysql disabled (openf1 schedule required)")
+        conn = mysql_connect()
+        try:
+            schedule = await asyncio.to_thread(openf1_schedule_json_from_db, conn, int(season))
+        finally:
+            conn.close()
         return await build_sessions_payload(
             client=client,
             now_utc=now_utc,
@@ -1348,22 +1329,13 @@ async def f1_sessions_current(
 ) -> dict:
     now_utc = datetime.now(timezone.utc)
     async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
-        schedule = None
-        if mysql_enabled():
-            try:
-                conn = mysql_connect()
-                try:
-                    schedule = await asyncio.to_thread(schedule_json_from_db, conn, int(season))
-                finally:
-                    conn.close()
-            except Exception:
-                schedule = None
-        if schedule is None:
-            schedule = await cache.get_or_set(
-                f"ergast:schedule:{season}",
-                lambda: ergast_schedule_for_season(client, season),
-                ttl_s=300,
-            )
+        if not mysql_enabled():
+            raise HTTPException(status_code=503, detail="mysql disabled (openf1 schedule required)")
+        conn = mysql_connect()
+        try:
+            schedule = await asyncio.to_thread(openf1_schedule_json_from_db, conn, int(season))
+        finally:
+            conn.close()
         data = await build_sessions_payload(
             client=client,
             now_utc=now_utc,
@@ -1396,22 +1368,13 @@ async def f1_sessions_compat(
         session_name = session_name[: -len(".json")]
     now_utc = datetime.now(timezone.utc)
     async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
-        schedule = None
-        if mysql_enabled():
-            try:
-                conn = mysql_connect()
-                try:
-                    schedule = await asyncio.to_thread(schedule_json_from_db, conn, int(season))
-                finally:
-                    conn.close()
-            except Exception:
-                schedule = None
-        if schedule is None:
-            schedule = await cache.get_or_set(
-                f"ergast:schedule:{season}",
-                lambda: ergast_schedule_for_season(client, season),
-                ttl_s=300,
-            )
+        if not mysql_enabled():
+            raise HTTPException(status_code=503, detail="mysql disabled (openf1 schedule required)")
+        conn = mysql_connect()
+        try:
+            schedule = await asyncio.to_thread(openf1_schedule_json_from_db, conn, int(season))
+        finally:
+            conn.close()
         return await build_sessions_payload(
             client=client,
             now_utc=now_utc,
