@@ -60,6 +60,65 @@ $env:OPENF1_INGEST_TOKEN="devtoken"
 $env:TOINC_F1_MYSQL_ENABLED="1"
 ```
 
+## MySQL（可选）
+
+后端已内置 MySQL 的读写逻辑与建表 SQL。你只需要创建一个新的库并把环境变量指向它即可。
+
+### 创建新库
+
+- 使用现有初始化 SQL：[001_create_ergast_f1_schema_mysql.sql](file:///c:/Users/GinTonic/Desktop/zectrix/backend/sql/001_create_ergast_f1_schema_mysql.sql)
+  - 该文件默认 `CREATE DATABASE toinc_F1` / `USE toinc_F1`
+  - 如果你要新库名（例如 `toinc_F1_dev`），把 SQL 里的库名替换后再执行
+
+### 配置连接
+
+启动后端进程前设置（示例）：
+
+```powershell
+$env:TOINC_F1_MYSQL_ENABLED="1"
+$env:TOINC_F1_MYSQL_HOST="127.0.0.1"
+$env:TOINC_F1_MYSQL_PORT="3306"
+$env:TOINC_F1_MYSQL_USER="root"
+$env:TOINC_F1_MYSQL_PASSWORD="123456"
+$env:TOINC_F1_MYSQL_DB="toinc_F1_dev"
+```
+
+### 导入初始数据
+
+```bash
+cd backend
+python -m app.cli ingest-ergast --season 2026
+python -m app.cli ingest-circuit-assets --season 2026
+```
+
+## OpenF1 遥测落库（MySQL）
+
+### 初始化表结构（创建一个新库也可以）
+
+该项目的建表 SQL 在 `backend/sql/`，你可以用脚本把这些 SQL 初始化到一个新库名里：
+
+```bash
+cd backend
+python scripts/mysql_init_toinc_f1_db.py --db toinc_F1_dev
+```
+
+然后把后端连接指向这个库：
+
+```powershell
+$env:TOINC_F1_MYSQL_ENABLED="1"
+$env:TOINC_F1_MYSQL_DB="toinc_F1_dev"
+```
+
+### 同步 OpenF1 car_data / laps 到 MySQL
+
+```bash
+cd backend
+python scripts/openf1_sync_mysql.py --driver-number 12,63 --enable-laps
+```
+
+约束：
+- 总请求频率：每秒 <= 3，每分钟 <= 30（脚本内置限速）
+
 ## OpenF1 Mock
 
 后端内置一个 OpenF1 风格的 mock 转发层：你可以先让后端接收 mock 注入数据，再从 `WS /ws/openf1` 订阅到同样的消息。

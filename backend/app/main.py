@@ -2,7 +2,7 @@ import asyncio
 import base64
 import json
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -225,6 +225,379 @@ async def epd_frame_png(
     async with httpx.AsyncClient(headers={"User-Agent": "toinc_F1-backend/0.1"}) as client:
         frame = await build_epd_frame(client, png_url=png_url, w=w, h=h, dither=dither)
     return Response(content=frame.preview_png, media_type="image/png")
+
+
+@app.get("/api/v1/telemetry/laps/available")
+async def telemetry_laps_available() -> dict:
+    if not mysql_enabled():
+        return {"ok": False, "error": "mysql disabled", "items": []}
+    conn = mysql_connect()
+    try:
+        def _q() -> list[dict]:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT
+                      driver_number,
+                      MAX(session_key) AS latest_session_key,
+                      COUNT(*) AS row_count
+                    FROM openf1_laps
+                    GROUP BY driver_number
+                    ORDER BY driver_number ASC
+                    """
+                )
+                return cur.fetchall() or []
+
+        items = await asyncio.to_thread(_q)
+    except Exception as e:
+        return {"ok": False, "error": str(e), "items": []}
+    finally:
+        conn.close()
+    out = []
+    for row in items:
+        if not isinstance(row, dict):
+            continue
+        dn = row.get("driver_number")
+        if dn is None:
+            continue
+        out.append(
+            {
+                "driver_number": int(dn),
+                "latest_session_key": int(row["latest_session_key"]) if row.get("latest_session_key") is not None else None,
+                "row_count": int(row["row_count"]) if row.get("row_count") is not None else 0,
+            }
+        )
+    return {"ok": True, "items": out}
+
+
+@app.get("/api/v1/telemetry/laps")
+async def telemetry_laps(
+    driver_number: int = Query(..., ge=1),
+    session_key: int | None = Query(None, ge=1),
+) -> dict:
+    if not mysql_enabled():
+        raise HTTPException(status_code=400, detail="mysql disabled")
+    conn = mysql_connect()
+    try:
+        def _q() -> tuple[int | None, list[dict]]:
+            with conn.cursor() as cur:
+                sk = session_key
+                if sk is None:
+                    cur.execute(
+                        """
+                        SELECT MAX(session_key) AS sk
+                        FROM openf1_laps
+                        WHERE driver_number=%s AND session_key IS NOT NULL
+                        """,
+                        (int(driver_number),),
+                    )
+                    r = cur.fetchone() or {}
+                    sk = r.get("sk")
+                    sk = int(sk) if sk is not None else None
+                if sk is None:
+                    return (None, [])
+
+                cur.execute(
+                    """
+                    SELECT
+                      lap_number,
+                      date_start_utc,
+                      lap_duration,
+                      duration_sector_1,
+                      duration_sector_2,
+                      duration_sector_3,
+                      i1_speed,
+                      i2_speed,
+                      st_speed,
+                      is_pit_out_lap
+                    FROM openf1_laps
+                    WHERE driver_number=%s AND session_key=%s
+                    ORDER BY lap_number ASC
+                    """,
+                    (int(driver_number), int(sk)),
+                )
+                return (int(sk), cur.fetchall() or [])
+
+        sk, rows = await asyncio.to_thread(_q)
+    finally:
+        conn.close()
+
+    laps = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        ln = row.get("lap_number")
+        if ln is None:
+            continue
+        laps.append(
+            {
+                "lap_number": int(ln),
+                "date_start_utc": row.get("date_start_utc").isoformat() if row.get("date_start_utc") else None,
+                "lap_duration": float(row["lap_duration"]) if row.get("lap_duration") is not None else None,
+                "duration_sector_1": float(row["duration_sector_1"]) if row.get("duration_sector_1") is not None else None,
+                "duration_sector_2": float(row["duration_sector_2"]) if row.get("duration_sector_2") is not None else None,
+                "duration_sector_3": float(row["duration_sector_3"]) if row.get("duration_sector_3") is not None else None,
+                "i1_speed": int(row["i1_speed"]) if row.get("i1_speed") is not None else None,
+                "i2_speed": int(row["i2_speed"]) if row.get("i2_speed") is not None else None,
+                "st_speed": int(row["st_speed"]) if row.get("st_speed") is not None else None,
+                "is_pit_out_lap": bool(row["is_pit_out_lap"]) if row.get("is_pit_out_lap") is not None else None,
+            }
+        )
+
+    return {"ok": True, "driver_number": int(driver_number), "session_key": sk, "laps": laps}
+
+
+@app.get("/api/v1/telemetry/lap_controls")
+async def telemetry_lap_controls(
+    driver_number: int = Query(..., ge=1),
+    session_key: int | None = Query(None, ge=1),
+) -> dict:
+    if not mysql_enabled():
+        raise HTTPException(status_code=400, detail="mysql disabled")
+    conn = mysql_connect()
+    try:
+        def _q() -> tuple[int | None, list[dict], list[dict]]:
+            with conn.cursor() as cur:
+                sk = session_key
+                if sk is None:
+                    cur.execute(
+                        """
+                        SELECT MAX(session_key) AS sk
+                        FROM openf1_laps
+                        WHERE driver_number=%s AND session_key IS NOT NULL
+                        """,
+                        (int(driver_number),),
+                    )
+                    r = cur.fetchone() or {}
+                    sk = r.get("sk")
+                    sk = int(sk) if sk is not None else None
+                if sk is None:
+                    return (None, [], [])
+
+                cur.execute(
+                    """
+                    SELECT
+                      lap_number,
+                      date_start_utc,
+                      lap_duration
+                    FROM openf1_laps
+                    WHERE driver_number=%s AND session_key=%s
+                    ORDER BY lap_number ASC
+                    """,
+                    (int(driver_number), int(sk)),
+                )
+                laps_rows = cur.fetchall() or []
+                if not laps_rows:
+                    return (int(sk), [], [])
+
+                start0 = laps_rows[0].get("date_start_utc")
+                end_last = None
+                for row in laps_rows:
+                    ds = row.get("date_start_utc")
+                    dur = row.get("lap_duration")
+                    if ds is None or dur is None:
+                        continue
+                    try:
+                        cand = ds + timedelta(seconds=float(dur))
+                    except Exception:
+                        continue
+                    if end_last is None or cand > end_last:
+                        end_last = cand
+                if start0 is None or end_last is None:
+                    return (int(sk), laps_rows, [])
+
+                cur.execute(
+                    """
+                    SELECT
+                      date_utc,
+                      throttle,
+                      brake
+                    FROM openf1_car_data
+                    WHERE driver_number=%s AND session_key=%s AND date_utc >= %s AND date_utc <= %s
+                    ORDER BY date_utc ASC
+                    """,
+                    (int(driver_number), int(sk), start0, end_last),
+                )
+                car_rows = cur.fetchall() or []
+                return (int(sk), laps_rows, car_rows)
+
+        sk, laps_rows, car_rows = await asyncio.to_thread(_q)
+    finally:
+        conn.close()
+
+    if sk is None or not laps_rows:
+        return {"ok": True, "driver_number": int(driver_number), "session_key": sk, "items": []}
+
+    laps = []
+    for row in laps_rows:
+        if not isinstance(row, dict):
+            continue
+        ln = row.get("lap_number")
+        ds = row.get("date_start_utc")
+        dur = row.get("lap_duration")
+        if ln is None or ds is None or dur is None:
+            continue
+        try:
+            end = ds + timedelta(seconds=float(dur))
+        except Exception:
+            continue
+        laps.append({"lap_number": int(ln), "start": ds, "end": end})
+
+    items = []
+    i = 0
+    n = len(car_rows)
+    for lap in laps:
+        start = lap["start"]
+        end = lap["end"]
+        while i < n and car_rows[i].get("date_utc") is not None and car_rows[i]["date_utc"] < start:
+            i += 1
+        j = i
+        sum_th = 0.0
+        cnt_th = 0
+        sum_br = 0.0
+        cnt_br = 0
+        while j < n:
+            dt = car_rows[j].get("date_utc")
+            if dt is None or dt > end:
+                break
+            th = car_rows[j].get("throttle")
+            br = car_rows[j].get("brake")
+            if th is not None:
+                try:
+                    sum_th += float(th)
+                    cnt_th += 1
+                except Exception:
+                    pass
+            if br is not None:
+                try:
+                    sum_br += float(br)
+                    cnt_br += 1
+                except Exception:
+                    pass
+            j += 1
+
+        th_avg = (sum_th / cnt_th) if cnt_th else None
+        br_avg = (sum_br / cnt_br) if cnt_br else None
+        items.append(
+            {
+                "lap_number": lap["lap_number"],
+                "date_start_utc": start.isoformat() if start else None,
+                "throttle_avg": round(th_avg, 2) if th_avg is not None else None,
+                "brake_avg": round(br_avg, 2) if br_avg is not None else None,
+            }
+        )
+
+    return {"ok": True, "driver_number": int(driver_number), "session_key": int(sk), "items": items}
+
+
+@app.get("/api/v1/telemetry/lap_trace")
+async def telemetry_lap_trace(
+    driver_number: int = Query(..., ge=1),
+    session_key: int | None = Query(None, ge=1),
+    lap_number: int = Query(..., ge=1),
+    max_points: int = Query(600, ge=50, le=5000),
+) -> dict:
+    if not mysql_enabled():
+        raise HTTPException(status_code=400, detail="mysql disabled")
+    conn = mysql_connect()
+    try:
+        def _q() -> tuple[int | None, datetime | None, float | None, list[dict]]:
+            with conn.cursor() as cur:
+                sk = session_key
+                if sk is None:
+                    cur.execute(
+                        """
+                        SELECT MAX(session_key) AS sk
+                        FROM openf1_laps
+                        WHERE driver_number=%s AND session_key IS NOT NULL
+                        """,
+                        (int(driver_number),),
+                    )
+                    r = cur.fetchone() or {}
+                    sk = r.get("sk")
+                    sk = int(sk) if sk is not None else None
+                if sk is None:
+                    return (None, None, None, [])
+
+                cur.execute(
+                    """
+                    SELECT date_start_utc, lap_duration
+                    FROM openf1_laps
+                    WHERE driver_number=%s AND session_key=%s AND lap_number=%s
+                    ORDER BY date_start_utc ASC
+                    LIMIT 1
+                    """,
+                    (int(driver_number), int(sk), int(lap_number)),
+                )
+                r = cur.fetchone() or {}
+                start = r.get("date_start_utc")
+                dur = r.get("lap_duration")
+                if start is None or dur is None:
+                    return (int(sk), None, None, [])
+                try:
+                    dur_s = float(dur)
+                except Exception:
+                    return (int(sk), start, None, [])
+                end = start + timedelta(seconds=dur_s)
+
+                cur.execute(
+                    """
+                    SELECT date_utc, throttle, brake
+                    FROM openf1_car_data
+                    WHERE driver_number=%s AND session_key=%s AND date_utc >= %s AND date_utc <= %s
+                    ORDER BY date_utc ASC
+                    """,
+                    (int(driver_number), int(sk), start, end),
+                )
+                rows = cur.fetchall() or []
+                return (int(sk), start, dur_s, rows)
+
+        sk, start, dur_s, rows = await asyncio.to_thread(_q)
+    finally:
+        conn.close()
+
+    if sk is None or start is None or dur_s is None:
+        return {
+            "ok": True,
+            "driver_number": int(driver_number),
+            "session_key": sk,
+            "lap_number": int(lap_number),
+            "date_start_utc": start.isoformat() if start else None,
+            "duration_s": dur_s,
+            "points": [],
+        }
+
+    points = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        dt = row.get("date_utc")
+        if dt is None:
+            continue
+        t_s = (dt - start).total_seconds()
+        th = row.get("throttle")
+        br = row.get("brake")
+        points.append(
+            {
+                "t_s": round(float(t_s), 3),
+                "throttle": float(th) if th is not None else None,
+                "brake": float(br) if br is not None else None,
+            }
+        )
+
+    if len(points) > int(max_points):
+        step = max(1, len(points) // int(max_points))
+        points = points[::step]
+
+    return {
+        "ok": True,
+        "driver_number": int(driver_number),
+        "session_key": int(sk),
+        "lap_number": int(lap_number),
+        "date_start_utc": start.isoformat(),
+        "duration_s": round(float(dur_s), 3),
+        "points": points,
+    }
 
 
 @app.websocket("/ws")

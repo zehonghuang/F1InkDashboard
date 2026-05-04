@@ -1,7 +1,7 @@
 ﻿{
-    "version":  "2.2.4",
+    "version":  "2.2.5",
     "board":  "zectrix-s3-epaper-4.2",
     "bin_url":  "app.bin",
-    "sha256":  "5ecb7ee12b46908c7b641092cf0fda4cae9fae390836a61666f4b9bba2cb8c38",
-    "size":  3160400
+    "sha256":  "42dead771fe702be221bf4b650a1c0b3512b56028f4dbfa673282e7241e2a835",
+    "size":  3165552
 }
