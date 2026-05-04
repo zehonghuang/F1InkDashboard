@@ -4,6 +4,7 @@
 #include "display.h"
 #include "settings.h"
 #include "boards/zectrix-s3-epaper-4.2/config.h"
+#include "common/ota_update.h"
 
 #include <esp_log.h>
 #include <esp_timer.h>
@@ -143,6 +144,7 @@ void Application::HandleEvent(const AppEvent& e) {
             last_connected_ms_ = NowMs();
             disconnect_burst_ = 0;
             in_recovery_ = false;
+            OtaUpdateService::Instance().NotifyNetworkConnected();
             break;
         }
         case AppEventType::NetworkDisconnected: {
@@ -152,6 +154,7 @@ void Application::HandleEvent(const AppEvent& e) {
             }
             last_disconnect_ms_ = now;
             disconnect_burst_++;
+            OtaUpdateService::Instance().NotifyNetworkDisconnected();
             if (!in_recovery_ && disconnect_burst_ >= 3) {
                 auto& board = Board::GetInstance();
                 board.EnterRecoveryFlow();
