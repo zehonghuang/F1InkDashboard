@@ -6,6 +6,7 @@
 #include "lvgl_theme.h"
 #include "settings.h"
 #include "common/time_sync.h"
+#include "common/ota_update.h"
 #include "pages/f1_page_adapter_common.h"
 #include "pages/f1_page_adapter_net.h"
 #include "pages/f1_page_adapter_payloads.h"
@@ -801,6 +802,12 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
             if (menu_focus_ == 3) {
                 Application::GetInstance().RequestRecoveryMode();
             }
+            if (menu_focus_ == 5) {
+                if (host_ != nullptr) {
+                    host_->ShowNotification("Checking update...", 1500);
+                }
+                OtaUpdateService::Instance().RequestUpdateNow();
+            }
             menu_visible_ = false;
             SetRootVisible(menu_root_, false);
             if (host_ != nullptr) {
@@ -1041,8 +1048,32 @@ void F1PageAdapter::UpdateMenuStatusLocked() {
         if (s.state == TimeSyncState::Synced) state = "OK";
         if (s.state == TimeSyncState::Failed) state = "FAIL";
         char buf[64];
-        snprintf(buf, sizeof(buf), "WiFi, Screen, Sleep, Time: %s", state);
+        const OtaSnapshot o = OtaUpdateService::Instance().GetSnapshot();
+        const char* ota = "IDLE";
+        if (o.state == OtaState::Checking) ota = "CHECK";
+        if (o.state == OtaState::UpdateAvailable) ota = "NEW";
+        if (o.state == OtaState::Downloading) ota = "DL";
+        if (o.state == OtaState::Applying) ota = "APPLY";
+        if (o.state == OtaState::Succeeded) ota = "OK";
+        if (o.state == OtaState::Failed) ota = "FAIL";
+        snprintf(buf, sizeof(buf), "WiFi, Screen, Sleep, Time:%s OTA:%s", state, ota);
         SetText(sys, buf);
+    }
+
+    lv_obj_t* about = menu_item_right_[5];
+    if (about != nullptr) {
+        const OtaSnapshot o = OtaUpdateService::Instance().GetSnapshot();
+        const std::string cur = o.current_version.empty() ? "?" : o.current_version;
+        std::string s = "FW " + cur;
+        if (!o.target_version.empty() && o.target_version != cur) {
+            s += " -> " + o.target_version;
+        }
+        if (o.state == OtaState::Downloading && o.progress_pct >= 0) {
+            char pct[16];
+            snprintf(pct, sizeof(pct), " (%d%%)", o.progress_pct);
+            s += pct;
+        }
+        SetText(about, s.c_str());
     }
 }
 
