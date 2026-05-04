@@ -32,6 +32,8 @@ public:
     void MarkCircuitFetchDone();
     void MarkCircuitDetailFetchDone();
     void MarkSessionsFetchDone();
+    void MarkTelemetryAnalysisFetchDone();
+    void MarkTelemetryMetaFetchDone();
 
 private:
     template <typename, typename>
@@ -54,6 +56,7 @@ private:
     void ApplyViewLocked();
     void StartFetchIfNeededLocked(bool force);
     void StartSessionsFetchIfNeededLocked(bool force);
+    void StartTelemetryAnalysisFetchLocked(bool force);
     void StartCircuitFetchIfNeededLocked(const char* map_url);
     void StartCircuitDetailFetchIfNeededLocked(const char* map_url);
     void ApplyCircuitImageLocked();
@@ -291,6 +294,7 @@ private:
 
     int telemetry_driver_no_ = -1;
     std::string telemetry_driver_acr_{};
+    int telemetry_driver_pos_ = -1;
     int telemetry_prev_page_ = 0;
     static constexpr int kTelemetryPoints = 48;
     std::array<uint16_t, kTelemetryPoints> telemetry_speed_{};
@@ -300,11 +304,30 @@ private:
 
     lv_obj_t* telemetry_title_ = nullptr;
     lv_obj_t* telemetry_graph_ = nullptr;
+    lv_obj_t* telemetry_meta_ = nullptr;
     lv_obj_t* telemetry_throttle_bar_ = nullptr;
     lv_obj_t* telemetry_throttle_value_ = nullptr;
     lv_obj_t* telemetry_brake_bar_ = nullptr;
     lv_obj_t* telemetry_brake_value_ = nullptr;
     lv_obj_t* telemetry_no_data_ = nullptr;
+
+    std::atomic<bool> telemetry_analysis_fetch_inflight_{false};
+    std::atomic<bool> telemetry_meta_fetch_inflight_{false};
+    int64_t last_telemetry_analysis_fetch_ms_ = 0;
+    bool telemetry_analysis_loading_ = false;
+    std::string telemetry_chart_url_{};
+    std::string telemetry_meta_url_{};
+    std::vector<uint8_t> telemetry_chart_bytes_{};
+    int telemetry_chart_w_ = 0;
+    int telemetry_chart_h_ = 0;
+    int telemetry_chart_x_ = 0;
+    int telemetry_chart_y_ = 0;
+
+    int telemetry_meta_lap_number_ = -1;
+    double telemetry_meta_lap_duration_s_ = -1.0;
+    double telemetry_meta_s1_s_ = -1.0;
+    double telemetry_meta_s2_s_ = -1.0;
+    double telemetry_meta_s3_s_ = -1.0;
 
     std::atomic<bool> sessions_fetch_inflight_{false};
     int64_t last_sessions_fetch_ms_ = 0;

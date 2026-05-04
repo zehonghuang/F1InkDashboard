@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 from pathlib import Path
 
@@ -228,6 +229,7 @@ def main() -> int:
 
         best_ln = None
         best_dur = None
+        best_it = None
         for it in laps:
             if it.get("is_pit_out_lap") is True:
                 continue
@@ -245,6 +247,7 @@ def main() -> int:
             if best_dur is None or dur_f < best_dur or (dur_f == best_dur and ln_i < best_ln):
                 best_ln = ln_i
                 best_dur = dur_f
+                best_it = it
 
         if best_ln is None:
             for it in laps:
@@ -262,6 +265,7 @@ def main() -> int:
                 if best_dur is None or dur_f < best_dur or (dur_f == best_dur and ln_i < best_ln):
                     best_ln = ln_i
                     best_dur = dur_f
+                    best_it = it
 
         if best_ln is None or best_dur is None:
             raise SystemExit(f"no valid lap_duration for driver={driver_number} session_key={sk}")
@@ -290,6 +294,19 @@ def main() -> int:
             points=points,
             out_path=out_path,
         )
+        meta = {
+            "ok": True,
+            "found": True,
+            "driver_number": int(driver_number),
+            "session_key": int(sk) if sk is not None else None,
+            "lap_number": int(best_ln),
+            "lap_duration_s": float(best_it.get("lap_duration")) if best_it and best_it.get("lap_duration") is not None else float(duration_s),
+            "s1_s": float(best_it.get("duration_sector_1")) if best_it and best_it.get("duration_sector_1") is not None else None,
+            "s2_s": float(best_it.get("duration_sector_2")) if best_it and best_it.get("duration_sector_2") is not None else None,
+            "s3_s": float(best_it.get("duration_sector_3")) if best_it and best_it.get("duration_sector_3") is not None else None,
+        }
+        meta_path = out_path.with_suffix(".json")
+        meta_path.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
 
     return 0
 

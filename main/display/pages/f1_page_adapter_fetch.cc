@@ -50,6 +50,22 @@ struct SessionsFetchArg {
     std::string url;
 };
 
+struct TelemetryAnalysisFetchArg {
+    F1PageAdapter* page = nullptr;
+    LcdDisplay* host = nullptr;
+    std::string src_url;
+    std::string url;
+    int w = 0;
+    int h = 0;
+};
+
+struct TelemetryMetaFetchArg {
+    F1PageAdapter* page = nullptr;
+    LcdDisplay* host = nullptr;
+    std::string src_url;
+    std::string url;
+};
+
 void FetchTask(void* arg) {
     std::unique_ptr<FetchArg> a(static_cast<FetchArg*>(arg));
     if (!a || a->page == nullptr || a->host == nullptr) {
@@ -93,6 +109,59 @@ void SessionsFetchTask(void* arg) {
         ESP_LOGW(kTag, "sessions fetch failed url=%s", a->url.c_str());
         a->page->MarkSessionsFetchDone();
     }
+    vTaskDelete(nullptr);
+}
+
+void TelemetryAnalysisFetchTask(void* arg) {
+    std::unique_ptr<TelemetryAnalysisFetchArg> a(static_cast<TelemetryAnalysisFetchArg*>(arg));
+    if (!a || a->page == nullptr || a->host == nullptr) {
+        vTaskDelete(nullptr);
+        return;
+    }
+
+    std::vector<uint8_t> bytes;
+    const size_t expected = static_cast<size_t>((a->w + 7) >> 3) * static_cast<size_t>(a->h);
+    const bool ok = HttpGetToBuffer(a->url, bytes, expected);
+    const unsigned bytes_n = static_cast<unsigned>(bytes.size());
+    ESP_LOGI(kTag, "telemetry chart frame fetched ok=%d bytes=%u url=%s", ok ? 1 : 0, bytes_n, a->url.c_str());
+    {
+        UiPageEvent e{};
+        e.type = UiPageEventType::Custom;
+        e.i32 = static_cast<int32_t>(UiPageCustomEventId::F1TelemetryAnalysisData);
+        auto* payload = new f1_page_internal::TelemetryChartPayload();
+        payload->url = a->src_url;
+        payload->w = a->w;
+        payload->h = a->h;
+        payload->status = ok ? 200 : 0;
+        payload->bytes = std::move(bytes);
+        e.ptr = payload;
+        a->host->DispatchPageEvent(e, false);
+    }
+
+    a->page->MarkTelemetryAnalysisFetchDone();
+    vTaskDelete(nullptr);
+}
+
+void TelemetryMetaFetchTask(void* arg) {
+    std::unique_ptr<TelemetryMetaFetchArg> a(static_cast<TelemetryMetaFetchArg*>(arg));
+    if (!a || a->page == nullptr || a->host == nullptr) {
+        vTaskDelete(nullptr);
+        return;
+    }
+
+    std::vector<uint8_t> bytes;
+    const bool ok = HttpGetToBuffer(a->url, bytes, 8 * 1024);
+    UiPageEvent e{};
+    e.type = UiPageEventType::Custom;
+    e.i32 = static_cast<int32_t>(UiPageCustomEventId::F1TelemetryMetaData);
+    auto* payload = new f1_page_internal::TelemetryMetaPayload();
+    payload->url = a->src_url;
+    payload->status = ok ? 200 : 0;
+    payload->json = std::string(bytes.begin(), bytes.end());
+    e.ptr = payload;
+    a->host->DispatchPageEvent(e, false);
+
+    a->page->MarkTelemetryMetaFetchDone();
     vTaskDelete(nullptr);
 }
 
@@ -172,7 +241,9 @@ void F1PageAdapter::MarkFetchDone() {
         fetch_inflight_.load() ||
         sessions_fetch_inflight_.load() ||
         circuit_fetch_inflight_.load() ||
-        circuit_detail_fetch_inflight_.load();
+        circuit_detail_fetch_inflight_.load() ||
+        telemetry_analysis_fetch_inflight_.load() ||
+        telemetry_meta_fetch_inflight_.load();
     sm_set_busy(SleepBusySrc::Net, busy);
 }
 
@@ -182,7 +253,9 @@ void F1PageAdapter::MarkCircuitFetchDone() {
         fetch_inflight_.load() ||
         sessions_fetch_inflight_.load() ||
         circuit_fetch_inflight_.load() ||
-        circuit_detail_fetch_inflight_.load();
+        circuit_detail_fetch_inflight_.load() ||
+        telemetry_analysis_fetch_inflight_.load() ||
+        telemetry_meta_fetch_inflight_.load();
     sm_set_busy(SleepBusySrc::Net, busy);
 }
 
@@ -192,7 +265,9 @@ void F1PageAdapter::MarkCircuitDetailFetchDone() {
         fetch_inflight_.load() ||
         sessions_fetch_inflight_.load() ||
         circuit_fetch_inflight_.load() ||
-        circuit_detail_fetch_inflight_.load();
+        circuit_detail_fetch_inflight_.load() ||
+        telemetry_analysis_fetch_inflight_.load() ||
+        telemetry_meta_fetch_inflight_.load();
     sm_set_busy(SleepBusySrc::Net, busy);
 }
 
@@ -202,7 +277,33 @@ void F1PageAdapter::MarkSessionsFetchDone() {
         fetch_inflight_.load() ||
         sessions_fetch_inflight_.load() ||
         circuit_fetch_inflight_.load() ||
-        circuit_detail_fetch_inflight_.load();
+        circuit_detail_fetch_inflight_.load() ||
+        telemetry_analysis_fetch_inflight_.load() ||
+        telemetry_meta_fetch_inflight_.load();
+    sm_set_busy(SleepBusySrc::Net, busy);
+}
+
+void F1PageAdapter::MarkTelemetryAnalysisFetchDone() {
+    telemetry_analysis_fetch_inflight_.store(false);
+    const bool busy =
+        fetch_inflight_.load() ||
+        sessions_fetch_inflight_.load() ||
+        circuit_fetch_inflight_.load() ||
+        circuit_detail_fetch_inflight_.load() ||
+        telemetry_analysis_fetch_inflight_.load() ||
+        telemetry_meta_fetch_inflight_.load();
+    sm_set_busy(SleepBusySrc::Net, busy);
+}
+
+void F1PageAdapter::MarkTelemetryMetaFetchDone() {
+    telemetry_meta_fetch_inflight_.store(false);
+    const bool busy =
+        fetch_inflight_.load() ||
+        sessions_fetch_inflight_.load() ||
+        circuit_fetch_inflight_.load() ||
+        circuit_detail_fetch_inflight_.load() ||
+        telemetry_analysis_fetch_inflight_.load() ||
+        telemetry_meta_fetch_inflight_.load();
     sm_set_busy(SleepBusySrc::Net, busy);
 }
 
@@ -297,6 +398,85 @@ void F1PageAdapter::StartSessionsFetchIfNeededLocked(bool force) {
     sessions_fetch_inflight_.store(true);
     sm_set_busy(SleepBusySrc::Net, true);
     last_sessions_fetch_ms_ = now;
+}
+
+void F1PageAdapter::StartTelemetryAnalysisFetchLocked(bool force) {
+    if (telemetry_analysis_fetch_inflight_.load()) {
+        return;
+    }
+    if (telemetry_driver_no_ <= 0) {
+        return;
+    }
+    const int64_t now = NowMs();
+    if (!force) {
+        if (last_telemetry_analysis_fetch_ms_ > 0 && now - last_telemetry_analysis_fetch_ms_ < 3 * 1000) {
+            return;
+        }
+    }
+
+    std::string base = TrimUrl(GetBackendBaseUrl());
+    if (base.empty()) {
+        return;
+    }
+    char png_url[256];
+    snprintf(png_url, sizeof(png_url), "%s/api/v1/charts/driver/%d/latest.png", base.c_str(), telemetry_driver_no_);
+    char meta_url[256];
+    snprintf(meta_url, sizeof(meta_url), "%s/api/v1/charts/driver/%d/latest.json", base.c_str(), telemetry_driver_no_);
+    telemetry_meta_url_ = meta_url;
+
+    int w = 0;
+    int h = 0;
+    if (race_sessions_telemetry_body_ != nullptr) {
+        w = static_cast<int>(lv_obj_get_width(race_sessions_telemetry_body_)) - 8;
+        h = static_cast<int>(lv_obj_get_height(race_sessions_telemetry_body_)) - (kRowH * 2) - 10;
+    }
+    if (w <= 0) {
+        w = 1;
+    }
+    if (h <= 0) {
+        h = 1;
+    }
+
+    char frame_url[512];
+    snprintf(frame_url,
+             sizeof(frame_url),
+             "%s/api/v1/epd/frame.bin?png_url=%s&w=%d&h=%d&dither=0",
+             base.c_str(),
+             png_url,
+             w,
+             h);
+
+    auto* arg = new TelemetryAnalysisFetchArg();
+    arg->page = this;
+    arg->host = host_;
+    arg->src_url = png_url;
+    arg->url = frame_url;
+    arg->w = w;
+    arg->h = h;
+    const BaseType_t ok = xTaskCreate(&TelemetryAnalysisFetchTask, "f1_tlm", 8192, arg, 4, nullptr);
+    if (ok != pdPASS) {
+        delete arg;
+        telemetry_analysis_fetch_inflight_.store(false);
+        return;
+    }
+    telemetry_analysis_fetch_inflight_.store(true);
+    sm_set_busy(SleepBusySrc::Net, true);
+    last_telemetry_analysis_fetch_ms_ = now;
+
+    if (!telemetry_meta_fetch_inflight_.load()) {
+        auto* arg2 = new TelemetryMetaFetchArg();
+        arg2->page = this;
+        arg2->host = host_;
+        arg2->src_url = meta_url;
+        arg2->url = meta_url;
+        const BaseType_t ok2 = xTaskCreate(&TelemetryMetaFetchTask, "f1_tlm_m", 8192, arg2, 4, nullptr);
+        if (ok2 != pdPASS) {
+            delete arg2;
+        } else {
+            telemetry_meta_fetch_inflight_.store(true);
+            sm_set_busy(SleepBusySrc::Net, true);
+        }
+    }
 }
 
 void F1PageAdapter::StartCircuitFetchIfNeededLocked(const char* map_url) {

@@ -1,8 +1,32 @@
 #include "pages/f1_page_adapter.h"
 
+#include "lcd_display.h"
+#include "pages/f1_page_adapter_common.h"
+
 #include <algorithm>
 #include <cstdio>
 #include <string>
+
+namespace {
+
+static std::string FmtClock(double seconds) {
+    if (!(seconds > 0.0)) {
+        return "--";
+    }
+    int m = static_cast<int>(seconds / 60.0);
+    double s = seconds - static_cast<double>(m) * 60.0;
+    if (m < 0) {
+        m = 0;
+    }
+    if (s < 0.0) {
+        s = 0.0;
+    }
+    char buf[24];
+    snprintf(buf, sizeof(buf), "%d:%05.2f", m, s);
+    return buf;
+}
+
+}  // namespace
 
 bool F1PageAdapter::SelectTelemetryDriverFromResultLocked(bool from_quali) {
     const int row_focus = from_quali ? quali_result_row_focus_ : race_result_row_focus_;
@@ -11,6 +35,7 @@ bool F1PageAdapter::SelectTelemetryDriverFromResultLocked(bool from_quali) {
     }
 
     int no = -1;
+    int pos = -1;
     std::string acr;
     if (from_quali) {
         const int n = static_cast<int>(quali_result_rows_.size());
@@ -24,6 +49,11 @@ bool F1PageAdapter::SelectTelemetryDriverFromResultLocked(bool from_quali) {
             no = std::stoi(r[1]);
         } catch (...) {
             no = -1;
+        }
+        try {
+            pos = std::stoi(r[0]);
+        } catch (...) {
+            pos = -1;
         }
         acr = r[2];
     } else {
@@ -39,6 +69,11 @@ bool F1PageAdapter::SelectTelemetryDriverFromResultLocked(bool from_quali) {
         } catch (...) {
             no = -1;
         }
+        try {
+            pos = std::stoi(r[0]);
+        } catch (...) {
+            pos = -1;
+        }
         acr = r[2];
     }
 
@@ -47,105 +82,118 @@ bool F1PageAdapter::SelectTelemetryDriverFromResultLocked(bool from_quali) {
     }
     telemetry_driver_no_ = no;
     telemetry_driver_acr_ = std::move(acr);
+    telemetry_driver_pos_ = pos;
     telemetry_speed_count_ = 0;
     telemetry_throttle_ = -1;
     telemetry_brake_ = -1;
     for (auto& v : telemetry_speed_) {
         v = 0;
     }
+
+    telemetry_analysis_loading_ = true;
+    telemetry_chart_url_.clear();
+    telemetry_chart_bytes_.clear();
     return true;
 }
 
 void F1PageAdapter::ApplyTelemetryLocked() {
+    if (telemetry_title_ != nullptr) {
+        SetText(telemetry_title_, "");
+    }
+
     if (race_sessions_header_left_ != nullptr) {
-        char buf[128];
-        const char* acr = telemetry_driver_acr_.empty() ? nullptr : telemetry_driver_acr_.c_str();
-        if (acr != nullptr && acr[0]) {
-            snprintf(buf, sizeof(buf), "[RESULTS] %s - SPEED TELEMETRY", acr);
-        } else if (telemetry_driver_no_ > 0) {
-            snprintf(buf, sizeof(buf), "[RESULTS] #%d - SPEED TELEMETRY", telemetry_driver_no_);
-        } else {
-            snprintf(buf, sizeof(buf), "[RESULTS] SPEED TELEMETRY");
+        std::string gp = race_sessions_header_left_text_;
+        const size_t pos = gp.find("] ");
+        if (pos != std::string::npos) {
+            gp = gp.substr(pos + 2);
         }
+        if (gp.empty()) {
+            gp = "GP";
+        }
+        char buf[96];
+        snprintf(buf, sizeof(buf), "[ANALYSIS] %s", gp.c_str());
         SetText(race_sessions_header_left_, buf);
     }
+
+    if (race_sessions_header_center_ != nullptr) {
+        const char* acr = telemetry_driver_acr_.empty() ? nullptr : telemetry_driver_acr_.c_str();
+        const int pos = telemetry_driver_pos_;
+        char buf[96];
+        const int ln = telemetry_meta_lap_number_;
+        if (acr != nullptr && acr[0] && pos > 0 && ln > 0) {
+            snprintf(buf, sizeof(buf), "%s #%02d (LAP %d-FL)", acr, pos, ln);
+        } else if (acr != nullptr && acr[0] && ln > 0) {
+            snprintf(buf, sizeof(buf), "%s (LAP %d-FL)", acr, ln);
+        } else if (telemetry_driver_no_ > 0 && ln > 0) {
+            snprintf(buf, sizeof(buf), "#%d (LAP %d-FL)", telemetry_driver_no_, ln);
+        } else if (acr != nullptr && acr[0] && pos > 0) {
+            snprintf(buf, sizeof(buf), "%s #%02d", acr, pos);
+        } else if (acr != nullptr && acr[0]) {
+            snprintf(buf, sizeof(buf), "%s", acr);
+        } else if (telemetry_driver_no_ > 0) {
+            snprintf(buf, sizeof(buf), "#%d", telemetry_driver_no_);
+        } else {
+            snprintf(buf, sizeof(buf), "--");
+        }
+        SetText(race_sessions_header_center_, buf);
+    }
+
+    if (race_sessions_ticker_ != nullptr) {
+        SetText(race_sessions_ticker_, "[UP/DN] SWITCH DRIVER | [CONFIRM] BACK TO RESULTS");
+    }
+
+    if (telemetry_meta_ != nullptr) {
+        const std::string total = FmtClock(telemetry_meta_lap_duration_s_);
+        const std::string s1 = FmtClock(telemetry_meta_s1_s_);
+        const std::string s2 = FmtClock(telemetry_meta_s2_s_);
+        const std::string s3 = FmtClock(telemetry_meta_s3_s_);
+        char line[128];
+        snprintf(line, sizeof(line), "TIME: %s | S1: %s | S2: %s | S3: %s", total.c_str(), s1.c_str(), s2.c_str(), s3.c_str());
+        SetText(telemetry_meta_, line);
+    }
+
+    int x = 4;
+    int y = 0;
+    int w = 1;
+    int h = 1;
+    if (race_sessions_telemetry_body_ != nullptr) {
+        y = static_cast<int>(lv_obj_get_y(race_sessions_telemetry_body_)) + 4;
+        w = static_cast<int>(lv_obj_get_width(race_sessions_telemetry_body_)) - 8;
+        h = static_cast<int>(lv_obj_get_height(race_sessions_telemetry_body_)) - (f1_page_internal::kRowH * 2) - 10;
+    }
+    if (w <= 0) {
+        w = 1;
+    }
+    if (h <= 0) {
+        h = 1;
+    }
+    telemetry_chart_x_ = x;
+    telemetry_chart_y_ = y;
+    telemetry_chart_w_ = w;
+    telemetry_chart_h_ = h;
+
+    const bool has_chart = !telemetry_chart_bytes_.empty();
     if (telemetry_graph_ != nullptr) {
-        constexpr int cols = 32;
-        std::string l0(cols, ' ');
-        std::string l1(cols, ' ');
-        std::string l2(cols, ' ');
-        std::string l3(cols, ' ');
-
-        const int start = std::max(0, telemetry_speed_count_ - cols);
-        for (int i = start; i < telemetry_speed_count_; i++) {
-            const int col = i - start;
-            if (col < 0 || col >= cols) {
-                continue;
-            }
-            const int v = static_cast<int>(telemetry_speed_[static_cast<size_t>(i)]);
-            if (v <= 0) {
-                continue;
-            }
-            int level = 3;
-            if (v >= 340) {
-                level = 0;
-            } else if (v >= 280) {
-                level = 1;
-            } else if (v >= 200) {
-                level = 2;
-            } else {
-                level = 3;
-            }
-            if (level == 0) {
-                l0[static_cast<size_t>(col)] = '*';
-            } else if (level == 1) {
-                l1[static_cast<size_t>(col)] = '*';
-            } else if (level == 2) {
-                l2[static_cast<size_t>(col)] = '*';
-            } else {
-                l3[static_cast<size_t>(col)] = '*';
-            }
-        }
-
-        std::string s;
-        s.reserve(256);
-        s += "340 | ";
-        s += l0;
-        s += "\n280 | ";
-        s += l1;
-        s += "\n200 | ";
-        s += l2;
-        s += "\n120 | ";
-        s += l3;
-        lv_label_set_text(telemetry_graph_, s.c_str());
-    }
-    if (telemetry_throttle_bar_ != nullptr) {
-        lv_bar_set_value(telemetry_throttle_bar_, telemetry_throttle_ >= 0 ? telemetry_throttle_ : 0, LV_ANIM_OFF);
-    }
-    if (telemetry_throttle_value_ != nullptr) {
-        if (telemetry_throttle_ >= 0) {
-            SetTextFmt(telemetry_throttle_value_, "%d%%", telemetry_throttle_);
+        if (telemetry_analysis_loading_) {
+            lv_label_set_text(telemetry_graph_, "LOADING CHART...");
+            lv_obj_clear_flag(telemetry_graph_, LV_OBJ_FLAG_HIDDEN);
+        } else if (!has_chart) {
+            lv_label_set_text(telemetry_graph_, "NO CHART");
+            lv_obj_clear_flag(telemetry_graph_, LV_OBJ_FLAG_HIDDEN);
         } else {
-            SetText(telemetry_throttle_value_, "--%");
+            lv_obj_add_flag(telemetry_graph_, LV_OBJ_FLAG_HIDDEN);
         }
     }
-    if (telemetry_brake_bar_ != nullptr) {
-        lv_bar_set_value(telemetry_brake_bar_, telemetry_brake_ >= 0 ? telemetry_brake_ : 0, LV_ANIM_OFF);
-    }
-    if (telemetry_brake_value_ != nullptr) {
-        if (telemetry_brake_ >= 0) {
-            SetTextFmt(telemetry_brake_value_, "%d%%", telemetry_brake_);
+
+    if (host_ != nullptr) {
+        if (has_chart) {
+            host_->UpdatePicRegion(x, y, w, h, telemetry_chart_bytes_.data(), telemetry_chart_bytes_.size());
         } else {
-            SetText(telemetry_brake_value_, "--%");
+            host_->UpdatePicRegion(x, y, w, h, nullptr, 0);
         }
     }
-    const bool has_any = telemetry_speed_count_ > 0 || telemetry_throttle_ >= 0 || telemetry_brake_ >= 0;
+
     if (telemetry_no_data_ != nullptr) {
-        if (has_any) {
-            lv_obj_add_flag(telemetry_no_data_, LV_OBJ_FLAG_HIDDEN);
-        } else {
-            lv_obj_clear_flag(telemetry_no_data_, LV_OBJ_FLAG_HIDDEN);
-        }
+        lv_obj_add_flag(telemetry_no_data_, LV_OBJ_FLAG_HIDDEN);
     }
 }
-
