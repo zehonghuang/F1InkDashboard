@@ -297,8 +297,19 @@ bool OtaUpdateService::CheckOnceLocked(int64_t now_ms, bool force) {
         return false;
     }
 
-    const std::string manifest_base = BaseUrlFromApiUrl(final_url.empty() ? manifest_url : final_url);
-    bin_url = JoinUrl(manifest_base, bin_url);
+    const std::string final_manifest_url = final_url.empty() ? manifest_url : final_url;
+    std::string manifest_dir = TrimUrl(final_manifest_url);
+    {
+        const size_t scheme = manifest_dir.find("://");
+        const size_t search_from = (scheme == std::string::npos) ? 0 : (scheme + 3);
+        const size_t last_slash = manifest_dir.rfind('/');
+        if (last_slash != std::string::npos && last_slash >= search_from) {
+            manifest_dir = manifest_dir.substr(0, last_slash);
+        } else {
+            manifest_dir = BaseUrlFromApiUrl(manifest_dir);
+        }
+    }
+    bin_url = JoinUrl(manifest_dir, bin_url);
     if (!board.empty() && board != std::string(BOARD_NAME)) {
         FailLocked(ESP_ERR_INVALID_STATE, status);
         sm_set_busy(SleepBusySrc::Net, false);
@@ -379,11 +390,12 @@ bool OtaUpdateService::DownloadAndApplyLocked() {
         return false;
     }
 
+    const std::string ua = SystemInfo::GetUserAgent();
     esp_http_client_config_t config = {};
     config.url = bin_url.c_str();
     config.timeout_ms = 20000;
     config.method = HTTP_METHOD_GET;
-    config.user_agent = SystemInfo::GetUserAgent().c_str();
+    config.user_agent = ua.c_str();
     config.keep_alive_enable = false;
 
     esp_http_client_handle_t client = esp_http_client_init(&config);
@@ -404,6 +416,10 @@ bool OtaUpdateService::DownloadAndApplyLocked() {
 
     const int64_t cl = esp_http_client_fetch_headers(client);
     const int http_status = esp_http_client_get_status_code(client);
+    ESP_LOGI(kTag, "download start url=%s status=%d content_length=%lld",
+             bin_url.c_str(),
+             http_status,
+             static_cast<long long>(cl));
     if (http_status != 200) {
         esp_http_client_close(client);
         esp_http_client_cleanup(client);
@@ -482,6 +498,8 @@ bool OtaUpdateService::DownloadAndApplyLocked() {
         sm_set_busy(SleepBusySrc::Net, false);
         return false;
     }
+
+    ESP_LOGI(kTag, "download done bytes=%lld", static_cast<long long>(total));
 
     SetProgressLocked(100);
     SetStateLocked(OtaState::Applying);
