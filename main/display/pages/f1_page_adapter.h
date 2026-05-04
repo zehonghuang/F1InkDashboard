@@ -39,7 +39,7 @@ private:
 
     enum class NavNode : uint8_t { RaceRoot = 0, OffRoot = 1, Wdc = 2, Wcc = 3, Circuit = 4, RaceSessions = 5 };
 
-    enum class RaceSessionsSubPage : uint8_t { QualiResult = 0, RaceResult = 1, QualiLive = 2, RaceLive = 3 };
+    enum class RaceSessionsSubPage : uint8_t { QualiResult = 0, RaceResult = 1, QualiLive = 2, RaceLive = 3, Telemetry = 4 };
 
     static void RefreshTimerCallback(void* arg);
 
@@ -49,6 +49,7 @@ private:
     void BuildWdcDetailLocked();
     void BuildWccDetailLocked();
     void BuildRaceSessionsLocked();
+    void BuildTelemetryLocked();
     void BuildMenuLocked();
     void ApplyViewLocked();
     void StartFetchIfNeededLocked(bool force);
@@ -78,6 +79,9 @@ private:
     void ApplyRaceSessionsLocked();
     void ApplyQualiResultPageLocked();
     void ApplyRaceResultPageLocked();
+    void ApplyResultRowSelectionLocked();
+    void ApplyTelemetryLocked();
+    bool SelectTelemetryDriverFromResultLocked(bool from_quali);
     void MaybeAutoEnterRaceLiveLocked();
     int UiNavRootSlotCount(NavNode root);
     int UiNavRootFocus(NavNode root);
@@ -220,6 +224,7 @@ private:
     lv_obj_t* race_sessions_body_right_ = nullptr;
     lv_obj_t* race_sessions_qualifying_body_ = nullptr;
     lv_obj_t* race_sessions_race_result_body_ = nullptr;
+    lv_obj_t* race_sessions_telemetry_body_ = nullptr;
     lv_obj_t* race_sessions_race_dnf_ = nullptr;
     lv_obj_t* race_sessions_practice_left_ = nullptr;
     lv_obj_t* race_sessions_qualifying_left_ = nullptr;
@@ -233,6 +238,7 @@ private:
     lv_obj_t* race_sessions_ticker_ = nullptr;
     lv_obj_t* race_sessions_footer_root_ = nullptr;
     lv_obj_t* race_sessions_no_data_ = nullptr;
+    std::string race_sessions_header_left_text_{};
 
     lv_obj_t* menu_header_left_ = nullptr;
     lv_obj_t* menu_header_right_ = nullptr;
@@ -264,20 +270,41 @@ private:
     static constexpr int kSessionsPracticeRows = 10;
     static constexpr int kSessionsPracticeCols = 6;
     std::array<std::array<lv_obj_t*, kSessionsPracticeCols>, kSessionsPracticeRows> sessions_practice_cells_{};
+    std::array<lv_obj_t*, kSessionsPracticeRows> sessions_practice_row_focus_{};
 
     static constexpr int kSessionsQualiRows = 11;
     static constexpr int kSessionsQualiCols = 7;
     std::array<std::array<lv_obj_t*, kSessionsQualiCols>, kSessionsQualiRows> sessions_quali_cells_{};
+    std::array<lv_obj_t*, kSessionsQualiRows> sessions_quali_row_focus_{};
     lv_obj_t* sessions_drop_zone_ = nullptr;
 
     int quali_result_page_ = 0;
     int quali_result_page_count_ = 1;
     std::vector<std::array<std::string, kSessionsQualiCols>> quali_result_rows_{};
+    int quali_result_row_focus_ = 0;
 
     int race_result_page_ = 0;
     int race_result_page_count_ = 1;
     std::vector<std::array<std::string, kSessionsPracticeCols>> race_result_rows_{};
     std::string race_result_dnf_{};
+    int race_result_row_focus_ = 0;
+
+    int telemetry_driver_no_ = -1;
+    std::string telemetry_driver_acr_{};
+    int telemetry_prev_page_ = 0;
+    static constexpr int kTelemetryPoints = 48;
+    std::array<uint16_t, kTelemetryPoints> telemetry_speed_{};
+    int telemetry_speed_count_ = 0;
+    int telemetry_throttle_ = -1;
+    int telemetry_brake_ = -1;
+
+    lv_obj_t* telemetry_title_ = nullptr;
+    lv_obj_t* telemetry_graph_ = nullptr;
+    lv_obj_t* telemetry_throttle_bar_ = nullptr;
+    lv_obj_t* telemetry_throttle_value_ = nullptr;
+    lv_obj_t* telemetry_brake_bar_ = nullptr;
+    lv_obj_t* telemetry_brake_value_ = nullptr;
+    lv_obj_t* telemetry_no_data_ = nullptr;
 
     std::atomic<bool> sessions_fetch_inflight_{false};
     int64_t last_sessions_fetch_ms_ = 0;

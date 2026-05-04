@@ -437,6 +437,19 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
 
         const lv_coord_t base_y = kRowH + 4;
 
+        for (int r = 0; r < kSessionsQualiRows; r++) {
+            const lv_coord_t y = base_y + (r < 8 ? r : r + 1) * kRowH;
+            lv_obj_t* box = lv_obj_create(race_sessions_qualifying_body_);
+            lv_obj_set_size(box, inner_w, kRowH);
+            lv_obj_align(box, LV_ALIGN_TOP_LEFT, 0, y);
+            lv_obj_set_style_bg_opa(box, LV_OPA_TRANSP, 0);
+            lv_obj_set_style_border_width(box, 1, 0);
+            lv_obj_set_style_border_color(box, lv_color_black(), 0);
+            lv_obj_set_style_pad_all(box, 0, 0);
+            lv_obj_add_flag(box, LV_OBJ_FLAG_HIDDEN);
+            sessions_quali_row_focus_[static_cast<size_t>(r)] = box;
+        }
+
         auto add_row_cell = [&](int row, int col, lv_coord_t x, lv_coord_t y, lv_coord_t w, const char* text, lv_text_align_t align) {
             if (row < 0 || row >= kSessionsQualiRows || col < 0 || col >= kSessionsQualiCols) {
                 return;
@@ -554,6 +567,19 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
 
         const lv_coord_t base_y = kRowH + 4;
 
+        for (int r = 0; r < kSessionsPracticeRows; r++) {
+            const lv_coord_t y = base_y + r * kRowH;
+            lv_obj_t* box = lv_obj_create(race_sessions_race_result_body_);
+            lv_obj_set_size(box, inner_w, kRowH);
+            lv_obj_align(box, LV_ALIGN_TOP_LEFT, 0, y);
+            lv_obj_set_style_bg_opa(box, LV_OPA_TRANSP, 0);
+            lv_obj_set_style_border_width(box, 1, 0);
+            lv_obj_set_style_border_color(box, lv_color_black(), 0);
+            lv_obj_set_style_pad_all(box, 0, 0);
+            lv_obj_add_flag(box, LV_OBJ_FLAG_HIDDEN);
+            sessions_practice_row_focus_[static_cast<size_t>(r)] = box;
+        }
+
         auto add_row_cell = [&](int row, int col, lv_coord_t x, lv_coord_t y, lv_coord_t w, lv_text_align_t align) {
             if (row < 0 || row >= kSessionsPracticeRows || col < 0 || col >= kSessionsPracticeCols) {
                 return;
@@ -584,6 +610,8 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
         lv_obj_align(race_sessions_race_dnf_, LV_ALIGN_BOTTOM_LEFT, 0, -2);
         lv_label_set_text(race_sessions_race_dnf_, "");
     }
+
+    BuildTelemetryLocked();
 
     lv_obj_t* ticker = lv_obj_create(race_sessions_root_);
     race_sessions_footer_root_ = ticker;
@@ -642,6 +670,7 @@ void F1PageAdapter::ApplyRaceSessionsLocked() {
     const bool show_race_result = p == RaceSessionsSubPage::RaceResult;
     const bool show_quali_live = p == RaceSessionsSubPage::QualiLive;
     const bool show_race_live = p == RaceSessionsSubPage::RaceLive;
+    const bool show_telemetry = p == RaceSessionsSubPage::Telemetry;
 
     if (race_sessions_header_root_ != nullptr) {
         if (show_race_live) {
@@ -676,6 +705,13 @@ void F1PageAdapter::ApplyRaceSessionsLocked() {
             lv_obj_clear_flag(race_sessions_race_result_body_, LV_OBJ_FLAG_HIDDEN);
         } else {
             lv_obj_add_flag(race_sessions_race_result_body_, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+    if (race_sessions_telemetry_body_ != nullptr) {
+        if (show_telemetry) {
+            lv_obj_clear_flag(race_sessions_telemetry_body_, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_add_flag(race_sessions_telemetry_body_, LV_OBJ_FLAG_HIDDEN);
         }
     }
 

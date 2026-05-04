@@ -823,49 +823,92 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
     }
     if (id == UiPageCustomEventId::PagePrevDoubleClick) {
         if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
-            const int cur = race_sessions_page_;
-            const int next = (cur + 3) % 4;
-            race_sessions_page_ = next;
-            ApplyRaceSessionsLocked();
-            StartSessionsFetchIfNeededLocked(true);
-            if (host_ != nullptr) {
-                host_->RequestUrgentFullRefresh();
+            const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p == RaceSessionsSubPage::QualiResult) {
+                if (quali_result_page_count_ > 1) {
+                    quali_result_page_ = (quali_result_page_ + (quali_result_page_count_ - 1)) % quali_result_page_count_;
+                    ApplyQualiResultPageLocked();
+                    ApplyRaceSessionsLocked();
+                    if (host_ != nullptr) {
+                        host_->RequestUrgentFullRefresh();
+                    }
+                }
+                return true;
             }
-            return true;
+            if (p == RaceSessionsSubPage::RaceResult) {
+                if (race_result_page_count_ > 1) {
+                    race_result_page_ = (race_result_page_ + (race_result_page_count_ - 1)) % race_result_page_count_;
+                    ApplyRaceResultPageLocked();
+                    ApplyRaceSessionsLocked();
+                    if (host_ != nullptr) {
+                        host_->RequestUrgentFullRefresh();
+                    }
+                }
+                return true;
+            }
         }
     }
     if (id == UiPageCustomEventId::PageNextDoubleClick) {
         if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
-            const int cur = race_sessions_page_;
-            const int next = (cur + 1) % 4;
-            race_sessions_page_ = next;
-            ApplyRaceSessionsLocked();
-            StartSessionsFetchIfNeededLocked(true);
-            if (host_ != nullptr) {
-                host_->RequestUrgentFullRefresh();
+            const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p == RaceSessionsSubPage::QualiResult) {
+                if (quali_result_page_count_ > 1) {
+                    quali_result_page_ = (quali_result_page_ + 1) % quali_result_page_count_;
+                    ApplyQualiResultPageLocked();
+                    ApplyRaceSessionsLocked();
+                    if (host_ != nullptr) {
+                        host_->RequestUrgentFullRefresh();
+                    }
+                }
+                return true;
             }
-            return true;
+            if (p == RaceSessionsSubPage::RaceResult) {
+                if (race_result_page_count_ > 1) {
+                    race_result_page_ = (race_result_page_ + 1) % race_result_page_count_;
+                    ApplyRaceResultPageLocked();
+                    ApplyRaceSessionsLocked();
+                    if (host_ != nullptr) {
+                        host_->RequestUrgentFullRefresh();
+                    }
+                }
+                return true;
+            }
         }
     }
     if (id == UiPageCustomEventId::PagePrev || id == UiPageCustomEventId::GalleryPrev) {
         if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
             const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
             if (p == RaceSessionsSubPage::QualiResult) {
-                if (quali_result_page_count_ > 1) {
-                    quali_result_page_ = (quali_result_page_ + (quali_result_page_count_ - 1)) % quali_result_page_count_;
-                    ApplyQualiResultPageLocked();
+                const int n = static_cast<int>(quali_result_rows_.size());
+                const int start = quali_result_page_ * kSessionsQualiRows;
+                const int count = std::max(0, std::min(kSessionsQualiRows, n - start));
+                if (count > 0) {
+                    quali_result_row_focus_--;
+                    if (quali_result_row_focus_ < 0) {
+                        quali_result_row_focus_ = count - 1;
+                    }
+                    ApplyResultRowSelectionLocked();
+                    if (host_ != nullptr) {
+                        host_->RequestDebouncedRefresh(150);
+                    }
                 }
+                return true;
             } else if (p == RaceSessionsSubPage::RaceResult) {
-                if (race_result_page_count_ > 1) {
-                    race_result_page_ = (race_result_page_ + (race_result_page_count_ - 1)) % race_result_page_count_;
-                    ApplyRaceResultPageLocked();
+                const int n = static_cast<int>(race_result_rows_.size());
+                const int start = race_result_page_ * kSessionsPracticeRows;
+                const int count = std::max(0, std::min(kSessionsPracticeRows, n - start));
+                if (count > 0) {
+                    race_result_row_focus_--;
+                    if (race_result_row_focus_ < 0) {
+                        race_result_row_focus_ = count - 1;
+                    }
+                    ApplyResultRowSelectionLocked();
+                    if (host_ != nullptr) {
+                        host_->RequestDebouncedRefresh(150);
+                    }
                 }
+                return true;
             }
-            ApplyRaceSessionsLocked();
-            if (host_ != nullptr) {
-                host_->RequestDebouncedRefresh(150);
-            }
-            return true;
         }
         nav_.Prev();
         if (host_ != nullptr) {
@@ -877,21 +920,36 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
             const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
             if (p == RaceSessionsSubPage::QualiResult) {
-                if (quali_result_page_count_ > 1) {
-                    quali_result_page_ = (quali_result_page_ + 1) % quali_result_page_count_;
-                    ApplyQualiResultPageLocked();
+                const int n = static_cast<int>(quali_result_rows_.size());
+                const int start = quali_result_page_ * kSessionsQualiRows;
+                const int count = std::max(0, std::min(kSessionsQualiRows, n - start));
+                if (count > 0) {
+                    quali_result_row_focus_++;
+                    if (quali_result_row_focus_ >= count) {
+                        quali_result_row_focus_ = 0;
+                    }
+                    ApplyResultRowSelectionLocked();
+                    if (host_ != nullptr) {
+                        host_->RequestDebouncedRefresh(150);
+                    }
                 }
+                return true;
             } else if (p == RaceSessionsSubPage::RaceResult) {
-                if (race_result_page_count_ > 1) {
-                    race_result_page_ = (race_result_page_ + 1) % race_result_page_count_;
-                    ApplyRaceResultPageLocked();
+                const int n = static_cast<int>(race_result_rows_.size());
+                const int start = race_result_page_ * kSessionsPracticeRows;
+                const int count = std::max(0, std::min(kSessionsPracticeRows, n - start));
+                if (count > 0) {
+                    race_result_row_focus_++;
+                    if (race_result_row_focus_ >= count) {
+                        race_result_row_focus_ = 0;
+                    }
+                    ApplyResultRowSelectionLocked();
+                    if (host_ != nullptr) {
+                        host_->RequestDebouncedRefresh(150);
+                    }
                 }
+                return true;
             }
-            ApplyRaceSessionsLocked();
-            if (host_ != nullptr) {
-                host_->RequestDebouncedRefresh(150);
-            }
-            return true;
         }
         nav_.Next();
         if (host_ != nullptr) {
@@ -917,6 +975,33 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         return true;
     }
     if (id == UiPageCustomEventId::ConfirmClick) {
+        if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
+            const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p == RaceSessionsSubPage::QualiResult) {
+                if (SelectTelemetryDriverFromResultLocked(true)) {
+                    telemetry_prev_page_ = race_sessions_page_;
+                    race_sessions_page_ = static_cast<int>(RaceSessionsSubPage::Telemetry);
+                    ApplyTelemetryLocked();
+                    ApplyRaceSessionsLocked();
+                    if (host_ != nullptr) {
+                        host_->RequestUrgentFullRefresh();
+                    }
+                }
+                return true;
+            }
+            if (p == RaceSessionsSubPage::RaceResult) {
+                if (SelectTelemetryDriverFromResultLocked(false)) {
+                    telemetry_prev_page_ = race_sessions_page_;
+                    race_sessions_page_ = static_cast<int>(RaceSessionsSubPage::Telemetry);
+                    ApplyTelemetryLocked();
+                    ApplyRaceSessionsLocked();
+                    if (host_ != nullptr) {
+                        host_->RequestUrgentFullRefresh();
+                    }
+                }
+                return true;
+            }
+        }
         nav_.Enter();
         if (host_ != nullptr) {
             host_->RequestUrgentFullRefresh();
@@ -924,11 +1009,43 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         return true;
     }
     if (id == UiPageCustomEventId::ConfirmLongPress) {
+        if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
+            const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p == RaceSessionsSubPage::Telemetry) {
+                race_sessions_page_ = telemetry_prev_page_;
+                if (race_sessions_header_left_ != nullptr && !race_sessions_header_left_text_.empty()) {
+                    SetText(race_sessions_header_left_, race_sessions_header_left_text_.c_str());
+                }
+                ApplyRaceSessionsLocked();
+                ApplyResultRowSelectionLocked();
+                if (host_ != nullptr) {
+                    host_->RequestUrgentFullRefresh();
+                }
+                return true;
+            }
+        }
         nav_.Back();
         if (host_ != nullptr) {
             host_->RequestUrgentFullRefresh();
         }
         return true;
+    }
+    if (id == UiPageCustomEventId::ConfirmDoubleClick) {
+        if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
+            const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p != RaceSessionsSubPage::Telemetry) {
+                const int cur = race_sessions_page_;
+                const int next = (cur + 1) % 4;
+                race_sessions_page_ = next;
+                ApplyRaceSessionsLocked();
+                StartSessionsFetchIfNeededLocked(true);
+                ApplyResultRowSelectionLocked();
+                if (host_ != nullptr) {
+                    host_->RequestUrgentFullRefresh();
+                }
+            }
+            return true;
+        }
     }
     if (id == UiPageCustomEventId::F1Data) {
         std::unique_ptr<std::string> payload(static_cast<std::string*>(event.ptr));
@@ -1756,6 +1873,7 @@ bool F1PageAdapter::ApplySessionsJsonLocked(const char* json_text, size_t len) {
         const std::string name = NormalizeGpName(rn ? rn : "");
         snprintf(left, sizeof(left), "[FINAL] %s", name.c_str());
     }
+    race_sessions_header_left_text_ = left;
     SetText(race_sessions_header_left_, left);
 
     char center[48];
@@ -2102,6 +2220,55 @@ bool F1PageAdapter::ApplyOpenF1WsJsonLocked(const char* json_text, size_t len) {
                 live_best_lap_number_ = lap_no;
             }
         }
+    } else if (strcmp(topic, "v1/car_data") == 0) {
+        const int no = GetIntOrNeg(payload, "driver_number");
+        if (no > 0 && telemetry_driver_no_ > 0 && no == telemetry_driver_no_) {
+            const int speed = GetIntOrNeg(payload, "speed");
+            int throttle = GetIntOrNeg(payload, "throttle");
+            int brake = GetIntOrNeg(payload, "brake");
+            if (throttle < 0) {
+                const double t = GetDoubleOrNeg(payload, "throttle");
+                if (t >= 0) {
+                    throttle = static_cast<int>(t + 0.5);
+                }
+            }
+            if (brake < 0) {
+                const double b = GetDoubleOrNeg(payload, "brake");
+                if (b >= 0) {
+                    brake = static_cast<int>(b + 0.5);
+                }
+            }
+            if (speed >= 0) {
+                if (telemetry_speed_count_ < kTelemetryPoints) {
+                    telemetry_speed_[static_cast<size_t>(telemetry_speed_count_)] = static_cast<uint16_t>(speed);
+                    telemetry_speed_count_++;
+                } else {
+                    for (int i = 1; i < kTelemetryPoints; i++) {
+                        telemetry_speed_[static_cast<size_t>(i - 1)] = telemetry_speed_[static_cast<size_t>(i)];
+                    }
+                    telemetry_speed_[static_cast<size_t>(kTelemetryPoints - 1)] = static_cast<uint16_t>(speed);
+                }
+            }
+            if (throttle >= 0) {
+                if (throttle > 100) {
+                    throttle = 100;
+                }
+                telemetry_throttle_ = throttle;
+            }
+            if (brake >= 0) {
+                if (brake > 100) {
+                    brake = 100;
+                }
+                telemetry_brake_ = brake;
+            }
+            const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p == RaceSessionsSubPage::Telemetry) {
+                ApplyTelemetryLocked();
+                if (host_ != nullptr) {
+                    host_->RequestDebouncedRefresh(150);
+                }
+            }
+        }
     }
 
     cJSON_Delete(root);
@@ -2325,6 +2492,7 @@ void F1PageAdapter::ApplyQualiResultPageLocked() {
             SetText(sessions_quali_cells_[static_cast<size_t>(slot)][static_cast<size_t>(c)], row[static_cast<size_t>(c)].c_str());
         }
     }
+    ApplyResultRowSelectionLocked();
 }
 
 void F1PageAdapter::ApplyRaceResultPageLocked() {
@@ -2360,6 +2528,57 @@ void F1PageAdapter::ApplyRaceResultPageLocked() {
     }
     if (race_sessions_race_dnf_ != nullptr) {
         lv_label_set_text(race_sessions_race_dnf_, race_result_dnf_.c_str());
+    }
+    ApplyResultRowSelectionLocked();
+}
+
+void F1PageAdapter::ApplyResultRowSelectionLocked() {
+    const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+    for (auto* o : sessions_quali_row_focus_) {
+        if (o != nullptr) {
+            lv_obj_add_flag(o, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+    for (auto* o : sessions_practice_row_focus_) {
+        if (o != nullptr) {
+            lv_obj_add_flag(o, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+
+    if (p == RaceSessionsSubPage::QualiResult) {
+        const int n = static_cast<int>(quali_result_rows_.size());
+        const int start = quali_result_page_ * kSessionsQualiRows;
+        const int count = std::max(0, std::min(kSessionsQualiRows, n - start));
+        if (count <= 0) {
+            return;
+        }
+        if (quali_result_row_focus_ < 0) {
+            quali_result_row_focus_ = 0;
+        }
+        if (quali_result_row_focus_ >= count) {
+            quali_result_row_focus_ = count - 1;
+        }
+        auto* box = sessions_quali_row_focus_[static_cast<size_t>(quali_result_row_focus_)];
+        if (box != nullptr) {
+            lv_obj_clear_flag(box, LV_OBJ_FLAG_HIDDEN);
+        }
+    } else if (p == RaceSessionsSubPage::RaceResult) {
+        const int n = static_cast<int>(race_result_rows_.size());
+        const int start = race_result_page_ * kSessionsPracticeRows;
+        const int count = std::max(0, std::min(kSessionsPracticeRows, n - start));
+        if (count <= 0) {
+            return;
+        }
+        if (race_result_row_focus_ < 0) {
+            race_result_row_focus_ = 0;
+        }
+        if (race_result_row_focus_ >= count) {
+            race_result_row_focus_ = count - 1;
+        }
+        auto* box = sessions_practice_row_focus_[static_cast<size_t>(race_result_row_focus_)];
+        if (box != nullptr) {
+            lv_obj_clear_flag(box, LV_OBJ_FLAG_HIDDEN);
+        }
     }
 }
 
