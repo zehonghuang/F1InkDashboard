@@ -18,11 +18,11 @@ inline int UiPagedListVisibleCount(int total_rows, int page, int rows_per_page) 
 inline bool UiPagedListMoveRowWithAutoPage(int dir,
                                           int total_rows,
                                           int rows_per_page,
-                                          int& page,
                                           int page_count,
                                           int& row_focus,
-                                          bool& page_changed) {
-    page_changed = false;
+                                          int page,
+                                          int& page_dir) {
+    page_dir = 0;
     if (dir != -1 && dir != 1) {
         return false;
     }
@@ -53,10 +53,7 @@ inline bool UiPagedListMoveRowWithAutoPage(int dir,
             return true;
         }
         if (page_count > 1) {
-            page = (page + (page_count - 1)) % page_count;
-            page_changed = true;
-            const int new_count = UiPagedListVisibleCount(total_rows, page, rows_per_page);
-            row_focus = new_count > 0 ? (new_count - 1) : 0;
+            page_dir = -1;
             return true;
         }
         row_focus = count - 1;
@@ -68,8 +65,7 @@ inline bool UiPagedListMoveRowWithAutoPage(int dir,
         return true;
     }
     if (page_count > 1) {
-        page = (page + 1) % page_count;
-        page_changed = true;
+        page_dir = 1;
         row_focus = 0;
         return true;
     }
@@ -78,4 +74,3 @@ inline bool UiPagedListMoveRowWithAutoPage(int dir,
 }
 
 #endif  // UI_PAGED_LIST_NAV_H
-

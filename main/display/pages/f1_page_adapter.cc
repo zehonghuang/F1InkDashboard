@@ -860,15 +860,23 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
             const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
             if (p == RaceSessionsSubPage::QualiResult) {
-                bool page_changed = false;
+                int page_dir = 0;
                 if (UiPagedListMoveRowWithAutoPage(-1,
                                                   static_cast<int>(quali_result_rows_.size()),
                                                   kSessionsQualiRows,
-                                                  quali_result_page_,
                                                   quali_result_page_count_,
                                                   quali_result_row_focus_,
-                                                  page_changed)) {
-                    if (page_changed) {
+                                                  quali_result_page_,
+                                                  page_dir)) {
+                    if (page_dir != 0 && quali_result_page_count_ > 1) {
+                        if (page_dir < 0) {
+                            quali_result_page_ = (quali_result_page_ + (quali_result_page_count_ - 1)) % quali_result_page_count_;
+                            const int cnt = UiPagedListVisibleCount(static_cast<int>(quali_result_rows_.size()), quali_result_page_, kSessionsQualiRows);
+                            quali_result_row_focus_ = cnt > 0 ? (cnt - 1) : 0;
+                        } else {
+                            quali_result_page_ = (quali_result_page_ + 1) % quali_result_page_count_;
+                            quali_result_row_focus_ = 0;
+                        }
                         ApplyQualiResultPageLocked();
                         ApplyRaceSessionsLocked();
                         if (host_ != nullptr) {
@@ -884,15 +892,23 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
                 }
                 return true;
             } else if (p == RaceSessionsSubPage::RaceResult) {
-                bool page_changed = false;
+                int page_dir = 0;
                 if (UiPagedListMoveRowWithAutoPage(-1,
                                                   static_cast<int>(race_result_rows_.size()),
                                                   kSessionsPracticeRows,
-                                                  race_result_page_,
                                                   race_result_page_count_,
                                                   race_result_row_focus_,
-                                                  page_changed)) {
-                    if (page_changed) {
+                                                  race_result_page_,
+                                                  page_dir)) {
+                    if (page_dir != 0 && race_result_page_count_ > 1) {
+                        if (page_dir < 0) {
+                            race_result_page_ = (race_result_page_ + (race_result_page_count_ - 1)) % race_result_page_count_;
+                            const int cnt = UiPagedListVisibleCount(static_cast<int>(race_result_rows_.size()), race_result_page_, kSessionsPracticeRows);
+                            race_result_row_focus_ = cnt > 0 ? (cnt - 1) : 0;
+                        } else {
+                            race_result_page_ = (race_result_page_ + 1) % race_result_page_count_;
+                            race_result_row_focus_ = 0;
+                        }
                         ApplyRaceResultPageLocked();
                         ApplyRaceSessionsLocked();
                         if (host_ != nullptr) {
@@ -919,15 +935,23 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
             const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
             if (p == RaceSessionsSubPage::QualiResult) {
-                bool page_changed = false;
+                int page_dir = 0;
                 if (UiPagedListMoveRowWithAutoPage(1,
                                                   static_cast<int>(quali_result_rows_.size()),
                                                   kSessionsQualiRows,
-                                                  quali_result_page_,
                                                   quali_result_page_count_,
                                                   quali_result_row_focus_,
-                                                  page_changed)) {
-                    if (page_changed) {
+                                                  quali_result_page_,
+                                                  page_dir)) {
+                    if (page_dir != 0 && quali_result_page_count_ > 1) {
+                        if (page_dir < 0) {
+                            quali_result_page_ = (quali_result_page_ + (quali_result_page_count_ - 1)) % quali_result_page_count_;
+                            const int cnt = UiPagedListVisibleCount(static_cast<int>(quali_result_rows_.size()), quali_result_page_, kSessionsQualiRows);
+                            quali_result_row_focus_ = cnt > 0 ? (cnt - 1) : 0;
+                        } else {
+                            quali_result_page_ = (quali_result_page_ + 1) % quali_result_page_count_;
+                            quali_result_row_focus_ = 0;
+                        }
                         ApplyQualiResultPageLocked();
                         ApplyRaceSessionsLocked();
                         if (host_ != nullptr) {
@@ -943,15 +967,23 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
                 }
                 return true;
             } else if (p == RaceSessionsSubPage::RaceResult) {
-                bool page_changed = false;
+                int page_dir = 0;
                 if (UiPagedListMoveRowWithAutoPage(1,
                                                   static_cast<int>(race_result_rows_.size()),
                                                   kSessionsPracticeRows,
-                                                  race_result_page_,
                                                   race_result_page_count_,
                                                   race_result_row_focus_,
-                                                  page_changed)) {
-                    if (page_changed) {
+                                                  race_result_page_,
+                                                  page_dir)) {
+                    if (page_dir != 0 && race_result_page_count_ > 1) {
+                        if (page_dir < 0) {
+                            race_result_page_ = (race_result_page_ + (race_result_page_count_ - 1)) % race_result_page_count_;
+                            const int cnt = UiPagedListVisibleCount(static_cast<int>(race_result_rows_.size()), race_result_page_, kSessionsPracticeRows);
+                            race_result_row_focus_ = cnt > 0 ? (cnt - 1) : 0;
+                        } else {
+                            race_result_page_ = (race_result_page_ + 1) % race_result_page_count_;
+                            race_result_row_focus_ = 0;
+                        }
                         ApplyRaceResultPageLocked();
                         ApplyRaceSessionsLocked();
                         if (host_ != nullptr) {
