@@ -5,6 +5,7 @@
 #include "common/sleep_manager.h"
 #include "board.h"
 #include "system_info.h"
+#include "backend_url.h"
 
 #include <cJSON.h>
 #include <esp_app_desc.h>
@@ -30,10 +31,6 @@ constexpr char kTag[] = "OtaUpdate";
 
 static int64_t NowMs() {
     return esp_timer_get_time() / 1000;
-}
-
-static bool IsHex(char c) {
-    return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 }
 
 static std::string NormalizeUrl(std::string s) {
@@ -223,6 +220,9 @@ bool OtaUpdateService::BuildManifestUrlLocked(std::string& out) {
         base = CONFIG_OTA_URL;
 #endif
     }
+    if (base.empty()) {
+        base = GetBackendBaseUrl();
+    }
     base = NormalizeUrl(base);
     if (base.empty()) {
         return false;
@@ -231,7 +231,11 @@ bool OtaUpdateService::BuildManifestUrlLocked(std::string& out) {
         out = base;
         return true;
     }
-    out = base + "/manifest.json";
+    if (base.size() >= 7 && base.rfind("/update") == base.size() - 7) {
+        out = base + "/manifest.json";
+        return true;
+    }
+    out = base + "/update/manifest.json";
     return true;
 }
 
