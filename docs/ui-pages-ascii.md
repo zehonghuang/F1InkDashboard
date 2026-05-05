@@ -30,39 +30,40 @@ flowchart TD
   Wifi -->|Connected| F1
   Wifi -->|Disconnected/Retry| Wifi
 
-  subgraph Overlay[覆盖层（入栈 PageStack）]
+  subgraph Overlay[覆盖层 入栈PageStack]
     Breaking[BreakingNews]
     Meme[Meme]
   end
 
-  Any((当前页面))
-  Any -->|ShowWsOverlay: text| Breaking
-  Any -->|ShowMemeOverlay: title + png| Meme
+  Any[当前页面]
+  Any -->|ShowWsOverlay text| Breaking
+  Any -->|ShowMemeOverlay title png| Meme
   Breaking -->|Back 或 HideWsOverlayIfVisible| Any
   Meme -->|Back 或 HideWsOverlayIfVisible| Any
 
   NewsWS[WsClientService: News/Meme]
   NewsWS -->|push 文本| Breaking
-  NewsWS -->|push 图片/音频| Meme
+  NewsWS -->|push 图片音频| Meme
 
-  Gallery[Gallery（未注册）]
+  Gallery[Gallery 未注册]
   Gallery -.->|当前不可达：未在 SetupUI 注册且 Id 与 F1 冲突| F1
 ```
 
 ```mermaid
 flowchart LR
   F1[F1 Page]
-  Race[RaceRoot（赛周概览）]
-  Off[OffRoot（休赛周概览）]
+  Race[RaceRoot 赛周概览]
+  Off[OffRoot 休赛周概览]
   WDC[WDC Detail]
   WCC[WCC Detail]
-  Circuit[Circuit（PG 1/2, 2/2）]
-  Sessions[RaceSessions（Result/Live 子页）]
+  Circuit[Circuit PG1-2]
+  Sessions[RaceSessions Result Live Telemetry]
+  Telemetry[Telemetry]
   Live[RaceLive]
-  Menu[Menu Overlay]
+  Menu[Menu]
 
-  F1 -->|root 切换：PagePrev/PageNext| Race
-  F1 -->|root 切换：PagePrev/PageNext| Off
+  F1 -->|root 切换 PagePrev PageNext| Race
+  F1 -->|root 切换 PagePrev PageNext| Off
 
   Race -->|Confirm 进入| Circuit
   Race -->|Confirm 进入| Sessions
@@ -74,11 +75,14 @@ flowchart LR
   WDC -->|ConfirmLongPress 返回| Off
   WCC -->|ConfirmLongPress 返回| Off
   Sessions -->|ConfirmLongPress 返回| Race
-  Sessions -->|自动/事件触发| Live
-  Live -->|返回/切换| Sessions
+  Sessions -->|自动或事件触发| Live
+  Live -->|返回或切换| Sessions
 
-  F1 -->|ComboUpDown 显示/隐藏| Menu
-  Menu -->|ConfirmLongPress/ConfirmClick 退出| F1
+  Sessions -->|Confirm 从 Results 进入| Telemetry
+  Telemetry -->|ConfirmLongPress 返回| Sessions
+
+  F1 -->|ComboUpDown 显示隐藏| Menu
+  Menu -->|ConfirmLongPress 或 ConfirmClick 退出| F1
 ```
 
 ## 1. FactoryTest（工厂测试页）
@@ -286,7 +290,7 @@ Page2：赛道参数列表（长度/圈数/最快圈等）
 
 ### 3.6 RaceSessions（分站 Sessions / Result / Live 组合页）
 
-该视图用“Header + 左右栏 Body + Footer”组织内容，并在内部切换多个子页（排位结果、正赛结果、排位 Live、正赛 Live）。
+该视图用“Header + 左右栏 Body + Footer”组织内容，并在内部切换多个子页（排位结果、正赛结果、排位 Live、正赛 Live、Telemetry 遥测）。
 
 主要 UI 来自：[f1_page_adapter_ui_sessions.cc](file:///c:/Users/GinTonic/Desktop/zectrix/main/display/pages/f1_page_adapter_ui_sessions.cc)
 
@@ -304,6 +308,41 @@ Page2：赛道参数列表（长度/圈数/最快圈等）
 | <ticker/footer>                                                              |
 +------------------------------------------------------------------------------+
 ```
+
+### 3.6.1 Telemetry（Results 选手遥测子页）
+
+进入：RaceSessions 的 QualiResult 或 RaceResult 高亮某一行后按 ConfirmClick  
+退出：Telemetry 子页按 ConfirmLongPress 返回进入前的 Results 子页
+
+代码位置：
+- UI 构建：[f1_page_adapter_ui_telemetry.cc](file:///c:/Users/GinTonic/Desktop/zectrix/main/display/pages/f1_page_adapter_ui_telemetry.cc)
+- 渲染/逻辑：[f1_page_adapter_telemetry.cc](file:///c:/Users/GinTonic/Desktop/zectrix/main/display/pages/f1_page_adapter_telemetry.cc)
+
+```text
++------------------------------------------------------------------------------+
+| [RESULTS] <ACR 或 #NO> - SPEED TELEMETRY                           <batt pct> |
+|------------------------------------------------------------------------------|
+| SPD(km/h)                                                                     |
+| +--------------------------------------------------------------------------+ |
+| | 340 | ************************ (32 cols window)                           | |
+| | 280 | ***************                                                    | |
+| | 200 | ********                                                           | |
+| | 120 | ************                                                       | |
+| +--------------------------------------------------------------------------+ |
+| S1           | S2           | S3                                             |
+| THROTTLE  [  lv_bar 0..100  ]                                           72%  |
+| BRAKE     [  lv_bar 0..100  ]                                           18%  |
+|                                                                              |
+| NO TELEMETRY  无数据时居中显示；收到任一 speed throttle brake 后隐藏             |
+|------------------------------------------------------------------------------|
+| <ticker/footer>                                                              |
++------------------------------------------------------------------------------+
+```
+
+数据更新要点：
+- WS topic：`v1/car_data`（仅匹配选中的 driver_number）
+- speed：48 点滚动窗口；渲染为 4 行阈值图（>=340 / >=280 / >=200 / else）
+- throttle/brake：0..100，显示为 bar + 百分比文本
 
 ### 3.7 RaceLive（正赛 Live 详情页）
 

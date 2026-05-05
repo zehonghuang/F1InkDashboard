@@ -32,6 +32,8 @@ public:
     void MarkCircuitFetchDone();
     void MarkCircuitDetailFetchDone();
     void MarkSessionsFetchDone();
+    void MarkTelemetryAnalysisFetchDone();
+    void MarkTelemetryMetaFetchDone();
 
 private:
     template <typename, typename>
@@ -39,7 +41,7 @@ private:
 
     enum class NavNode : uint8_t { RaceRoot = 0, OffRoot = 1, Wdc = 2, Wcc = 3, Circuit = 4, RaceSessions = 5 };
 
-    enum class RaceSessionsSubPage : uint8_t { QualiResult = 0, RaceResult = 1, QualiLive = 2, RaceLive = 3 };
+    enum class RaceSessionsSubPage : uint8_t { QualiResult = 0, RaceResult = 1, QualiLive = 2, RaceLive = 3, Telemetry = 4 };
 
     static void RefreshTimerCallback(void* arg);
 
@@ -49,10 +51,12 @@ private:
     void BuildWdcDetailLocked();
     void BuildWccDetailLocked();
     void BuildRaceSessionsLocked();
+    void BuildTelemetryLocked();
     void BuildMenuLocked();
     void ApplyViewLocked();
     void StartFetchIfNeededLocked(bool force);
     void StartSessionsFetchIfNeededLocked(bool force);
+    void StartTelemetryAnalysisFetchLocked(bool force);
     void StartCircuitFetchIfNeededLocked(const char* map_url);
     void StartCircuitDetailFetchIfNeededLocked(const char* map_url);
     void ApplyCircuitImageLocked();
@@ -78,6 +82,9 @@ private:
     void ApplyRaceSessionsLocked();
     void ApplyQualiResultPageLocked();
     void ApplyRaceResultPageLocked();
+    void ApplyResultRowSelectionLocked();
+    void ApplyTelemetryLocked();
+    bool SelectTelemetryDriverFromResultLocked(bool from_quali);
     void MaybeAutoEnterRaceLiveLocked();
     int UiNavRootSlotCount(NavNode root);
     int UiNavRootFocus(NavNode root);
@@ -220,6 +227,7 @@ private:
     lv_obj_t* race_sessions_body_right_ = nullptr;
     lv_obj_t* race_sessions_qualifying_body_ = nullptr;
     lv_obj_t* race_sessions_race_result_body_ = nullptr;
+    lv_obj_t* race_sessions_telemetry_body_ = nullptr;
     lv_obj_t* race_sessions_race_dnf_ = nullptr;
     lv_obj_t* race_sessions_practice_left_ = nullptr;
     lv_obj_t* race_sessions_qualifying_left_ = nullptr;
@@ -233,6 +241,7 @@ private:
     lv_obj_t* race_sessions_ticker_ = nullptr;
     lv_obj_t* race_sessions_footer_root_ = nullptr;
     lv_obj_t* race_sessions_no_data_ = nullptr;
+    std::string race_sessions_header_left_text_{};
 
     lv_obj_t* menu_header_left_ = nullptr;
     lv_obj_t* menu_header_right_ = nullptr;
@@ -264,20 +273,62 @@ private:
     static constexpr int kSessionsPracticeRows = 10;
     static constexpr int kSessionsPracticeCols = 6;
     std::array<std::array<lv_obj_t*, kSessionsPracticeCols>, kSessionsPracticeRows> sessions_practice_cells_{};
+    std::array<lv_obj_t*, kSessionsPracticeRows> sessions_practice_row_focus_{};
 
     static constexpr int kSessionsQualiRows = 11;
     static constexpr int kSessionsQualiCols = 7;
     std::array<std::array<lv_obj_t*, kSessionsQualiCols>, kSessionsQualiRows> sessions_quali_cells_{};
+    std::array<lv_obj_t*, kSessionsQualiRows> sessions_quali_row_focus_{};
     lv_obj_t* sessions_drop_zone_ = nullptr;
 
     int quali_result_page_ = 0;
     int quali_result_page_count_ = 1;
     std::vector<std::array<std::string, kSessionsQualiCols>> quali_result_rows_{};
+    int quali_result_row_focus_ = 0;
 
     int race_result_page_ = 0;
     int race_result_page_count_ = 1;
     std::vector<std::array<std::string, kSessionsPracticeCols>> race_result_rows_{};
     std::string race_result_dnf_{};
+    int race_result_row_focus_ = 0;
+
+    int telemetry_driver_no_ = -1;
+    std::string telemetry_driver_acr_{};
+    int telemetry_driver_pos_ = -1;
+    int telemetry_prev_page_ = 0;
+    static constexpr int kTelemetryPoints = 48;
+    std::array<uint16_t, kTelemetryPoints> telemetry_speed_{};
+    int telemetry_speed_count_ = 0;
+    int telemetry_throttle_ = -1;
+    int telemetry_brake_ = -1;
+
+    lv_obj_t* telemetry_title_ = nullptr;
+    lv_obj_t* telemetry_graph_ = nullptr;
+    lv_obj_t* telemetry_meta_ = nullptr;
+    lv_obj_t* telemetry_throttle_bar_ = nullptr;
+    lv_obj_t* telemetry_throttle_value_ = nullptr;
+    lv_obj_t* telemetry_brake_bar_ = nullptr;
+    lv_obj_t* telemetry_brake_value_ = nullptr;
+    lv_obj_t* telemetry_no_data_ = nullptr;
+
+    std::atomic<bool> telemetry_analysis_fetch_inflight_{false};
+    std::atomic<bool> telemetry_meta_fetch_inflight_{false};
+    int64_t last_telemetry_analysis_fetch_ms_ = 0;
+    bool telemetry_analysis_loading_ = false;
+    std::string telemetry_chart_url_{};
+    std::string telemetry_meta_url_{};
+    std::vector<uint8_t> telemetry_chart_bytes_{};
+    int telemetry_chart_w_ = 0;
+    int telemetry_chart_h_ = 0;
+    int telemetry_chart_x_ = 0;
+    int telemetry_chart_y_ = 0;
+
+    int telemetry_meta_lap_number_ = -1;
+    double telemetry_meta_lap_duration_s_ = -1.0;
+    double telemetry_meta_s1_s_ = -1.0;
+    double telemetry_meta_s2_s_ = -1.0;
+    double telemetry_meta_s3_s_ = -1.0;
+    int telemetry_meta_driver_no_ = -1;
 
     std::atomic<bool> sessions_fetch_inflight_{false};
     int64_t last_sessions_fetch_ms_ = 0;

@@ -45,3 +45,11 @@ Desktop.ini
 *.ilk
 *.exp
 *.map
+
+# charts (Vite)
+charts/node_modules/
+charts/dist/
+charts/.vite/
+charts/coverage/
+charts/.env.local
+charts/.env.*.local

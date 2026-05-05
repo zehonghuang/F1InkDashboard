@@ -1,4 +1,5 @@
 import os
+import json
 import hashlib
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
@@ -7,6 +8,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import httpx
 
 from .f1_circuit_assets import pick_circuit_for_race
+from .db_mysql import mysql_connect, mysql_enabled
+from .f1_db_read import openf1_pit_counts_from_db, openf1_quali_sec123_from_db, openf1_session_result_rows_from_db
 
 
 def _parse_ergast_dt(date_s: str, time_s: Optional[str]) -> datetime:
@@ -328,7 +331,7 @@ def _select_race_and_sessions(
             ("SQ", race.get("SprintQualifying") or race.get("SprintShootout")),
             ("SPRINT", race.get("Sprint")),
             ("QUALI", race.get("Qualifying")),
-            ("RACE", {"date": race.get("date"), "time": race.get("time")}),
+            ("RACE", {"date": race.get("date"), "time": race.get("time"), "openf1_session_key": race.get("openf1_race_session_key")}),
         ]
         for key, s in s_map:
             if not isinstance(s, dict):
@@ -339,7 +342,20 @@ def _select_race_and_sessions(
             items.append((dt, key, s))
         items.sort(key=lambda x: x[0])
         for dt, key, _s in items:
-            sessions.append({"key": key, "starts_at_utc": dt.isoformat(), "when": f"{_fmt_day(dt, tz)} {_fmt_hhmm(dt, tz)}"})
+            sess_key = None
+            if isinstance(_s, dict) and _s.get("openf1_session_key") is not None:
+                try:
+                    sess_key = int(_s.get("openf1_session_key"))
+                except Exception:
+                    sess_key = None
+            sessions.append(
+                {
+                    "key": key,
+                    "starts_at_utc": dt.isoformat(),
+                    "when": f"{_fmt_day(dt, tz)} {_fmt_hhmm(dt, tz)}",
+                    "openf1_session_key": sess_key,
+                }
+            )
 
     return race, sessions, tz_name
 
@@ -501,9 +517,15 @@ async def build_sessions_payload(
     country = ((race or {}).get("Circuit") or {}).get("Location", {}).get("country") or ""
 
     starts_at_utc = None
+    openf1_session_key = None
     for it in sessions:
         if (it.get("key") or "").upper() == key:
             starts_at_utc = it.get("starts_at_utc")
+            if it.get("openf1_session_key") is not None:
+                try:
+                    openf1_session_key = int(it.get("openf1_session_key"))
+                except Exception:
+                    openf1_session_key = None
             break
 
     if state in ("pre_event", "no_schedule"):
@@ -566,161 +588,257 @@ async def build_sessions_payload(
     if limit > 30:
         limit = 30
 
-    if kind == "qualifying" and rnd is not None:
-        async def _fetch_quali_rows(round_n: int) -> List[Dict[str, Any]]:
-            data = await ergast_qualifying_results(client, season, int(round_n))
-            races = data.get("MRData", {}).get("RaceTable", {}).get("Races", []) or []
-            qres = (races[0].get("QualifyingResults") or []) if races else []
+    if kind == "qualifying":
+        if openf1_session_key is None:
+            out["no_data"] = True
+            out["message"] = "NO DATA"
+            out["table"] = {"kind": "qualifying", "rows": [], "drop_zone_after_index": None, "q": q}
+            return out
+        if not mysql_enabled():
+            out["no_data"] = True
+            out["message"] = "NO DATA"
+            out["table"] = {"kind": "qualifying", "rows": [], "drop_zone_after_index": None, "q": q}
+            return out
 
-            rows: List[Dict[str, Any]] = []
-            best_ms = None
-            for it in qres:
-                drv = it.get("Driver") or {}
-                code = (drv.get("code") or (drv.get("driverId") or "").upper()[:3]).upper()
-                no = drv.get("permanentNumber") or ""
-                pos = str(it.get("position") or "").zfill(2) if str(it.get("position") or "").isdigit() else str(it.get("position") or "")
-                if int(q) == 1:
-                    lap = it.get("Q1") or ""
-                elif int(q) == 2:
-                    lap = it.get("Q2") or it.get("Q1") or ""
-                else:
-                    lap = it.get("Q3") or it.get("Q2") or it.get("Q1") or ""
-                ms = _parse_lap_time_ms(lap)
-                if best_ms is None and ms is not None:
-                    best_ms = ms
-                gap = _fmt_gap(None if best_ms is None or ms is None else ms - best_ms)
-                if pos in ("01", "1"):
-                    gap = "---"
-                rows.append(
-                    {
-                        "pos": pos,
-                        "no": str(no),
-                        "drv": code,
-                        "lap_time": lap,
-                        "gap": gap,
-                        "st": "---",
-                        "sec123": _sec123_synth(pos),
-                    }
-                )
-                if len(rows) >= limit:
-                    break
-            return rows
+        def _fmt_sec_as_lap(sec: float | None) -> str:
+            if sec is None or not (sec > 0):
+                return ""
+            ms = int(round(float(sec) * 1000.0))
+            total_s = ms // 1000
+            m = total_s // 60
+            s = total_s % 60
+            rem = ms % 1000
+            return f"{m}:{s:02d}.{rem:03d}"
 
-        rows = await _fetch_quali_rows(int(rnd))
-        results_race = {"season": int(season), "round": int(rnd), "name": race_name, "country": country}
+        def _pick_stage(vals: list, stage: int) -> float | None:
+            try:
+                v = vals[stage]
+            except Exception:
+                return None
+            try:
+                return float(v) if v is not None else None
+            except Exception:
+                return None
 
+        def _pick_duration(vals: list) -> float | None:
+            if int(q) == 1:
+                return _pick_stage(vals, 0)
+            if int(q) == 2:
+                return _pick_stage(vals, 1) or _pick_stage(vals, 0)
+            return _pick_stage(vals, 2) or _pick_stage(vals, 1) or _pick_stage(vals, 0)
+
+        def _pick_gap(vals: list) -> float | None:
+            if int(q) == 1:
+                return _pick_stage(vals, 0)
+            if int(q) == 2:
+                return _pick_stage(vals, 1) or _pick_stage(vals, 0)
+            return _pick_stage(vals, 2) or _pick_stage(vals, 1) or _pick_stage(vals, 0)
+
+        conn = mysql_connect()
+        try:
+            rows_db = openf1_session_result_rows_from_db(conn, openf1_session_key)
+            sec123_map = openf1_quali_sec123_from_db(conn, openf1_session_key)
+        finally:
+            conn.close()
+        if not rows_db:
+            out["no_data"] = True
+            out["message"] = "NO DATA"
+            out["table"] = {"kind": "qualifying", "rows": [], "drop_zone_after_index": None, "q": q}
+            return out
+
+        rows: List[Dict[str, Any]] = []
+        for it in rows_db:
+            if not isinstance(it, dict):
+                continue
+            pos_raw = it.get("position")
+            try:
+                pos_i = int(pos_raw) if pos_raw is not None else 0
+            except Exception:
+                pos_i = 0
+            if pos_i <= 0:
+                continue
+            pos = str(pos_i).zfill(2)
+            dn = it.get("driver_number")
+            try:
+                no = str(int(dn)) if dn is not None else ""
+            except Exception:
+                no = ""
+            code = str(it.get("name_acronym") or "").strip().upper() or ""
+
+            dur = it.get("duration_s")
+            gap = it.get("gap_to_leader_s")
+            dur_json = it.get("duration_json")
+            gap_json = it.get("gap_to_leader_json")
+
+            dur_s = float(dur) if isinstance(dur, (int, float)) else None
+            gap_s = float(gap) if isinstance(gap, (int, float)) else None
+            if dur_s is None:
+                try:
+                    vals = json.loads(dur_json) if isinstance(dur_json, (str, bytes, bytearray)) else dur_json
+                except Exception:
+                    vals = None
+                if isinstance(vals, list):
+                    dur_s = _pick_duration(vals)
+            if gap_s is None:
+                try:
+                    vals = json.loads(gap_json) if isinstance(gap_json, (str, bytes, bytearray)) else gap_json
+                except Exception:
+                    vals = None
+                if isinstance(vals, list):
+                    gap_s = _pick_gap(vals)
+
+            lap = _fmt_sec_as_lap(dur_s)
+            gap_txt = "---" if pos in ("01", "1") else (_fmt_gap(None if gap_s is None else int(round(gap_s * 1000.0))))
+
+            rows.append(
+                {
+                    "pos": pos,
+                    "no": no,
+                    "drv": code,
+                    "lap_time": lap,
+                    "gap": gap_txt,
+                    "st": "---",
+                    "sec123": sec123_map.get(int(no), _sec123_synth(pos)) if no.isdigit() else _sec123_synth(pos),
+                }
+            )
+            if len(rows) >= limit:
+                break
+
+        dz_i = None
         if len(rows) >= 10:
-            dz_i = None
             for i, r in enumerate(rows):
                 if r.get("pos") in ("10", "10".zfill(2)):
                     dz_i = i
                     break
-            out["table"] = {"kind": "qualifying", "rows": rows, "drop_zone_after_index": dz_i, "q": q}
-        else:
-            out["table"] = {"kind": "qualifying", "rows": rows, "drop_zone_after_index": None, "q": q}
-        out["results_race"] = results_race
+        out["table"] = {"kind": "qualifying", "rows": rows, "drop_zone_after_index": dz_i, "q": q}
+        out["results_race"] = {"season": int(season), "round": int(rnd) if rnd is not None else None, "name": race_name, "country": country}
         return out
 
-    if kind == "race" and rnd is not None:
-        def _parse_race_time_ms(s: str) -> Optional[int]:
-            s = (s or "").strip()
-            if not s:
-                return None
+    if kind == "race":
+        if openf1_session_key is None:
+            out["no_data"] = True
+            out["message"] = "NO DATA"
+            out["table"] = {"kind": "race", "rows": []}
+            return out
+        if not mysql_enabled():
+            out["no_data"] = True
+            out["message"] = "NO DATA"
+            out["table"] = {"kind": "race", "rows": []}
+            return out
+
+        def _fmt_race_time(sec: float | None) -> str:
+            if sec is None or not (sec > 0):
+                return ""
+            ms = int(round(float(sec) * 1000.0))
+            total_s = ms // 1000
+            h = total_s // 3600
+            m = (total_s % 3600) // 60
+            s = total_s % 60
+            rem = ms % 1000
+            if h > 0:
+                return f"{h}:{m:02d}:{s:02d}.{rem:03d}"
+            return f"{m}:{s:02d}.{rem:03d}"
+
+        conn = mysql_connect()
+        try:
+            rows_db = openf1_session_result_rows_from_db(conn, openf1_session_key)
+            pit_counts = openf1_pit_counts_from_db(conn, openf1_session_key)
+        finally:
+            conn.close()
+        if not rows_db:
+            out["no_data"] = True
+            out["message"] = "NO DATA"
+            out["table"] = {"kind": "race", "rows": []}
+            return out
+
+        rows: List[Dict[str, Any]] = []
+        leader_time = None
+        for it in rows_db:
+            if not isinstance(it, dict):
+                continue
+            if it.get("position") == 1 and isinstance(it.get("duration_s"), (int, float)):
+                leader_time = float(it.get("duration_s"))
+                break
+
+        for it in rows_db:
+            if not isinstance(it, dict):
+                continue
+            pos_raw = it.get("position")
             try:
-                parts = s.split(":")
-                if len(parts) == 3:
-                    h = int(parts[0])
-                    m = int(parts[1])
-                    sec_part = parts[2]
-                elif len(parts) == 2:
-                    h = 0
-                    m = int(parts[0])
-                    sec_part = parts[1]
-                else:
-                    return None
-                if "." in sec_part:
-                    sec_s, ms_s = sec_part.split(".", 1)
-                    sec = int(sec_s)
-                    ms = int((ms_s + "000")[:3])
-                else:
-                    sec = int(sec_part)
-                    ms = 0
-                return ((h * 3600 + m * 60 + sec) * 1000) + ms
+                pos_i = int(pos_raw) if pos_raw is not None else 0
             except Exception:
-                return None
+                pos_i = 0
+            if pos_i <= 0:
+                continue
+            pos = str(pos_i).zfill(2)
+            dn = it.get("driver_number")
+            dn_i = None
+            try:
+                dn_i = int(dn) if dn is not None else None
+            except Exception:
+                dn_i = None
+            no = "" if dn_i is None else str(dn_i)
+            code = str(it.get("name_acronym") or "").strip().upper() or ""
 
-        async def _fetch_race_rows(round_n: int) -> List[Dict[str, Any]]:
-            data = await ergast_race_results(client, season, int(round_n))
-            races = data.get("MRData", {}).get("RaceTable", {}).get("Races", []) or []
-            res = (races[0].get("Results") or []) if races else []
+            status = "Finished"
+            if it.get("dsq") in (1, True):
+                status = "DSQ"
+            elif it.get("dns") in (1, True):
+                status = "DNS"
+            elif it.get("dnf") in (1, True):
+                status = "DNF"
 
-            rows: List[Dict[str, Any]] = []
-            winner_ms = None
-            winner_time = ""
-            if res:
-                t0 = (res[0].get("Time") or {})
-                try:
-                    if t0.get("millis"):
-                        winner_ms = int(t0.get("millis"))
-                except Exception:
-                    winner_ms = None
-                winner_time = (t0.get("time") or "") if isinstance(t0, dict) else ""
-                if not winner_time:
-                    winner_time = res[0].get("status") or ""
-                if winner_ms is None and winner_time:
-                    winner_ms = _parse_race_time_ms(winner_time)
-
-            for it in res:
-                drv = it.get("Driver") or {}
-                code = (drv.get("code") or (drv.get("driverId") or "").upper()[:3]).upper()
-                no = drv.get("permanentNumber") or ""
-                pos = str(it.get("position") or "").zfill(2) if str(it.get("position") or "").isdigit() else str(it.get("position") or "")
-                status = it.get("status") or ""
-                pts = it.get("points") or ""
-                t = (it.get("Time") or {}) if isinstance(it.get("Time"), dict) else {}
-                gap_status = ""
-                if pos in ("01", "1", "P1"):
-                    gap_status = (t.get("time") or "") if isinstance(t, dict) else ""
-                    if not gap_status:
-                        gap_status = winner_time or status
+            dur_s = float(it.get("duration_s")) if isinstance(it.get("duration_s"), (int, float)) else None
+            gap_s = float(it.get("gap_to_leader_s")) if isinstance(it.get("gap_to_leader_s"), (int, float)) else None
+            gap_txt = ""
+            if pos == "01":
+                gap_txt = _fmt_race_time(dur_s) or status
+            else:
+                if gap_s is not None:
+                    gap_txt = f"+{gap_s:.3f}"
                 else:
-                    if isinstance(status, str) and status.startswith("+"):
-                        gap_status = status
-                    elif isinstance(status, str) and status and status != "Finished":
-                        gap_status = status
+                    gap_j = it.get("gap_to_leader_json")
+                    try:
+                        v = json.loads(gap_j) if isinstance(gap_j, (str, bytes, bytearray)) else gap_j
+                    except Exception:
+                        v = None
+                    if isinstance(v, str) and v:
+                        gap_txt = v
+                    elif leader_time is not None and dur_s is not None and dur_s >= leader_time:
+                        gap_txt = f"+{(dur_s - leader_time):.3f}"
                     else:
-                        ms = None
-                        try:
-                            if t.get("millis"):
-                                ms = int(t.get("millis"))
-                        except Exception:
-                            ms = None
-                        if ms is None:
-                            ms = _parse_race_time_ms(t.get("time") or "")
-                        if ms is not None and winner_ms is not None and ms >= winner_ms:
-                            gap_status = f"+{(ms - winner_ms) / 1000.0:.3f}"
-                        else:
-                            gap_status = status
+                        gap_txt = status
 
-                rows.append(
-                    {
-                        "pos": pos,
-                        "no": str(no),
-                        "drv": code,
-                        "gap_status": gap_status,
-                        "status": status,
-                        "pts": str(pts),
-                        "pit": "",
-                    }
-                )
-                if len(rows) >= limit:
-                    break
-            return rows
+            pts = ""
+            ps = it.get("points_start")
+            pc = it.get("points_current")
+            try:
+                if ps is not None and pc is not None:
+                    pts = str(int(round(float(pc) - float(ps))))
+            except Exception:
+                pts = ""
 
-        rows = await _fetch_race_rows(int(rnd))
-        results_race = {"season": int(season), "round": int(rnd), "name": race_name, "country": country}
+            pit = ""
+            if dn_i is not None:
+                pit_n = pit_counts.get(dn_i)
+                pit = "" if pit_n is None else str(int(pit_n))
+
+            rows.append(
+                {
+                    "pos": pos,
+                    "no": no,
+                    "drv": code,
+                    "gap_status": gap_txt,
+                    "status": status,
+                    "pts": pts,
+                    "pit": pit,
+                }
+            )
+            if len(rows) >= limit:
+                break
+
         out["table"] = {"kind": "race", "rows": rows}
-        out["results_race"] = results_race
+        out["results_race"] = {"season": int(season), "round": int(rnd) if rnd is not None else None, "name": race_name, "country": country}
         return out
 
 

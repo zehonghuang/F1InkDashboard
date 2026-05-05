@@ -10,6 +10,7 @@
 #include "pages/f1_page_adapter_common.h"
 #include "pages/f1_page_adapter_net.h"
 #include "pages/f1_page_adapter_payloads.h"
+#include "ui_paged_list_nav.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -830,49 +831,169 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
     }
     if (id == UiPageCustomEventId::PagePrevDoubleClick) {
         if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
-            const int cur = race_sessions_page_;
-            const int next = (cur + 3) % 4;
-            race_sessions_page_ = next;
-            ApplyRaceSessionsLocked();
-            StartSessionsFetchIfNeededLocked(true);
-            if (host_ != nullptr) {
-                host_->RequestUrgentFullRefresh();
+            const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p != RaceSessionsSubPage::Telemetry) {
+                const int cur = race_sessions_page_;
+                const int next = (cur + 3) % 4;
+                race_sessions_page_ = next;
+                ApplyRaceSessionsLocked();
+                StartSessionsFetchIfNeededLocked(true);
+                ApplyResultRowSelectionLocked();
+                if (host_ != nullptr) {
+                    host_->RequestUrgentFullRefresh();
+                }
+                return true;
             }
-            return true;
         }
     }
     if (id == UiPageCustomEventId::PageNextDoubleClick) {
         if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
-            const int cur = race_sessions_page_;
-            const int next = (cur + 1) % 4;
-            race_sessions_page_ = next;
-            ApplyRaceSessionsLocked();
-            StartSessionsFetchIfNeededLocked(true);
-            if (host_ != nullptr) {
-                host_->RequestUrgentFullRefresh();
+            const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p != RaceSessionsSubPage::Telemetry) {
+                const int cur = race_sessions_page_;
+                const int next = (cur + 1) % 4;
+                race_sessions_page_ = next;
+                ApplyRaceSessionsLocked();
+                StartSessionsFetchIfNeededLocked(true);
+                ApplyResultRowSelectionLocked();
+                if (host_ != nullptr) {
+                    host_->RequestUrgentFullRefresh();
+                }
+                return true;
             }
-            return true;
         }
     }
     if (id == UiPageCustomEventId::PagePrev || id == UiPageCustomEventId::GalleryPrev) {
         if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
             const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p == RaceSessionsSubPage::Telemetry) {
+                const bool from_quali = telemetry_prev_page_ == static_cast<int>(RaceSessionsSubPage::QualiResult);
+                int page_dir = 0;
+                if (from_quali) {
+                    (void)UiPagedListMoveRowWithAutoPage(-1,
+                                                        static_cast<int>(quali_result_rows_.size()),
+                                                        kSessionsQualiRows,
+                                                        quali_result_page_count_,
+                                                        quali_result_row_focus_,
+                                                        quali_result_page_,
+                                                        page_dir);
+                    if (page_dir != 0 && quali_result_page_count_ > 1) {
+                        if (page_dir < 0) {
+                            quali_result_page_ = (quali_result_page_ + (quali_result_page_count_ - 1)) % quali_result_page_count_;
+                            const int cnt = UiPagedListVisibleCount(static_cast<int>(quali_result_rows_.size()), quali_result_page_, kSessionsQualiRows);
+                            quali_result_row_focus_ = cnt > 0 ? (cnt - 1) : 0;
+                        } else {
+                            quali_result_page_ = (quali_result_page_ + 1) % quali_result_page_count_;
+                            quali_result_row_focus_ = 0;
+                        }
+                        ApplyQualiResultPageLocked();
+                    }
+                } else {
+                    (void)UiPagedListMoveRowWithAutoPage(-1,
+                                                        static_cast<int>(race_result_rows_.size()),
+                                                        kSessionsPracticeRows,
+                                                        race_result_page_count_,
+                                                        race_result_row_focus_,
+                                                        race_result_page_,
+                                                        page_dir);
+                    if (page_dir != 0 && race_result_page_count_ > 1) {
+                        if (page_dir < 0) {
+                            race_result_page_ = (race_result_page_ + (race_result_page_count_ - 1)) % race_result_page_count_;
+                            const int cnt = UiPagedListVisibleCount(static_cast<int>(race_result_rows_.size()), race_result_page_, kSessionsPracticeRows);
+                            race_result_row_focus_ = cnt > 0 ? (cnt - 1) : 0;
+                        } else {
+                            race_result_page_ = (race_result_page_ + 1) % race_result_page_count_;
+                            race_result_row_focus_ = 0;
+                        }
+                        ApplyRaceResultPageLocked();
+                    }
+                }
+
+                if (SelectTelemetryDriverFromResultLocked(from_quali)) {
+                    telemetry_analysis_loading_ = true;
+                    telemetry_chart_url_.clear();
+                    telemetry_meta_url_.clear();
+                    telemetry_chart_bytes_.clear();
+                    telemetry_meta_lap_number_ = -1;
+                    telemetry_meta_lap_duration_s_ = -1.0;
+                    telemetry_meta_s1_s_ = -1.0;
+                    telemetry_meta_s2_s_ = -1.0;
+                    telemetry_meta_s3_s_ = -1.0;
+                    telemetry_meta_driver_no_ = -1;
+                    StartTelemetryAnalysisFetchLocked(true);
+                    ApplyTelemetryLocked();
+                    ApplyRaceSessionsLocked();
+                    if (host_ != nullptr) {
+                        host_->RequestUrgentFullRefresh();
+                    }
+                }
+                return true;
+            }
             if (p == RaceSessionsSubPage::QualiResult) {
-                if (quali_result_page_count_ > 1) {
-                    quali_result_page_ = (quali_result_page_ + (quali_result_page_count_ - 1)) % quali_result_page_count_;
-                    ApplyQualiResultPageLocked();
+                int page_dir = 0;
+                if (UiPagedListMoveRowWithAutoPage(-1,
+                                                  static_cast<int>(quali_result_rows_.size()),
+                                                  kSessionsQualiRows,
+                                                  quali_result_page_count_,
+                                                  quali_result_row_focus_,
+                                                  quali_result_page_,
+                                                  page_dir)) {
+                    if (page_dir != 0 && quali_result_page_count_ > 1) {
+                        if (page_dir < 0) {
+                            quali_result_page_ = (quali_result_page_ + (quali_result_page_count_ - 1)) % quali_result_page_count_;
+                            const int cnt = UiPagedListVisibleCount(static_cast<int>(quali_result_rows_.size()), quali_result_page_, kSessionsQualiRows);
+                            quali_result_row_focus_ = cnt > 0 ? (cnt - 1) : 0;
+                        } else {
+                            quali_result_page_ = (quali_result_page_ + 1) % quali_result_page_count_;
+                            quali_result_row_focus_ = 0;
+                        }
+                        ApplyQualiResultPageLocked();
+                        ApplyRaceSessionsLocked();
+                        if (host_ != nullptr) {
+                            host_->RequestUrgentFullRefresh();
+                        }
+                    } else {
+                        ApplyResultRowSelectionLocked();
+                        if (host_ != nullptr) {
+                            host_->RequestDebouncedRefresh(150);
+                        }
+                    }
+                    return true;
                 }
+                return true;
             } else if (p == RaceSessionsSubPage::RaceResult) {
-                if (race_result_page_count_ > 1) {
-                    race_result_page_ = (race_result_page_ + (race_result_page_count_ - 1)) % race_result_page_count_;
-                    ApplyRaceResultPageLocked();
+                int page_dir = 0;
+                if (UiPagedListMoveRowWithAutoPage(-1,
+                                                  static_cast<int>(race_result_rows_.size()),
+                                                  kSessionsPracticeRows,
+                                                  race_result_page_count_,
+                                                  race_result_row_focus_,
+                                                  race_result_page_,
+                                                  page_dir)) {
+                    if (page_dir != 0 && race_result_page_count_ > 1) {
+                        if (page_dir < 0) {
+                            race_result_page_ = (race_result_page_ + (race_result_page_count_ - 1)) % race_result_page_count_;
+                            const int cnt = UiPagedListVisibleCount(static_cast<int>(race_result_rows_.size()), race_result_page_, kSessionsPracticeRows);
+                            race_result_row_focus_ = cnt > 0 ? (cnt - 1) : 0;
+                        } else {
+                            race_result_page_ = (race_result_page_ + 1) % race_result_page_count_;
+                            race_result_row_focus_ = 0;
+                        }
+                        ApplyRaceResultPageLocked();
+                        ApplyRaceSessionsLocked();
+                        if (host_ != nullptr) {
+                            host_->RequestUrgentFullRefresh();
+                        }
+                    } else {
+                        ApplyResultRowSelectionLocked();
+                        if (host_ != nullptr) {
+                            host_->RequestDebouncedRefresh(150);
+                        }
+                    }
+                    return true;
                 }
+                return true;
             }
-            ApplyRaceSessionsLocked();
-            if (host_ != nullptr) {
-                host_->RequestDebouncedRefresh(150);
-            }
-            return true;
         }
         nav_.Prev();
         if (host_ != nullptr) {
@@ -883,22 +1004,134 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
     if (id == UiPageCustomEventId::PageNext || id == UiPageCustomEventId::GalleryNext) {
         if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
             const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p == RaceSessionsSubPage::Telemetry) {
+                const bool from_quali = telemetry_prev_page_ == static_cast<int>(RaceSessionsSubPage::QualiResult);
+                int page_dir = 0;
+                if (from_quali) {
+                    (void)UiPagedListMoveRowWithAutoPage(1,
+                                                        static_cast<int>(quali_result_rows_.size()),
+                                                        kSessionsQualiRows,
+                                                        quali_result_page_count_,
+                                                        quali_result_row_focus_,
+                                                        quali_result_page_,
+                                                        page_dir);
+                    if (page_dir != 0 && quali_result_page_count_ > 1) {
+                        if (page_dir < 0) {
+                            quali_result_page_ = (quali_result_page_ + (quali_result_page_count_ - 1)) % quali_result_page_count_;
+                            const int cnt = UiPagedListVisibleCount(static_cast<int>(quali_result_rows_.size()), quali_result_page_, kSessionsQualiRows);
+                            quali_result_row_focus_ = cnt > 0 ? (cnt - 1) : 0;
+                        } else {
+                            quali_result_page_ = (quali_result_page_ + 1) % quali_result_page_count_;
+                            quali_result_row_focus_ = 0;
+                        }
+                        ApplyQualiResultPageLocked();
+                    }
+                } else {
+                    (void)UiPagedListMoveRowWithAutoPage(1,
+                                                        static_cast<int>(race_result_rows_.size()),
+                                                        kSessionsPracticeRows,
+                                                        race_result_page_count_,
+                                                        race_result_row_focus_,
+                                                        race_result_page_,
+                                                        page_dir);
+                    if (page_dir != 0 && race_result_page_count_ > 1) {
+                        if (page_dir < 0) {
+                            race_result_page_ = (race_result_page_ + (race_result_page_count_ - 1)) % race_result_page_count_;
+                            const int cnt = UiPagedListVisibleCount(static_cast<int>(race_result_rows_.size()), race_result_page_, kSessionsPracticeRows);
+                            race_result_row_focus_ = cnt > 0 ? (cnt - 1) : 0;
+                        } else {
+                            race_result_page_ = (race_result_page_ + 1) % race_result_page_count_;
+                            race_result_row_focus_ = 0;
+                        }
+                        ApplyRaceResultPageLocked();
+                    }
+                }
+
+                if (SelectTelemetryDriverFromResultLocked(from_quali)) {
+                    telemetry_analysis_loading_ = true;
+                    telemetry_chart_url_.clear();
+                    telemetry_meta_url_.clear();
+                    telemetry_chart_bytes_.clear();
+                    telemetry_meta_lap_number_ = -1;
+                    telemetry_meta_lap_duration_s_ = -1.0;
+                    telemetry_meta_s1_s_ = -1.0;
+                    telemetry_meta_s2_s_ = -1.0;
+                    telemetry_meta_s3_s_ = -1.0;
+                    telemetry_meta_driver_no_ = -1;
+                    StartTelemetryAnalysisFetchLocked(true);
+                    ApplyTelemetryLocked();
+                    ApplyRaceSessionsLocked();
+                    if (host_ != nullptr) {
+                        host_->RequestUrgentFullRefresh();
+                    }
+                }
+                return true;
+            }
             if (p == RaceSessionsSubPage::QualiResult) {
-                if (quali_result_page_count_ > 1) {
-                    quali_result_page_ = (quali_result_page_ + 1) % quali_result_page_count_;
-                    ApplyQualiResultPageLocked();
+                int page_dir = 0;
+                if (UiPagedListMoveRowWithAutoPage(1,
+                                                  static_cast<int>(quali_result_rows_.size()),
+                                                  kSessionsQualiRows,
+                                                  quali_result_page_count_,
+                                                  quali_result_row_focus_,
+                                                  quali_result_page_,
+                                                  page_dir)) {
+                    if (page_dir != 0 && quali_result_page_count_ > 1) {
+                        if (page_dir < 0) {
+                            quali_result_page_ = (quali_result_page_ + (quali_result_page_count_ - 1)) % quali_result_page_count_;
+                            const int cnt = UiPagedListVisibleCount(static_cast<int>(quali_result_rows_.size()), quali_result_page_, kSessionsQualiRows);
+                            quali_result_row_focus_ = cnt > 0 ? (cnt - 1) : 0;
+                        } else {
+                            quali_result_page_ = (quali_result_page_ + 1) % quali_result_page_count_;
+                            quali_result_row_focus_ = 0;
+                        }
+                        ApplyQualiResultPageLocked();
+                        ApplyRaceSessionsLocked();
+                        if (host_ != nullptr) {
+                            host_->RequestUrgentFullRefresh();
+                        }
+                    } else {
+                        ApplyResultRowSelectionLocked();
+                        if (host_ != nullptr) {
+                            host_->RequestDebouncedRefresh(150);
+                        }
+                    }
+                    return true;
                 }
+                return true;
             } else if (p == RaceSessionsSubPage::RaceResult) {
-                if (race_result_page_count_ > 1) {
-                    race_result_page_ = (race_result_page_ + 1) % race_result_page_count_;
-                    ApplyRaceResultPageLocked();
+                int page_dir = 0;
+                if (UiPagedListMoveRowWithAutoPage(1,
+                                                  static_cast<int>(race_result_rows_.size()),
+                                                  kSessionsPracticeRows,
+                                                  race_result_page_count_,
+                                                  race_result_row_focus_,
+                                                  race_result_page_,
+                                                  page_dir)) {
+                    if (page_dir != 0 && race_result_page_count_ > 1) {
+                        if (page_dir < 0) {
+                            race_result_page_ = (race_result_page_ + (race_result_page_count_ - 1)) % race_result_page_count_;
+                            const int cnt = UiPagedListVisibleCount(static_cast<int>(race_result_rows_.size()), race_result_page_, kSessionsPracticeRows);
+                            race_result_row_focus_ = cnt > 0 ? (cnt - 1) : 0;
+                        } else {
+                            race_result_page_ = (race_result_page_ + 1) % race_result_page_count_;
+                            race_result_row_focus_ = 0;
+                        }
+                        ApplyRaceResultPageLocked();
+                        ApplyRaceSessionsLocked();
+                        if (host_ != nullptr) {
+                            host_->RequestUrgentFullRefresh();
+                        }
+                    } else {
+                        ApplyResultRowSelectionLocked();
+                        if (host_ != nullptr) {
+                            host_->RequestDebouncedRefresh(150);
+                        }
+                    }
+                    return true;
                 }
+                return true;
             }
-            ApplyRaceSessionsLocked();
-            if (host_ != nullptr) {
-                host_->RequestDebouncedRefresh(150);
-            }
-            return true;
         }
         nav_.Next();
         if (host_ != nullptr) {
@@ -924,6 +1157,71 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         return true;
     }
     if (id == UiPageCustomEventId::ConfirmClick) {
+        if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
+            const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p == RaceSessionsSubPage::Telemetry) {
+                if (host_ != nullptr && telemetry_chart_w_ > 0 && telemetry_chart_h_ > 0) {
+                    host_->UpdatePicRegion(telemetry_chart_x_, telemetry_chart_y_, telemetry_chart_w_, telemetry_chart_h_, nullptr, 0);
+                }
+                telemetry_chart_bytes_.clear();
+                race_sessions_page_ = telemetry_prev_page_;
+                if (race_sessions_header_left_ != nullptr && !race_sessions_header_left_text_.empty()) {
+                    SetText(race_sessions_header_left_, race_sessions_header_left_text_.c_str());
+                }
+                ApplyRaceSessionsLocked();
+                ApplyResultRowSelectionLocked();
+                if (host_ != nullptr) {
+                    host_->RequestUrgentFullRefresh();
+                }
+                return true;
+            }
+            if (p == RaceSessionsSubPage::QualiResult) {
+                if (SelectTelemetryDriverFromResultLocked(true)) {
+                    telemetry_prev_page_ = race_sessions_page_;
+                    race_sessions_page_ = static_cast<int>(RaceSessionsSubPage::Telemetry);
+                    telemetry_analysis_loading_ = true;
+                    telemetry_chart_url_.clear();
+                    telemetry_meta_url_.clear();
+                    telemetry_chart_bytes_.clear();
+                    telemetry_meta_lap_number_ = -1;
+                    telemetry_meta_lap_duration_s_ = -1.0;
+                    telemetry_meta_s1_s_ = -1.0;
+                    telemetry_meta_s2_s_ = -1.0;
+                    telemetry_meta_s3_s_ = -1.0;
+                    telemetry_meta_driver_no_ = -1;
+                    StartTelemetryAnalysisFetchLocked(true);
+                    ApplyTelemetryLocked();
+                    ApplyRaceSessionsLocked();
+                    if (host_ != nullptr) {
+                        host_->RequestUrgentFullRefresh();
+                    }
+                }
+                return true;
+            }
+            if (p == RaceSessionsSubPage::RaceResult) {
+                if (SelectTelemetryDriverFromResultLocked(false)) {
+                    telemetry_prev_page_ = race_sessions_page_;
+                    race_sessions_page_ = static_cast<int>(RaceSessionsSubPage::Telemetry);
+                    telemetry_analysis_loading_ = true;
+                    telemetry_chart_url_.clear();
+                    telemetry_meta_url_.clear();
+                    telemetry_chart_bytes_.clear();
+                    telemetry_meta_lap_number_ = -1;
+                    telemetry_meta_lap_duration_s_ = -1.0;
+                    telemetry_meta_s1_s_ = -1.0;
+                    telemetry_meta_s2_s_ = -1.0;
+                    telemetry_meta_s3_s_ = -1.0;
+                    telemetry_meta_driver_no_ = -1;
+                    StartTelemetryAnalysisFetchLocked(true);
+                    ApplyTelemetryLocked();
+                    ApplyRaceSessionsLocked();
+                    if (host_ != nullptr) {
+                        host_->RequestUrgentFullRefresh();
+                    }
+                }
+                return true;
+            }
+        }
         nav_.Enter();
         if (host_ != nullptr) {
             host_->RequestUrgentFullRefresh();
@@ -931,6 +1229,25 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         return true;
     }
     if (id == UiPageCustomEventId::ConfirmLongPress) {
+        if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
+            const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p == RaceSessionsSubPage::Telemetry) {
+                if (host_ != nullptr && telemetry_chart_w_ > 0 && telemetry_chart_h_ > 0) {
+                    host_->UpdatePicRegion(telemetry_chart_x_, telemetry_chart_y_, telemetry_chart_w_, telemetry_chart_h_, nullptr, 0);
+                }
+                telemetry_chart_bytes_.clear();
+                race_sessions_page_ = telemetry_prev_page_;
+                if (race_sessions_header_left_ != nullptr && !race_sessions_header_left_text_.empty()) {
+                    SetText(race_sessions_header_left_, race_sessions_header_left_text_.c_str());
+                }
+                ApplyRaceSessionsLocked();
+                ApplyResultRowSelectionLocked();
+                if (host_ != nullptr) {
+                    host_->RequestUrgentFullRefresh();
+                }
+                return true;
+            }
+        }
         nav_.Back();
         if (host_ != nullptr) {
             host_->RequestUrgentFullRefresh();
@@ -969,6 +1286,95 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         MaybeAutoEnterRaceLiveLocked();
         if (host_ != nullptr) {
             host_->RequestUrgentFullRefresh();
+        }
+        return true;
+    }
+    if (id == UiPageCustomEventId::F1TelemetryAnalysisData) {
+        std::unique_ptr<f1_page_internal::TelemetryChartPayload> payload(
+            static_cast<f1_page_internal::TelemetryChartPayload*>(event.ptr));
+        if (!payload) {
+            return true;
+        }
+        telemetry_analysis_loading_ = false;
+        const size_t expected = static_cast<size_t>((payload->w + 7) >> 3) * static_cast<size_t>(payload->h);
+        if (payload->status == 200 && payload->w > 0 && payload->h > 0 && payload->bytes.size() == expected) {
+            telemetry_chart_url_ = payload->url;
+            telemetry_chart_w_ = payload->w;
+            telemetry_chart_h_ = payload->h;
+            telemetry_chart_bytes_ = std::move(payload->bytes);
+        } else {
+            telemetry_chart_bytes_.clear();
+        }
+        if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
+            const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p == RaceSessionsSubPage::Telemetry) {
+                ApplyTelemetryLocked();
+                ApplyRaceSessionsLocked();
+                if (host_ != nullptr) {
+                    host_->RequestUrgentFullRefresh();
+                }
+            }
+        }
+        return true;
+    }
+    if (id == UiPageCustomEventId::F1TelemetryMetaData) {
+        std::unique_ptr<f1_page_internal::TelemetryMetaPayload> payload(
+            static_cast<f1_page_internal::TelemetryMetaPayload*>(event.ptr));
+        if (!payload) {
+            return true;
+        }
+        if (!telemetry_meta_url_.empty() && payload->url != telemetry_meta_url_) {
+            return true;
+        }
+        telemetry_meta_lap_number_ = -1;
+        telemetry_meta_lap_duration_s_ = -1.0;
+        telemetry_meta_s1_s_ = -1.0;
+        telemetry_meta_s2_s_ = -1.0;
+        telemetry_meta_s3_s_ = -1.0;
+        telemetry_meta_driver_no_ = -1;
+        if (payload->status == 200 && !payload->json.empty()) {
+            cJSON* root = cJSON_ParseWithLength(payload->json.c_str(), payload->json.size());
+            if (root != nullptr) {
+                cJSON* ok = cJSON_GetObjectItemCaseSensitive(root, "ok");
+                cJSON* found = cJSON_GetObjectItemCaseSensitive(root, "found");
+                if (cJSON_IsBool(ok) && cJSON_IsTrue(ok) && cJSON_IsBool(found) && cJSON_IsTrue(found)) {
+                    cJSON* dn = cJSON_GetObjectItemCaseSensitive(root, "driver_number");
+                    cJSON* ln = cJSON_GetObjectItemCaseSensitive(root, "lap_number");
+                    cJSON* dur = cJSON_GetObjectItemCaseSensitive(root, "lap_duration_s");
+                    cJSON* s1 = cJSON_GetObjectItemCaseSensitive(root, "s1_s");
+                    cJSON* s2 = cJSON_GetObjectItemCaseSensitive(root, "s2_s");
+                    cJSON* s3 = cJSON_GetObjectItemCaseSensitive(root, "s3_s");
+                    if (cJSON_IsNumber(dn)) {
+                        telemetry_meta_driver_no_ = static_cast<int>(dn->valuedouble);
+                    }
+                    if (cJSON_IsNumber(ln)) {
+                        telemetry_meta_lap_number_ = static_cast<int>(ln->valuedouble);
+                    }
+                    if (cJSON_IsNumber(dur)) {
+                        telemetry_meta_lap_duration_s_ = static_cast<double>(dur->valuedouble);
+                    }
+                    if (cJSON_IsNumber(s1)) {
+                        telemetry_meta_s1_s_ = static_cast<double>(s1->valuedouble);
+                    }
+                    if (cJSON_IsNumber(s2)) {
+                        telemetry_meta_s2_s_ = static_cast<double>(s2->valuedouble);
+                    }
+                    if (cJSON_IsNumber(s3)) {
+                        telemetry_meta_s3_s_ = static_cast<double>(s3->valuedouble);
+                    }
+                }
+                cJSON_Delete(root);
+            }
+        }
+        if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
+            const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p == RaceSessionsSubPage::Telemetry) {
+                ApplyTelemetryLocked();
+                ApplyRaceSessionsLocked();
+                if (host_ != nullptr) {
+                    host_->RequestUrgentFullRefresh();
+                }
+            }
         }
         return true;
     }
@@ -1787,6 +2193,7 @@ bool F1PageAdapter::ApplySessionsJsonLocked(const char* json_text, size_t len) {
         const std::string name = NormalizeGpName(rn ? rn : "");
         snprintf(left, sizeof(left), "[FINAL] %s", name.c_str());
     }
+    race_sessions_header_left_text_ = left;
     SetText(race_sessions_header_left_, left);
 
     char center[48];
@@ -2133,6 +2540,55 @@ bool F1PageAdapter::ApplyOpenF1WsJsonLocked(const char* json_text, size_t len) {
                 live_best_lap_number_ = lap_no;
             }
         }
+    } else if (strcmp(topic, "v1/car_data") == 0) {
+        const int no = GetIntOrNeg(payload, "driver_number");
+        if (no > 0 && telemetry_driver_no_ > 0 && no == telemetry_driver_no_) {
+            const int speed = GetIntOrNeg(payload, "speed");
+            int throttle = GetIntOrNeg(payload, "throttle");
+            int brake = GetIntOrNeg(payload, "brake");
+            if (throttle < 0) {
+                const double t = GetDoubleOrNeg(payload, "throttle");
+                if (t >= 0) {
+                    throttle = static_cast<int>(t + 0.5);
+                }
+            }
+            if (brake < 0) {
+                const double b = GetDoubleOrNeg(payload, "brake");
+                if (b >= 0) {
+                    brake = static_cast<int>(b + 0.5);
+                }
+            }
+            if (speed >= 0) {
+                if (telemetry_speed_count_ < kTelemetryPoints) {
+                    telemetry_speed_[static_cast<size_t>(telemetry_speed_count_)] = static_cast<uint16_t>(speed);
+                    telemetry_speed_count_++;
+                } else {
+                    for (int i = 1; i < kTelemetryPoints; i++) {
+                        telemetry_speed_[static_cast<size_t>(i - 1)] = telemetry_speed_[static_cast<size_t>(i)];
+                    }
+                    telemetry_speed_[static_cast<size_t>(kTelemetryPoints - 1)] = static_cast<uint16_t>(speed);
+                }
+            }
+            if (throttle >= 0) {
+                if (throttle > 100) {
+                    throttle = 100;
+                }
+                telemetry_throttle_ = throttle;
+            }
+            if (brake >= 0) {
+                if (brake > 100) {
+                    brake = 100;
+                }
+                telemetry_brake_ = brake;
+            }
+            const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+            if (p == RaceSessionsSubPage::Telemetry) {
+                ApplyTelemetryLocked();
+                if (host_ != nullptr) {
+                    host_->RequestDebouncedRefresh(150);
+                }
+            }
+        }
     }
 
     cJSON_Delete(root);
@@ -2356,6 +2812,7 @@ void F1PageAdapter::ApplyQualiResultPageLocked() {
             SetText(sessions_quali_cells_[static_cast<size_t>(slot)][static_cast<size_t>(c)], row[static_cast<size_t>(c)].c_str());
         }
     }
+    ApplyResultRowSelectionLocked();
 }
 
 void F1PageAdapter::ApplyRaceResultPageLocked() {
@@ -2391,6 +2848,57 @@ void F1PageAdapter::ApplyRaceResultPageLocked() {
     }
     if (race_sessions_race_dnf_ != nullptr) {
         lv_label_set_text(race_sessions_race_dnf_, race_result_dnf_.c_str());
+    }
+    ApplyResultRowSelectionLocked();
+}
+
+void F1PageAdapter::ApplyResultRowSelectionLocked() {
+    const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
+    for (auto* o : sessions_quali_row_focus_) {
+        if (o != nullptr) {
+            lv_obj_add_flag(o, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+    for (auto* o : sessions_practice_row_focus_) {
+        if (o != nullptr) {
+            lv_obj_add_flag(o, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+
+    if (p == RaceSessionsSubPage::QualiResult) {
+        const int n = static_cast<int>(quali_result_rows_.size());
+        const int start = quali_result_page_ * kSessionsQualiRows;
+        const int count = std::max(0, std::min(kSessionsQualiRows, n - start));
+        if (count <= 0) {
+            return;
+        }
+        if (quali_result_row_focus_ < 0) {
+            quali_result_row_focus_ = 0;
+        }
+        if (quali_result_row_focus_ >= count) {
+            quali_result_row_focus_ = count - 1;
+        }
+        auto* box = sessions_quali_row_focus_[static_cast<size_t>(quali_result_row_focus_)];
+        if (box != nullptr) {
+            lv_obj_clear_flag(box, LV_OBJ_FLAG_HIDDEN);
+        }
+    } else if (p == RaceSessionsSubPage::RaceResult) {
+        const int n = static_cast<int>(race_result_rows_.size());
+        const int start = race_result_page_ * kSessionsPracticeRows;
+        const int count = std::max(0, std::min(kSessionsPracticeRows, n - start));
+        if (count <= 0) {
+            return;
+        }
+        if (race_result_row_focus_ < 0) {
+            race_result_row_focus_ = 0;
+        }
+        if (race_result_row_focus_ >= count) {
+            race_result_row_focus_ = count - 1;
+        }
+        auto* box = sessions_practice_row_focus_[static_cast<size_t>(race_result_row_focus_)];
+        if (box != nullptr) {
+            lv_obj_clear_flag(box, LV_OBJ_FLAG_HIDDEN);
+        }
     }
 }
 

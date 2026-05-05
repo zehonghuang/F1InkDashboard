@@ -21,6 +21,20 @@ struct CircuitDetailImagePayload {
     std::vector<uint8_t> bytes;
 };
 
+struct TelemetryChartPayload {
+    std::string url;
+    int w = 0;
+    int h = 0;
+    int status = 0;
+    std::vector<uint8_t> bytes;
+};
+
+struct TelemetryMetaPayload {
+    std::string url;
+    int status = 0;
+    std::string json;
+};
+
 }  // namespace f1_page_internal
 
 #endif  // F1_PAGE_ADAPTER_PAYLOADS_H
