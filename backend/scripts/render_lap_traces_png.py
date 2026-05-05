@@ -134,12 +134,18 @@ def render_one(
             continue
         if th is not None:
             try:
-                throttle_pts.append((sx(tt), sy(float(th))))
+                th_f = float(th)
+                if th_f <= 1.0:
+                    th_f *= 100.0
+                throttle_pts.append((sx(tt), sy(th_f)))
             except Exception:
                 pass
         if br is not None:
             try:
-                brake_pts.append((sx(tt), sy(float(br))))
+                br_f = float(br)
+                if br_f <= 1.0:
+                    br_f *= 100.0
+                brake_pts.append((sx(tt), sy(br_f)))
             except Exception:
                 pass
 

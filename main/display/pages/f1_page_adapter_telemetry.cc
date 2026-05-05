@@ -101,7 +101,8 @@ void F1PageAdapter::ApplyTelemetryLocked() {
         SetText(telemetry_title_, "");
     }
 
-    const bool is_miami_quali = (telemetry_meta_url_.find("/static/assets/miami/miami_quali_driver_") != std::string::npos);
+    const bool is_miami_quali = (telemetry_meta_url_.find("/static/assets/miami/miami_quali_driver_") != std::string::npos &&
+                                 telemetry_meta_url_.find("_final.") != std::string::npos);
 
     if (race_sessions_header_left_ != nullptr) {
         SetText(race_sessions_header_left_, "[ANALYSIS]");

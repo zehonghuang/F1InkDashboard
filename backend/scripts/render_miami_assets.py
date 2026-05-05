@@ -187,7 +187,7 @@ def main() -> int:
                 SELECT session_key
                 FROM openf1_sessions
                 WHERE meeting_key = %s
-                  AND (LOWER(session_name) = 'qualifying' OR LOWER(session_type) = 'qualifying')
+                  AND LOWER(session_name) = 'qualifying'
                 ORDER BY date_start_utc DESC
                 LIMIT 1
                 """,
@@ -352,6 +352,149 @@ def main() -> int:
                     "gap_to_leader_s": (float(gap_s) if gap_s is not None else None),
                 }
                 (out_dir / f"miami_quali_driver_{dn_i}_final.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+
+            pos_by_driver: dict[int, int] = {}
+            for it in qrows:
+                if not isinstance(it, dict):
+                    continue
+                dn = it.get("driver_number")
+                pos = it.get("position")
+                if dn is None or pos is None:
+                    continue
+                try:
+                    pos_by_driver[int(dn)] = int(pos)
+                except Exception:
+                    pass
+
+            cur.execute(
+                """
+                SELECT
+                  driver_number,
+                  lap_number,
+                  date_start_utc,
+                  lap_duration,
+                  duration_sector_1,
+                  duration_sector_2,
+                  duration_sector_3
+                FROM openf1_laps
+                WHERE session_key = %s
+                  AND lap_duration IS NOT NULL
+                  AND (is_pit_out_lap = 0 OR is_pit_out_lap IS NULL)
+                ORDER BY driver_number ASC, lap_duration ASC, date_start_utc ASC
+                """,
+                (quali_sk,),
+            )
+            quali_best_by_driver: dict[int, dict[str, Any]] = {}
+            for it in (cur.fetchall() or []):
+                if not isinstance(it, dict):
+                    continue
+                dn = it.get("driver_number")
+                if dn is None:
+                    continue
+                try:
+                    dn_i = int(dn)
+                except Exception:
+                    continue
+                if dn_i in quali_best_by_driver:
+                    continue
+                quali_best_by_driver[dn_i] = it
+
+            q_best_index = {
+                "ok": True,
+                "found": True,
+                "meeting_key": meeting_key,
+                "qualifying_session_key": quali_sk,
+                "drivers": q_driver_numbers,
+            }
+            (out_dir / "miami_quali_driver_best_index.json").write_text(json.dumps(q_best_index, ensure_ascii=False), encoding="utf-8")
+
+            for dn in q_driver_numbers:
+                best = quali_best_by_driver.get(int(dn))
+                if best:
+                    ln = int(best.get("lap_number") or 0)
+                    start_dt = best.get("date_start_utc")
+                    dur = float(best.get("lap_duration") or 0.0)
+                    if not isinstance(start_dt, datetime) or not (dur > 0.01) or ln <= 0:
+                        best = None
+                if not best:
+                    out_png = out_dir / f"miami_quali_driver_{int(dn)}_best.png"
+                    render_one(
+                        driver_number=int(dn),
+                        session_key=quali_sk,
+                        lap_number=0,
+                        duration_s=1.0,
+                        points=[],
+                        out_path=out_png,
+                        canvas_w=960,
+                        canvas_h=480,
+                    )
+                    meta = {
+                        "ok": True,
+                        "found": False,
+                        "meeting_key": meeting_key,
+                        "qualifying_session_key": quali_sk,
+                        "driver_number": int(dn),
+                    }
+                    (out_dir / f"miami_quali_driver_{int(dn)}_best.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+                    continue
+
+                ln = int(best.get("lap_number") or 0)
+                start_dt = best.get("date_start_utc")
+                dur = float(best.get("lap_duration") or 0.0)
+                end_dt = start_dt + timedelta(seconds=dur)
+
+                cur.execute(
+                    """
+                    SELECT date_utc, throttle, brake
+                    FROM openf1_car_data
+                    WHERE session_key = %s AND driver_number = %s
+                      AND date_utc >= %s AND date_utc <= %s
+                    ORDER BY date_utc ASC
+                    """,
+                    (quali_sk, int(dn), start_dt, end_dt),
+                )
+                car = cur.fetchall() or []
+                points: list[dict] = []
+                for it in car:
+                    if not isinstance(it, dict):
+                        continue
+                    dt = it.get("date_utc")
+                    if not isinstance(dt, datetime):
+                        continue
+                    t_s = (dt - start_dt).total_seconds()
+                    if t_s < 0:
+                        continue
+                    points.append({"t_s": float(t_s), "throttle": it.get("throttle"), "brake": it.get("brake")})
+
+                if points and len(points) > int(args.max_points):
+                    step = max(1, len(points) // int(args.max_points))
+                    points = points[::step]
+
+                out_png = out_dir / f"miami_quali_driver_{int(dn)}_best.png"
+                render_one(
+                    driver_number=int(dn),
+                    session_key=quali_sk,
+                    lap_number=ln,
+                    duration_s=dur,
+                    points=points,
+                    out_path=out_png,
+                    canvas_w=960,
+                    canvas_h=480,
+                )
+                meta = {
+                    "ok": True,
+                    "found": True,
+                    "meeting_key": meeting_key,
+                    "qualifying_session_key": quali_sk,
+                    "driver_number": int(dn),
+                    "position": pos_by_driver.get(int(dn)),
+                    "lap_number": ln,
+                    "lap_duration_s": dur,
+                    "s1_s": best.get("duration_sector_1"),
+                    "s2_s": best.get("duration_sector_2"),
+                    "s3_s": best.get("duration_sector_3"),
+                }
+                (out_dir / f"miami_quali_driver_{int(dn)}_best.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
 
             cur.execute(
                 """

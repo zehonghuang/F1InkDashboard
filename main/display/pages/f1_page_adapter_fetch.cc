@@ -433,9 +433,9 @@ void F1PageAdapter::StartTelemetryAnalysisFetchLocked(bool force) {
     const auto prev = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(telemetry_prev_page_));
     if (is_miami && prev == RaceSessionsSubPage::QualiResult) {
         char buf[256];
-        snprintf(buf, sizeof(buf), "%s/static/assets/miami/miami_quali_driver_%d_final.png", base.c_str(), telemetry_driver_no_);
+        snprintf(buf, sizeof(buf), "%s/static/assets/miami/miami_quali_driver_%d_best.png", base.c_str(), telemetry_driver_no_);
         png_url = buf;
-        snprintf(buf, sizeof(buf), "%s/static/assets/miami/miami_quali_driver_%d_final.json", base.c_str(), telemetry_driver_no_);
+        snprintf(buf, sizeof(buf), "%s/static/assets/miami/miami_quali_driver_%d_best.json", base.c_str(), telemetry_driver_no_);
         meta_url = buf;
     } else if (is_miami && prev == RaceSessionsSubPage::RaceResult) {
         char buf[256];
