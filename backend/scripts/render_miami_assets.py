@@ -112,7 +112,7 @@ def _render_quali_table_png(rows: list[dict], out_path: Path, title: str) -> Non
 
 
 def _render_quali_driver_card_png(*, out_path: Path, title: str, pos: str, drv: str, team: str, lap: str, gap: str) -> None:
-    w, h = 1200, 420
+    w, h = 960, 480
     pad = 24
     img = Image.new("RGB", (w, h), (255, 255, 255))
     draw = ImageDraw.Draw(img)
@@ -122,14 +122,15 @@ def _render_quali_driver_card_png(*, out_path: Path, title: str, pos: str, drv: 
     draw.line([(pad, 44), (w - pad, 44)], fill=(30, 30, 30), width=1)
 
     y = 70
+    step = 36
     draw.text((pad, y), f"POS: {pos}", fill=(0, 0, 0), font=font)
-    y += 34
+    y += step
     draw.text((pad, y), f"DRV: {drv}", fill=(0, 0, 0), font=font)
-    y += 34
+    y += step
     draw.text((pad, y), f"TEAM: {team}", fill=(0, 0, 0), font=font)
-    y += 34
+    y += step
     draw.text((pad, y), f"TIME: {lap}", fill=(0, 0, 0), font=font)
-    y += 34
+    y += step
     draw.text((pad, y), f"GAP: {gap}", fill=(0, 0, 0), font=font)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -409,7 +410,16 @@ def main() -> int:
                         best = None
                 if not best:
                     out_png = out_dir / f"miami_race_driver_{int(dn)}_best.png"
-                    render_one(driver_number=int(dn), session_key=race_sk, lap_number=0, duration_s=1.0, points=[], out_path=out_png)
+                    render_one(
+                        driver_number=int(dn),
+                        session_key=race_sk,
+                        lap_number=0,
+                        duration_s=1.0,
+                        points=[],
+                        out_path=out_png,
+                        canvas_w=960,
+                        canvas_h=480,
+                    )
                     meta = {"ok": True, "found": False, "meeting_key": meeting_key, "race_session_key": race_sk, "driver_number": int(dn)}
                     (out_dir / f"miami_race_driver_{int(dn)}_best.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
                     continue
@@ -447,7 +457,16 @@ def main() -> int:
                     points = points[::step]
 
                 out_png = out_dir / f"miami_race_driver_{int(dn)}_best.png"
-                render_one(driver_number=int(dn), session_key=race_sk, lap_number=ln, duration_s=dur, points=points, out_path=out_png)
+                render_one(
+                    driver_number=int(dn),
+                    session_key=race_sk,
+                    lap_number=ln,
+                    duration_s=dur,
+                    points=points,
+                    out_path=out_png,
+                    canvas_w=960,
+                    canvas_h=480,
+                )
                 meta = {
                     "ok": True,
                     "found": True,

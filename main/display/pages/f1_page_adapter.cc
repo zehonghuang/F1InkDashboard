@@ -1296,7 +1296,8 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
             return true;
         }
         telemetry_analysis_loading_ = false;
-        if (payload->status == 200 && payload->w > 0 && payload->h > 0 && !payload->bytes.empty()) {
+        const size_t expected = static_cast<size_t>((payload->w + 7) >> 3) * static_cast<size_t>(payload->h);
+        if (payload->status == 200 && payload->w > 0 && payload->h > 0 && payload->bytes.size() == expected) {
             telemetry_chart_url_ = payload->url;
             telemetry_chart_w_ = payload->w;
             telemetry_chart_h_ = payload->h;

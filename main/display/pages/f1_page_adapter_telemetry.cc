@@ -104,36 +104,37 @@ void F1PageAdapter::ApplyTelemetryLocked() {
     const bool is_miami_quali = (telemetry_meta_url_.find("/static/assets/miami/miami_quali_driver_") != std::string::npos);
 
     if (race_sessions_header_left_ != nullptr) {
-        std::string gp = race_sessions_header_left_text_;
-        const size_t pos = gp.find("] ");
-        if (pos != std::string::npos) {
-            gp = gp.substr(pos + 2);
-        }
-        if (gp.empty()) {
-            gp = "GP";
-        }
-        char buf[96];
-        snprintf(buf, sizeof(buf), "[ANALYSIS] %s", gp.c_str());
-        SetText(race_sessions_header_left_, buf);
+        SetText(race_sessions_header_left_, "[ANALYSIS]");
     }
 
     if (race_sessions_header_center_ != nullptr) {
         char buf[96];
         const char* acr = telemetry_driver_acr_.empty() ? nullptr : telemetry_driver_acr_.c_str();
         const int pos = telemetry_driver_pos_;
+        const int dn = telemetry_driver_no_;
         const int ln = telemetry_meta_lap_number_;
-        if (!is_miami_quali && acr != nullptr && acr[0] && pos > 0 && ln > 0) {
-            snprintf(buf, sizeof(buf), "%s #%02d (LAP %d-FL)", acr, pos, ln);
-        } else if (!is_miami_quali && acr != nullptr && acr[0] && ln > 0) {
-            snprintf(buf, sizeof(buf), "%s (LAP %d-FL)", acr, ln);
-        } else if (!is_miami_quali && telemetry_driver_no_ > 0 && ln > 0) {
-            snprintf(buf, sizeof(buf), "#%d (LAP %d-FL)", telemetry_driver_no_, ln);
+        if (!is_miami_quali && acr != nullptr && acr[0] && dn > 0 && pos > 0 && ln > 0) {
+            snprintf(buf, sizeof(buf), "%s #%02d P%d %d-FL", acr, dn, pos, ln);
+        } else if (!is_miami_quali && acr != nullptr && acr[0] && dn > 0 && ln > 0) {
+            snprintf(buf, sizeof(buf), "%s #%02d %d-FL", acr, dn, ln);
+        } else if (!is_miami_quali && dn > 0 && pos > 0 && ln > 0) {
+            snprintf(buf, sizeof(buf), "#%02d P%d %d-FL", dn, pos, ln);
+        } else if (acr != nullptr && acr[0] && dn > 0 && pos > 0) {
+            snprintf(buf, sizeof(buf), "%s #%02d P%d", acr, dn, pos);
+        } else if (acr != nullptr && acr[0] && dn > 0) {
+            snprintf(buf, sizeof(buf), "%s #%02d", acr, dn);
         } else if (acr != nullptr && acr[0] && pos > 0) {
-            snprintf(buf, sizeof(buf), "%s #%02d", acr, pos);
+            snprintf(buf, sizeof(buf), "%s P%d", acr, pos);
         } else if (acr != nullptr && acr[0]) {
             snprintf(buf, sizeof(buf), "%s", acr);
-        } else if (telemetry_driver_no_ > 0) {
-            snprintf(buf, sizeof(buf), "#%d", telemetry_driver_no_);
+        } else if (dn > 0 && pos > 0 && ln > 0) {
+            snprintf(buf, sizeof(buf), "#%02d P%d %d-FL", dn, pos, ln);
+        } else if (dn > 0 && ln > 0) {
+            snprintf(buf, sizeof(buf), "#%02d %d-FL", dn, ln);
+        } else if (dn > 0 && pos > 0) {
+            snprintf(buf, sizeof(buf), "#%02d P%d", dn, pos);
+        } else if (dn > 0) {
+            snprintf(buf, sizeof(buf), "#%02d", dn);
         } else {
             snprintf(buf, sizeof(buf), "--");
         }
@@ -150,7 +151,7 @@ void F1PageAdapter::ApplyTelemetryLocked() {
         const std::string s2 = FmtClock(telemetry_meta_s2_s_);
         const std::string s3 = FmtClock(telemetry_meta_s3_s_);
         char line[128];
-        snprintf(line, sizeof(line), "TIME: %s | S1: %s | S2: %s | S3: %s", total.c_str(), s1.c_str(), s2.c_str(), s3.c_str());
+        snprintf(line, sizeof(line), "TIME: %s\nS1: %s | S2: %s | S3: %s", total.c_str(), s1.c_str(), s2.c_str(), s3.c_str());
         SetText(telemetry_meta_, line);
         lv_obj_clear_flag(telemetry_meta_, LV_OBJ_FLAG_HIDDEN);
     }
@@ -159,10 +160,18 @@ void F1PageAdapter::ApplyTelemetryLocked() {
     int y = 0;
     int w = 1;
     int h = 1;
-    if (race_sessions_telemetry_body_ != nullptr) {
-        y = static_cast<int>(lv_obj_get_y(race_sessions_telemetry_body_)) + 4;
-        w = static_cast<int>(lv_obj_get_width(race_sessions_telemetry_body_)) - 8;
-        h = static_cast<int>(lv_obj_get_height(race_sessions_telemetry_body_)) - (f1_page_internal::kRowH * 2) - 10;
+    lv_obj_t* box = nullptr;
+    if (telemetry_graph_ != nullptr) {
+        box = lv_obj_get_parent(telemetry_graph_);
+    }
+    if (box != nullptr) {
+        constexpr int kInset = 0;
+        lv_area_t a{};
+        lv_obj_get_coords(box, &a);
+        x = a.x1 + kInset;
+        y = a.y1 + kInset;
+        w = (a.x2 - a.x1 + 1) - kInset * 2;
+        h = (a.y2 - a.y1 + 1) - kInset * 2;
     }
     if (w <= 0) {
         w = 1;
@@ -175,7 +184,16 @@ void F1PageAdapter::ApplyTelemetryLocked() {
     telemetry_chart_w_ = w;
     telemetry_chart_h_ = h;
 
-    const bool has_chart = !telemetry_chart_bytes_.empty();
+    const size_t expected = static_cast<size_t>((w + 7) >> 3) * static_cast<size_t>(h);
+    bool has_chart = !telemetry_chart_bytes_.empty();
+    if (has_chart && telemetry_chart_bytes_.size() != expected) {
+        ESP_LOGW(f1_page_internal::kTag, "telemetry frame size mismatch got=%u exp=%u url=%s",
+                 static_cast<unsigned>(telemetry_chart_bytes_.size()),
+                 static_cast<unsigned>(expected),
+                 telemetry_chart_url_.c_str());
+        telemetry_chart_bytes_.clear();
+        has_chart = false;
+    }
     if (telemetry_graph_ != nullptr) {
         if (telemetry_analysis_loading_) {
             lv_label_set_text(telemetry_graph_, "LOADING CHART...");
@@ -191,9 +209,13 @@ void F1PageAdapter::ApplyTelemetryLocked() {
     if (host_ != nullptr) {
         if (has_chart) {
             host_->UpdatePicRegion(x, y, w, h, telemetry_chart_bytes_.data(), telemetry_chart_bytes_.size());
+            host_->RequestDebouncedRefresh(150);
         } else {
             host_->UpdatePicRegion(x, y, w, h, nullptr, 0);
         }
+    }
+    if (box != nullptr) {
+        lv_obj_invalidate(box);
     }
 
     if (telemetry_no_data_ != nullptr) {

@@ -765,7 +765,7 @@ void F1PageAdapter::ApplyRaceSessionsLocked() {
     }
     char page[32];
     snprintf(page, sizeof(page), "PAGE %d/%d", cur, total);
-    if (race_sessions_ticker_ != nullptr && !show_race_live) {
+    if (race_sessions_ticker_ != nullptr && !show_race_live && !show_telemetry) {
         lv_label_set_text(race_sessions_ticker_, page);
     }
     if (live_page_ != nullptr && show_race_live) {

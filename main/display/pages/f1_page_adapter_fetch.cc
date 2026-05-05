@@ -123,7 +123,7 @@ void TelemetryAnalysisFetchTask(void* arg) {
 
     std::vector<uint8_t> bytes;
     const size_t expected = static_cast<size_t>((a->w + 7) >> 3) * static_cast<size_t>(a->h);
-    const bool ok = HttpGetToBuffer(a->url, bytes, expected);
+    bool ok = HttpGetToBuffer(a->url, bytes, expected);
     const unsigned bytes_n = static_cast<unsigned>(bytes.size());
     ESP_LOGI(kTag, "telemetry chart frame fetched ok=%d bytes=%u url=%s", ok ? 1 : 0, bytes_n, a->url.c_str());
     {
@@ -416,7 +416,11 @@ void F1PageAdapter::StartTelemetryAnalysisFetchLocked(bool force) {
         }
     }
 
-    std::string base = TrimUrl(GetBackendBaseUrl());
+    std::string base = BaseUrlFromApiUrl(api_url_);
+    if (base.empty()) {
+        base = GetBackendBaseUrl();
+    }
+    base = TrimUrl(base);
     if (base.empty()) {
         return;
     }
@@ -450,9 +454,16 @@ void F1PageAdapter::StartTelemetryAnalysisFetchLocked(bool force) {
 
     int w = 0;
     int h = 0;
-    if (race_sessions_telemetry_body_ != nullptr) {
-        w = static_cast<int>(lv_obj_get_width(race_sessions_telemetry_body_)) - 8;
-        h = static_cast<int>(lv_obj_get_height(race_sessions_telemetry_body_)) - (kRowH * 2) - 10;
+    lv_obj_t* box = nullptr;
+    if (telemetry_graph_ != nullptr) {
+        box = lv_obj_get_parent(telemetry_graph_);
+    }
+    if (box != nullptr) {
+        constexpr int kInset = 0;
+        lv_area_t a{};
+        lv_obj_get_coords(box, &a);
+        w = (a.x2 - a.x1 + 1) - kInset * 2;
+        h = (a.y2 - a.y1 + 1) - kInset * 2;
     }
     if (w <= 0) {
         w = 1;
@@ -460,11 +471,17 @@ void F1PageAdapter::StartTelemetryAnalysisFetchLocked(bool force) {
     if (h <= 0) {
         h = 1;
     }
+    if (w > 1200) {
+        w = 1200;
+    }
+    if (h > 1200) {
+        h = 1200;
+    }
 
     char frame_url[512];
     snprintf(frame_url,
              sizeof(frame_url),
-             "%s/api/v1/epd/frame.bin?png_url=%s&w=%d&h=%d&dither=0",
+             "%s/api/v1/epd/frame.bin?png_url=%s&w=%d&h=%d&dither=1",
              base.c_str(),
              png_url.c_str(),
              w,
@@ -550,7 +567,7 @@ void F1PageAdapter::StartCircuitFetchIfNeededLocked(const char* map_url) {
     char frame_url[512];
     snprintf(frame_url,
              sizeof(frame_url),
-             "%s/api/v1/epd/frame.bin?png_url=%s&w=%d&h=%d&dither=0",
+             "%s/api/v1/epd/frame.bin?png_url=%s&w=%d&h=%d&dither=1",
              base.c_str(),
              full.c_str(),
              w,
@@ -618,10 +635,16 @@ void F1PageAdapter::StartCircuitDetailFetchIfNeededLocked(const char* map_url) {
     if (h <= 0) {
         h = 1;
     }
+    if (w > 1200) {
+        w = 1200;
+    }
+    if (h > 1200) {
+        h = 1200;
+    }
     char frame_url[512];
     snprintf(frame_url,
              sizeof(frame_url),
-             "%s/api/v1/epd/frame.bin?png_url=%s&w=%d&h=%d&dither=0",
+             "%s/api/v1/epd/frame.bin?png_url=%s&w=%d&h=%d&dither=1",
              base.c_str(),
              full.c_str(),
              w,

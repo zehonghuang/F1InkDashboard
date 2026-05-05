@@ -86,13 +86,16 @@ def render_one(
     duration_s: float,
     points: list[dict],
     out_path: Path,
+    canvas_w: int = 1200,
+    canvas_h: int = 420,
 ) -> None:
-    w, h = 1200, 420
-    pad = 22
-    top = 46
-    bottom = 62
-    left = 60
-    right = 18
+    w = int(canvas_w)
+    h = int(canvas_h)
+    pad = max(1, int(round(w * 22 / 1200)))
+    top = max(1, int(round(h * 46 / 420)))
+    bottom = max(1, int(round(h * 62 / 420)))
+    left = max(1, int(round(w * 60 / 1200)))
+    right = max(1, int(round(w * 18 / 1200)))
 
     img = Image.new("RGB", (w, h), (255, 255, 255))
     draw = ImageDraw.Draw(img)
@@ -107,7 +110,6 @@ def render_one(
     y1 = h - bottom
 
     _draw_grid(draw, x0, y0, x1, y1)
-    draw.rectangle([x0, y0, x1, y1], outline=(30, 30, 30), width=1)
 
     def sx(t: float) -> float:
         if duration_s <= 0.001:
@@ -154,13 +156,13 @@ def render_one(
         x = int(sx(t))
         draw.text((x - 20, y1 + 12), _fmt_clock(t), fill=(60, 60, 60), font=font)
 
-    draw.text((w // 2 - 10, h - 26), "t (s)", fill=(60, 60, 60), font=font)
+    draw.text((w // 2 - 10, h - max(1, int(round(h * 26 / 420)))), "t (s)", fill=(60, 60, 60), font=font)
 
-    legend_y = h - 44
+    legend_y = h - max(1, int(round(h * 44 / 420)))
     draw.line([(pad, legend_y), (pad + 34, legend_y)], fill=(0, 0, 0), width=2)
     draw.text((pad + 42, legend_y - 7), "Throttle", fill=(60, 60, 60), font=font)
 
-    x2 = pad + 140
+    x2 = pad + max(1, int(round(w * 140 / 1200)))
     _dashed_polyline(draw, [(x2, legend_y), (x2 + 34, legend_y)], (70, 70, 70), 2, dash_len=7.0, gap_len=5.0)
     draw.text((x2 + 42, legend_y - 7), "Brake", fill=(60, 60, 60), font=font)
 
