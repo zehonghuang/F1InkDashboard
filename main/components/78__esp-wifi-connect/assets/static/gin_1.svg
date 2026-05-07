@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#007bff"/>
+      <stop offset="1" stop-color="#7bb6ff"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="640" height="400" rx="24" fill="url(#g)"/>
+  <circle cx="520" cy="110" r="70" fill="#ffffff" opacity="0.22"/>
+  <circle cx="120" cy="310" r="90" fill="#ffffff" opacity="0.16"/>
+  <text x="40" y="120" font-family="Arial, sans-serif" font-size="42" fill="#ffffff">GinTonic Tip</text>
+  <text x="40" y="175" font-family="Arial, sans-serif" font-size="22" fill="#ffffff" opacity="0.92">静态资源示例图片 1 (SVG)</text>
+  <text x="40" y="250" font-family="Arial, sans-serif" font-size="18" fill="#ffffff" opacity="0.85">路径: /static/gin_1.svg</text>
+</svg>

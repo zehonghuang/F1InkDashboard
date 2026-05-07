@@ -1,0 +1,9 @@
+idf_component_register(
+    SRCS
+        "src/u8g2_font_formula1_14_ascii.c"
+        "src/u8g2_font_formula1_16_ascii.c"
+    INCLUDE_DIRS
+        "include"
+    EMBED_TXTFILES
+        "src/Formula1_16_ascii.bdf"
+)

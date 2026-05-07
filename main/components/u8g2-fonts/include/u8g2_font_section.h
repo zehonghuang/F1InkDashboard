@@ -1,0 +1,8 @@
+#ifndef U8G2_FONT_SECTION_H
+#define U8G2_FONT_SECTION_H
+
+#ifndef U8G2_FONT_SECTION
+#define U8G2_FONT_SECTION(name)
+#endif
+
+#endif  // U8G2_FONT_SECTION_H

@@ -1,0 +1,19 @@
+{
+  "idf.pythonInstallPath": "C:\\Espressif\\tools\\python\\v5.4.4\\venv\\Scripts\\python.exe",
+  "idf.espIdfPath": "C:\\esp\\v5.4.4\\esp-idf",
+  "idf.toolsPath": "C:\\Espressif\\tools",
+  "clangd.path": "C:\\Espressif\\tools\\esp-clang\\esp-19.1.2_20250312\\esp-clang\\bin\\clangd.exe",
+  "clangd.arguments": [
+    "--background-index",
+    "--query-driver=**",
+    "--compile-commands-dir=${workspaceFolder}/build"
+  ],
+  "remote.autoForwardPortsFallback": 0,
+  "idf.currentSetup": "C:\\esp\\v5.4.4\\esp-idf",
+  "idf.openOcdConfigs": [
+    "board/esp32s3-builtin.cfg"
+  ],
+  "idf.customExtraVars": {
+    "IDF_TARGET": "esp32s3"
+  }
+}
