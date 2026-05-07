@@ -907,6 +907,14 @@ func toInt(v any) (int, bool) {
 		return int(x), true
 	case int64:
 		return int(x), true
+	case uint:
+		return int(x), true
+	case uint16:
+		return int(x), true
+	case uint32:
+		return int(x), true
+	case uint64:
+		return int(x), true
 	case float64:
 		return int(x), true
 	case []byte:
@@ -942,6 +950,12 @@ func toFloat(v any) (*float64, bool) {
 		f := float64(x)
 		return &f, true
 	case int64:
+		f := float64(x)
+		return &f, true
+	case uint:
+		f := float64(x)
+		return &f, true
+	case uint64:
 		f := float64(x)
 		return &f, true
 	case []byte:
