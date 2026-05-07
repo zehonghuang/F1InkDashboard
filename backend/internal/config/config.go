@@ -17,10 +17,11 @@ type MySQLConfig struct {
 }
 
 type Config struct {
-	ListenAddr string
-	StaticDir  string
-	UpdateDir  string
+	ListenAddr     string
+	StaticDir      string
+	UpdateDir      string
 	TrustedProxies []string
+	LogRequests    bool
 
 	MySQL MySQLConfig
 
@@ -44,6 +45,7 @@ func FromEnv() Config {
 		StaticDir:         staticDir,
 		UpdateDir:         updateDir,
 		TrustedProxies:    parseTrustedProxies(os.Getenv("BACKEND_TRUSTED_PROXIES")),
+		LogRequests:       getenvBool("BACKEND_LOG_REQUESTS", true),
 		MySQL:             mysqlFromEnv(),
 		NewsWsEnabled:     getenvBool("NEWS_WS_ENABLED", false),
 		NewsIngestToken:   getenvTrim("NEWS_INGEST_TOKEN", ""),

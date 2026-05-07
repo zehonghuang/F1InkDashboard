@@ -21,6 +21,8 @@ go run ./cmd/server
 - `BACKEND_STATIC_DIR`（默认 `./static`）
 - `BACKEND_UPDATE_DIR`（默认 `./static/update`）
 - `BACKEND_TRUSTED_PROXIES`（默认 `127.0.0.1,::1`；设为 `all` 表示信任所有代理）
+- `BACKEND_LOG_REQUESTS`（默认 `1`）
+- `BACKEND_LOG_OUTGOING_HTTP`（默认 `1`）
 
 Python 版本后端代码仍保留在 `backend/app/` 目录中，便于对照迁移，但以 Go 服务为准。
 

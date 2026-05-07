@@ -34,6 +34,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 
 	s.Router.Use(gin.Recovery())
 	_ = s.Router.SetTrustedProxies(cfg.TrustedProxies)
+	s.Router.Use(RequestLogger(cfg.LogRequests))
 
 	s.Router.GET("/health", handlers.Health())
 
