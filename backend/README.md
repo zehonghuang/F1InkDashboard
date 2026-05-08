@@ -12,10 +12,19 @@
 
 ```bash
 cd backend
-python -m venv .venv
-.venv/Scripts/pip install -r requirements.txt
-.venv/Scripts/uvicorn app.main:app --host 0.0.0.0 --port 8008
+go run ./cmd/server
 ```
+
+默认监听 `:8008`。可通过环境变量调整：
+
+- `BACKEND_LISTEN_ADDR`（默认 `:8008`）
+- `BACKEND_STATIC_DIR`（默认 `./static`）
+- `BACKEND_UPDATE_DIR`（默认 `./static/update`）
+- `BACKEND_TRUSTED_PROXIES`（默认 `127.0.0.1,::1`；设为 `all` 表示信任所有代理）
+- `BACKEND_LOG_REQUESTS`（默认 `1`）
+- `BACKEND_LOG_OUTGOING_HTTP`（默认 `1`）
+
+Python 版本后端代码仍保留在 `backend/app/` 目录中，便于对照迁移，但以 Go 服务为准。
 
 ## API
 
@@ -42,7 +51,8 @@ python -m venv .venv
 
 可选参数：
 
-- `tz`：时区，默认 `Asia/Bahrain`
+- `tz`：时区，默认 `Asia/Shanghai`
+- `include_circuit`：是否包含赛道资产，默认 `true`
 
 UI 直用接口额外字段：
 
@@ -136,7 +146,7 @@ set OPENF1_ENABLED=1
 set OPENF1_INGEST_TOKEN=devtoken
 ```
 
-注意：这些环境变量是在后端进程启动时读取的；修改后需要重启 uvicorn 进程才会生效。
+注意：这些环境变量是在后端进程启动时读取的；修改后需要重启后端进程才会生效。
 
 推送频率控制：
 
@@ -160,7 +170,7 @@ cd backend
 ## News WS Mock
 
 用于“突发新闻”推送的 WS：客户端订阅 `WS /ws/news`，后端推送 topic=`v1/breaking` 的消息。
-也支持 topic=`v1/meme`（payload.image + payload.audio，均为 base64）。
+也支持 topic=`v1/meme`（payload.image + payload.audio，通过 URL 引用静态资源，不内联 base64）。
 
 启用：
 

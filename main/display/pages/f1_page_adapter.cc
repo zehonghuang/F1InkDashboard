@@ -706,6 +706,14 @@ void F1PageAdapter::Build() {
     UpdateMenuStatusLocked();
     SetRootVisible(menu_root_, false);
 
+    quick_switch_root_ = lv_obj_create(screen_);
+    lv_obj_set_size(quick_switch_root_, kPageWidth, kPageHeight);
+    lv_obj_align(quick_switch_root_, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_border_width(quick_switch_root_, 0, 0);
+    lv_obj_set_style_pad_all(quick_switch_root_, 0, 0);
+    BuildQuickSwitchLocked();
+    SetRootVisible(quick_switch_root_, false);
+
     (void)text_font;
     (void)small_font;
 
@@ -733,8 +741,89 @@ void F1PageAdapter::OnShow() {
 
 void F1PageAdapter::OnHide() {
     active_ = false;
+    menu_visible_ = false;
+    quick_switch_visible_ = false;
+    SetRootVisible(menu_root_, false);
+    SetRootVisible(quick_switch_root_, false);
+    if (host_ != nullptr) {
+        host_->SetPicOverlayExcludeRect(false, 0, 0, 0, 0);
+    }
     if (refresh_timer_ != nullptr) {
         (void)esp_timer_stop(refresh_timer_);
+    }
+}
+
+void F1PageAdapter::UpdateOverlayZLocked() {
+    enum {
+        LEVEL_BASE = 0,
+        LEVEL_PIC = 5,
+        LEVEL_MENU = 10,
+        LEVEL_ALARM = 20,
+        LEVEL_QUICK_SWITCH = 30,
+    };
+
+    struct OverlayItem {
+        enum class Kind : uint8_t { Lvgl = 0, Pic = 1 };
+        Kind kind = Kind::Lvgl;
+        lv_obj_t* root = nullptr;
+        lv_obj_t* blocker = nullptr;
+        int level = 0;
+        bool visible = false;
+        bool fullscreen = false;
+    };
+
+    OverlayItem items[3] = {
+        {OverlayItem::Kind::Pic, nullptr, nullptr, LEVEL_PIC, (host_ != nullptr && host_->HasPicContent()), false},
+        {OverlayItem::Kind::Lvgl, menu_root_, nullptr, LEVEL_MENU, menu_visible_, true},
+        {OverlayItem::Kind::Lvgl, quick_switch_root_, quick_switch_box_, LEVEL_QUICK_SWITCH, quick_switch_visible_, false},
+    };
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = i + 1; j < 3; j++) {
+            if (items[i].level > items[j].level) {
+                OverlayItem t = items[i];
+                items[i] = items[j];
+                items[j] = t;
+            }
+        }
+    }
+
+    OverlayItem* top_block = nullptr;
+    for (auto& it : items) {
+        if (it.kind != OverlayItem::Kind::Lvgl || !it.visible) {
+            continue;
+        }
+        if (it.level <= LEVEL_PIC) {
+            continue;
+        }
+        if (top_block == nullptr || it.level > top_block->level) {
+            top_block = &it;
+        }
+    }
+
+    if (host_ != nullptr) {
+        if (top_block != nullptr) {
+            if (top_block->fullscreen) {
+                host_->SetPicOverlayExcludeRect(true, 0, 0, host_->width(), host_->height());
+            } else if (top_block->blocker != nullptr) {
+                lv_area_t a{};
+                lv_obj_get_coords(top_block->blocker, &a);
+                host_->SetPicOverlayExcludeRect(true, a.x1, a.y1, (a.x2 - a.x1 + 1), (a.y2 - a.y1 + 1));
+            } else {
+                host_->SetPicOverlayExcludeRect(false, 0, 0, 0, 0);
+            }
+        } else {
+            host_->SetPicOverlayExcludeRect(false, 0, 0, 0, 0);
+        }
+    }
+
+    for (const auto& it : items) {
+        if (it.kind != OverlayItem::Kind::Lvgl) {
+            continue;
+        }
+        if (it.visible && it.root != nullptr) {
+            lv_obj_move_foreground(it.root);
+        }
     }
 }
 
@@ -743,9 +832,84 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         return false;
     }
     const auto id = static_cast<UiPageCustomEventId>(event.i32);
+    if (id == UiPageCustomEventId::QuickSwitchShow) {
+        if (menu_visible_) {
+            menu_visible_ = false;
+            SetRootVisible(menu_root_, false);
+        }
+        quick_switch_visible_ = !quick_switch_visible_;
+        SetRootVisible(quick_switch_root_, quick_switch_visible_);
+        UpdateOverlayZLocked();
+        if (quick_switch_visible_) {
+            const NavNode cur = nav_.IsAtRoot() ? nav_.Root() : nav_.Current();
+            int f = 0;
+            if (cur == NavNode::OffRoot) {
+                f = 1;
+            } else if (cur == NavNode::Wdc) {
+                f = 2;
+            } else if (cur == NavNode::Wcc) {
+                f = 3;
+            } else if (cur == NavNode::Circuit) {
+                f = 4;
+            } else if (cur == NavNode::RaceSessions) {
+                f = 5;
+            }
+            quick_switch_focus_ = f;
+            ApplyQuickSwitchSelectionLocked();
+        }
+        if (host_ != nullptr) {
+            host_->RequestUrgentFullRefresh();
+        }
+        return true;
+    }
+    if (quick_switch_visible_) {
+        if (id == UiPageCustomEventId::PagePrev || id == UiPageCustomEventId::GalleryPrev) {
+            quick_switch_focus_--;
+            if (quick_switch_focus_ < 0) {
+                quick_switch_focus_ = static_cast<int>(quick_switch_item_boxes_.size()) - 1;
+            }
+            ApplyQuickSwitchSelectionLocked();
+            if (host_ != nullptr) {
+                host_->RequestDebouncedRefresh(150);
+            }
+            return true;
+        }
+        if (id == UiPageCustomEventId::PageNext || id == UiPageCustomEventId::GalleryNext) {
+            quick_switch_focus_++;
+            if (quick_switch_focus_ >= static_cast<int>(quick_switch_item_boxes_.size())) {
+                quick_switch_focus_ = 0;
+            }
+            ApplyQuickSwitchSelectionLocked();
+            if (host_ != nullptr) {
+                host_->RequestDebouncedRefresh(150);
+            }
+            return true;
+        }
+        if (id == UiPageCustomEventId::ConfirmLongPress) {
+            quick_switch_visible_ = false;
+            SetRootVisible(quick_switch_root_, false);
+            UpdateOverlayZLocked();
+            if (host_ != nullptr) {
+                host_->RequestUrgentFullRefresh();
+            }
+            return true;
+        }
+        if (id == UiPageCustomEventId::ConfirmClick) {
+            ActivateQuickSwitchTargetLocked(quick_switch_focus_);
+            quick_switch_visible_ = false;
+            SetRootVisible(quick_switch_root_, false);
+            UpdateOverlayZLocked();
+            if (host_ != nullptr) {
+                host_->RequestUrgentFullRefresh();
+            }
+            return true;
+        }
+        return true;
+    }
     if (id == UiPageCustomEventId::ComboUpDown) {
         menu_visible_ = !menu_visible_;
         SetRootVisible(menu_root_, menu_visible_);
+        UpdateOverlayZLocked();
         if (menu_visible_) {
             UpdateMenuStatusLocked();
             ApplyMenuSelectionLocked();
@@ -785,6 +949,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         if (id == UiPageCustomEventId::ConfirmLongPress) {
             menu_visible_ = false;
             SetRootVisible(menu_root_, false);
+            UpdateOverlayZLocked();
             ApplyCircuitImageLocked();
             ApplyCircuitDetailImageLocked();
             if (host_ != nullptr) {
@@ -811,6 +976,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
             }
             menu_visible_ = false;
             SetRootVisible(menu_root_, false);
+            UpdateOverlayZLocked();
             if (host_ != nullptr) {
                 host_->RequestUrgentFullRefresh();
             }

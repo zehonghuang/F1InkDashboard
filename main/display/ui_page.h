@@ -34,6 +34,7 @@ enum class UiPageCustomEventId : int32_t {
     ComboUpConfirm = 121,
     ComboDownConfirm = 122,
     ComboAll = 123,
+    QuickSwitchShow = 130,
     F1Data = 200,
     F1Tick = 201,
     F1CircuitImage = 202,
