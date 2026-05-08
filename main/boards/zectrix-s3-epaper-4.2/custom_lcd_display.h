@@ -54,6 +54,7 @@ public:
     void UpdatePicRegion(int x, int y, int w, int h, const uint8_t* data, size_t len) override;
     bool HasPicContent() const override;
     void ClearPic() override;
+    void SetPicOverlayExcludeRect(bool enabled, int x, int y, int w, int h) override;
 
     void EPD_Init();
     void EPD_Clear();
@@ -90,6 +91,8 @@ private:
     uint8_t *pic_buf     = nullptr;
     uint8_t *pic_mask    = nullptr;
     bool pic_has_content_ = false;
+    bool pic_exclude_enabled_ = false;
+    Rect pic_exclude_rect_{};
 
     // LVGL
     static void lvgl_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *color_p);

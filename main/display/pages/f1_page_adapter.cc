@@ -745,9 +745,61 @@ void F1PageAdapter::OnHide() {
     quick_switch_visible_ = false;
     SetRootVisible(menu_root_, false);
     SetRootVisible(quick_switch_root_, false);
+    if (host_ != nullptr) {
+        host_->SetPicOverlayExcludeRect(false, 0, 0, 0, 0);
+    }
     if (refresh_timer_ != nullptr) {
         (void)esp_timer_stop(refresh_timer_);
     }
+}
+
+void F1PageAdapter::UpdateOverlayZLocked() {
+    enum {
+        LEVEL_BASE = 0,
+        LEVEL_MENU = 10,
+        LEVEL_ALARM = 20,
+        LEVEL_QUICK_SWITCH = 30,
+    };
+
+    struct OverlayItem {
+        lv_obj_t* root = nullptr;
+        int level = 0;
+        bool visible = false;
+    };
+
+    OverlayItem items[2] = {
+        {menu_root_, LEVEL_MENU, menu_visible_},
+        {quick_switch_root_, LEVEL_QUICK_SWITCH, quick_switch_visible_},
+    };
+
+    if (items[0].level > items[1].level) {
+        OverlayItem t = items[0];
+        items[0] = items[1];
+        items[1] = t;
+    }
+
+    for (const auto& it : items) {
+        if (it.visible && it.root != nullptr) {
+            lv_obj_move_foreground(it.root);
+        }
+    }
+}
+
+static void UpdatePicOverlayExcludeRect(LcdDisplay* host, lv_obj_t* overlay_box, bool overlay_visible, bool fullscreen_visible) {
+    if (host == nullptr) {
+        return;
+    }
+    if (overlay_visible && overlay_box != nullptr) {
+        lv_area_t a{};
+        lv_obj_get_coords(overlay_box, &a);
+        host->SetPicOverlayExcludeRect(true, a.x1, a.y1, (a.x2 - a.x1 + 1), (a.y2 - a.y1 + 1));
+        return;
+    }
+    if (fullscreen_visible) {
+        host->SetPicOverlayExcludeRect(true, 0, 0, host->width(), host->height());
+        return;
+    }
+    host->SetPicOverlayExcludeRect(false, 0, 0, 0, 0);
 }
 
 bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
@@ -762,6 +814,8 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         }
         quick_switch_visible_ = !quick_switch_visible_;
         SetRootVisible(quick_switch_root_, quick_switch_visible_);
+        UpdateOverlayZLocked();
+        UpdatePicOverlayExcludeRect(host_, quick_switch_box_, quick_switch_visible_, menu_visible_);
         if (quick_switch_visible_) {
             const NavNode cur = nav_.IsAtRoot() ? nav_.Root() : nav_.Current();
             int f = 0;
@@ -810,6 +864,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         if (id == UiPageCustomEventId::ConfirmLongPress) {
             quick_switch_visible_ = false;
             SetRootVisible(quick_switch_root_, false);
+            UpdatePicOverlayExcludeRect(host_, quick_switch_box_, quick_switch_visible_, menu_visible_);
             if (host_ != nullptr) {
                 host_->RequestUrgentFullRefresh();
             }
@@ -819,6 +874,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
             ActivateQuickSwitchTargetLocked(quick_switch_focus_);
             quick_switch_visible_ = false;
             SetRootVisible(quick_switch_root_, false);
+            UpdatePicOverlayExcludeRect(host_, quick_switch_box_, quick_switch_visible_, menu_visible_);
             if (host_ != nullptr) {
                 host_->RequestUrgentFullRefresh();
             }
@@ -829,6 +885,8 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
     if (id == UiPageCustomEventId::ComboUpDown) {
         menu_visible_ = !menu_visible_;
         SetRootVisible(menu_root_, menu_visible_);
+        UpdateOverlayZLocked();
+        UpdatePicOverlayExcludeRect(host_, quick_switch_box_, quick_switch_visible_, menu_visible_);
         if (menu_visible_) {
             UpdateMenuStatusLocked();
             ApplyMenuSelectionLocked();
@@ -868,6 +926,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         if (id == UiPageCustomEventId::ConfirmLongPress) {
             menu_visible_ = false;
             SetRootVisible(menu_root_, false);
+            UpdatePicOverlayExcludeRect(host_, quick_switch_box_, quick_switch_visible_, menu_visible_);
             ApplyCircuitImageLocked();
             ApplyCircuitDetailImageLocked();
             if (host_ != nullptr) {
@@ -894,6 +953,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
             }
             menu_visible_ = false;
             SetRootVisible(menu_root_, false);
+            UpdatePicOverlayExcludeRect(host_, quick_switch_box_, quick_switch_visible_, menu_visible_);
             if (host_ != nullptr) {
                 host_->RequestUrgentFullRefresh();
             }

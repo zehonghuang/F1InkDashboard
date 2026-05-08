@@ -77,6 +77,15 @@ public:
     // 清空所有图片 overlay（默认无）
     virtual void ClearPic() {}
 
+    // 设置图片 overlay 的“排除区域”：该区域内不覆盖 LVGL 输出（默认无）
+    virtual void SetPicOverlayExcludeRect(bool enabled, int x, int y, int w, int h) {
+        (void)enabled;
+        (void)x;
+        (void)y;
+        (void)w;
+        (void)h;
+    }
+
     inline int width() const { return width_; }
     inline int height() const { return height_; }
 

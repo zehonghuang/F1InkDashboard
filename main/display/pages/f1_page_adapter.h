@@ -96,6 +96,7 @@ private:
     void UiNavNext(NavNode node);
     void UiNavActivate(NavNode node);
     void ActivateQuickSwitchTargetLocked(int target_index);
+    void UpdateOverlayZLocked();
 
     LcdDisplay* host_ = nullptr;
     bool built_ = false;
@@ -264,6 +265,7 @@ private:
     static constexpr int kQuickSwitchItems = 6;
     lv_obj_t* quick_switch_box_ = nullptr;
     lv_obj_t* quick_switch_title_ = nullptr;
+    lv_obj_t* quick_switch_body_ = nullptr;
     lv_obj_t* quick_switch_footer_ = nullptr;
     std::array<lv_obj_t*, kQuickSwitchItems> quick_switch_item_boxes_{};
     std::array<lv_obj_t*, kQuickSwitchItems> quick_switch_item_labels_{};

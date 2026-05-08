@@ -222,10 +222,15 @@ void CustomLcdDisplay::lvgl_flush_cb(lv_display_t *disp, const lv_area_t *area, 
     }
 
     if (driver->pic_has_content_ && driver->pic_buf != nullptr && driver->pic_mask != nullptr) {
+        const bool exclude = driver->pic_exclude_enabled_;
+        const Rect ex = driver->pic_exclude_rect_;
         for (int yy = 0; yy < h; yy++) {
             const int y = y1 + yy;
             for (int xx = 0; xx < w; xx++) {
                 const int x = x1 + xx;
+                if (exclude && x >= ex.x && x < (ex.x + ex.w) && y >= ex.y && y < (ex.y + ex.h)) {
+                    continue;
+                }
                 if (get_pixel_1bpp(driver->pic_mask, driver->Width, x, y)) {
                     const bool white = get_pixel_1bpp(driver->pic_buf, driver->Width, x, y);
                     set_pixel_1bpp(driver->buffer, driver->Width, x, y, white);
@@ -349,6 +354,50 @@ void CustomLcdDisplay::UpdatePicRegion(int x, int y, int w, int h, const uint8_t
         }
     }
 
+    if (dirty_mutex) {
+        xSemaphoreGive(dirty_mutex);
+    }
+}
+
+void CustomLcdDisplay::SetPicOverlayExcludeRect(bool enabled, int x, int y, int w, int h) {
+    if (dirty_mutex) {
+        xSemaphoreTake(dirty_mutex, portMAX_DELAY);
+    }
+    if (!enabled || w <= 0 || h <= 0) {
+        pic_exclude_enabled_ = false;
+        pic_exclude_rect_ = Rect{0, 0, 0, 0};
+        if (dirty_mutex) {
+            xSemaphoreGive(dirty_mutex);
+        }
+        return;
+    }
+
+    Rect r{x, y, w, h};
+    if (r.x < 0) {
+        r.w += r.x;
+        r.x = 0;
+    }
+    if (r.y < 0) {
+        r.h += r.y;
+        r.y = 0;
+    }
+    if (r.x + r.w > Width) {
+        r.w = Width - r.x;
+    }
+    if (r.y + r.h > Height) {
+        r.h = Height - r.y;
+    }
+    if (r.w <= 0 || r.h <= 0) {
+        pic_exclude_enabled_ = false;
+        pic_exclude_rect_ = Rect{0, 0, 0, 0};
+        if (dirty_mutex) {
+            xSemaphoreGive(dirty_mutex);
+        }
+        return;
+    }
+
+    pic_exclude_enabled_ = true;
+    pic_exclude_rect_ = r;
     if (dirty_mutex) {
         xSemaphoreGive(dirty_mutex);
     }
