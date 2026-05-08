@@ -756,50 +756,75 @@ void F1PageAdapter::OnHide() {
 void F1PageAdapter::UpdateOverlayZLocked() {
     enum {
         LEVEL_BASE = 0,
+        LEVEL_PIC = 5,
         LEVEL_MENU = 10,
         LEVEL_ALARM = 20,
         LEVEL_QUICK_SWITCH = 30,
     };
 
     struct OverlayItem {
+        enum class Kind : uint8_t { Lvgl = 0, Pic = 1 };
+        Kind kind = Kind::Lvgl;
         lv_obj_t* root = nullptr;
+        lv_obj_t* blocker = nullptr;
         int level = 0;
         bool visible = false;
+        bool fullscreen = false;
     };
 
-    OverlayItem items[2] = {
-        {menu_root_, LEVEL_MENU, menu_visible_},
-        {quick_switch_root_, LEVEL_QUICK_SWITCH, quick_switch_visible_},
+    OverlayItem items[3] = {
+        {OverlayItem::Kind::Pic, nullptr, nullptr, LEVEL_PIC, (host_ != nullptr && host_->HasPicContent()), false},
+        {OverlayItem::Kind::Lvgl, menu_root_, nullptr, LEVEL_MENU, menu_visible_, true},
+        {OverlayItem::Kind::Lvgl, quick_switch_root_, quick_switch_box_, LEVEL_QUICK_SWITCH, quick_switch_visible_, false},
     };
 
-    if (items[0].level > items[1].level) {
-        OverlayItem t = items[0];
-        items[0] = items[1];
-        items[1] = t;
+    for (int i = 0; i < 3; i++) {
+        for (int j = i + 1; j < 3; j++) {
+            if (items[i].level > items[j].level) {
+                OverlayItem t = items[i];
+                items[i] = items[j];
+                items[j] = t;
+            }
+        }
+    }
+
+    OverlayItem* top_block = nullptr;
+    for (auto& it : items) {
+        if (it.kind != OverlayItem::Kind::Lvgl || !it.visible) {
+            continue;
+        }
+        if (it.level <= LEVEL_PIC) {
+            continue;
+        }
+        if (top_block == nullptr || it.level > top_block->level) {
+            top_block = &it;
+        }
+    }
+
+    if (host_ != nullptr) {
+        if (top_block != nullptr) {
+            if (top_block->fullscreen) {
+                host_->SetPicOverlayExcludeRect(true, 0, 0, host_->width(), host_->height());
+            } else if (top_block->blocker != nullptr) {
+                lv_area_t a{};
+                lv_obj_get_coords(top_block->blocker, &a);
+                host_->SetPicOverlayExcludeRect(true, a.x1, a.y1, (a.x2 - a.x1 + 1), (a.y2 - a.y1 + 1));
+            } else {
+                host_->SetPicOverlayExcludeRect(false, 0, 0, 0, 0);
+            }
+        } else {
+            host_->SetPicOverlayExcludeRect(false, 0, 0, 0, 0);
+        }
     }
 
     for (const auto& it : items) {
+        if (it.kind != OverlayItem::Kind::Lvgl) {
+            continue;
+        }
         if (it.visible && it.root != nullptr) {
             lv_obj_move_foreground(it.root);
         }
     }
-}
-
-static void UpdatePicOverlayExcludeRect(LcdDisplay* host, lv_obj_t* overlay_box, bool overlay_visible, bool fullscreen_visible) {
-    if (host == nullptr) {
-        return;
-    }
-    if (overlay_visible && overlay_box != nullptr) {
-        lv_area_t a{};
-        lv_obj_get_coords(overlay_box, &a);
-        host->SetPicOverlayExcludeRect(true, a.x1, a.y1, (a.x2 - a.x1 + 1), (a.y2 - a.y1 + 1));
-        return;
-    }
-    if (fullscreen_visible) {
-        host->SetPicOverlayExcludeRect(true, 0, 0, host->width(), host->height());
-        return;
-    }
-    host->SetPicOverlayExcludeRect(false, 0, 0, 0, 0);
 }
 
 bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
@@ -815,7 +840,6 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         quick_switch_visible_ = !quick_switch_visible_;
         SetRootVisible(quick_switch_root_, quick_switch_visible_);
         UpdateOverlayZLocked();
-        UpdatePicOverlayExcludeRect(host_, quick_switch_box_, quick_switch_visible_, menu_visible_);
         if (quick_switch_visible_) {
             const NavNode cur = nav_.IsAtRoot() ? nav_.Root() : nav_.Current();
             int f = 0;
@@ -864,7 +888,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         if (id == UiPageCustomEventId::ConfirmLongPress) {
             quick_switch_visible_ = false;
             SetRootVisible(quick_switch_root_, false);
-            UpdatePicOverlayExcludeRect(host_, quick_switch_box_, quick_switch_visible_, menu_visible_);
+            UpdateOverlayZLocked();
             if (host_ != nullptr) {
                 host_->RequestUrgentFullRefresh();
             }
@@ -874,7 +898,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
             ActivateQuickSwitchTargetLocked(quick_switch_focus_);
             quick_switch_visible_ = false;
             SetRootVisible(quick_switch_root_, false);
-            UpdatePicOverlayExcludeRect(host_, quick_switch_box_, quick_switch_visible_, menu_visible_);
+            UpdateOverlayZLocked();
             if (host_ != nullptr) {
                 host_->RequestUrgentFullRefresh();
             }
@@ -886,7 +910,6 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         menu_visible_ = !menu_visible_;
         SetRootVisible(menu_root_, menu_visible_);
         UpdateOverlayZLocked();
-        UpdatePicOverlayExcludeRect(host_, quick_switch_box_, quick_switch_visible_, menu_visible_);
         if (menu_visible_) {
             UpdateMenuStatusLocked();
             ApplyMenuSelectionLocked();
@@ -926,7 +949,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         if (id == UiPageCustomEventId::ConfirmLongPress) {
             menu_visible_ = false;
             SetRootVisible(menu_root_, false);
-            UpdatePicOverlayExcludeRect(host_, quick_switch_box_, quick_switch_visible_, menu_visible_);
+            UpdateOverlayZLocked();
             ApplyCircuitImageLocked();
             ApplyCircuitDetailImageLocked();
             if (host_ != nullptr) {
@@ -953,7 +976,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
             }
             menu_visible_ = false;
             SetRootVisible(menu_root_, false);
-            UpdatePicOverlayExcludeRect(host_, quick_switch_box_, quick_switch_visible_, menu_visible_);
+            UpdateOverlayZLocked();
             if (host_ != nullptr) {
                 host_->RequestUrgentFullRefresh();
             }
