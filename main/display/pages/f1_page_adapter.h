@@ -53,6 +53,7 @@ private:
     void BuildRaceSessionsLocked();
     void BuildTelemetryLocked();
     void BuildMenuLocked();
+    void BuildQuickSwitchLocked();
     void ApplyViewLocked();
     void StartFetchIfNeededLocked(bool force);
     void StartSessionsFetchIfNeededLocked(bool force);
@@ -73,6 +74,7 @@ private:
     void UpdateRaceDaySelectionLocked();
     void SetRootVisible(lv_obj_t* root, bool visible);
     void ApplyMenuSelectionLocked();
+    void ApplyQuickSwitchSelectionLocked();
     void UpdateMenuStatusLocked();
     void UpdateBatteryUiLocked();
     void ApplyWdcPageLocked();
@@ -93,6 +95,7 @@ private:
     bool UiNavPrev(NavNode node);
     void UiNavNext(NavNode node);
     void UiNavActivate(NavNode node);
+    void ActivateQuickSwitchTargetLocked(int target_index);
 
     LcdDisplay* host_ = nullptr;
     bool built_ = false;
@@ -107,6 +110,7 @@ private:
     lv_obj_t* circuit_map_root_ = nullptr;
     lv_obj_t* circuit_stats_root_ = nullptr;
     lv_obj_t* menu_root_ = nullptr;
+    lv_obj_t* quick_switch_root_ = nullptr;
 
     int view_index_ = 0;
     int off_week_focus_ = 0;
@@ -254,6 +258,15 @@ private:
     lv_obj_t* menu_footer_ = nullptr;
     int menu_focus_ = 0;
     bool menu_visible_ = false;
+
+    bool quick_switch_visible_ = false;
+    int quick_switch_focus_ = 0;
+    static constexpr int kQuickSwitchItems = 6;
+    lv_obj_t* quick_switch_box_ = nullptr;
+    lv_obj_t* quick_switch_title_ = nullptr;
+    lv_obj_t* quick_switch_footer_ = nullptr;
+    std::array<lv_obj_t*, kQuickSwitchItems> quick_switch_item_boxes_{};
+    std::array<lv_obj_t*, kQuickSwitchItems> quick_switch_item_labels_{};
 
     lv_obj_t* live_header_left_ = nullptr;
     lv_obj_t* live_header_center_ = nullptr;

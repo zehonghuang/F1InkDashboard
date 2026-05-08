@@ -707,7 +707,7 @@ private:
             if (display_ != nullptr && display_->GetActivePageId() == UiPageId::F1) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
-                e.i32 = static_cast<int32_t>(UiPageCustomEventId::JumpRaceDay);
+                e.i32 = static_cast<int32_t>(UiPageCustomEventId::QuickSwitchShow);
                 display_->DispatchPageEvent(e, true);
                 display_->RequestUrgentFullRefresh();
                 return;

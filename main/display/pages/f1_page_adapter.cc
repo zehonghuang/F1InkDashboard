@@ -706,6 +706,14 @@ void F1PageAdapter::Build() {
     UpdateMenuStatusLocked();
     SetRootVisible(menu_root_, false);
 
+    quick_switch_root_ = lv_obj_create(screen_);
+    lv_obj_set_size(quick_switch_root_, kPageWidth, kPageHeight);
+    lv_obj_align(quick_switch_root_, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_border_width(quick_switch_root_, 0, 0);
+    lv_obj_set_style_pad_all(quick_switch_root_, 0, 0);
+    BuildQuickSwitchLocked();
+    SetRootVisible(quick_switch_root_, false);
+
     (void)text_font;
     (void)small_font;
 
@@ -733,6 +741,10 @@ void F1PageAdapter::OnShow() {
 
 void F1PageAdapter::OnHide() {
     active_ = false;
+    menu_visible_ = false;
+    quick_switch_visible_ = false;
+    SetRootVisible(menu_root_, false);
+    SetRootVisible(quick_switch_root_, false);
     if (refresh_timer_ != nullptr) {
         (void)esp_timer_stop(refresh_timer_);
     }
@@ -743,6 +755,77 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         return false;
     }
     const auto id = static_cast<UiPageCustomEventId>(event.i32);
+    if (id == UiPageCustomEventId::QuickSwitchShow) {
+        if (menu_visible_) {
+            menu_visible_ = false;
+            SetRootVisible(menu_root_, false);
+        }
+        quick_switch_visible_ = !quick_switch_visible_;
+        SetRootVisible(quick_switch_root_, quick_switch_visible_);
+        if (quick_switch_visible_) {
+            const NavNode cur = nav_.IsAtRoot() ? nav_.Root() : nav_.Current();
+            int f = 0;
+            if (cur == NavNode::OffRoot) {
+                f = 1;
+            } else if (cur == NavNode::Wdc) {
+                f = 2;
+            } else if (cur == NavNode::Wcc) {
+                f = 3;
+            } else if (cur == NavNode::Circuit) {
+                f = 4;
+            } else if (cur == NavNode::RaceSessions) {
+                f = 5;
+            }
+            quick_switch_focus_ = f;
+            ApplyQuickSwitchSelectionLocked();
+        }
+        if (host_ != nullptr) {
+            host_->RequestUrgentFullRefresh();
+        }
+        return true;
+    }
+    if (quick_switch_visible_) {
+        if (id == UiPageCustomEventId::PagePrev || id == UiPageCustomEventId::GalleryPrev) {
+            quick_switch_focus_--;
+            if (quick_switch_focus_ < 0) {
+                quick_switch_focus_ = static_cast<int>(quick_switch_item_boxes_.size()) - 1;
+            }
+            ApplyQuickSwitchSelectionLocked();
+            if (host_ != nullptr) {
+                host_->RequestDebouncedRefresh(150);
+            }
+            return true;
+        }
+        if (id == UiPageCustomEventId::PageNext || id == UiPageCustomEventId::GalleryNext) {
+            quick_switch_focus_++;
+            if (quick_switch_focus_ >= static_cast<int>(quick_switch_item_boxes_.size())) {
+                quick_switch_focus_ = 0;
+            }
+            ApplyQuickSwitchSelectionLocked();
+            if (host_ != nullptr) {
+                host_->RequestDebouncedRefresh(150);
+            }
+            return true;
+        }
+        if (id == UiPageCustomEventId::ConfirmLongPress) {
+            quick_switch_visible_ = false;
+            SetRootVisible(quick_switch_root_, false);
+            if (host_ != nullptr) {
+                host_->RequestUrgentFullRefresh();
+            }
+            return true;
+        }
+        if (id == UiPageCustomEventId::ConfirmClick) {
+            ActivateQuickSwitchTargetLocked(quick_switch_focus_);
+            quick_switch_visible_ = false;
+            SetRootVisible(quick_switch_root_, false);
+            if (host_ != nullptr) {
+                host_->RequestUrgentFullRefresh();
+            }
+            return true;
+        }
+        return true;
+    }
     if (id == UiPageCustomEventId::ComboUpDown) {
         menu_visible_ = !menu_visible_;
         SetRootVisible(menu_root_, menu_visible_);
