@@ -24,8 +24,6 @@ go run ./cmd/server
 - `BACKEND_LOG_REQUESTS`（默认 `1`）
 - `BACKEND_LOG_OUTGOING_HTTP`（默认 `1`）
 
-Python 版本后端代码仍保留在 `backend/app/` 目录中，便于对照迁移，但以 Go 服务为准。
-
 ## API
 
 - `GET /health`
@@ -97,8 +95,8 @@ $env:TOINC_F1_MYSQL_DB="toinc_F1_dev"
 
 ```bash
 cd backend
-python -m app.cli ingest-ergast --season 2026
-python -m app.cli ingest-circuit-assets --season 2026
+python scripts/mysql_init_toinc_f1_db.py --db toinc_F1_dev
+python scripts/openf1_sync_all_mysql.py
 ```
 
 ## OpenF1 遥测落库（MySQL）
