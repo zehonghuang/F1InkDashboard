@@ -1,0 +1,11 @@
+{
+  "name": "telemetry-dashboard-miniprogram",
+  "private": true,
+  "version": "0.1.0",
+  "type": "commonjs",
+  "dependencies": {
+    "echarts": "^5.5.1",
+    "echarts-for-weixin": "1.0.2",
+    "tdesign-miniprogram": "^1.9.10"
+  }
+}

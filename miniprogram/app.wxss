@@ -1,0 +1,17 @@
+@import "/tdesign-miniprogram/miniprogram_dist/common/style/index.wxss";
+
+page {
+  background: #f6f7f9;
+}
+
+.container {
+  padding: 16rpx;
+}
+
+.section {
+  margin-bottom: 16rpx;
+}
+
+.card-pad {
+  padding: 16rpx;
+}

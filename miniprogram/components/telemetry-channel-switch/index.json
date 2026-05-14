@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "usingComponents": {
+    "t-card": "../t-card/index",
+    "t-checkbox-group": "/tdesign-miniprogram/miniprogram_dist/checkbox-group/checkbox-group",
+    "t-checkbox": "/tdesign-miniprogram/miniprogram_dist/checkbox/checkbox"
+  }
+}

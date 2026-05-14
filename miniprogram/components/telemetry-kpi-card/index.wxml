@@ -1,0 +1,8 @@
+<t-card class="kpi-card" bordered="false">
+  <view class="kpi-title">
+    <view class="kpi-name">{{title}}</view>
+    <t-tag size="small" theme="primary" variant="light">{{unit}}</t-tag>
+  </view>
+  <view class="kpi-value">{{value}}</view>
+</t-card>
+

@@ -1,0 +1,39 @@
+<t-navbar title="会话详情" left-arrow bind:left-click="goBack" />
+
+<view class="container">
+  <view class="section">
+    <t-card bordered="false">
+      <t-cell title="会话" note="{{session.name}}" />
+      <t-cell title="车辆" note="{{session.vehicle}}" />
+      <t-cell title="赛道" note="{{session.track}}" />
+    </t-card>
+  </view>
+
+  <view class="section">
+    <telemetry-channel-switch value="{{channels}}" bind:change="onChannelsChange" />
+  </view>
+
+  <view class="section">
+    <t-card bordered="false">
+      <view class="chart-wrap">
+        <ec-canvas id="detail-power" canvas-id="detail-power" echarts="{{echarts}}" ec="{{ec}}" />
+      </view>
+    </t-card>
+  </view>
+
+  <view class="section">
+    <t-card bordered="false">
+      <view class="chart-wrap">
+        <ec-canvas id="detail-pedal" canvas-id="detail-pedal" echarts="{{echarts}}" ec="{{ec}}" />
+      </view>
+    </t-card>
+  </view>
+
+  <view class="section">
+    <t-card bordered="false">
+      <view class="chart-wrap">
+        <ec-canvas id="detail-gear" canvas-id="detail-gear" echarts="{{echarts}}" ec="{{ec}}" />
+      </view>
+    </t-card>
+  </view>
+</view>

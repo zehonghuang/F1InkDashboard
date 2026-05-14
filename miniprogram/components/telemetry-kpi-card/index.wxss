@@ -1,0 +1,22 @@
+.kpi-card {
+  width: 280rpx;
+}
+
+.kpi-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.kpi-name {
+  font-size: 24rpx;
+  color: #6b7280;
+}
+
+.kpi-value {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #111827;
+}
+

@@ -1,0 +1,4 @@
+<view class="t-card {{bordered ? 't-card--bordered' : ''}}" bind:tap="onTap">
+  <slot />
+</view>
+

@@ -1,0 +1,13 @@
+{
+  "navigationBarTitleText": "遥测仪表盘",
+  "usingComponents": {
+    "t-navbar": "/tdesign-miniprogram/miniprogram_dist/navbar/navbar",
+    "t-card": "../../components/t-card/index",
+    "t-cell": "/tdesign-miniprogram/miniprogram_dist/cell/cell",
+    "t-cell-group": "/tdesign-miniprogram/miniprogram_dist/cell-group/cell-group",
+    "t-tabs": "/tdesign-miniprogram/miniprogram_dist/tabs/tabs",
+    "t-tab-panel": "/tdesign-miniprogram/miniprogram_dist/tab-panel/tab-panel",
+    "telemetry-kpi-card": "../../components/telemetry-kpi-card/index",
+    "ec-canvas": "../../components/ec-canvas/index"
+  }
+}
