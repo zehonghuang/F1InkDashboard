@@ -1,11 +1,11 @@
 {
   "navigationBarTitleText": "设置与接入",
   "usingComponents": {
-    "t-navbar": "/tdesign-miniprogram/miniprogram_dist/navbar/navbar",
+    "t-navbar": "tdesign-miniprogram/navbar/navbar",
     "t-card": "../../components/t-card/index",
-    "t-cell": "/tdesign-miniprogram/miniprogram_dist/cell/cell",
-    "t-cell-group": "/tdesign-miniprogram/miniprogram_dist/cell-group/cell-group",
-    "t-button": "/tdesign-miniprogram/miniprogram_dist/button/button",
-    "ec-canvas": "../../components/ec-canvas/index"
+    "t-cell": "tdesign-miniprogram/cell/cell",
+    "t-cell-group": "tdesign-miniprogram/cell-group/cell-group",
+    "t-button": "tdesign-miniprogram/button/button",
+    "ec-canvas": "echarts-for-weixin"
   }
 }

@@ -1,11 +1,11 @@
 {
   "navigationBarTitleText": "会话详情",
   "usingComponents": {
-    "t-navbar": "/tdesign-miniprogram/miniprogram_dist/navbar/navbar",
+    "t-navbar": "tdesign-miniprogram/navbar/navbar",
     "t-card": "../../components/t-card/index",
-    "t-cell": "/tdesign-miniprogram/miniprogram_dist/cell/cell",
-    "t-cell-group": "/tdesign-miniprogram/miniprogram_dist/cell-group/cell-group",
+    "t-cell": "tdesign-miniprogram/cell/cell",
+    "t-cell-group": "tdesign-miniprogram/cell-group/cell-group",
     "telemetry-channel-switch": "../../components/telemetry-channel-switch/index",
-    "ec-canvas": "../../components/ec-canvas/index"
+    "ec-canvas": "echarts-for-weixin"
   }
 }

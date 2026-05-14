@@ -1,7 +1,7 @@
 const { buildGearOption, buildPedalOption, buildPowerOption } = require("../../services/optionFactory")
 const { downsample, loadMockTelemetry } = require("../../services/telemetryService")
 
-const echarts = require("../../libs/echarts.min")
+const echarts = require("echarts")
 
 Page({
   data: {

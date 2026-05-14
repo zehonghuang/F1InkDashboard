@@ -9,13 +9,12 @@
 - UI：`tdesign-miniprogram`
 - 图表：`echarts` + `echarts-for-weixin`（`ec-canvas` 组件）
 
-本工程已将 TDesign 与 `ec-canvas` 组件放入小程序目录内（`tdesign-miniprogram/` 与 `components/ec-canvas/`），不依赖开发者工具生成 `miniprogram_npm/`。
-
 ## 启动方式
 1. 进入目录 `c:\F1InkDashboard\miniprogram` 执行 `npm install`
 2. 用微信开发者工具导入项目目录：`c:\F1InkDashboard\miniprogram`
-3. 预览运行：默认进入首页 `/pages/home/index`
+3. 在开发者工具内执行一次“构建 npm”（生成 `miniprogram_npm/`）
+4. 预览运行：默认进入首页 `/pages/home/index`
 
 ## Mock 数据
-- `assets/mock/telemetry-session.json`
+- `assets/mock/telemetry-session.js`
 - 当前页面直接读取 mock 数据渲染图表；后续接入真实遥测时，只需替换 `services/telemetryService.js` 的数据来源。
