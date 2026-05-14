@@ -58,4 +58,5 @@ charts/.env.*.local
 
 miniprogram/node_modules/
 miniprogram/miniprogram_npm/
+miniprogram/libs/
 miniprogram/project.private.config.json

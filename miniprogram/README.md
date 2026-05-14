@@ -11,8 +11,8 @@
 
 ## 启动方式
 1. 进入目录 `c:\F1InkDashboard\miniprogram` 执行 `npm install`
-2. 用微信开发者工具导入项目目录：`c:\F1InkDashboard\miniprogram`
-3. 在开发者工具内执行一次“构建 npm”（生成 `miniprogram_npm/`）
+2. 生成小程序可用的依赖目录：`npm run prepare:mp`（生成 `miniprogram_npm/` 与 `libs/echarts.min.js`）
+3. 用微信开发者工具导入项目目录：`c:\F1InkDashboard\miniprogram`
 4. 预览运行：默认进入首页 `/pages/home/index`
 
 ## Mock 数据
