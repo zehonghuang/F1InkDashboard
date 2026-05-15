@@ -1,0 +1,13 @@
+<view class="i-class card {{ full ? 'card-full' : '' }}">
+  <view class="header">
+    <image class="thumb" src="{{ thumb }}" mode="aspectFit" wx:if="{{ thumb }}" />
+    <view class="title">{{ title }}</view>
+    <view class="extra" wx:if="{{ extra }}">{{ extra }}</view>
+  </view>
+  <view class="body">
+    <slot name="content"></slot>
+  </view>
+  <view class="footer">
+    <slot name="footer"></slot>
+  </view>
+</view>

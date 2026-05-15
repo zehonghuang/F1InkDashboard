@@ -10,3 +10,18 @@
 .spacer {
   height: 16rpx;
 }
+
+.season-picker {
+  margin-bottom: 16rpx;
+}
+
+.race-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.race-kv {
+  color: #495060;
+  line-height: 44rpx;
+}

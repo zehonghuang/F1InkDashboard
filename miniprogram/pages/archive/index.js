@@ -1,26 +1,40 @@
 Page({
   data: {
     query: "",
+    seasonOptions: ["2026赛季", "2025赛季", "2024赛季", "2023赛季"],
+    seasonIndex: 0,
     races: [
       {
         id: "R07",
-        title: "R07 摩纳哥大奖赛（05.24）",
-        label: "最快圈: 1:32.405 | 遥测: 已就绪"
+        name: "摩纳哥大奖赛",
+        date: "05.24",
+        thumb: "/assets/circuits/2026/monaco.png",
+        winner: "待更新",
+        fastestLap: "1:32.405"
       },
       {
         id: "R06",
-        title: "R06 迈阿密大奖赛（05.03）",
-        label: "最快圈: 1:29.802 | 遥测: 已就绪"
+        name: "迈阿密大奖赛",
+        date: "05.03",
+        thumb: "/assets/circuits/2026/miami.png",
+        winner: "待更新",
+        fastestLap: "1:29.802"
       },
       {
         id: "R05",
-        title: "R05 中国大奖赛（04.19）",
-        label: "最快圈: 1:37.521 | 遥测: 已就绪"
+        name: "中国大奖赛",
+        date: "04.19",
+        thumb: "/assets/circuits/2026/shanghai.png",
+        winner: "待更新",
+        fastestLap: "1:37.521"
       },
       {
         id: "R04",
-        title: "R04 日本大奖赛（04.05）",
-        label: "最快圈: 1:33.784 | 遥测: 已就绪"
+        name: "日本大奖赛",
+        date: "04.05",
+        thumb: "/assets/circuits/2026/suzuka.png",
+        winner: "待更新",
+        fastestLap: "1:33.784"
       }
     ]
   },
@@ -32,10 +46,14 @@ Page({
       }
     }
   },
+  onSeasonChange(e) {
+    const idx = Number(e.detail.value || 0)
+    this.setData({ seasonIndex: idx })
+  },
   onRaceTap(e) {
-    const { id } = e.currentTarget.dataset
+    const { id, name } = e.currentTarget.dataset
     wx.showToast({
-      title: `${id} 遥测已就绪`,
+      title: `${name || id} 遥测已就绪`,
       icon: "none"
     })
   },

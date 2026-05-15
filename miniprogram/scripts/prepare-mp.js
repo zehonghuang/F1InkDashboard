@@ -157,6 +157,7 @@ function main() {
   const srcDist = path.join(pkgRoot, 'dist');
   const outPkgRoot = path.join(projectRoot, 'miniprogram_npm', 'iview-weapp');
   const outDist = path.join(outPkgRoot, 'dist');
+  const repoRoot = path.resolve(projectRoot, '..');
 
   if (!fs.existsSync(srcDist)) {
     throw new Error(`iview-weapp dist not found: ${srcDist}`);
@@ -169,6 +170,7 @@ function main() {
     'input',
     'button',
     'divider',
+    'card',
     'tab-bar',
     'tab-bar-item',
     'icon',
@@ -192,6 +194,19 @@ function main() {
   writePngIcon(path.join(iconsDir, 'compare_selected.png'), 'compare', true);
   writePngIcon(path.join(iconsDir, 'mine.png'), 'mine', false);
   writePngIcon(path.join(iconsDir, 'mine_selected.png'), 'mine', true);
+
+  const circuitsSrcDir = path.join(repoRoot, 'backend', 'static', 'circuits', '2026');
+  const circuitsDstDir = path.join(projectRoot, 'assets', 'circuits', '2026');
+  const circuitImages = ['monaco.png', 'miami.png', 'shanghai.png', 'suzuka.png'];
+  for (const f of circuitImages) {
+    const src = path.join(circuitsSrcDir, f);
+    const dst = path.join(circuitsDstDir, f);
+    if (!fs.existsSync(src)) {
+      throw new Error(`Circuit image not found: ${src}`);
+    }
+    ensureDirSync(path.dirname(dst));
+    fs.copyFileSync(src, dst);
+  }
 }
 
 main();

@@ -4,19 +4,24 @@
     <view class="subtitle">Telemetry • Analysis • Archive</view>
   </view>
 
-  <i-panel title="📂 遥测数据归档（2026 赛季）">
-    <i-cell-group>
-      <block wx:for="{{races}}" wx:key="id">
-        <i-cell
-          title="{{item.title}}"
-          label="{{item.label}}"
-          is-link
-          bindtap="onRaceTap"
-          data-id="{{item.id}}"
-        />
-      </block>
-    </i-cell-group>
-  </i-panel>
+  <picker mode="selector" range="{{seasonOptions}}" value="{{seasonIndex}}" bindchange="onSeasonChange">
+    <view class="season-picker">
+      <i-cell title="📂 遥测数据归档" value="{{seasonOptions[seasonIndex]}}" is-link />
+    </view>
+  </picker>
+
+  <view class="race-list">
+    <block wx:for="{{races}}" wx:key="id">
+      <view class="race-card" bindtap="onRaceTap" data-id="{{item.id}}" data-name="{{item.name}}">
+        <race-card thumb="{{item.thumb}}" title="{{item.name}}" extra="{{item.date}}">
+          <view slot="content">
+            <view class="race-kv">分站冠军：{{item.winner}}</view>
+            <view class="race-kv">正赛最快圈：{{item.fastestLap}}</view>
+          </view>
+        </race-card>
+      </view>
+    </block>
+  </view>
 
   <i-divider />
 
