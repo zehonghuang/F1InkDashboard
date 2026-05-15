@@ -1,0 +1,8 @@
+.panel-body {
+  padding: 16rpx 24rpx 24rpx;
+}
+
+.panel-desc {
+  color: #495060;
+  margin-bottom: 16rpx;
+}

@@ -1,0 +1,14 @@
+<view class="page">
+  <view class="header">
+    <view class="title">我的</view>
+    <view class="subtitle">个人配置与偏好</view>
+  </view>
+
+  <i-panel title="偏好设置">
+    <i-cell-group>
+      <i-cell title="默认赛季" label="2026" is-link bindtap="onTapItem" />
+      <i-cell title="默认单位" label="km/h / bar" is-link bindtap="onTapItem" />
+      <i-cell title="数据源" label="本地后端 / MySQL" is-link bindtap="onTapItem" />
+    </i-cell-group>
+  </i-panel>
+</view>

@@ -1,17 +1,25 @@
-@import "/miniprogram_npm/tdesign-miniprogram/common/style/index.wxss";
-
 page {
-  background: #f6f7f9;
+  background: #f5f6f7;
+  color: #17233d;
+  font-size: 28rpx;
 }
 
-.container {
-  padding: 16rpx;
+.page {
+  padding: 24rpx;
 }
 
-.section {
-  margin-bottom: 16rpx;
+.header {
+  padding: 12rpx 0 20rpx;
 }
 
-.card-pad {
-  padding: 16rpx;
+.title {
+  font-size: 40rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+}
+
+.subtitle {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #80848f;
 }

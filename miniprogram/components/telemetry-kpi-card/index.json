@@ -1,7 +1,0 @@
-{
-  "component": true,
-  "usingComponents": {
-    "t-card": "../t-card/index",
-    "t-tag": "tdesign-miniprogram/tag/tag"
-  }
-}

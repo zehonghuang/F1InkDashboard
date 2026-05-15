@@ -1,17 +1,42 @@
 {
   "pages": [
-    "pages/home/index",
-    "pages/session-detail/index",
-    "pages/settings/index"
+    "pages/archive/index",
+    "pages/compare/index",
+    "pages/mine/index"
   ],
   "window": {
-    "navigationBarTitleText": "遥测仪表盘",
+    "navigationBarTitleText": "TONIC F1 数据分析",
     "navigationBarBackgroundColor": "#ffffff",
     "navigationBarTextStyle": "black",
-    "backgroundColor": "#F6F7F9",
+    "backgroundColor": "#f5f6f7",
     "backgroundTextStyle": "light"
   },
-  "style": "v2",
+  "tabBar": {
+    "custom": true,
+    "color": "#7A7E83",
+    "selectedColor": "#1c2438",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/archive/index",
+        "text": "归档",
+        "iconPath": "assets/tabbar/archive.png",
+        "selectedIconPath": "assets/tabbar/archive_selected.png"
+      },
+      {
+        "pagePath": "pages/compare/index",
+        "text": "对比",
+        "iconPath": "assets/tabbar/compare.png",
+        "selectedIconPath": "assets/tabbar/compare_selected.png"
+      },
+      {
+        "pagePath": "pages/mine/index",
+        "text": "我的",
+        "iconPath": "assets/tabbar/mine.png",
+        "selectedIconPath": "assets/tabbar/mine_selected.png"
+      }
+    ]
+  },
   "sitemapLocation": "sitemap.json"
 }
-

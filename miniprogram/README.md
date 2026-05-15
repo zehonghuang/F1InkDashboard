@@ -1,20 +1,30 @@
-# 赛车遥测仪表盘（微信小程序）
+# TOINC F1 小程序前端
 
-## 目录
-- `pages/home`：首页（KPI + Tabs 图表预览）
-- `pages/session-detail`：详情页（通道开关 + 多图）
-- `pages/settings`：设置与接入（ECharts 检测 + 示例 JSON）
+## 开发说明
 
-## 依赖
-- UI：`tdesign-miniprogram`
-- 图表：`echarts` + `echarts-for-weixin`（`ec-canvas` 组件）
+1. 在 `miniprogram/` 目录执行依赖安装：
 
-## 启动方式
-1. 进入目录 `c:\F1InkDashboard\miniprogram` 执行 `npm install`
-2. 生成小程序可用的依赖目录：`npm run prepare:mp`（生成 `miniprogram_npm/` 与 `libs/echarts.min.js`）
-3. 用微信开发者工具导入项目目录：`c:\F1InkDashboard\miniprogram`
-4. 预览运行：默认进入首页 `/pages/home/index`
+```bash
+npm install
+```
 
-## Mock 数据
-- `assets/mock/telemetry-session.js`
-- 当前页面直接读取 mock 数据渲染图表；后续接入真实遥测时，只需替换 `services/telemetryService.js` 的数据来源。
+2. 安装完成后会自动生成 `miniprogram_npm/`（用于小程序组件引用）。如果你希望由开发者工具重新构建，也可以执行「工具 -> 构建 NPM」。
+
+3. 默认包含 3 个 Tab：
+   - 归档：遥测数据归档入口（含 2026 赛季示例列表）
+   - 对比：全局性能对比入口
+   - 我的：个人配置入口（占位）
+
+## UI 框架
+
+使用 `iview-weapp`（iViewUI 的小程序组件库）。页面的 `usingComponents` 指向 `miniprogram_npm/iview-weapp/dist/...`。
+
+## TabBar 图标
+
+使用自定义 TabBar（[custom-tab-bar](file:///c:/Users/GinTonic/Desktop/zectrix/miniprogram/custom-tab-bar)）展示底部导航，并使用本地 PNG 图标（`assets/tabbar/*`）。
+
+图标会由脚本自动生成/更新：
+
+```bash
+npm run prepare:mp
+```

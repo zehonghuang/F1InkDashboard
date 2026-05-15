@@ -1,0 +1,40 @@
+<view class="page">
+  <view class="header">
+    <view class="title">T O N I C&nbsp;&nbsp;F 1&nbsp;&nbsp;数 据 分 析</view>
+    <view class="subtitle">Telemetry • Analysis • Archive</view>
+  </view>
+
+  <i-panel title="📂 遥测数据归档（2026 赛季）">
+    <i-cell-group>
+      <block wx:for="{{races}}" wx:key="id">
+        <i-cell
+          title="{{item.title}}"
+          label="{{item.label}}"
+          is-link
+          bindtap="onRaceTap"
+          data-id="{{item.id}}"
+        />
+      </block>
+    </i-cell-group>
+  </i-panel>
+
+  <i-divider />
+
+  <i-panel title="⚖️ 全局性能对比">
+    <view class="panel-body">
+      <view class="panel-desc">- 跨分站/多车手脚法对齐</view>
+      <i-button type="primary" bindtap="onGoCompare">进入对比</i-button>
+    </view>
+  </i-panel>
+
+  <i-divider />
+
+  <i-panel title="🔍 快速检索">
+    <view class="panel-body">
+      <view class="panel-desc">- 按赛道或特定日期查询</view>
+      <i-input value="{{query}}" placeholder="例如：摩纳哥 / 05.24" bindchange="onQueryChange" />
+      <view class="spacer" />
+      <i-button bindtap="onSearch">查询</i-button>
+    </view>
+  </i-panel>
+</view>

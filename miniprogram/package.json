@@ -1,14 +1,13 @@
 {
-  "name": "telemetry-dashboard-miniprogram",
+  "name": "toinc-f1-miniprogram",
   "private": true,
   "version": "0.1.0",
   "type": "commonjs",
   "scripts": {
-    "prepare:mp": "node scripts/prepare-mp.js"
+    "prepare:mp": "node scripts/prepare-mp.js",
+    "postinstall": "node scripts/prepare-mp.js"
   },
   "dependencies": {
-    "echarts": "^5.5.1",
-    "echarts-for-weixin": "1.0.2",
-    "tdesign-miniprogram": "^1.9.10"
+    "iview-weapp": "^2.0.0"
   }
 }
