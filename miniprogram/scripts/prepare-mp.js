@@ -207,6 +207,14 @@ function main() {
     ensureDirSync(path.dirname(dst));
     fs.copyFileSync(src, dst);
   }
+
+  const fontSrc = path.join(repoRoot, 'font', 'Formula1-Bold_web_0.ttf');
+  const fontDst = path.join(projectRoot, 'assets', 'fonts', 'Formula1-Bold.ttf');
+  if (!fs.existsSync(fontSrc)) {
+    throw new Error(`Font not found: ${fontSrc}`);
+  }
+  ensureDirSync(path.dirname(fontDst));
+  fs.copyFileSync(fontSrc, fontDst);
 }
 
 main();

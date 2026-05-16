@@ -3,7 +3,7 @@
 }
 
 .panel-desc {
-  color: #495060;
+  color: rgba(255, 255, 255, 0.72);
   margin-bottom: 16rpx;
 }
 
@@ -13,6 +13,28 @@
 
 .season-picker {
   margin-bottom: 16rpx;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.season-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10rpx;
+  padding: 12rpx 20rpx;
+  border-radius: 999rpx;
+  background: #000000;
+  border: 1rpx solid rgba(255, 255, 255, 0.14);
+}
+
+.season-text {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.season-arrow {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 20rpx;
 }
 
 .race-list {
@@ -22,6 +44,51 @@
 }
 
 .race-kv {
-  color: #495060;
+  color: rgba(255, 255, 255, 0.86);
   line-height: 44rpx;
+}
+
+.section {
+  margin-top: 20rpx;
+  padding: 20rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.14);
+  border-radius: 12rpx;
+  background: #000000;
+}
+
+.section-title {
+  font-weight: 700;
+  margin-bottom: 10rpx;
+}
+
+.section-desc {
+  color: rgba(255, 255, 255, 0.72);
+  margin-bottom: 16rpx;
+}
+
+.input {
+  height: 76rpx;
+  padding: 0 20rpx;
+  border-radius: 10rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  background: #000000;
+}
+
+.input-placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.btn {
+  height: 76rpx;
+  line-height: 76rpx;
+  border-radius: 10rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  background: #000000;
+  font-size: 28rpx;
+}
+
+.btn-primary {
+  background: rgba(255, 255, 255, 0.12);
 }

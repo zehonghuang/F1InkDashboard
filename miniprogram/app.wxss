@@ -1,6 +1,11 @@
+@font-face {
+  font-family: Formula1;
+  src: url("assets/fonts/Formula1-Bold.ttf") format("truetype");
+}
+
 page {
-  background: #f5f6f7;
-  color: #17233d;
+  background: #15151E;
+  color: #ffffff;
   font-size: 28rpx;
 }
 
@@ -14,12 +19,13 @@ page {
 
 .title {
   font-size: 40rpx;
-  font-weight: 700;
+  font-weight: normal;
   letter-spacing: 2rpx;
+  font-family: Formula1, sans-serif;
 }
 
 .subtitle {
   margin-top: 8rpx;
   font-size: 24rpx;
-  color: #80848f;
+  color: rgba(255, 255, 255, 0.65);
 }

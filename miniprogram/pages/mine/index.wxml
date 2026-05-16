@@ -4,11 +4,21 @@
     <view class="subtitle">个人配置与偏好</view>
   </view>
 
-  <i-panel title="偏好设置">
-    <i-cell-group>
-      <i-cell title="默认赛季" label="2026" is-link bindtap="onTapItem" />
-      <i-cell title="默认单位" label="km/h / bar" is-link bindtap="onTapItem" />
-      <i-cell title="数据源" label="本地后端 / MySQL" is-link bindtap="onTapItem" />
-    </i-cell-group>
-  </i-panel>
+  <view class="section">
+    <view class="section-title">偏好设置</view>
+    <view class="row" bindtap="onTapItem">
+      <view class="row-key">默认赛季</view>
+      <view class="row-val">2026</view>
+    </view>
+    <view class="divider" />
+    <view class="row" bindtap="onTapItem">
+      <view class="row-key">默认单位</view>
+      <view class="row-val">km/h / bar</view>
+    </view>
+    <view class="divider" />
+    <view class="row" bindtap="onTapItem">
+      <view class="row-key">数据源</view>
+      <view class="row-val">本地后端 / MySQL</view>
+    </view>
+  </view>
 </view>

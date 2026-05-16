@@ -4,18 +4,21 @@
     <view class="subtitle">跨分站/多车手脚法对齐</view>
   </view>
 
-  <i-panel title="对比维度">
-    <i-cell-group>
-      <i-cell title="按赛道" label="同一赛道不同赛季/车手对齐" is-link bindtap="onPickMode" />
-      <i-cell title="按日期" label="按周末日期快速回看" is-link bindtap="onPickMode" />
-      <i-cell title="按车手" label="对比驾驶风格/刹车点" is-link bindtap="onPickMode" />
-    </i-cell-group>
-  </i-panel>
+  <view class="section">
+    <view class="section-title">对比维度</view>
+    <view class="item" bindtap="onPickMode">按赛道</view>
+    <view class="item-desc">同一赛道不同赛季/车手对齐</view>
+    <view class="divider" />
+    <view class="item" bindtap="onPickMode">按日期</view>
+    <view class="item-desc">按周末日期快速回看</view>
+    <view class="divider" />
+    <view class="item" bindtap="onPickMode">按车手</view>
+    <view class="item-desc">对比驾驶风格/刹车点</view>
+  </view>
 
-  <i-panel title="提示">
-    <view class="panel-body">
-      <view class="panel-desc">当前仅搭好 UI 框架与入口，后续接入后端数据后即可展示图表与 KPI。</view>
-      <i-button type="primary" bindtap="onPickMode">开始对比</i-button>
-    </view>
-  </i-panel>
+  <view class="section">
+    <view class="section-title">提示</view>
+    <view class="section-desc">当前仅搭好 UI 框架与入口，后续接入后端数据后即可展示图表与 KPI。</view>
+    <button class="btn btn-primary" bindtap="onPickMode">开始对比</button>
+  </view>
 </view>

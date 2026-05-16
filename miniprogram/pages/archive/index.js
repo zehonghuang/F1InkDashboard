@@ -6,7 +6,7 @@ Page({
     races: [
       {
         id: "R07",
-        name: "摩纳哥大奖赛",
+        name: "Monaco Grand Prix",
         date: "05.24",
         thumb: "/assets/circuits/2026/monaco.png",
         winner: "待更新",
@@ -14,7 +14,7 @@ Page({
       },
       {
         id: "R06",
-        name: "迈阿密大奖赛",
+        name: "Miami Grand Prix",
         date: "05.03",
         thumb: "/assets/circuits/2026/miami.png",
         winner: "待更新",
@@ -22,7 +22,7 @@ Page({
       },
       {
         id: "R05",
-        name: "中国大奖赛",
+        name: "Chinese Grand Prix",
         date: "04.19",
         thumb: "/assets/circuits/2026/shanghai.png",
         winner: "待更新",
@@ -30,7 +30,7 @@ Page({
       },
       {
         id: "R04",
-        name: "日本大奖赛",
+        name: "Japanese Grand Prix",
         date: "04.05",
         thumb: "/assets/circuits/2026/suzuka.png",
         winner: "待更新",
@@ -60,7 +60,7 @@ Page({
   onGoCompare() {
     wx.switchTab({ url: "/pages/compare/index" })
   },
-  onQueryChange(e) {
+  onQueryInput(e) {
     this.setData({ query: e.detail.value })
   },
   onSearch() {
