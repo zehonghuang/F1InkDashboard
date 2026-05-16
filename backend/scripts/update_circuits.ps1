@@ -19,7 +19,7 @@ if (!(Test-Path $py)) {
 Push-Location $backendDir
 try {
   $argsList = @(
-    "-m", "app.cli", "update-circuits",
+    "-u", "scripts/update_circuits.py",
     "--season", "$Season",
     "--width", "$Width", "--height", "$Height",
     "--detail-width", "$DetailWidth", "--detail-height", "$DetailHeight"

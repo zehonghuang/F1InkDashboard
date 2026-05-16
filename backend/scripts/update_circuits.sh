@@ -23,7 +23,7 @@ fi
 
 cd "${BACKEND_DIR}"
 
-ARGS=( -m app.cli update-circuits --season "${SEASON}" --width "${WIDTH}" --height "${HEIGHT}" --detail-width "${DETAIL_WIDTH}" --detail-height "${DETAIL_HEIGHT}" )
+ARGS=( -u scripts/update_circuits.py --season "${SEASON}" --width "${WIDTH}" --height "${HEIGHT}" --detail-width "${DETAIL_WIDTH}" --detail-height "${DETAIL_HEIGHT}" )
 if [[ "${FORCE}" != "0" ]]; then
   ARGS+=( --force )
 fi
