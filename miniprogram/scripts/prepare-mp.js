@@ -195,17 +195,21 @@ function main() {
   writePngIcon(path.join(iconsDir, 'mine.png'), 'mine', false);
   writePngIcon(path.join(iconsDir, 'mine_selected.png'), 'mine', true);
 
-  const circuitsSrcDir = path.join(repoRoot, 'backend', 'static', 'circuits', '2026');
+  const circuitsRawSrcDir = path.join(repoRoot, 'backend', 'static', 'circuits', '2026', 'raw');
   const circuitsDstDir = path.join(projectRoot, 'assets', 'circuits', '2026');
-  const circuitImages = ['monaco.png', 'miami.png', 'shanghai.png', 'suzuka.png'];
-  for (const f of circuitImages) {
-    const src = path.join(circuitsSrcDir, f);
-    const dst = path.join(circuitsDstDir, f);
-    if (!fs.existsSync(src)) {
-      throw new Error(`Circuit image not found: ${src}`);
-    }
-    ensureDirSync(path.dirname(dst));
-    fs.copyFileSync(src, dst);
+  const circuitsRawDstDir = path.join(circuitsDstDir, 'raw');
+
+  if (!fs.existsSync(circuitsRawSrcDir)) {
+    throw new Error(`Circuit raw dir not found: ${circuitsRawSrcDir}`);
+  }
+
+  fs.rmSync(circuitsRawDstDir, { recursive: true, force: true });
+  ensureDirSync(circuitsRawDstDir);
+  const rawEntries = fs.readdirSync(circuitsRawSrcDir, { withFileTypes: true });
+  for (const ent of rawEntries) {
+    if (!ent.isFile()) continue;
+    if (!ent.name.endsWith('_map.webp')) continue;
+    fs.copyFileSync(path.join(circuitsRawSrcDir, ent.name), path.join(circuitsRawDstDir, ent.name));
   }
 
   const fontSrc = path.join(repoRoot, 'font', 'Formula1-Bold_web_0.ttf');

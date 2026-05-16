@@ -8,7 +8,7 @@ Page({
         id: "R07",
         name: "Monaco Grand Prix",
         date: "05.24",
-        thumb: "/assets/circuits/2026/monaco.png",
+        thumb: "/assets/circuits/2026/raw/monaco_map.webp",
         winner: "待更新",
         fastestLap: "1:32.405"
       },
@@ -16,7 +16,7 @@ Page({
         id: "R06",
         name: "Miami Grand Prix",
         date: "05.03",
-        thumb: "/assets/circuits/2026/miami.png",
+        thumb: "/assets/circuits/2026/raw/miami_map.webp",
         winner: "待更新",
         fastestLap: "1:29.802"
       },
@@ -24,7 +24,7 @@ Page({
         id: "R05",
         name: "Chinese Grand Prix",
         date: "04.19",
-        thumb: "/assets/circuits/2026/shanghai.png",
+        thumb: "/assets/circuits/2026/raw/shanghai_map.webp",
         winner: "待更新",
         fastestLap: "1:37.521"
       },
@@ -32,7 +32,7 @@ Page({
         id: "R04",
         name: "Japanese Grand Prix",
         date: "04.05",
-        thumb: "/assets/circuits/2026/suzuka.png",
+        thumb: "/assets/circuits/2026/raw/suzuka_map.webp",
         winner: "待更新",
         fastestLap: "1:33.784"
       }

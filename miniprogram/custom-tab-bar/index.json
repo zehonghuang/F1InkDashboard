@@ -1,4 +1,6 @@
 {
   "component": true,
-  "usingComponents": {}
+  "usingComponents": {
+    "i-icon": "/miniprogram_npm/iview-weapp/dist/icon/index"
+  }
 }

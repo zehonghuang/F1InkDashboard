@@ -184,8 +184,14 @@ def _extract_track_image_from_html(html: str, year: int) -> Dict[str, Optional[s
     )
     if detailed:
         key = (detailed.group(1) or "").lower()
-        url = _to_png_url(detailed.group(0))
-        return {"image_kind": "track_detailed", "track_key": key, "map_image_url": url}
+        raw_url = detailed.group(0)
+        url = _to_png_url(raw_url)
+        return {
+            "image_kind": "track_detailed",
+            "track_key": key,
+            "map_image_url": url,
+            "map_image_url_raw": raw_url,
+        }
 
     outline = re.search(
         rf"https://media\.formula1\.com/image/upload/[^\s\"'<>]*/common/f1/{year}/track/2026track([a-z0-9]+)blackoutline\.svg",
@@ -194,10 +200,16 @@ def _extract_track_image_from_html(html: str, year: int) -> Dict[str, Optional[s
     )
     if outline:
         key = (outline.group(1) or "").lower()
-        url = _to_png_url(outline.group(0).replace("/c_lfill,w_3392/", "/c_fit,h_704/q_auto/"))
-        return {"image_kind": "track_outline", "track_key": key, "map_image_url": url}
+        raw_url = outline.group(0)
+        url = _to_png_url(raw_url.replace("/c_lfill,w_3392/", "/c_fit,h_704/q_auto/"))
+        return {
+            "image_kind": "track_outline",
+            "track_key": key,
+            "map_image_url": url,
+            "map_image_url_raw": raw_url,
+        }
 
-    return {"image_kind": None, "track_key": None, "map_image_url": None}
+    return {"image_kind": None, "track_key": None, "map_image_url": None, "map_image_url_raw": None}
 
 
 async def _ergast_schedule_for_year(client: Any, year: int) -> Dict[str, Any]:
@@ -336,12 +348,14 @@ async def fetch_f1_circuit_assets(
         image_kind: Optional[str] = None
         track_key: Optional[str] = None
         source_map_image_url: Optional[str] = None
+        source_map_image_url_raw: Optional[str] = None
 
         if page_html:
             hit = _extract_track_image_from_html(page_html, year)
             image_kind = hit.get("image_kind")
             track_key = hit.get("track_key")
             source_map_image_url = hit.get("map_image_url")
+            source_map_image_url_raw = hit.get("map_image_url_raw")
 
         if not source_map_image_url and f1_slug:
             for key in _slug_to_track_keys(f1_slug):
@@ -352,6 +366,7 @@ async def fetch_f1_circuit_assets(
                         image_kind = "track_detailed"
                         track_key = key
                         source_map_image_url = detailed
+                        source_map_image_url_raw = detailed
                         break
                 except Exception:
                     pass
@@ -360,6 +375,7 @@ async def fetch_f1_circuit_assets(
             outline_src = track_outline_by_key.get(track_key)
             if outline_src:
                 image_kind = "track_outline"
+                source_map_image_url_raw = outline_src
                 source_map_image_url = _to_png_url(outline_src.replace("/c_lfill,w_3392/", "/c_fit,h_704/q_auto/"))
 
         card_src = None
@@ -367,6 +383,7 @@ async def fetch_f1_circuit_assets(
             card_src = slug_to_card_src.get(f1_slug)
         if not source_map_image_url and card_src:
             image_kind = "race_card"
+            source_map_image_url_raw = card_src
             source_map_image_url = _to_png_url(card_src)
 
         file_name = f"{circuit_id}.png"
@@ -391,6 +408,8 @@ async def fetch_f1_circuit_assets(
         raw_card_error: Optional[str] = None
 
         if source_map_image_url:
+            if not source_map_image_url_raw:
+                source_map_image_url_raw = source_map_image_url
             if force_download or not downloaded:
                 b, _, err = await _download_bytes(client, _cloudinary_resize(source_map_image_url, target_width, target_height), timeout_s=30)
                 if b is not None:
@@ -416,7 +435,7 @@ async def fetch_f1_circuit_assets(
                     detail_error = err
 
             if save_raw:
-                b0, ctype0, err0 = await _download_bytes(client, source_map_image_url, timeout_s=30)
+                b0, ctype0, err0 = await _download_bytes(client, source_map_image_url_raw, timeout_s=30)
                 if b0 is not None and ctype0 is not None:
                     ext = _ext_from_content_type(ctype0)
                     fn = f"{circuit_id}_map.{ext}"
@@ -459,6 +478,7 @@ async def fetch_f1_circuit_assets(
                 "image_kind": image_kind,
                 "source_card_image_url": card_src,
                 "source_map_image_url": source_map_image_url,
+                "source_map_image_url_raw": source_map_image_url_raw,
                 "public_map_image_url": public_url if downloaded else None,
                 "relative_path": rel_path if downloaded else None,
                 "downloaded": downloaded,

@@ -1,18 +1,18 @@
 {
   "season": 2026,
   "source_url": "https://www.formula1.com/en/racing/2026",
-  "updated_at_utc": "2026-04-25T15:42:47.423735+00:00",
+  "updated_at_utc": "2026-05-16T03:34:25.753657+00:00",
   "ergast_schedule_url": "https://api.jolpi.ca/ergast/f1/2026.json",
   "race_slugs": [
-    "japan",
     "miami",
     "canada",
     "monaco",
+    "barcelona-catalunya",
     "pre-season-testing-1",
     "pre-season-testing-2",
     "australia",
     "china",
-    "barcelona-catalunya",
+    "japan",
     "austria",
     "great-britain",
     "belgium",
@@ -49,6 +49,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmelbournedetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmelbournedetailed.webp",
       "public_map_image_url": "/static/circuits/2026/albert_park.png",
       "relative_path": "circuits/2026/albert_park.png",
       "downloaded": true,
@@ -61,15 +62,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 5.278,
-        "race_distance_km": 306.124,
-        "first_grand_prix_year": 1996,
-        "number_of_laps": 58,
-        "fastest_lap_time": "1:19.813",
-        "fastest_lap_driver": "Charles Leclerc",
-        "fastest_lap_year": 2024
-      }
+      "raw_map_relative_path": "circuits/2026/raw/albert_park_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -90,6 +86,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackshanghaidetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackshanghaidetailed.webp",
       "public_map_image_url": "/static/circuits/2026/shanghai.png",
       "relative_path": "circuits/2026/shanghai.png",
       "downloaded": true,
@@ -102,15 +99,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 5.451,
-        "race_distance_km": 305.066,
-        "first_grand_prix_year": 2004,
-        "number_of_laps": 56,
-        "fastest_lap_time": "1:32.238",
-        "fastest_lap_driver": "Michael Schumacher",
-        "fastest_lap_year": 2004
-      }
+      "raw_map_relative_path": "circuits/2026/raw/shanghai_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -129,8 +121,9 @@
       "formula1_url": "https://www.formula1.com/en/racing/2026/japan",
       "track_key": "suzuka",
       "image_kind": "track_detailed",
-      "source_card_image_url": "https://media.formula1.com/image/upload/c_lfill,w_720/q_auto/v1740000001/fom-website/static-assets/2026/races/card/japan.webp",
+      "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracksuzukadetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracksuzukadetailed.webp",
       "public_map_image_url": "/static/circuits/2026/suzuka.png",
       "relative_path": "circuits/2026/suzuka.png",
       "downloaded": true,
@@ -143,15 +136,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 5.807,
-        "race_distance_km": 307.471,
-        "first_grand_prix_year": 1987,
-        "number_of_laps": 53,
-        "fastest_lap_time": "1:30.965",
-        "fastest_lap_driver": "Kimi Antonelli",
-        "fastest_lap_year": 2025
-      }
+      "raw_map_relative_path": "circuits/2026/raw/suzuka_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -170,8 +158,9 @@
       "formula1_url": "https://www.formula1.com/en/racing/2026/miami",
       "track_key": "miami",
       "image_kind": "track_detailed",
-      "source_card_image_url": "https://media.formula1.com/image/upload/c_lfill,w_1296/q_auto/v1740000001/fom-website/static-assets/2026/races/card/miami.webp",
+      "source_card_image_url": "https://media.formula1.com/image/upload/c_lfill,w_720/q_auto/v1740000001/fom-website/static-assets/2026/races/card/miami.webp",
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmiamidetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmiamidetailed.webp",
       "public_map_image_url": "/static/circuits/2026/miami.png",
       "relative_path": "circuits/2026/miami.png",
       "downloaded": true,
@@ -184,15 +173,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 5.412,
-        "race_distance_km": 308.326,
-        "first_grand_prix_year": 2022,
-        "number_of_laps": 57,
-        "fastest_lap_time": "1:29.708",
-        "fastest_lap_driver": "Max Verstappen",
-        "fastest_lap_year": 2023
-      }
+      "raw_map_relative_path": "circuits/2026/raw/miami_map.webp",
+      "raw_card_relative_path": "circuits/2026/raw/miami_card.webp",
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -211,8 +195,9 @@
       "formula1_url": "https://www.formula1.com/en/racing/2026/canada",
       "track_key": "montreal",
       "image_kind": "track_detailed",
-      "source_card_image_url": "https://media.formula1.com/image/upload/c_lfill,w_720/q_auto/v1740000001/fom-website/static-assets/2026/races/card/canada.webp",
+      "source_card_image_url": "https://media.formula1.com/image/upload/c_lfill,w_1296/q_auto/v1740000001/fom-website/static-assets/2026/races/card/canada.webp",
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmontrealdetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmontrealdetailed.webp",
       "public_map_image_url": "/static/circuits/2026/villeneuve.png",
       "relative_path": "circuits/2026/villeneuve.png",
       "downloaded": true,
@@ -225,15 +210,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 4.361,
-        "race_distance_km": 305.27,
-        "first_grand_prix_year": 1978,
-        "number_of_laps": 70,
-        "fastest_lap_time": "1:13.078",
-        "fastest_lap_driver": "Valtteri Bottas",
-        "fastest_lap_year": 2019
-      }
+      "raw_map_relative_path": "circuits/2026/raw/villeneuve_map.webp",
+      "raw_card_relative_path": "circuits/2026/raw/villeneuve_card.webp",
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -254,6 +234,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": "https://media.formula1.com/image/upload/c_lfill,w_720/q_auto/v1740000001/fom-website/static-assets/2026/races/card/monaco.webp",
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmontecarlodetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmontecarlodetailed.webp",
       "public_map_image_url": "/static/circuits/2026/monaco.png",
       "relative_path": "circuits/2026/monaco.png",
       "downloaded": true,
@@ -266,15 +247,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 3.337,
-        "race_distance_km": 260.286,
-        "first_grand_prix_year": 1950,
-        "number_of_laps": 78,
-        "fastest_lap_time": "1:12.909",
-        "fastest_lap_driver": "Lewis Hamilton",
-        "fastest_lap_year": 2021
-      }
+      "raw_map_relative_path": "circuits/2026/raw/monaco_map.webp",
+      "raw_card_relative_path": "circuits/2026/raw/monaco_card.webp",
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -295,6 +271,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmadringdetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmadringdetailed.webp",
       "public_map_image_url": "/static/circuits/2026/catalunya.png",
       "relative_path": "circuits/2026/catalunya.png",
       "downloaded": true,
@@ -307,15 +284,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 5.416,
-        "race_distance_km": 308.524,
-        "first_grand_prix_year": 2026,
-        "number_of_laps": 57,
-        "fastest_lap_time": null,
-        "fastest_lap_driver": null,
-        "fastest_lap_year": null
-      }
+      "raw_map_relative_path": "circuits/2026/raw/catalunya_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -336,6 +308,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackspielbergdetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackspielbergdetailed.webp",
       "public_map_image_url": "/static/circuits/2026/red_bull_ring.png",
       "relative_path": "circuits/2026/red_bull_ring.png",
       "downloaded": true,
@@ -348,15 +321,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 4.326,
-        "race_distance_km": 307.018,
-        "first_grand_prix_year": 1970,
-        "number_of_laps": 71,
-        "fastest_lap_time": "1:07.924",
-        "fastest_lap_driver": "Oscar Piastri",
-        "fastest_lap_year": 2025
-      }
+      "raw_map_relative_path": "circuits/2026/raw/red_bull_ring_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -377,6 +345,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracksilverstonedetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracksilverstonedetailed.webp",
       "public_map_image_url": "/static/circuits/2026/silverstone.png",
       "relative_path": "circuits/2026/silverstone.png",
       "downloaded": true,
@@ -389,15 +358,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 5.891,
-        "race_distance_km": 306.198,
-        "first_grand_prix_year": 1950,
-        "number_of_laps": 52,
-        "fastest_lap_time": "1:27.097",
-        "fastest_lap_driver": "Max Verstappen",
-        "fastest_lap_year": 2020
-      }
+      "raw_map_relative_path": "circuits/2026/raw/silverstone_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -418,6 +382,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackspafrancorchampsdetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackspafrancorchampsdetailed.webp",
       "public_map_image_url": "/static/circuits/2026/spa.png",
       "relative_path": "circuits/2026/spa.png",
       "downloaded": true,
@@ -430,15 +395,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 7.004,
-        "race_distance_km": 308.052,
-        "first_grand_prix_year": 1950,
-        "number_of_laps": 44,
-        "fastest_lap_time": "1:44.701",
-        "fastest_lap_driver": "Sergio Perez",
-        "fastest_lap_year": 2024
-      }
+      "raw_map_relative_path": "circuits/2026/raw/spa_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -459,6 +419,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackhungaroringdetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackhungaroringdetailed.webp",
       "public_map_image_url": "/static/circuits/2026/hungaroring.png",
       "relative_path": "circuits/2026/hungaroring.png",
       "downloaded": true,
@@ -471,15 +432,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 4.381,
-        "race_distance_km": 306.63,
-        "first_grand_prix_year": 1986,
-        "number_of_laps": 70,
-        "fastest_lap_time": "1:16.627",
-        "fastest_lap_driver": "Lewis Hamilton",
-        "fastest_lap_year": 2020
-      }
+      "raw_map_relative_path": "circuits/2026/raw/hungaroring_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -500,6 +456,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackzandvoortdetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackzandvoortdetailed.webp",
       "public_map_image_url": "/static/circuits/2026/zandvoort.png",
       "relative_path": "circuits/2026/zandvoort.png",
       "downloaded": true,
@@ -512,15 +469,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 4.259,
-        "race_distance_km": 306.587,
-        "first_grand_prix_year": 1952,
-        "number_of_laps": 72,
-        "fastest_lap_time": "1:11.097",
-        "fastest_lap_driver": "Lewis Hamilton",
-        "fastest_lap_year": 2021
-      }
+      "raw_map_relative_path": "circuits/2026/raw/zandvoort_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -541,6 +493,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmonzadetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmonzadetailed.webp",
       "public_map_image_url": "/static/circuits/2026/monza.png",
       "relative_path": "circuits/2026/monza.png",
       "downloaded": true,
@@ -553,15 +506,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 5.793,
-        "race_distance_km": 306.72,
-        "first_grand_prix_year": 1950,
-        "number_of_laps": 53,
-        "fastest_lap_time": "1:20.901",
-        "fastest_lap_driver": "Lando Norris",
-        "fastest_lap_year": 2025
-      }
+      "raw_map_relative_path": "circuits/2026/raw/monza_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -582,6 +530,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmadringdetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmadringdetailed.webp",
       "public_map_image_url": "/static/circuits/2026/madring.png",
       "relative_path": "circuits/2026/madring.png",
       "downloaded": true,
@@ -594,15 +543,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 5.416,
-        "race_distance_km": 308.524,
-        "first_grand_prix_year": 2026,
-        "number_of_laps": 57,
-        "fastest_lap_time": null,
-        "fastest_lap_driver": null,
-        "fastest_lap_year": null
-      }
+      "raw_map_relative_path": "circuits/2026/raw/madring_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -623,6 +567,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackbakudetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackbakudetailed.webp",
       "public_map_image_url": "/static/circuits/2026/baku.png",
       "relative_path": "circuits/2026/baku.png",
       "downloaded": true,
@@ -635,15 +580,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 6.003,
-        "race_distance_km": 306.049,
-        "first_grand_prix_year": 2016,
-        "number_of_laps": 51,
-        "fastest_lap_time": "1:43.009",
-        "fastest_lap_driver": "Charles Leclerc",
-        "fastest_lap_year": 2019
-      }
+      "raw_map_relative_path": "circuits/2026/raw/baku_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -664,6 +604,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracksingaporedetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracksingaporedetailed.webp",
       "public_map_image_url": "/static/circuits/2026/marina_bay.png",
       "relative_path": "circuits/2026/marina_bay.png",
       "downloaded": true,
@@ -676,15 +617,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 4.927,
-        "race_distance_km": 305.337,
-        "first_grand_prix_year": 2008,
-        "number_of_laps": 62,
-        "fastest_lap_time": "1:33.808",
-        "fastest_lap_driver": "Lewis Hamilton",
-        "fastest_lap_year": 2025
-      }
+      "raw_map_relative_path": "circuits/2026/raw/marina_bay_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -705,6 +641,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackaustindetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackaustindetailed.webp",
       "public_map_image_url": "/static/circuits/2026/americas.png",
       "relative_path": "circuits/2026/americas.png",
       "downloaded": true,
@@ -717,15 +654,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 5.513,
-        "race_distance_km": 308.405,
-        "first_grand_prix_year": 2012,
-        "number_of_laps": 56,
-        "fastest_lap_time": "1:36.169",
-        "fastest_lap_driver": "Charles Leclerc",
-        "fastest_lap_year": 2019
-      }
+      "raw_map_relative_path": "circuits/2026/raw/americas_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -746,6 +678,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmexicocitydetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmexicocitydetailed.webp",
       "public_map_image_url": "/static/circuits/2026/rodriguez.png",
       "relative_path": "circuits/2026/rodriguez.png",
       "downloaded": true,
@@ -758,15 +691,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 4.304,
-        "race_distance_km": 305.354,
-        "first_grand_prix_year": 1963,
-        "number_of_laps": 71,
-        "fastest_lap_time": "1:17.774",
-        "fastest_lap_driver": "Valtteri Bottas",
-        "fastest_lap_year": 2021
-      }
+      "raw_map_relative_path": "circuits/2026/raw/rodriguez_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -787,6 +715,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackinterlagosdetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackinterlagosdetailed.webp",
       "public_map_image_url": "/static/circuits/2026/interlagos.png",
       "relative_path": "circuits/2026/interlagos.png",
       "downloaded": true,
@@ -799,15 +728,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 4.309,
-        "race_distance_km": 305.879,
-        "first_grand_prix_year": 1973,
-        "number_of_laps": 71,
-        "fastest_lap_time": "1:10.540",
-        "fastest_lap_driver": "Valtteri Bottas",
-        "fastest_lap_year": 2018
-      }
+      "raw_map_relative_path": "circuits/2026/raw/interlagos_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -828,6 +752,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracklasvegasdetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracklasvegasdetailed.webp",
       "public_map_image_url": "/static/circuits/2026/vegas.png",
       "relative_path": "circuits/2026/vegas.png",
       "downloaded": true,
@@ -840,15 +765,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 6.201,
-        "race_distance_km": 309.958,
-        "first_grand_prix_year": 2023,
-        "number_of_laps": 50,
-        "fastest_lap_time": "1:33.365",
-        "fastest_lap_driver": "Max Verstappen",
-        "fastest_lap_year": 2025
-      }
+      "raw_map_relative_path": "circuits/2026/raw/vegas_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -869,6 +789,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracklusaildetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracklusaildetailed.webp",
       "public_map_image_url": "/static/circuits/2026/losail.png",
       "relative_path": "circuits/2026/losail.png",
       "downloaded": true,
@@ -881,15 +802,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 5.419,
-        "race_distance_km": 308.611,
-        "first_grand_prix_year": 2021,
-        "number_of_laps": 57,
-        "fastest_lap_time": "1:22.384",
-        "fastest_lap_driver": "Lando Norris",
-        "fastest_lap_year": 2024
-      }
+      "raw_map_relative_path": "circuits/2026/raw/losail_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     },
     {
       "season": 2026,
@@ -910,6 +826,7 @@
       "image_kind": "track_detailed",
       "source_card_image_url": null,
       "source_map_image_url": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackyasmarinacircuitdetailed.png",
+      "source_map_image_url_raw": "https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackyasmarinacircuitdetailed.webp",
       "public_map_image_url": "/static/circuits/2026/yas_marina.png",
       "relative_path": "circuits/2026/yas_marina.png",
       "downloaded": true,
@@ -922,15 +839,10 @@
       "error_detail": null,
       "detail_width": 400,
       "detail_height": 300,
-      "stats": {
-        "circuit_length_km": 5.281,
-        "race_distance_km": 306.183,
-        "first_grand_prix_year": 2009,
-        "number_of_laps": 58,
-        "fastest_lap_time": "1:25.637",
-        "fastest_lap_driver": "Kevin Magnussen",
-        "fastest_lap_year": 2024
-      }
+      "raw_map_relative_path": "circuits/2026/raw/yas_marina_map.webp",
+      "raw_card_relative_path": null,
+      "raw_map_error": null,
+      "raw_card_error": null
     }
   ]
 }

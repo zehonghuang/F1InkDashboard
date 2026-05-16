@@ -5,20 +5,17 @@ Component({
       {
         key: 'archive',
         pagePath: '/pages/archive/index',
-        img: '/assets/tabbar/archive.png',
-        currentImg: '/assets/tabbar/archive_selected.png'
+        icon: 'barrage'
       },
       {
         key: 'compare',
         pagePath: '/pages/compare/index',
-        img: '/assets/tabbar/compare.png',
-        currentImg: '/assets/tabbar/compare_selected.png'
+        icon: 'dynamic'
       },
       {
         key: 'mine',
         pagePath: '/pages/mine/index',
-        img: '/assets/tabbar/mine.png',
-        currentImg: '/assets/tabbar/mine_selected.png'
+        icon: 'mine'
       }
     ]
   },

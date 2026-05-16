@@ -1,10 +1,10 @@
 <view class="tabbar">
   <block wx:for="{{ list }}" wx:key="key">
     <view class="tabbar-item" bindtap="onTapItem" data-key="{{ item.key }}">
-      <image
-        class="tabbar-icon"
-        mode="aspectFit"
-        src="{{ selected === item.key ? item.currentImg : item.img }}"
+      <i-icon
+        type="{{ item.icon }}"
+        size="24"
+        color="{{ selected === item.key ? '#ffffff' : 'rgba(255,255,255,0.55)' }}"
       />
     </view>
   </block>

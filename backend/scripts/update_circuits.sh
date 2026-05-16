@@ -8,6 +8,7 @@ WIDTH="${WIDTH:-200}"
 HEIGHT="${HEIGHT:-130}"
 DETAIL_WIDTH="${DETAIL_WIDTH:-400}"
 DETAIL_HEIGHT="${DETAIL_HEIGHT:-300}"
+SAVE_RAW="${SAVE_RAW:-1}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -23,7 +24,7 @@ fi
 
 cd "${BACKEND_DIR}"
 
-ARGS=( -u scripts/update_circuits.py --season "${SEASON}" --width "${WIDTH}" --height "${HEIGHT}" --detail-width "${DETAIL_WIDTH}" --detail-height "${DETAIL_HEIGHT}" )
+ARGS=( -u scripts/update_circuits.py --season "${SEASON}" --width "${WIDTH}" --height "${HEIGHT}" --detail-width "${DETAIL_WIDTH}" --detail-height "${DETAIL_HEIGHT}" --save-raw "${SAVE_RAW}" )
 if [[ "${FORCE}" != "0" ]]; then
   ARGS+=( --force )
 fi
