@@ -2,6 +2,8 @@
   "pages": [
     "pages/archive/index",
     "pages/race-sessions/index",
+    "pages/session-results/index",
+    "pages/driver/index",
     "pages/compare/index",
     "pages/mine/index"
   ],

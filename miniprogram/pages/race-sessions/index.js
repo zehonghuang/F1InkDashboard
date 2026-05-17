@@ -68,11 +68,17 @@ Page({
   },
   onSessionTap(e) {
     const disabled = !!e.currentTarget.dataset.disabled
-    const key = e.currentTarget.dataset.key
     if (disabled) {
       return
     }
-    wx.showToast({ title: `${key} 开发中`, icon: "none" })
+    const sessionKey = Number(e.currentTarget.dataset.sessionKey || 0)
+    const sessionName = e.currentTarget.dataset.sessionName || ""
+    const raceName = e.currentTarget.dataset.raceName || this.data.raceName || ""
+    if (!sessionKey) {
+      return
+    }
+    wx.navigateTo({
+      url: `/pages/session-results/index?sessionKey=${sessionKey}&sessionName=${encodeURIComponent(sessionName)}&raceName=${encodeURIComponent(raceName)}`
+    })
   }
 })
-

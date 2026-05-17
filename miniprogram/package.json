@@ -8,6 +8,8 @@
     "postinstall": "node scripts/prepare-mp.js"
   },
   "dependencies": {
+    "echarts-for-weixin": "^1.0.2",
+    "echarts": "^5.3.3",
     "iview-weapp": "^2.0.0",
     "tdesign-miniprogram": "^1.14.0"
   }

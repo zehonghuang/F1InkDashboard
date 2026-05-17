@@ -8,7 +8,7 @@
     <view class="section-title">Sessions</view>
     <view class="list">
       <block wx:for="{{sessions}}" wx:key="key">
-        <view class="row {{item.disabled ? 'row-disabled' : ''}}" bindtap="onSessionTap" data-key="{{item.key}}" data-disabled="{{item.disabled}}">
+        <view class="row {{item.disabled ? 'row-disabled' : ''}}" bindtap="onSessionTap" data-key="{{item.key}}" data-disabled="{{item.disabled}}" data-session-key="{{item.openf1_session_key}}" data-session-name="{{item.name_cn}}" data-race-name="{{raceName}}">
           <view class="row-left">
             <view class="row-name">{{item.name_cn}}</view>
             <view class="row-sub">{{item.name_en}}</view>
@@ -22,4 +22,3 @@
     </view>
   </view>
 </view>
-

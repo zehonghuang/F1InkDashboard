@@ -64,4 +64,3 @@
 .row-disabled {
   opacity: 0.45;
 }
-

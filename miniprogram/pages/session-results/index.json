@@ -1,0 +1,7 @@
+{
+  "usingComponents": {},
+  "navigationBarTitleText": "车手排名",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
+}
+

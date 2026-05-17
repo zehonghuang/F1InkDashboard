@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "ec-canvas": "/components/ec-canvas/index"
+  },
+  "navigationBarTitleText": "车手",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
+}

@@ -1,0 +1,12 @@
+<view class="page">
+  <view class="header">
+    <view class="title">{{driverName}}</view>
+    <view class="subtitle">{{raceName}} · {{sessionName}}</view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">油门 / 刹车</view>
+    <view class="section-desc" wx:if="{{lapInfo}}">{{lapInfo}}</view>
+    <ec-canvas canvasId="tb_chart" option="{{chartOption}}" />
+  </view>
+</view>

@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 const zlib = require('zlib');
 const { execFileSync } = require('child_process');
 
@@ -153,7 +154,23 @@ function writePngIcon(dstPath, kind, selected) {
   fs.writeFileSync(dstPath, img);
 }
 
-function main() {
+function downloadBuffer(url) {
+  return new Promise((resolve, reject) => {
+    https
+      .get(url, (res) => {
+        if (!res || res.statusCode !== 200) {
+          reject(new Error(`download_failed: ${url} status=${res && res.statusCode}`));
+          return;
+        }
+        const chunks = [];
+        res.on('data', (d) => chunks.push(d));
+        res.on('end', () => resolve(Buffer.concat(chunks)));
+      })
+      .on('error', reject);
+  });
+}
+
+async function main() {
   const pkgRoot = path.join(projectRoot, 'node_modules', 'iview-weapp');
   const srcDist = path.join(pkgRoot, 'dist');
   const outPkgRoot = path.join(projectRoot, 'miniprogram_npm', 'iview-weapp');
@@ -238,6 +255,30 @@ function main() {
   const base64Dst = path.join(projectRoot, 'assets', 'fonts', 'formula1_base64.js');
   const base64 = fs.readFileSync(fontDst).toString('base64');
   fs.writeFileSync(base64Dst, `module.exports = "${base64}";\n`);
+
+  const echartsVendor = path.join(projectRoot, 'components', 'ec-canvas', 'vendor');
+  ensureDirSync(echartsVendor);
+  const vendorFiles = [
+    {
+      name: 'echarts.js',
+      url: 'https://raw.githubusercontent.com/Qiue-G/echarts-for-weixin/master/ec-canvas/echarts.js'
+    },
+    {
+      name: 'wx-canvas.js',
+      url: 'https://raw.githubusercontent.com/Qiue-G/echarts-for-weixin/master/ec-canvas/wx-canvas.js'
+    }
+  ];
+  for (const it of vendorFiles) {
+    const dst = path.join(echartsVendor, it.name);
+    if (fs.existsSync(dst) && fs.statSync(dst).size > 0) {
+      continue;
+    }
+    const buf = await downloadBuffer(it.url);
+    fs.writeFileSync(dst, buf);
+  }
 }
 
-main();
+main().catch((e) => {
+  console.error(e && e.stack ? e.stack : String(e));
+  process.exit(1);
+});

@@ -1,0 +1,66 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.14);
+  border-radius: 12rpx;
+  background: #000000;
+}
+
+.card-left {
+  width: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.avatar {
+  width: 72rpx;
+  height: 72rpx;
+}
+
+.card-mid {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.driver {
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 24rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lap {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 24rpx;
+}
+
+.card-right {
+  width: 72rpx;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.pos {
+  font-weight: 800;
+  font-size: 34rpx;
+}

@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 
@@ -73,7 +74,12 @@ func MpRaceSessions(db *gorm.DB) gin.HandlerFunc {
 			{Key: "RACE", NameCN: "正赛", NameEN: "Race", Duration: 120 * time.Minute},
 		}
 
-		out := make([]any, 0, len(specs))
+		type tmpItem struct {
+			Dt   time.Time
+			Done bool
+			Obj  any
+		}
+		tmp := make([]tmpItem, 0, len(specs))
 		for _, sp := range specs {
 			dtUTC, sk, ok := scheduleSessionFromRace(race, sp.Key)
 			if !ok || dtUTC.IsZero() {
@@ -88,21 +94,44 @@ func MpRaceSessions(db *gorm.DB) gin.HandlerFunc {
 			}
 			disabled := status != "done"
 
-			out = append(out, gin.H{
-				"key":              sp.Key,
-				"name_cn":          sp.NameCN,
-				"name_en":          sp.NameEN,
-				"start_utc":        dtUTC.Format(time.RFC3339Nano),
-				"start_local":      dtUTC.In(loc).Format("01.02 15:04"),
-				"status":           status,
-				"disabled":         disabled,
+			tmp = append(tmp, tmpItem{Dt: dtUTC, Done: status == "done", Obj: gin.H{
+				"key":         sp.Key,
+				"name_cn":     sp.NameCN,
+				"name_en":     sp.NameEN,
+				"start_utc":   dtUTC.Format(time.RFC3339Nano),
+				"start_local": dtUTC.In(loc).Format("01.02 15:04"),
+				"status":      status,
+				"disabled":    disabled,
 				"openf1_session_key": func() any {
 					if sk <= 0 {
 						return nil
 					}
 					return sk
 				}(),
-			})
+			}})
+		}
+
+		upcoming := make([]tmpItem, 0, len(tmp))
+		doneItems := make([]tmpItem, 0, len(tmp))
+		for _, it := range tmp {
+			if it.Done {
+				doneItems = append(doneItems, it)
+				continue
+			}
+			upcoming = append(upcoming, it)
+		}
+		sort.SliceStable(upcoming, func(i, j int) bool {
+			return upcoming[i].Dt.Before(upcoming[j].Dt)
+		})
+		sort.SliceStable(doneItems, func(i, j int) bool {
+			return doneItems[i].Dt.After(doneItems[j].Dt)
+		})
+		out := make([]any, 0, len(tmp))
+		for _, it := range upcoming {
+			out = append(out, it.Obj)
+		}
+		for _, it := range doneItems {
+			out = append(out, it.Obj)
 		}
 
 		c.JSON(200, gin.H{
@@ -155,4 +184,3 @@ func parseScheduleSubSession(race map[string]any, field string) (time.Time, int,
 	}
 	return dt.UTC(), sk, true
 }
-
