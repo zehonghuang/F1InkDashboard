@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const { execFileSync } = require('child_process');
 
 const projectRoot = path.resolve(__dirname, '..');
 
@@ -212,6 +213,20 @@ function main() {
     fs.copyFileSync(path.join(circuitsRawSrcDir, ent.name), path.join(circuitsRawDstDir, ent.name));
   }
 
+  const circuitsPngDstDir = path.join(circuitsDstDir, 'maps');
+  fs.rmSync(circuitsPngDstDir, { recursive: true, force: true });
+  ensureDirSync(circuitsPngDstDir);
+  const copiedWebps = fs.readdirSync(circuitsRawDstDir, { withFileTypes: true });
+  for (const ent of copiedWebps) {
+    if (!ent.isFile()) continue;
+    if (!ent.name.endsWith('_map.webp')) continue;
+    const src = path.join(circuitsRawDstDir, ent.name);
+    const dst = path.join(circuitsPngDstDir, ent.name.replace(/\.webp$/i, '.png'));
+    execFileSync('ffmpeg', ['-y', '-v', 'error', '-i', src, '-vf', 'scale=320:-1', dst], {
+      stdio: 'inherit'
+    });
+  }
+
   const fontSrc = path.join(repoRoot, 'font', 'Formula1-Bold_web_0.ttf');
   const fontDst = path.join(projectRoot, 'assets', 'fonts', 'Formula1-Bold.ttf');
   if (!fs.existsSync(fontSrc)) {
@@ -219,6 +234,10 @@ function main() {
   }
   ensureDirSync(path.dirname(fontDst));
   fs.copyFileSync(fontSrc, fontDst);
+
+  const base64Dst = path.join(projectRoot, 'assets', 'fonts', 'formula1_base64.js');
+  const base64 = fs.readFileSync(fontDst).toString('base64');
+  fs.writeFileSync(base64Dst, `module.exports = "${base64}";\n`);
 }
 
 main();

@@ -8,6 +8,7 @@
     "postinstall": "node scripts/prepare-mp.js"
   },
   "dependencies": {
-    "iview-weapp": "^2.0.0"
+    "iview-weapp": "^2.0.0",
+    "tdesign-miniprogram": "^1.14.0"
   }
 }

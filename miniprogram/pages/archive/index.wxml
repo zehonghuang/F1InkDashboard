@@ -1,4 +1,4 @@
-<view class="page">
+<view class="page has-tabbar">
   <view class="header">
     <view class="title">T O N I C  F 1  数 据 分 析</view>
     <view class="subtitle">Telemetry • Analysis • Archive</view>
@@ -15,8 +15,8 @@
 
   <view class="race-list">
     <block wx:for="{{races}}" wx:key="id">
-      <view class="race-card" bindtap="onRaceTap" data-id="{{item.id}}" data-name="{{item.name}}">
-        <race-card thumb="{{item.thumb}}" title="{{item.name}}" extra="{{item.date}}">
+      <view class="race-card" bindtap="onRaceTap" data-id="{{item.id}}" data-name="{{item.name}}" data-round="{{item.round}}">
+        <race-card thumb="{{item.thumb}}" fallbackThumb="{{item.thumbFallback}}" title="{{item.name}}" extra="{{item.date}}">
           <view slot="content">
             <view class="race-kv">分站冠军：{{item.winner}}</view>
             <view class="race-kv">正赛最快圈：{{item.fastestLap}}</view>

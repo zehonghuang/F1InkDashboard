@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+import subprocess
 import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
@@ -283,6 +285,29 @@ def _ext_from_content_type(ctype: Optional[str]) -> str:
     return "bin"
 
 
+def _ensure_png(src: Path, dst: Path) -> Optional[str]:
+    try:
+        if dst.exists() and dst.stat().st_size > 0:
+            return None
+    except Exception:
+        pass
+    try:
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        if src.suffix.lower() == ".png":
+            shutil.copyfile(src, dst)
+            return None
+        subprocess.run(
+            ["ffmpeg", "-y", "-v", "error", "-i", str(src), str(dst)],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        return None
+    except Exception as ex:
+        return str(ex)
+
+
 async def fetch_f1_circuit_assets(
     client: Any,
     year: int,
@@ -406,6 +431,8 @@ async def fetch_f1_circuit_assets(
         raw_card_path: Optional[str] = None
         raw_map_error: Optional[str] = None
         raw_card_error: Optional[str] = None
+        raw_map_png_path: Optional[str] = None
+        raw_map_png_error: Optional[str] = None
 
         if source_map_image_url:
             if not source_map_image_url_raw:
@@ -443,6 +470,11 @@ async def fetch_f1_circuit_assets(
                     if force_download or not p.exists() or p.stat().st_size == 0:
                         p.write_bytes(b0)
                     raw_map_path = f"circuits/{year}/raw/{fn}"
+                    png_fn = f"{circuit_id}_map.png"
+                    png_p = raw_dir / png_fn
+                    raw_map_png_error = _ensure_png(p, png_p)
+                    if raw_map_png_error is None and png_p.exists() and png_p.stat().st_size > 0:
+                        raw_map_png_path = f"circuits/{year}/raw/{png_fn}"
                 else:
                     raw_map_error = err0
 
@@ -492,8 +524,10 @@ async def fetch_f1_circuit_assets(
                 "detail_width": detail_width,
                 "detail_height": detail_height,
                 "raw_map_relative_path": raw_map_path,
+                "raw_map_png_relative_path": raw_map_png_path,
                 "raw_card_relative_path": raw_card_path,
                 "raw_map_error": raw_map_error,
+                "raw_map_png_error": raw_map_png_error,
                 "raw_card_error": raw_card_error,
             }
         )

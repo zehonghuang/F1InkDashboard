@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/archive/index",
+    "pages/race-sessions/index",
     "pages/compare/index",
     "pages/mine/index"
   ],

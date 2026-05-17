@@ -1,0 +1,25 @@
+<view class="page">
+  <view class="header">
+    <view class="title">{{raceName}}</view>
+    <view class="subtitle">{{season}} 赛季 · 第 {{round}} 站</view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">Sessions</view>
+    <view class="list">
+      <block wx:for="{{sessions}}" wx:key="key">
+        <view class="row {{item.disabled ? 'row-disabled' : ''}}" bindtap="onSessionTap" data-key="{{item.key}}" data-disabled="{{item.disabled}}">
+          <view class="row-left">
+            <view class="row-name">{{item.name_cn}}</view>
+            <view class="row-sub">{{item.name_en}}</view>
+          </view>
+          <view class="row-right">
+            <view class="row-time">{{item.start_local}}</view>
+            <view class="row-status">{{item.statusText}}</view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+</view>
+

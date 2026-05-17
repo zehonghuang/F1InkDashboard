@@ -2,5 +2,7 @@
   "usingComponents": {
     "race-card": "/components/race-card/index"
   },
-  "navigationBarTitleText": "归档"
+  "navigationBarTitleText": "归档",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
 }

@@ -1,4 +1,4 @@
-<view class="page">
+<view class="page has-tabbar">
   <view class="header">
     <view class="title">⚖️ 全局性能对比</view>
     <view class="subtitle">跨分站/多车手脚法对齐</view>
