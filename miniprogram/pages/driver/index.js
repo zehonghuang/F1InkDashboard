@@ -6,6 +6,10 @@ Page({
     raceName: "",
     sessionName: "",
     lapInfo: "",
+    showLapPicker: false,
+    lapOptions: [{ label: "最快圈", value: 0 }],
+    lapIndex: 0,
+    selectedLapNumber: 0,
     chartOptionTB: null,
     chartOptionSpeed: null
   },
@@ -15,15 +19,70 @@ Page({
     const driverName = decodeURIComponent(options.driverName || "")
     const raceName = decodeURIComponent(options.raceName || "")
     const sessionName = decodeURIComponent(options.sessionName || "")
-    this.setData({ sessionKey, driverNumber, driverName, raceName, sessionName }, () => {
+    const showLapPicker = /正赛/.test(sessionName) || /\brace\b/i.test(sessionName)
+    this.setData({ sessionKey, driverNumber, driverName, raceName, sessionName, showLapPicker }, () => {
       if (driverName) {
         wx.setNavigationBarTitle({ title: driverName })
+      }
+      if (showLapPicker) {
+        this.loadLapOptions()
       }
       this.loadChart()
     })
   },
   onPullDownRefresh() {
     this.loadChart({ isPullDown: true })
+  },
+  onLapChange(e) {
+    const idx = Number((e && e.detail && e.detail.value) || 0)
+    const opt = (this.data.lapOptions && this.data.lapOptions[idx]) || { value: 0 }
+    const ln = Number(opt.value || 0)
+    this.setData({ lapIndex: idx, selectedLapNumber: ln }, () => {
+      this.loadChart()
+    })
+  },
+  loadLapOptions() {
+    const app = getApp()
+    const apiBase = (app && app.globalData && app.globalData.apiBase) || ""
+    if (!apiBase || !this.data.sessionKey || !this.data.driverNumber) {
+      return
+    }
+
+    const formatLapDuration = (seconds) => {
+      const s = Number(seconds)
+      if (!Number.isFinite(s) || s <= 0) return ""
+      const m = Math.floor(s / 60)
+      const rem = s - m * 60
+      const remFixed = rem.toFixed(3)
+      const [secStr, fracStr = ""] = remFixed.split(".")
+      const sec2 = secStr.padStart(2, "0")
+      return `${m}:${sec2}.${fracStr}`
+    }
+
+    const url = `${apiBase.replace(/\/+$/, "")}/api/v1/telemetry/laps?session_key=${this.data.sessionKey}&driver_number=${this.data.driverNumber}`
+    wx.request({
+      url,
+      method: "GET",
+      success: (res) => {
+        const data = (res && res.data) || {}
+        const laps = Array.isArray(data.laps) ? data.laps : []
+        const opts = [{ label: "最快圈", value: 0 }]
+        for (const it of laps) {
+          const ln = Number(it && it.lap_number)
+          const dur = it && it.lap_duration
+          if (!ln || !(Number(dur) > 0)) continue
+          const t = formatLapDuration(dur)
+          opts.push({ label: `L${ln}${t ? ` ${t}` : ""}`, value: ln })
+        }
+        const curValue = Number(this.data.selectedLapNumber || 0)
+        let nextIndex = 0
+        if (curValue > 0) {
+          const found = opts.findIndex((x) => Number(x.value) === curValue)
+          if (found >= 0) nextIndex = found
+        }
+        this.setData({ lapOptions: opts, lapIndex: nextIndex })
+      }
+    })
   },
   loadChart(opts) {
     const done = () => {
@@ -37,7 +96,9 @@ Page({
       done()
       return
     }
-    const url = `${apiBase.replace(/\/+$/, "")}/api/v1/mp/telemetry/sector_controls?session_key=${this.data.sessionKey}&driver_number=${this.data.driverNumber}&max_points=900`
+    const ln = Number(this.data.selectedLapNumber || 0)
+    const lapParam = ln > 0 ? `&lap_number=${ln}` : ""
+    const url = `${apiBase.replace(/\/+$/, "")}/api/v1/mp/telemetry/sector_controls?session_key=${this.data.sessionKey}&driver_number=${this.data.driverNumber}&max_points=900${lapParam}`
     wx.request({
       url,
       method: "GET",
@@ -52,7 +113,9 @@ Page({
         const throttle = points.map((p) => toNumOrNull(p && p.throttle))
         const brake = points.map((p) => toNumOrNull(p && p.brake))
         const speed = points.map((p) => toNumOrNull(p && p.speed))
-        const lapInfo = data.lap_time ? `最快圈${data.lap_number ? ` L${data.lap_number}` : ""} ${data.lap_time}` : ""
+        const lapInfo = data.lap_time
+          ? `${ln > 0 ? `L${data.lap_number || ln}` : `最快圈${data.lap_number ? ` L${data.lap_number}` : ""}`} ${data.lap_time}`
+          : ""
 
         const nPoints = x.length
         const i1 = Number.isFinite(data.s1_end_i) ? data.s1_end_i : Math.floor(nPoints / 3)
