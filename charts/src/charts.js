@@ -73,6 +73,36 @@ function formatLapClock(seconds, fracDigits = 2) {
   return `${sign}${m}:${sec2}.${fracStr}`;
 }
 
+function sectorLinesPlugin(lines) {
+  const safe = (Array.isArray(lines) ? lines : []).filter((x) => x && Number.isFinite(x.x));
+  return {
+    id: "sectorLines",
+    afterDraw(chart) {
+      if (!safe.length) return;
+      const xScale = chart.scales?.x;
+      if (!xScale) return;
+      const { ctx, chartArea } = chart;
+      ctx.save();
+      ctx.strokeStyle = "rgba(30,30,30,0.35)";
+      ctx.fillStyle = "rgba(30,30,30,0.55)";
+      ctx.lineWidth = 1;
+      for (const ln of safe) {
+        const px = xScale.getPixelForValue(ln.x);
+        if (!Number.isFinite(px)) continue;
+        ctx.beginPath();
+        ctx.moveTo(px, chartArea.top);
+        ctx.lineTo(px, chartArea.bottom);
+        ctx.stroke();
+        if (ln.label) {
+          ctx.font = "12px sans-serif";
+          ctx.fillText(String(ln.label), px + 4, chartArea.top + 14);
+        }
+      }
+      ctx.restore();
+    }
+  };
+}
+
 export function renderLapTimeChart(canvas, labels, laps) {
   const dataLap = laps.map((x) => x.lap_duration ?? null);
   const s1 = laps.map((x) => x.duration_sector_1 ?? null);
@@ -174,5 +204,138 @@ export function renderLapTraceChart(canvas, points) {
       ]
     },
     options: opt
+  });
+}
+
+export function renderLapControlsSeriesChart(canvas, payload) {
+  const points = payload?.points || [];
+  const n = points.length;
+
+  const s1ms = payload?.s1_end_ms != null ? Number(payload.s1_end_ms) : null;
+  const s2ms = payload?.s2_end_ms != null ? Number(payload.s2_end_ms) : null;
+  const tend = payload?.t_end_ms != null ? Number(payload.t_end_ms) : null;
+
+  const tAt = (idx) => {
+    if (idx == null) return null;
+    const p = points[idx];
+    if (!p) return null;
+    const t = p?.[0];
+    const x = Number(t);
+    return Number.isFinite(x) ? x : null;
+  };
+
+  let t1 = Number.isFinite(s1ms) ? s1ms : null;
+  let t2 = Number.isFinite(s2ms) ? s2ms : null;
+  let t3 = Number.isFinite(tend) ? tend : null;
+
+  if (t1 == null && Number.isFinite(payload?.s1_end_i)) t1 = tAt(Number(payload.s1_end_i));
+  if (t2 == null && Number.isFinite(payload?.s2_end_i)) t2 = tAt(Number(payload.s2_end_i));
+  if (t3 == null && n > 0) t3 = tAt(n - 1);
+
+  if (n > 0 && (t1 == null || t2 == null || t3 == null || !(t1 > 0) || !(t2 > t1) || !(t3 > t2))) {
+    t1 = tAt(Math.floor(n / 3)) ?? 0;
+    t2 = tAt(Math.floor((n * 2) / 3)) ?? t1 + 1;
+    t3 = tAt(n - 1) ?? t2 + 1;
+  }
+
+  const lines = [
+    { x: 1, label: "S1" },
+    { x: 2, label: "S2" }
+  ];
+
+  const toNormX = (tMs) => {
+    if (tMs == null || !Number.isFinite(tMs)) return null;
+    const t = Number(tMs);
+    const a0 = 0;
+    const a1 = Number(t1 ?? 0);
+    const a2 = Number(t2 ?? 0);
+    const a3 = Number(t3 ?? 0);
+
+    if (t < a1) {
+      const den = Math.max(1, a1 - a0);
+      return 0 + Math.max(0, Math.min(1, (t - a0) / den));
+    }
+    if (t < a2) {
+      const den = Math.max(1, a2 - a1);
+      return 1 + Math.max(0, Math.min(1, (t - a1) / den));
+    }
+    const den = Math.max(1, a3 - a2);
+    return 2 + Math.max(0, Math.min(1, (t - a2) / den));
+  };
+
+  const speed = [];
+  const th = [];
+  const br = [];
+  for (const p of points) {
+    const tMs = p?.[0];
+    const x = toNormX(Number(tMs));
+    if (x == null) continue;
+    speed.push({ x, y: p?.[1] ?? null, t_s: Number(tMs) / 1000.0 });
+    th.push({ x, y: p?.[2] ?? null, t_s: Number(tMs) / 1000.0 });
+    br.push({ x, y: p?.[3] ?? null, t_s: Number(tMs) / 1000.0 });
+  }
+
+  const opt = baseOptions({ title: "Sectors (X=3 Sectors)" });
+  opt.scales = {
+    x: {
+      type: "linear",
+      min: 0,
+      max: 3,
+      grid: { color: "#e6e6e6" },
+      ticks: {
+        color: "#111",
+        callback: (v) => {
+          const x = Number(v);
+          if (Math.abs(x - 0.5) < 0.001) return "S1";
+          if (Math.abs(x - 1.5) < 0.001) return "S2";
+          if (Math.abs(x - 2.5) < 0.001) return "S3";
+          return "";
+        },
+        maxTicksLimit: 7
+      }
+    },
+    ySpeed: {
+      position: "left",
+      grid: { color: "#e6e6e6" },
+      ticks: { color: "#111" },
+      title: { display: true, text: "Speed (km/h)", color: "#111" }
+    },
+    yCtrl: {
+      position: "right",
+      min: 0,
+      max: 100,
+      grid: { drawOnChartArea: false },
+      ticks: { color: "#111" },
+      title: { display: true, text: "Controls (%)", color: "#111" }
+    }
+  };
+  opt.plugins.tooltip.callbacks = {
+    title: (items) => {
+      const it = items?.[0];
+      const raw = it?.raw;
+      const ts = raw?.t_s;
+      if (ts == null || !Number.isFinite(ts)) return "";
+      return formatLapClock(Number(ts), 2);
+    },
+    label: (ctx) => {
+      const y = ctx?.parsed?.y;
+      const name = ctx?.dataset?.label || "";
+      if (y == null || !Number.isFinite(y)) return `${name}: N/A`;
+      if (name === "Speed") return `${name}: ${Number(y).toFixed(0)} km/h`;
+      return `${name}: ${Number(y).toFixed(0)}%`;
+    }
+  };
+
+  return new Chart(canvas, {
+    type: "line",
+    data: {
+      datasets: [
+        { ...ds({ label: "Speed", data: speed, color: "#111111" }), yAxisID: "ySpeed" },
+        { ...ds({ label: "Throttle", data: th, color: "#444444", dash: [8, 5] }), yAxisID: "yCtrl" },
+        { ...ds({ label: "Brake", data: br, color: "#777777", dash: [2, 4], pointStyle: "dot" }), yAxisID: "yCtrl" }
+      ]
+    },
+    options: opt,
+    plugins: [sectorLinesPlugin(lines)]
   });
 }

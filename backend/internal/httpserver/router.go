@@ -74,6 +74,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/mp/race-sessions", handlers.MpRaceSessions(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/session-results", handlers.MpSessionResults(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/telemetry/controls", handlers.MpTelemetryControls(gormOrNil(database)))
+	s.Router.GET("/api/v1/mp/telemetry/sector_controls", handlers.MpTelemetrySectorControls(gormOrNil(database)))
 
 	s.Router.GET("/api/v1/f1/sessions", handlers.F1Sessions(cfg, gormOrNil(database), s.Cache))
 	s.Router.GET("/api/v1/f1/sessions/current", handlers.F1SessionsCurrentExplicit(cfg, gormOrNil(database), s.Cache))
@@ -82,6 +83,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/telemetry/laps/available", handlers.TelemetryLapsAvailable(gormOrNil(database)))
 	s.Router.GET("/api/v1/telemetry/laps", handlers.TelemetryLaps(gormOrNil(database)))
 	s.Router.GET("/api/v1/telemetry/lap_controls", handlers.TelemetryLapControls(gormOrNil(database)))
+	s.Router.GET("/api/v1/telemetry/lap_controls_series", handlers.TelemetryLapControlsSeries(gormOrNil(database)))
 	s.Router.GET("/api/v1/telemetry/lap_trace", handlers.TelemetryLapTrace(gormOrNil(database)))
 	s.Router.GET("/api/v1/telemetry/fastest_lap", handlers.TelemetryFastestLap(gormOrNil(database)))
 

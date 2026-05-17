@@ -1,6 +1,6 @@
 import "./styles.css";
-import { fetchAvailableDrivers, fetchLaps, fetchLapTrace, apiBase } from "./api";
-import { destroyIfAny, renderLapTimeChart, renderSpeedChart, renderLapTraceChart } from "./charts";
+import { fetchAvailableDrivers, fetchLaps, fetchLapTrace, fetchLapControlsSeries, apiBase } from "./api";
+import { destroyIfAny, renderLapTimeChart, renderSpeedChart, renderLapTraceChart, renderLapControlsSeriesChart } from "./charts";
 
 function el(tag, props = {}, children = []) {
   const e = document.createElement(tag);
@@ -44,11 +44,31 @@ function sliceArrayByThird(arr, part) {
   return arr.slice(Math.max(b2, 0));
 }
 
+function fastestLapNumber(allLaps) {
+  let bestLn = null;
+  let bestDur = null;
+  for (const it of allLaps || []) {
+    if (it?.is_pit_out_lap === true) continue;
+    const ln = it?.lap_number;
+    const dur = it?.lap_duration;
+    if (ln == null || dur == null) continue;
+    const lnI = Number(ln);
+    const durF = Number(dur);
+    if (!Number.isFinite(lnI) || !Number.isFinite(durF) || durF <= 0) continue;
+    if (bestDur == null || durF < bestDur || (durF === bestDur && lnI < bestLn)) {
+      bestDur = durF;
+      bestLn = lnI;
+    }
+  }
+  return bestLn;
+}
+
 async function bootstrap() {
   const root = document.getElementById("app");
   const lapChartRef = { current: null };
   const speedChartRef = { current: null };
   const traceChartRef = { current: null };
+  const seriesChartRef = { current: null };
 
   const title = el("div", { className: "title", text: "Telemetry Dashboard (Laps)" });
   const subtitle = el("div", { className: "subtitle", text: `API: ${apiBase()}` });
@@ -77,9 +97,11 @@ async function bootstrap() {
   const lapCanvas = el("canvas");
   const speedCanvas = el("canvas");
   const traceCanvas = el("canvas");
+  const seriesCanvas = el("canvas");
   const lapWrap = el("div", { style: "height: 340px;" }, [lapCanvas]);
   const speedWrap = el("div", { style: "height: 340px;" }, [speedCanvas]);
   const traceWrap = el("div", { style: "height: 340px;" }, [traceCanvas]);
+  const seriesWrap = el("div", { style: "height: 340px;" }, [seriesCanvas]);
 
   const lapLegend = el("div", { className: "legend" }, [
     el("span", { className: "legend-item" }, [el("span", { className: "sample-line" }), el("span", { text: "Lap" })]),
@@ -99,6 +121,13 @@ async function bootstrap() {
     el("span", { className: "legend-item" }, [el("span", { className: "sample-line dash" }), el("span", { text: "Brake" })])
   ]);
 
+  const seriesLegend = el("div", { className: "legend" }, [
+    el("span", { className: "legend-item" }, [el("span", { className: "sample-line" }), el("span", { text: "Speed" })]),
+    el("span", { className: "legend-item" }, [el("span", { className: "sample-line dash" }), el("span", { text: "Throttle" })]),
+    el("span", { className: "legend-item" }, [el("span", { className: "sample-line dot" }), el("span", { text: "Brake" })]),
+    el("span", { className: "legend-item" }, [el("span", { className: "sample-line dashdot" }), el("span", { text: "S1/S2/S3" })])
+  ]);
+
   const lapCard = el("div", { className: "card" }, [el("h3", { text: "Lap Times (s)" }), lapWrap, lapLegend]);
   const speedCard = el("div", { className: "card" }, [el("h3", { text: "Speeds (km/h)" }), speedWrap, speedLegend]);
   const traceCard = el("div", { className: "card" }, [
@@ -106,7 +135,12 @@ async function bootstrap() {
     traceWrap,
     traceLegend
   ]);
-  const grid = el("div", { className: "grid" }, [lapCard, speedCard, traceCard]);
+  const seriesCard = el("div", { className: "card" }, [
+    el("h3", { text: "S1/S2/S3 (X=Sector, 默认最快圈)" }),
+    seriesWrap,
+    seriesLegend
+  ]);
+  const grid = el("div", { className: "grid" }, [lapCard, speedCard, traceCard, seriesCard]);
 
   const container = el("div", { className: "container" }, [header, controls, grid]);
   root.appendChild(container);
@@ -123,9 +157,7 @@ async function bootstrap() {
       if (ln == null) continue;
       lapSelect.appendChild(option(ln, `L${ln}`));
     }
-    if (!lapSelect.value && lapSelect.options.length) {
-      lapSelect.value = lapSelect.options[0].value;
-    }
+    return sliced;
   }
 
   async function load() {
@@ -136,21 +168,33 @@ async function bootstrap() {
     destroyIfAny(lapChartRef);
     destroyIfAny(speedChartRef);
     destroyIfAny(traceChartRef);
+    destroyIfAny(seriesChartRef);
     loadBtn.disabled = true;
     setStatus("加载中...");
     try {
       const lapsData = await fetchLaps({ driverNumber, sessionKey: sk });
       const allLaps = lapsData.laps || [];
-      refreshLapOptions(allLaps, lapThird);
+      const prev = lapSelect.value ? parseInt(lapSelect.value, 10) : null;
+      const sliced = refreshLapOptions(allLaps, lapThird);
+      const fastLn = fastestLapNumber(allLaps);
+      const hasPrev = prev != null && Array.from(lapSelect.options).some((o) => parseInt(o.value, 10) === prev);
+      const hasFast = fastLn != null && Array.from(lapSelect.options).some((o) => parseInt(o.value, 10) === fastLn);
+      if (hasPrev) lapSelect.value = String(prev);
+      else if (hasFast) lapSelect.value = String(fastLn);
+      else if (lapSelect.options.length) lapSelect.value = lapSelect.options[0].value;
+
       const lapNo = lapNumber || (lapSelect.value ? parseInt(lapSelect.value, 10) : null);
       const laps = sliceArrayByThird(allLaps, lapThird);
       const labels = lapLabels(laps);
       lapChartRef.current = renderLapTimeChart(lapCanvas, labels, laps);
       speedChartRef.current = renderSpeedChart(speedCanvas, labels, laps);
+      const resolvedSk = lapsData.session_key ?? sk;
 
       if (lapNo != null && Number.isFinite(lapNo)) {
-        const trace = await fetchLapTrace({ driverNumber, sessionKey: sk, lapNumber: lapNo, maxPoints: 600 });
+        const trace = await fetchLapTrace({ driverNumber, sessionKey: resolvedSk, lapNumber: lapNo, maxPoints: 600 });
         traceChartRef.current = renderLapTraceChart(traceCanvas, trace.points || []);
+        const series = await fetchLapControlsSeries({ driverNumber, sessionKey: resolvedSk, lapNumber: lapNo, maxPoints: 900 });
+        seriesChartRef.current = renderLapControlsSeriesChart(seriesCanvas, series.payload);
       }
       setStatus(
         `driver=${driverNumber} session_key=${lapsData.session_key ?? "N/A"} laps=${laps.length}/${allLaps.length} range=${lapThirdLabel(

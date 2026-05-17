@@ -5,8 +5,13 @@
   </view>
 
   <view class="section">
-    <view class="section-title">油门 / 刹车</view>
+    <view class="section-title">油门 / 刹车 (%)</view>
     <view class="section-desc" wx:if="{{lapInfo}}">{{lapInfo}}</view>
-    <ec-canvas canvasId="tb_chart" option="{{chartOption}}" />
+    <ec-canvas canvasId="tb_chart" heightRpx="360" option="{{chartOptionTB}}" />
+  </view>
+
+  <view class="section">
+    <view class="section-title">Speed (km/h)</view>
+    <ec-canvas canvasId="spd_chart" heightRpx="360" option="{{chartOptionSpeed}}" />
   </view>
 </view>

@@ -1,6 +1,7 @@
 package f1db
 
 import (
+	"encoding/json"
 	"errors"
 	"math"
 	"time"
@@ -474,4 +475,253 @@ func RequireDB(db *gorm.DB) error {
 		return errors.New("mysql_disabled")
 	}
 	return nil
+}
+
+type TelemetryLapControlsSeriesResult struct {
+	SessionKey   *int            `json:"session_key"`
+	DriverNumber int             `json:"driver_number"`
+	LapNumber    int             `json:"lap_number"`
+	DateStartUTC *time.Time      `json:"date_start_utc"`
+	MaxPoints    int             `json:"max_points"`
+	PointsCount  int             `json:"points_count"`
+	Payload      json.RawMessage `json:"payload"`
+}
+
+func TelemetryLapControlsSeries(db *gorm.DB, driverNumber int, sessionKey *int, lapNumber int, maxPoints int) (TelemetryLapControlsSeriesResult, error) {
+	if sessionKey == nil {
+		sk, err := LatestTelemetrySessionKey(db, driverNumber)
+		if err != nil {
+			return TelemetryLapControlsSeriesResult{}, err
+		}
+		sessionKey = sk
+	}
+	if sessionKey == nil {
+		return TelemetryLapControlsSeriesResult{SessionKey: nil, DriverNumber: driverNumber, LapNumber: lapNumber, Payload: json.RawMessage("null")}, nil
+	}
+	if maxPoints < 0 {
+		maxPoints = 0
+	}
+	maxPointsCompute := maxPoints
+	if maxPointsCompute <= 0 {
+		maxPointsCompute = 900
+	}
+	if maxPointsCompute > 20000 {
+		maxPointsCompute = 20000
+	}
+
+	type row struct {
+		SessionKey   int        `gorm:"column:session_key"`
+		DriverNumber int        `gorm:"column:driver_number"`
+		LapNumber    int        `gorm:"column:lap_number"`
+		DateStartUTC *time.Time `gorm:"column:date_start_utc"`
+		MaxPoints    int        `gorm:"column:max_points"`
+		PointsCount  int        `gorm:"column:points_count"`
+		PayloadJSON  []byte     `gorm:"column:payload_json"`
+	}
+
+	var r row
+	if maxPoints > 0 {
+		_ = db.Raw(`
+        SELECT session_key, driver_number, lap_number, date_start_utc, max_points, points_count, payload_json
+        FROM openf1_lap_controls_series
+        WHERE session_key = ? AND driver_number = ? AND lap_number = ? AND max_points = ?
+        ORDER BY date_start_utc ASC
+        LIMIT 1
+    `, *sessionKey, driverNumber, lapNumber, maxPoints).Scan(&r).Error
+	}
+	if r.SessionKey == 0 {
+		if err := db.Raw(`
+        SELECT session_key, driver_number, lap_number, date_start_utc, max_points, points_count, payload_json
+        FROM openf1_lap_controls_series
+        WHERE session_key = ? AND driver_number = ? AND lap_number = ?
+        ORDER BY max_points DESC, date_start_utc ASC
+        LIMIT 1
+    `, *sessionKey, driverNumber, lapNumber).Scan(&r).Error; err != nil {
+			return TelemetryLapControlsSeriesResult{}, err
+		}
+	}
+	if r.DateStartUTC == nil || r.PointsCount <= 0 || len(r.PayloadJSON) == 0 {
+		type lapMeta struct {
+			DateStartUTC *time.Time `gorm:"column:date_start_utc"`
+			LapDuration  *float64   `gorm:"column:lap_duration"`
+			S1           *float64   `gorm:"column:duration_sector_1"`
+			S2           *float64   `gorm:"column:duration_sector_2"`
+			S3           *float64   `gorm:"column:duration_sector_3"`
+		}
+		var meta lapMeta
+		if err := db.Raw(`
+        SELECT date_start_utc, lap_duration, duration_sector_1, duration_sector_2, duration_sector_3
+        FROM openf1_laps
+        WHERE session_key = ? AND driver_number = ? AND lap_number = ?
+        ORDER BY date_start_utc ASC
+        LIMIT 1
+    `, *sessionKey, driverNumber, lapNumber).Scan(&meta).Error; err != nil {
+			return TelemetryLapControlsSeriesResult{}, err
+		}
+		if meta.DateStartUTC == nil || meta.LapDuration == nil || !(*meta.LapDuration > 0) {
+			out := TelemetryLapControlsSeriesResult{
+				SessionKey:   sessionKey,
+				DriverNumber: driverNumber,
+				LapNumber:    lapNumber,
+				DateStartUTC: meta.DateStartUTC,
+				MaxPoints:    0,
+				PointsCount:  0,
+				Payload:      json.RawMessage("null"),
+			}
+			return out, nil
+		}
+
+		start := meta.DateStartUTC.UTC()
+		end := start.Add(time.Duration(*meta.LapDuration * float64(time.Second)))
+
+		type carRow struct {
+			DateUTC  time.Time `gorm:"column:date_utc"`
+			Speed    *int      `gorm:"column:speed"`
+			Throttle *int      `gorm:"column:throttle"`
+			Brake    *int      `gorm:"column:brake"`
+		}
+		var carRows []carRow
+		if err := db.Raw(`
+        SELECT date_utc, speed, throttle, brake
+        FROM openf1_car_data
+        WHERE session_key = ? AND driver_number = ? AND date_utc >= ? AND date_utc <= ?
+        ORDER BY date_utc ASC
+    `, *sessionKey, driverNumber, start, end).Scan(&carRows).Error; err != nil {
+			return TelemetryLapControlsSeriesResult{}, err
+		}
+
+		points := make([][]any, 0, len(carRows))
+		var lastT *int
+		for _, it := range carRows {
+			tms := int(math.Round(it.DateUTC.Sub(start).Seconds() * 1000.0))
+			if tms < 0 {
+				continue
+			}
+			var sp any = nil
+			var th any = nil
+			var br any = nil
+			if it.Speed != nil {
+				sp = int(*it.Speed)
+			}
+			if it.Throttle != nil {
+				th = int(*it.Throttle)
+			}
+			if it.Brake != nil {
+				br = int(*it.Brake)
+			}
+			if lastT != nil && *lastT == tms && len(points) > 0 {
+				points[len(points)-1] = []any{tms, sp, th, br}
+			} else {
+				points = append(points, []any{tms, sp, th, br})
+				tmp := tms
+				lastT = &tmp
+			}
+		}
+
+		if maxPointsCompute > 0 && len(points) > maxPointsCompute {
+			step := len(points) / maxPointsCompute
+			if step < 1 {
+				step = 1
+			}
+			sampled := make([][]any, 0, maxPointsCompute+1)
+			for i := 0; i < len(points); i += step {
+				sampled = append(sampled, points[i])
+			}
+			if len(sampled) > 0 && sampled[len(sampled)-1][0] != points[len(points)-1][0] {
+				sampled = append(sampled, points[len(points)-1])
+			}
+			points = sampled
+		}
+
+		var s1ms any = nil
+		var s2ms any = nil
+		if meta.S1 != nil && *meta.S1 > 0 {
+			s1ms = int(math.Round((*meta.S1) * 1000.0))
+		}
+		if meta.S1 != nil && meta.S2 != nil && *meta.S1 > 0 && *meta.S2 > 0 {
+			s2ms = int(math.Round(((*meta.S1) + (*meta.S2)) * 1000.0))
+		}
+
+		findEndIndex := func(endMs any) any {
+			ms, ok := endMs.(int)
+			if !ok || ms <= 0 {
+				return nil
+			}
+			for i, p := range points {
+				if len(p) < 1 {
+					continue
+				}
+				t0, _ := p[0].(int)
+				if t0 >= ms {
+					return i
+				}
+			}
+			if len(points) > 0 {
+				return len(points) - 1
+			}
+			return 0
+		}
+
+		s1i := findEndIndex(s1ms)
+		s2i := findEndIndex(s2ms)
+
+		payloadMap := map[string]any{
+			"v":         1,
+			"t_end_ms":  int(math.Round((*meta.LapDuration) * 1000.0)),
+			"s1_end_ms": s1ms,
+			"s2_end_ms": s2ms,
+			"s1_end_i":  s1i,
+			"s2_end_i":  s2i,
+			"points":    points,
+			"units": map[string]any{
+				"speed":    "kmh",
+				"throttle": "pct",
+				"brake":    "pct",
+			},
+		}
+		b, err := json.Marshal(payloadMap)
+		if err != nil {
+			return TelemetryLapControlsSeriesResult{}, err
+		}
+
+		pointsCount := len(points)
+		_ = db.Exec(`
+        INSERT INTO openf1_lap_controls_series
+          (session_key, driver_number, lap_number, date_start_utc,
+           lap_duration, duration_sector_1, duration_sector_2, duration_sector_3,
+           max_points, points_count, payload_json)
+        VALUES
+          (?,?,?,?,?,?,?,?,?,?,?)
+        ON DUPLICATE KEY UPDATE
+          lap_duration=VALUES(lap_duration),
+          duration_sector_1=VALUES(duration_sector_1),
+          duration_sector_2=VALUES(duration_sector_2),
+          duration_sector_3=VALUES(duration_sector_3),
+          max_points=VALUES(max_points),
+          points_count=VALUES(points_count),
+          payload_json=VALUES(payload_json)
+    `, *sessionKey, driverNumber, lapNumber, start, meta.LapDuration, meta.S1, meta.S2, meta.S3, maxPointsCompute, pointsCount, string(b)).Error
+
+		r.SessionKey = *sessionKey
+		r.DriverNumber = driverNumber
+		r.LapNumber = lapNumber
+		r.DateStartUTC = &start
+		r.MaxPoints = maxPointsCompute
+		r.PointsCount = pointsCount
+		r.PayloadJSON = b
+	}
+
+	out := TelemetryLapControlsSeriesResult{
+		SessionKey:   sessionKey,
+		DriverNumber: driverNumber,
+		LapNumber:    lapNumber,
+		DateStartUTC: r.DateStartUTC,
+		MaxPoints:    r.MaxPoints,
+		PointsCount:  r.PointsCount,
+		Payload:      json.RawMessage("null"),
+	}
+	if len(r.PayloadJSON) > 0 {
+		out.Payload = json.RawMessage(r.PayloadJSON)
+	}
+	return out, nil
 }

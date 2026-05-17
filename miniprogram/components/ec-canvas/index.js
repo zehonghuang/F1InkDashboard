@@ -8,6 +8,10 @@ Component({
       type: String,
       value: 'ec-canvas'
     },
+    heightRpx: {
+      type: Number,
+      value: 520
+    },
     option: {
       type: Object,
       value: null
@@ -15,9 +19,14 @@ Component({
   },
   data: {
     inited: false,
-    isUseNewCanvas: false
+    isUseNewCanvas: false,
+    canvasStyle: ''
   },
   lifetimes: {
+    attached() {
+      const style = this.buildCanvasStyle(this.properties.heightRpx)
+      this.setData({ canvasStyle: style })
+    },
     ready() {
       this.init()
     },
@@ -31,6 +40,10 @@ Component({
     }
   },
   observers: {
+    heightRpx(v) {
+      const style = this.buildCanvasStyle(v)
+      this.setData({ canvasStyle: style })
+    },
     option(v) {
       if (v) {
         this.setOption(v)
@@ -38,6 +51,10 @@ Component({
     }
   },
   methods: {
+    buildCanvasStyle(v) {
+      const n = Number(v) || 520
+      return `width:100%;height:${n}rpx;`
+    },
     init() {
       if (this.data.inited) return
       const version = wx.getSystemInfoSync().SDKVersion
@@ -111,23 +128,25 @@ Component({
       if (this._chart && e.touches && e.touches.length) {
         const t = e.touches[0]
         const handler = this._chart.getZr().handler
-        handler.dispatch('mousedown', { zrX: t.x, zrY: t.y })
-        handler.dispatch('mousemove', { zrX: t.x, zrY: t.y })
+        const evt = { zrX: t.x, zrY: t.y, preventDefault: () => {}, stopPropagation: () => {} }
+        handler.dispatch('mousedown', evt)
+        handler.dispatch('mousemove', evt)
       }
     },
     touchMove(e) {
       if (this._chart && e.touches && e.touches.length) {
         const t = e.touches[0]
         const handler = this._chart.getZr().handler
-        handler.dispatch('mousemove', { zrX: t.x, zrY: t.y })
+        handler.dispatch('mousemove', { zrX: t.x, zrY: t.y, preventDefault: () => {}, stopPropagation: () => {} })
       }
     },
     touchEnd(e) {
       if (this._chart) {
         const t = (e.changedTouches && e.changedTouches[0]) || {}
         const handler = this._chart.getZr().handler
-        handler.dispatch('mouseup', { zrX: t.x, zrY: t.y })
-        handler.dispatch('click', { zrX: t.x, zrY: t.y })
+        const evt = { zrX: t.x, zrY: t.y, preventDefault: () => {}, stopPropagation: () => {} }
+        handler.dispatch('mouseup', evt)
+        handler.dispatch('click', evt)
       }
     },
     compareVersion(v1, v2) {

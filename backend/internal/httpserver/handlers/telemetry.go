@@ -178,3 +178,58 @@ func TelemetryFastestLap(db *gorm.DB) gin.HandlerFunc {
 		c.JSON(200, out)
 	}
 }
+
+func TelemetryLapControlsSeries(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if db == nil {
+			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			return
+		}
+		dn, err := strconv.Atoi(strings.TrimSpace(c.Query("driver_number")))
+		if err != nil || dn < 1 {
+			c.JSON(400, gin.H{"ok": false, "error": "bad_driver_number"})
+			return
+		}
+		ln, err := strconv.Atoi(strings.TrimSpace(c.Query("lap_number")))
+		if err != nil || ln < 1 {
+			c.JSON(400, gin.H{"ok": false, "error": "bad_lap_number"})
+			return
+		}
+		var sk *int
+		if s := strings.TrimSpace(c.Query("session_key")); s != "" {
+			if n, err := strconv.Atoi(s); err == nil {
+				sk = &n
+			}
+		}
+		maxPoints := toIntQuery(c, "max_points", 0)
+		if maxPoints < 0 {
+			maxPoints = 0
+		}
+		if maxPoints > 20000 {
+			maxPoints = 20000
+		}
+
+		res, err := f1db.TelemetryLapControlsSeries(db, dn, sk, ln, maxPoints)
+		if err != nil {
+			c.JSON(502, gin.H{"ok": false, "error": "query_failed"})
+			return
+		}
+		found := res.DateStartUTC != nil && res.PointsCount > 0
+		c.JSON(200, gin.H{
+			"ok":            true,
+			"found":         found,
+			"driver_number": res.DriverNumber,
+			"session_key":   res.SessionKey,
+			"lap_number":    res.LapNumber,
+			"date_start_utc": func() any {
+				if res.DateStartUTC == nil {
+					return nil
+				}
+				return res.DateStartUTC.UTC()
+			}(),
+			"max_points":   res.MaxPoints,
+			"points_count": res.PointsCount,
+			"payload":      res.Payload,
+		})
+	}
+}

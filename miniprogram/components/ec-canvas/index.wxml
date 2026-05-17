@@ -1,1 +1,1 @@
-<canvas type="2d" id="{{canvasId}}" canvas-id="{{canvasId}}" class="ec-canvas" bindtouchstart="touchStart" bindtouchmove="touchMove" bindtouchend="touchEnd"></canvas>
+<canvas type="2d" id="{{canvasId}}" canvas-id="{{canvasId}}" class="ec-canvas" style="{{canvasStyle}}" bindtouchstart="touchStart" bindtouchmove="touchMove" bindtouchend="touchEnd"></canvas>
