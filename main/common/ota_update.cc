@@ -6,6 +6,7 @@
 #include "board.h"
 #include "system_info.h"
 #include "backend_url.h"
+#include "i18n.h"
 
 #include <cJSON.h>
 #include <esp_app_desc.h>
@@ -404,6 +405,12 @@ bool OtaUpdateService::DownloadAndApplyLocked() {
         sm_release("ota");
         sm_set_busy(SleepBusySrc::Net, false);
         return false;
+    }
+    {
+        const std::string lang = I18n::GetLanguage();
+        if (!lang.empty()) {
+            esp_http_client_set_header(client, "Accept-Language", lang.c_str());
+        }
     }
 
     if (esp_http_client_open(client, 0) != ESP_OK) {

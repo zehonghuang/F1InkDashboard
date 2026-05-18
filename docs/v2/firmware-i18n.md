@@ -135,6 +135,7 @@ I18n 加载时会按顺序 merge：
 典型用途：
 
 - 给 Wi-Fi 配网页传递 `lang` 参数（WifiManagerConfig.language）
+- 给后端 HTTP 请求添加 `Accept-Language` 请求头
 
 ### 翻译字符串
 

@@ -219,6 +219,12 @@ bool HttpGetToBuffer(const std::string& url, std::vector<uint8_t>& out, size_t m
     if (client == nullptr) {
         return false;
     }
+    {
+        const std::string lang = I18n::GetLanguage();
+        if (!lang.empty()) {
+            esp_http_client_set_header(client, "Accept-Language", lang.c_str());
+        }
+    }
 
     const esp_err_t open_ret = esp_http_client_open(client, 0);
     if (open_ret != ESP_OK) {
