@@ -140,7 +140,7 @@ func buildPagesResponse(ctx context.Context, cfg config.Config, db *gorm.DB, cch
 		return gin.H{"ok": false, "error": "championship_unavailable"}, http.StatusServiceUnavailable
 	}
 
-	driverStandings, err := f1db.OpenF1DriverStandingsJSON(db, latestSK, lang)
+	driverStandings, err := f1db.OpenF1DriverStandingsJSON(db, latestSK, lang, season)
 	if err != nil {
 		return gin.H{"ok": false, "error": "driver_standings_unavailable"}, http.StatusServiceUnavailable
 	}

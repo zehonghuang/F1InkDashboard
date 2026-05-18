@@ -35,7 +35,8 @@ func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 
 		nowUTC := time.Now().UTC()
 		season := toIntQuery(c, "season", 2026)
-		scheduleJSON, err := f1db.OpenF1ScheduleJSON(db, season)
+		lang := strings.TrimSpace(c.GetString("language"))
+		scheduleJSON, err := f1db.OpenF1ScheduleJSON(db, season, lang)
 		if err != nil {
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})
 			return
@@ -50,7 +51,7 @@ func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 		assetsByRound := map[int]map[string]any{}
 		assetsByDate := map[string]map[string]any{}
 		assetsByRaceName := map[string]map[string]any{}
-		assetsJSON, err := f1db.CircuitAssetsPayloadFromDB(db, season)
+		assetsJSON, err := f1db.CircuitAssetsPayloadFromDB(db, season, lang)
 		if (err != nil || assetsJSON == nil) && staticDir != "" {
 			if v, ok := loadCircuitAssetsFromDisk(staticDir, season); ok {
 				assetsJSON = v

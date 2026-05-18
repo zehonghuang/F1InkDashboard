@@ -58,7 +58,7 @@ func OpenF1LatestRaceSessionKey(db *gorm.DB, season int) (int, error) {
 	return r.SessionKey, nil
 }
 
-func OpenF1DriverStandingsJSON(db *gorm.DB, sessionKey int, lang string) (map[string]any, error) {
+func OpenF1DriverStandingsJSON(db *gorm.DB, sessionKey int, lang string, season int) (map[string]any, error) {
 	type row struct {
 		DriverNumber    int     `gorm:"column:driver_number"`
 		PositionCurrent int     `gorm:"column:position_current"`
@@ -108,7 +108,7 @@ func OpenF1DriverStandingsJSON(db *gorm.DB, sessionKey int, lang string) (map[st
 		if it.DriverNumber <= 0 {
 			continue
 		}
-		driverKeys = append(driverKeys, strconv.Itoa(it.DriverNumber))
+		driverKeys = append(driverKeys, fmt.Sprintf("%d_%d", season, it.DriverNumber))
 	}
 	driverFullNameMap, _ := fetchI18nText(db, lang, "driver", "full_name", driverKeys)
 
@@ -124,13 +124,14 @@ func OpenF1DriverStandingsJSON(db *gorm.DB, sessionKey int, lang string) (map[st
 	drivers := make([]any, 0, len(rows))
 	for _, it := range rows {
 		driverID := strconv.Itoa(it.DriverNumber)
+		driverKey := fmt.Sprintf("%d_%s", season, driverID)
 		drv := map[string]any{
 			"driverId":   driverID,
 			"code":       strings.ToUpper(strings.TrimSpace(it.NameAcronym)),
 			"givenName":  strings.TrimSpace(it.FirstName),
 			"familyName": strings.TrimSpace(it.LastName),
 		}
-		if v, ok := driverFullNameMap[driverID]; ok && strings.TrimSpace(v) != "" {
+		if v, ok := driverFullNameMap[driverKey]; ok && strings.TrimSpace(v) != "" {
 			drv["displayName"] = strings.TrimSpace(v)
 		}
 		constructors := make([]any, 0, 1)

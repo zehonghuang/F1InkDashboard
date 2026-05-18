@@ -36,7 +36,8 @@ func MpRaceSessions(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		scheduleJSON, err := f1db.OpenF1ScheduleJSON(db, season)
+		lang := strings.TrimSpace(c.GetString("language"))
+		scheduleJSON, err := f1db.OpenF1ScheduleJSON(db, season, lang)
 		if err != nil {
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})
 			return

@@ -473,6 +473,36 @@ func parseDriversAll(driverStandings map[string]any) []any {
 			"points":         pts,
 		})
 	}
+	nameCount := map[string]int{}
+	for _, it := range out {
+		m, ok := it.(map[string]any)
+		if !ok {
+			continue
+		}
+		n := strings.TrimSpace(fmt.Sprintf("%v", m["name"]))
+		if n == "" || n == "<nil>" {
+			continue
+		}
+		nameCount[n]++
+	}
+	for _, it := range out {
+		m, ok := it.(map[string]any)
+		if !ok {
+			continue
+		}
+		n := strings.TrimSpace(fmt.Sprintf("%v", m["name"]))
+		if n == "" || n == "<nil>" {
+			continue
+		}
+		if nameCount[n] <= 1 {
+			continue
+		}
+		id := strings.TrimSpace(fmt.Sprintf("%v", m["driver_id"]))
+		if id == "" || id == "<nil>" {
+			continue
+		}
+		m["name"] = n + " #" + id
+	}
 	return out
 }
 

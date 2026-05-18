@@ -60,6 +60,27 @@ def _source_text_map(conn, season: int, req: list[tuple[str, str, str]]) -> dict
     with conn.cursor() as cur:
         driver_keys = sorted(by_type.get("driver") or set())
         if driver_keys:
+            key_by_dn: dict[int, list[str]] = {}
+            dns: list[int] = []
+            for k in driver_keys:
+                s = str(k).strip()
+                if not s:
+                    continue
+                if "_" in s:
+                    s2 = s.split("_", 1)[1].strip()
+                else:
+                    s2 = s
+                try:
+                    dn = int(s2)
+                except Exception:
+                    continue
+                key_by_dn.setdefault(dn, []).append(s)
+                dns.append(dn)
+            dns = sorted(set(dns))
+            if not dns:
+                driver_keys = []
+
+        if driver_keys:
             cur.execute(
                 """
                 SELECT driver_number, full_name, session_key
@@ -67,20 +88,21 @@ def _source_text_map(conn, season: int, req: list[tuple[str, str, str]]) -> dict
                 WHERE driver_number IN %s
                 ORDER BY session_key DESC
                 """,
-                (driver_keys,),
+                (dns,),
             )
             seen = set()
             for r in cur.fetchall():
                 dn = r.get("driver_number")
                 if dn is None:
                     continue
-                k = str(int(dn))
-                if k in seen:
+                dn_int = int(dn)
+                if dn_int in seen:
                     continue
-                seen.add(k)
+                seen.add(dn_int)
                 v = str(r.get("full_name") or "").strip()
                 if v:
-                    out[("driver", k, "full_name")] = v
+                    for key in key_by_dn.get(dn_int, []):
+                        out[("driver", key, "full_name")] = v
 
         constructor_keys = set(by_type.get("constructor") or set())
         if constructor_keys:
@@ -196,7 +218,7 @@ def _required_from_db(conn, season: int) -> list[tuple[str, str, str]]:
             dn = r.get("driver_number")
             if dn is None:
                 continue
-            req.append(("driver", str(int(dn)), "full_name"))
+            req.append(("driver", f"{int(season)}_{int(dn)}", "full_name"))
 
         cur.execute(
             """
