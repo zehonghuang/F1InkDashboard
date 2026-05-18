@@ -106,6 +106,7 @@ void F1PageAdapter::BuildMenuLocked() {
         {"f1.menu.items.system_settings.left", "f1.menu.items.system_settings.right"},
         {"f1.menu.items.battery_stats.left", "f1.menu.items.battery_stats.right"},
         {"f1.menu.items.about_device.left", "f1.menu.items.about_device.right"},
+        {"f1.menu.items.language.left", "f1.menu.items.language.right"},
         {"f1.menu.items.reboot.left", "f1.menu.items.reboot.right"},
     };
 
@@ -139,6 +140,43 @@ void F1PageAdapter::BuildMenuLocked() {
     }
 
     ApplyMenuSelectionLocked();
+}
+
+void F1PageAdapter::UpdateMenuI18nLocked() {
+    if (!built_) {
+        return;
+    }
+    if (menu_header_left_ != nullptr) {
+        lv_label_set_text(menu_header_left_, I18n::Tr("f1.menu.header"));
+    }
+    if (menu_footer_ != nullptr) {
+        lv_label_set_text(menu_footer_, I18n::Tr("f1.menu.footer"));
+    }
+
+    struct RowText {
+        const char* left_key;
+        const char* right_key;
+    };
+    const RowText rows[] = {
+        {"f1.menu.items.past_races.left", "f1.menu.items.past_races.right"},
+        {"f1.menu.items.full_calendar.left", "f1.menu.items.full_calendar.right"},
+        {"f1.menu.items.data_refresh.left", "f1.menu.items.data_refresh.right"},
+        {"f1.menu.items.system_settings.left", "f1.menu.items.system_settings.right"},
+        {"f1.menu.items.battery_stats.left", "f1.menu.items.battery_stats.right"},
+        {"f1.menu.items.about_device.left", "f1.menu.items.about_device.right"},
+        {"f1.menu.items.language.left", "f1.menu.items.language.right"},
+        {"f1.menu.items.reboot.left", "f1.menu.items.reboot.right"},
+    };
+    for (int i = 0; i < static_cast<int>(menu_item_boxes_.size()); i++) {
+        lv_obj_t* l = menu_item_left_[static_cast<size_t>(i)];
+        lv_obj_t* r = menu_item_right_[static_cast<size_t>(i)];
+        if (l != nullptr) {
+            lv_label_set_text(l, I18n::Tr(rows[i].left_key));
+        }
+        if (r != nullptr) {
+            lv_label_set_text(r, I18n::Tr(rows[i].right_key));
+        }
+    }
 }
 
 void F1PageAdapter::ApplyMenuSelectionLocked() {

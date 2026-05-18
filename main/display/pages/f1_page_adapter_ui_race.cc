@@ -482,6 +482,10 @@ void F1PageAdapter::RenderRaceRightFormula1Locked() {
         int w = 0;
         for (char c : s) {
             unsigned char uc = static_cast<unsigned char>(c);
+            if (uc >= f.glyphs.size()) {
+                w += ascent / 2;
+                continue;
+            }
             const BdfGlyph& g = f.glyphs[uc];
             if (g.valid) {
                 w += g.adv > 0 ? g.adv : g.w;
@@ -496,8 +500,17 @@ void F1PageAdapter::RenderRaceRightFormula1Locked() {
         int pen = x;
         for (char c : s) {
             unsigned char uc = static_cast<unsigned char>(c);
+            if (uc >= f.glyphs.size()) {
+                pen += ascent / 2;
+                continue;
+            }
             const BdfGlyph& g = f.glyphs[uc];
-            if (!g.valid || g.bytes_per_row <= 0) {
+            if (!g.valid || g.bytes_per_row <= 0 || g.h <= 0 || g.bitmap.empty()) {
+                pen += ascent / 2;
+                continue;
+            }
+            const size_t need = static_cast<size_t>(g.h) * static_cast<size_t>(g.bytes_per_row);
+            if (g.bitmap.size() < need) {
                 pen += ascent / 2;
                 continue;
             }

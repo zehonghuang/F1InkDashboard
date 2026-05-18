@@ -8,6 +8,7 @@
     "ui.distance_km_fmt": "%.3f KM",
     "ui.loading": "加载中...",
     "ui.low_battery": "低电量，请充电",
+    "ui.language_set": "语言已设置：",
     "ui.na": "--",
     "ui.no_data": "暂无数据",
     "ui.page_01_01": "PAGE 01/01",
@@ -31,6 +32,8 @@
     "f1.menu.items.battery_stats.right": "健康：--% / --.--V",
     "f1.menu.items.about_device.left": "[ 关于设备      ]",
     "f1.menu.items.about_device.right": "Tonic F1 Dash v1.0.4",
+    "f1.menu.items.language.left": "[ 语言          ]",
+    "f1.menu.items.language.right": "切换 zh-CN/en-US",
     "f1.menu.items.reboot.left": "[ 重启设备      ]",
     "f1.menu.items.reboot.right": "重启设备",
 

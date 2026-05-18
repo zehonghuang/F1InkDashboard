@@ -959,7 +959,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
             return true;
         }
         if (id == UiPageCustomEventId::ConfirmClick) {
-            if (menu_focus_ == 6) {
+            if (menu_focus_ == 7) {
                 esp_restart();
             }
             if (menu_focus_ == 2) {
@@ -974,6 +974,19 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
                     host_->ShowNotification(I18n::Tr("ui.checking_update"), 1500);
                 }
                 OtaUpdateService::Instance().RequestUpdateNow();
+            }
+            if (menu_focus_ == 6) {
+                const std::string cur = I18n::GetLanguage();
+                const char* next = (cur == "zh-CN") ? "en-US" : "zh-CN";
+                I18n::SetLanguage(next);
+                UpdateMenuI18nLocked();
+                UpdateMenuStatusLocked();
+                if (host_ != nullptr) {
+                    std::string s = I18n::Tr("ui.language_set");
+                    s += " ";
+                    s += next;
+                    host_->ShowNotification(s, 1500);
+                }
             }
             menu_visible_ = false;
             SetRootVisible(menu_root_, false);
@@ -1647,6 +1660,12 @@ void F1PageAdapter::UpdateMenuStatusLocked() {
             s += pct;
         }
         SetText(about, s.c_str());
+    }
+
+    lv_obj_t* lang = menu_item_right_[6];
+    if (lang != nullptr) {
+        const std::string s = I18n::GetLanguage();
+        SetText(lang, s.c_str());
     }
 }
 
