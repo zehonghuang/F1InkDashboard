@@ -3,6 +3,8 @@
 #include <cstring>
 #include <string>
 
+#include <esp_crt_bundle.h>
+
 #include "i18n.h"
 #include "esp_http_client.h"
 #include "freertos/FreeRTOS.h"
@@ -186,6 +188,7 @@ bool HttpGetToBufferEx(const std::string& url,
         config.method = HTTP_METHOD_GET;
         config.user_agent = "zectrix-fw/0.1";
         config.keep_alive_enable = false;
+        config.crt_bundle_attach = esp_crt_bundle_attach;
 
         esp_http_client_handle_t client = esp_http_client_init(&config);
         if (client == nullptr) {

@@ -10,6 +10,7 @@
 
 #include <cJSON.h>
 #include <esp_app_desc.h>
+#include <esp_crt_bundle.h>
 #include <esp_log.h>
 #include <esp_ota_ops.h>
 #include <esp_system.h>
@@ -398,6 +399,7 @@ bool OtaUpdateService::DownloadAndApplyLocked() {
     config.method = HTTP_METHOD_GET;
     config.user_agent = ua.c_str();
     config.keep_alive_enable = false;
+    config.crt_bundle_attach = esp_crt_bundle_attach;
 
     esp_http_client_handle_t client = esp_http_client_init(&config);
     if (client == nullptr) {

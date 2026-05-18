@@ -11,6 +11,8 @@
 #include <cstring>
 #include <memory>
 
+#include <esp_crt_bundle.h>
+
 #include "esp_http_client.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
@@ -214,6 +216,7 @@ bool HttpGetToBuffer(const std::string& url, std::vector<uint8_t>& out, size_t m
     config.url = url.c_str();
     config.timeout_ms = 8000;
     config.method = HTTP_METHOD_GET;
+    config.crt_bundle_attach = esp_crt_bundle_attach;
 
     esp_http_client_handle_t client = esp_http_client_init(&config);
     if (client == nullptr) {

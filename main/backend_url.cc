@@ -5,7 +5,7 @@
 
 namespace {
 
-inline constexpr const char* kDefaultF1ApiUrl = "http://192.168.31.110:8008/api/v1/ui/pages?tz=Asia/Shanghai";
+inline constexpr const char* kDefaultF1ApiUrl = "https://winpc-f1.normal-person.icu/api/v1/ui/pages?tz=Asia/Shanghai";
 
 std::string HttpBaseFromWsUrl(std::string ws_url) {
     ws_url = TrimUrl(std::move(ws_url));
