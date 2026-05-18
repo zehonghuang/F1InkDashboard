@@ -119,6 +119,7 @@ func buildPagesResponse(ctx context.Context, cfg config.Config, db *gorm.DB, cch
 	if tzName == "" {
 		tzName = "Asia/Shanghai"
 	}
+	lang := strings.TrimSpace(c.GetString("language"))
 	season := toIntQuery(c, "season", 2026)
 	includeCircuit := parseBoolQuery(c, "include_circuit", true)
 	refreshCircuit := parseBoolQuery(c, "refresh_circuit", false)
@@ -129,7 +130,7 @@ func buildPagesResponse(ctx context.Context, cfg config.Config, db *gorm.DB, cch
 		return gin.H{"ok": false, "error": "mysql_required"}, http.StatusServiceUnavailable
 	}
 
-	scheduleJSON, err := f1db.OpenF1ScheduleJSON(db, season)
+	scheduleJSON, err := f1db.OpenF1ScheduleJSON(db, season, lang)
 	if err != nil {
 		return gin.H{"ok": false, "error": "schedule_unavailable"}, http.StatusServiceUnavailable
 	}
@@ -139,16 +140,16 @@ func buildPagesResponse(ctx context.Context, cfg config.Config, db *gorm.DB, cch
 		return gin.H{"ok": false, "error": "championship_unavailable"}, http.StatusServiceUnavailable
 	}
 
-	driverStandings, err := f1db.OpenF1DriverStandingsJSON(db, latestSK)
+	driverStandings, err := f1db.OpenF1DriverStandingsJSON(db, latestSK, lang)
 	if err != nil {
 		return gin.H{"ok": false, "error": "driver_standings_unavailable"}, http.StatusServiceUnavailable
 	}
-	constructorStandings, err := f1db.OpenF1ConstructorStandingsJSON(db, latestSK)
+	constructorStandings, err := f1db.OpenF1ConstructorStandingsJSON(db, latestSK, lang)
 	if err != nil {
 		return gin.H{"ok": false, "error": "constructor_standings_unavailable"}, http.StatusServiceUnavailable
 	}
 
-	lastResults, _ := f1db.OpenF1LastNResultsJSON(db, season, 5)
+	lastResults, _ := f1db.OpenF1LastNResultsJSON(db, season, 5, lang)
 
 	lastWinnerAny, _ := cch.GetOrSet("ergast_last_winner", 300*time.Second, func() (any, error) {
 		if s, ok := thirdparty.ErgastLastWinner(ctx); ok {
@@ -175,7 +176,7 @@ func buildPagesResponse(ctx context.Context, cfg config.Config, db *gorm.DB, cch
 	circuitSource := any(nil)
 	if includeCircuit {
 		if !refreshCircuit {
-			if v, err := f1db.CircuitAssetsPayloadFromDB(db, season); err == nil {
+			if v, err := f1db.CircuitAssetsPayloadFromDB(db, season, lang); err == nil {
 				circuitAssets = v
 				circuitSource = "mysql"
 			}

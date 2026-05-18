@@ -1,5 +1,6 @@
 #include "pages/f1_page_adapter.h"
 
+#include "i18n.h"
 #include "lcd_display.h"
 #include "lvgl_theme.h"
 #include "pages/f1_page_adapter_common.h"
@@ -59,15 +60,15 @@ void F1PageAdapter::BuildQuickSwitchLocked() {
     lv_obj_clear_flag(quick_switch_box_, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
 
     struct RowText {
-        const char* label;
+        const char* label_key;
     };
     const RowText rows[kQuickSwitchItems] = {
-        {"[ RACE WEEK ]"},
-        {"[ OFF WEEK ]"},
-        {"[ DRIVER STANDINGS ]"},
-        {"[ CONSTRUCTOR STANDINGS ]"},
-        {"[ CIRCUIT ]"},
-        {"[ RACE SESSIONS ]"},
+        {"f1.quick_switch.items.race_week"},
+        {"f1.quick_switch.items.off_week"},
+        {"f1.quick_switch.items.driver_standings"},
+        {"f1.quick_switch.items.constructor_standings"},
+        {"f1.quick_switch.items.circuit"},
+        {"f1.quick_switch.items.race_sessions"},
     };
 
     constexpr lv_coord_t row_h = 18;
@@ -89,7 +90,7 @@ void F1PageAdapter::BuildQuickSwitchLocked() {
         lv_obj_set_style_text_font(l, font, 0);
         lv_label_set_long_mode(l, LV_LABEL_LONG_CLIP);
         lv_obj_align(l, LV_ALIGN_LEFT_MID, 0, 0);
-        lv_label_set_text(l, rows[i].label);
+        lv_label_set_text(l, I18n::Tr(rows[i].label_key));
     }
 
     quick_switch_footer_ = lv_label_create(footer_box);
@@ -97,7 +98,7 @@ void F1PageAdapter::BuildQuickSwitchLocked() {
     lv_label_set_long_mode(quick_switch_footer_, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(quick_switch_footer_, LV_PCT(100));
     lv_obj_set_style_text_align(quick_switch_footer_, LV_TEXT_ALIGN_LEFT, 0);
-    lv_label_set_text(quick_switch_footer_, "[UP/DN] SELECT\n[CONFIRM] ENTER | [L-CONFIRM] CLOSE");
+    lv_label_set_text(quick_switch_footer_, I18n::Tr("f1.quick_switch.footer"));
     lv_obj_align(quick_switch_footer_, LV_ALIGN_TOP_LEFT, 0, 0);
     lv_obj_move_foreground(footer_box);
 

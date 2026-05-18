@@ -22,6 +22,7 @@
 #include "custom_lcd_display.h"
 #include "display/ui_page.h"
 #include "display/pages/factory_test_page_adapter.h"
+#include "i18n.h"
 #include "network_interface.h"
 #include "rtc_pcf8563.h"
 #include "ssid_manager.h"
@@ -313,9 +314,9 @@ private:
         if (!wifi.IsInitialized()) {
             WifiManagerConfig config;
             config.ssid_prefix = "GinTonic_Tip";
-            config.language = "zh-CN";
+            config.language = I18n::GetLanguage();
             if (!wifi.Initialize(config)) {
-                UpdateWifiSetupPage("状态：WiFi 初始化失败，请重启设备", true);
+                UpdateWifiSetupPage(I18n::Tr("wifi.onboarding.init_failed"), true);
                 return;
             }
         }
@@ -324,7 +325,7 @@ private:
             this->HandleWifiEvent(event);
         });
         wifi.StartConfigAp();
-        UpdateWifiSetupPage("状态：已进入配网模式，等待手机连接热点", true);
+        UpdateWifiSetupPage(I18n::Tr("wifi.onboarding.enter_ap"), true);
     }
 
     void StartStationConnecting() {
@@ -335,9 +336,9 @@ private:
         if (!wifi.IsInitialized()) {
             WifiManagerConfig config;
             config.ssid_prefix = "GinTonic_Tip";
-            config.language = "zh-CN";
+            config.language = I18n::GetLanguage();
             if (!wifi.Initialize(config)) {
-                UpdateWifiSetupPage("状态：WiFi 初始化失败，请重启设备", true);
+                UpdateWifiSetupPage(I18n::Tr("wifi.onboarding.init_failed"), true);
                 return;
             }
         }
@@ -345,16 +346,16 @@ private:
             this->HandleWifiEvent(event);
         });
         wifi.StartStation();
-        UpdateWifiSetupPage("状态：正在连接已保存的 WiFi...", true);
+        UpdateWifiSetupPage(I18n::Tr("wifi.onboarding.connect_saved"), true);
     }
 
     void HandleWifiEvent(WifiEvent event) {
         switch (event) {
             case WifiEvent::Scanning:
-                UpdateWifiSetupPage("状态：正在扫描 WiFi...", false);
+                UpdateWifiSetupPage(I18n::Tr("wifi.onboarding.scanning"), false);
                 break;
             case WifiEvent::Connecting:
-                UpdateWifiSetupPage("状态：正在连接 WiFi...", false);
+                UpdateWifiSetupPage(I18n::Tr("wifi.onboarding.connecting"), false);
                 break;
             case WifiEvent::Connected:
                 TimeSyncService::Instance().RequestSync();
@@ -392,7 +393,7 @@ private:
                 if (ws_news_ != nullptr) {
                     ws_news_->Stop();
                 }
-                UpdateWifiSetupPage("状态：WiFi 已断开，正在重试...", false);
+                UpdateWifiSetupPage(I18n::Tr("wifi.onboarding.disconnected_retry"), false);
                 break;
             case WifiEvent::ConfigModeEnter:
                 if (display_ != nullptr) {
@@ -413,17 +414,17 @@ private:
                     const std::string url = s.GetString("url", "");
                     ws_news_->Start(url);
                 }
-                UpdateWifiSetupPage("状态：已进入配网模式，等待手机连接热点", false);
+                UpdateWifiSetupPage(I18n::Tr("wifi.onboarding.enter_ap"), false);
                 break;
             case WifiEvent::ConfigModeExit:
                 if (!HasSavedWifiCredentials()) {
                     wifi_onboarding_active_ = false;
                     StartWifiOnboarding();
-                    UpdateWifiSetupPage("状态：未检测到已保存 WiFi，请重新配置", true);
+                    UpdateWifiSetupPage(I18n::Tr("wifi.onboarding.no_saved_wifi"), true);
                     return;
                 }
                 wifi_onboarding_active_ = false;
-                UpdateWifiSetupPage("状态：WiFi 信息已保存，正在连接...", true);
+                UpdateWifiSetupPage(I18n::Tr("wifi.onboarding.saved_connecting"), true);
                 StartStationConnecting();
                 break;
             default:

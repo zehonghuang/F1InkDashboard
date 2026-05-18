@@ -1,6 +1,7 @@
 #include "pages/wifi_setup_page_adapter.h"
 
 #include "assets_fs.h"
+#include "i18n.h"
 #include "lcd_display.h"
 #include "lvgl_theme.h"
 
@@ -156,7 +157,7 @@ void WifiSetupPageAdapter::LoadSplashLocked() {
     if (!EnsureAssetsMounted()) {
         ESP_LOGW(kTag, "assets not mounted");
         if (splash_hint_label_ != nullptr) {
-            lv_label_set_text(splash_hint_label_, "启动图缺失：assets未挂载");
+            lv_label_set_text(splash_hint_label_, I18n::Tr("wifi.setup.splash_missing_assets"));
             lv_obj_clear_flag(splash_hint_label_, LV_OBJ_FLAG_HIDDEN);
         }
         return;
@@ -276,7 +277,7 @@ void WifiSetupPageAdapter::LoadSplashLocked() {
         lv_obj_add_flag(splash_image_, LV_OBJ_FLAG_HIDDEN);
     }
     if (splash_hint_label_ != nullptr) {
-        lv_label_set_text(splash_hint_label_, "启动图缺失：/assets/wifi/setup.bin 或 setup.png");
+        lv_label_set_text(splash_hint_label_, I18n::Tr("wifi.setup.splash_missing_file"));
         lv_obj_clear_flag(splash_hint_label_, LV_OBJ_FLAG_HIDDEN);
     }
 }
@@ -328,7 +329,7 @@ void WifiSetupPageAdapter::Build() {
     lv_label_set_long_mode(splash_hint_label_, LV_LABEL_LONG_WRAP);
     lv_obj_set_style_text_align(splash_hint_label_, LV_TEXT_ALIGN_LEFT, 0);
     lv_obj_align(splash_hint_label_, LV_ALIGN_TOP_LEFT, 4, 4);
-    lv_label_set_text(splash_hint_label_, "启动图缺失(v2)：/assets/wifi/setup.bin 或 setup.png");
+    lv_label_set_text(splash_hint_label_, I18n::Tr("wifi.setup.splash_missing_file_v2"));
 
     splash_blank_dsc_ = {};
     splash_blank_dsc_.header.magic = LV_IMAGE_HEADER_MAGIC;
@@ -347,7 +348,7 @@ void WifiSetupPageAdapter::Build() {
     if (body_font != nullptr) {
         lv_obj_set_style_text_font(title_label_, body_font, 0);
     }
-    lv_label_set_text(title_label_, "首次启动 - WiFi 配置");
+    lv_label_set_text(title_label_, I18n::Tr("wifi.setup.title"));
 
     ssid_label_ = lv_label_create(info_area);
     url_label_ = lv_label_create(info_area);
@@ -434,15 +435,12 @@ void WifiSetupPageAdapter::RefreshLabelsLocked() {
         return;
     }
 
-    const char* ssid = ap_ssid_.empty() ? "(准备中)" : ap_ssid_.c_str();
+    const char* ssid = ap_ssid_.empty() ? I18n::Tr("wifi.setup.ssid_preparing") : ap_ssid_.c_str();
     const char* url = web_url_.empty() ? "http://192.168.4.1" : web_url_.c_str();
-    const char* status = status_.empty() ? "状态：等待进入配网模式..." : status_.c_str();
+    const char* status = status_.empty() ? I18n::Tr("wifi.setup.status_waiting") : status_.c_str();
 
-    lv_label_set_text_fmt(ssid_label_, "热点名称: %s", ssid);
-    lv_label_set_text_fmt(url_label_, "配置地址: %s", url);
-    lv_label_set_text(
-        steps_label_,
-        "1. 连接热点  2. 打开配置地址\n"
-        "3. 选择 WiFi 保存  4. 完成/退出");
+    lv_label_set_text_fmt(ssid_label_, I18n::Tr("wifi.setup.ap_ssid_fmt"), ssid);
+    lv_label_set_text_fmt(url_label_, I18n::Tr("wifi.setup.ap_url_fmt"), url);
+    lv_label_set_text(steps_label_, I18n::Tr("wifi.setup.steps"));
     lv_label_set_text(status_label_, status);
 }

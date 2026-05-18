@@ -75,6 +75,7 @@ private:
     void SetRootVisible(lv_obj_t* root, bool visible);
     void ApplyMenuSelectionLocked();
     void ApplyQuickSwitchSelectionLocked();
+    void UpdateMenuI18nLocked();
     void UpdateMenuStatusLocked();
     void UpdateBatteryUiLocked();
     void ApplyWdcPageLocked();
@@ -253,9 +254,9 @@ private:
     lv_obj_t* menu_header_time_ = nullptr;
     lv_obj_t* menu_header_batt_icon_ = nullptr;
     lv_obj_t* menu_header_batt_pct_ = nullptr;
-    std::array<lv_obj_t*, 7> menu_item_boxes_{};
-    std::array<lv_obj_t*, 7> menu_item_left_{};
-    std::array<lv_obj_t*, 7> menu_item_right_{};
+    std::array<lv_obj_t*, 8> menu_item_boxes_{};
+    std::array<lv_obj_t*, 8> menu_item_left_{};
+    std::array<lv_obj_t*, 8> menu_item_right_{};
     lv_obj_t* menu_footer_ = nullptr;
     int menu_focus_ = 0;
     bool menu_visible_ = false;

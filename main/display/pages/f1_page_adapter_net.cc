@@ -3,6 +3,7 @@
 #include <cstring>
 #include <string>
 
+#include "i18n.h"
 #include "esp_http_client.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -189,6 +190,12 @@ bool HttpGetToBufferEx(const std::string& url,
         esp_http_client_handle_t client = esp_http_client_init(&config);
         if (client == nullptr) {
             return false;
+        }
+        {
+            const std::string lang = I18n::GetLanguage();
+            if (!lang.empty()) {
+                esp_http_client_set_header(client, "Accept-Language", lang.c_str());
+            }
         }
 
         const esp_err_t open_ret = esp_http_client_open(client, 0);

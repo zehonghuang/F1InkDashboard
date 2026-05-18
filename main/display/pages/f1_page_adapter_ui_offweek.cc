@@ -1,5 +1,6 @@
 #include "pages/f1_page_adapter.h"
 
+#include "i18n.h"
 #include "lcd_display.h"
 #include "lvgl_theme.h"
 #include "pages/f1_page_adapter_common.h"
@@ -27,12 +28,12 @@ void F1PageAdapter::BuildStandingsLocked() {
     standings_header_left_ = lv_label_create(header);
     lv_obj_set_style_text_font(standings_header_left_, record_font, 0);
     lv_obj_align(standings_header_left_, LV_ALIGN_LEFT_MID, 0, 0);
-    lv_label_set_text(standings_header_left_, "2026 F1 SEASON STANDINGS");
+    lv_label_set_text(standings_header_left_, I18n::Tr("f1.offweek.header_left"));
 
     standings_header_right_ = lv_label_create(header);
     lv_obj_set_style_text_font(standings_header_right_, record_font, 0);
     lv_obj_align(standings_header_right_, LV_ALIGN_RIGHT_MID, 0, 0);
-    lv_label_set_text(standings_header_right_, "DAYS TO NEXT");
+    lv_label_set_text(standings_header_right_, I18n::Tr("f1.offweek.header_right"));
 
     off_q1_ = lv_obj_create(standings_root_);
     StyleBox(off_q1_);
@@ -52,8 +53,8 @@ void F1PageAdapter::BuildStandingsLocked() {
     const lv_coord_t name_x = kRankW;
     const lv_coord_t name_w = pts_x - name_x;
 
-    CreateCellLabel(off_q1_, 0, 0, name_w, "DRIVER", record_font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
-    CreateCellLabel(off_q1_, pts_x, 0, kPtsW, "PTS", record_font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(off_q1_, 0, 0, name_w, I18n::Tr("f1.offweek.driver"), record_font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(off_q1_, pts_x, 0, kPtsW, I18n::Tr("f1.offweek.pts"), record_font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
 
     for (int i = 0; i < kDriverRows; i++) {
         const lv_coord_t y = kRowH * (i + 1);
@@ -72,7 +73,7 @@ void F1PageAdapter::BuildStandingsLocked() {
         0);
 
     standings_days_ = lv_label_create(off_q2_);
-    lv_label_set_text(standings_days_, "12\nDAYS\nUNTIL SAUDI ARABIA");
+    lv_label_set_text(standings_days_, I18n::Tr("f1.offweek.days_to_next_placeholder"));
     lv_obj_set_style_text_align(standings_days_, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_style_text_font(standings_days_, record_font, 0);
     lv_obj_set_style_text_line_space(standings_days_, -1, 0);
@@ -98,8 +99,8 @@ void F1PageAdapter::BuildStandingsLocked() {
     const lv_coord_t name_x2 = kTeamRankW;
     const lv_coord_t team_w = pts_x2 - name_x2;
 
-    CreateCellLabel(off_q3_, 0, 0, team_w, "CONSTRUCTOR (WCC)", record_font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
-    CreateCellLabel(off_q3_, pts_x2, 0, kTeamPtsW, "PTS", record_font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(off_q3_, 0, 0, team_w, I18n::Tr("f1.offweek.constructor_wcc"), record_font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(off_q3_, pts_x2, 0, kTeamPtsW, I18n::Tr("f1.offweek.pts"), record_font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
 
     for (int i = 0; i < kConstructorRows; i++) {
         const lv_coord_t y = kRowH * (i + 1);
@@ -118,12 +119,7 @@ void F1PageAdapter::BuildStandingsLocked() {
         0);
 
     news_ = lv_label_create(off_q4_);
-    lv_label_set_text(
-        news_,
-        "NEWS FLASH:\n"
-        "Audi confirms 2026 engine\n"
-        "performance targets are on\n"
-        "schedule.");
+    lv_label_set_text(news_, I18n::Tr("f1.offweek.news_placeholder"));
     lv_obj_set_style_text_font(news_, record_font, 0);
     lv_obj_set_style_text_line_space(news_, -1, 0);
     lv_obj_set_width(news_, LV_PCT(100));

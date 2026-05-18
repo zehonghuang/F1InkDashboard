@@ -1,6 +1,7 @@
 #include "pages/gallery_page_adapter.h"
 
 #include "assets_fs.h"
+#include "i18n.h"
 #include "lcd_display.h"
 #include "lvgl_theme.h"
 #include "settings.h"
@@ -218,6 +219,12 @@ bool HttpGetToBuffer(const std::string& url, std::vector<uint8_t>& out, size_t m
     if (client == nullptr) {
         return false;
     }
+    {
+        const std::string lang = I18n::GetLanguage();
+        if (!lang.empty()) {
+            esp_http_client_set_header(client, "Accept-Language", lang.c_str());
+        }
+    }
 
     const esp_err_t open_ret = esp_http_client_open(client, 0);
     if (open_ret != ESP_OK) {
@@ -342,12 +349,12 @@ void LoaderTask(void* arg) {
         host->DispatchPageEvent(e, false);
     };
 
-    send_status("LOADING LIST...");
+    send_status(I18n::Tr("gallery.loading_list"));
 
     std::vector<std::string> sources;
     if (!LoadJsonImageList(sources)) {
         auto* payload = new GalleryUpdatePayload();
-        payload->status = "NO LIST: gallery/list.json OR gallery.json_url";
+        payload->status = I18n::Tr("gallery.no_list");
         UiPageEvent e;
         e.type = UiPageEventType::Custom;
         e.i32 = kEventUpdate;
@@ -358,7 +365,7 @@ void LoaderTask(void* arg) {
     }
 
     auto* payload = new GalleryUpdatePayload();
-    payload->status = "LOADING IMAGES...";
+    payload->status = I18n::Tr("gallery.loading_images");
 
     for (const auto& src_raw : sources) {
         std::vector<uint8_t> bytes;
@@ -425,7 +432,7 @@ void GalleryPageAdapter::Build() {
     if (title_font != nullptr) {
         lv_obj_set_style_text_font(title_label_, title_font, 0);
     }
-    lv_label_set_text(title_label_, "图片展示");
+    lv_label_set_text(title_label_, I18n::Tr("gallery.title"));
     lv_obj_align(title_label_, LV_ALIGN_TOP_MID, 0, kTopPadding);
 
     status_label_ = lv_label_create(screen_);
@@ -435,7 +442,7 @@ void GalleryPageAdapter::Build() {
     lv_obj_set_style_text_color(status_label_, lv_color_black(), 0);
     lv_obj_set_width(status_label_, kPageWidth - 16);
     lv_label_set_long_mode(status_label_, LV_LABEL_LONG_WRAP);
-    lv_label_set_text(status_label_, "WAITING...");
+    lv_label_set_text(status_label_, I18n::Tr("gallery.waiting"));
     lv_obj_align(status_label_, LV_ALIGN_TOP_MID, 0, kTopPadding + kTitleHeight);
 
     image_ = lv_image_create(screen_);
@@ -613,7 +620,7 @@ bool GalleryPageAdapter::HandleEvent(const UiPageEvent& event) {
 
         if (entries_.empty()) {
             if (status_label_ != nullptr) {
-                lv_label_set_text(status_label_, "NO IMAGE TO DISPLAY");
+                lv_label_set_text(status_label_, I18n::Tr("gallery.no_image"));
             }
             if (indicator_label_ != nullptr) {
                 lv_label_set_text(indicator_label_, "");
@@ -624,7 +631,7 @@ bool GalleryPageAdapter::HandleEvent(const UiPageEvent& event) {
 
         ApplyIndex(0);
         if (status_label_ != nullptr) {
-            lv_label_set_text(status_label_, "LOADED");
+            lv_label_set_text(status_label_, I18n::Tr("gallery.loaded"));
         }
         loading_ = false;
         return true;

@@ -1,5 +1,6 @@
 #include "board.h"
 #include "system_info.h"
+#include "i18n.h"
 #include "settings.h"
 #include "display/display.h"
 #include "led/led.h"
@@ -14,8 +15,6 @@
 #define TAG "Board"
 
 namespace {
-
-constexpr char kDefaultLanguageCode[] = "zh-CN";
 
 std::string FormatHexBytes(const uint8_t* data, size_t len) {
     std::string result;
@@ -176,7 +175,7 @@ std::string Board::GetSystemInfoJson() {
             }
         }
     */
-    std::string json = R"({"version":2,"language":")" + std::string(kDefaultLanguageCode) + R"(",)";
+    std::string json = R"({"version":2,"language":")" + I18n::GetLanguage() + R"(",)";
     json += R"("flash_size":)" + std::to_string(SystemInfo::GetFlashSize()) + R"(,)";
     json += R"("minimum_free_heap_size":")" + std::to_string(SystemInfo::GetMinimumFreeHeapSize()) + R"(",)";
     json += R"("mac_address":")" + SystemInfo::GetMacAddress() + R"(",)";

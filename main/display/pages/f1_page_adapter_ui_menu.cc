@@ -1,5 +1,6 @@
 #include "pages/f1_page_adapter.h"
 
+#include "i18n.h"
 #include "lcd_display.h"
 #include "lvgl_theme.h"
 #include "pages/f1_page_adapter_common.h"
@@ -36,7 +37,7 @@ void F1PageAdapter::BuildMenuLocked() {
     lv_obj_set_style_text_font(menu_header_left_, font, 0);
     lv_label_set_long_mode(menu_header_left_, LV_LABEL_LONG_CLIP);
     lv_obj_align(menu_header_left_, LV_ALIGN_LEFT_MID, 0, 0);
-    lv_label_set_text(menu_header_left_, "[ MENU ]  SYSTEM CONFIGURATION");
+    lv_label_set_text(menu_header_left_, I18n::Tr("f1.menu.header"));
 
     menu_header_right_ = lv_obj_create(header);
     lv_obj_set_style_bg_opa(menu_header_right_, LV_OPA_TRANSP, 0);
@@ -51,7 +52,7 @@ void F1PageAdapter::BuildMenuLocked() {
     menu_header_time_ = lv_label_create(menu_header_right_);
     lv_obj_set_style_text_font(menu_header_time_, font, 0);
     lv_label_set_long_mode(menu_header_time_, LV_LABEL_LONG_CLIP);
-    lv_label_set_text(menu_header_time_, "--:--");
+    lv_label_set_text(menu_header_time_, I18n::Tr("ui.time_placeholder"));
 
     menu_header_batt_icon_ = lv_label_create(menu_header_right_);
     if (icon_font != nullptr) {
@@ -62,7 +63,7 @@ void F1PageAdapter::BuildMenuLocked() {
     menu_header_batt_pct_ = lv_label_create(menu_header_right_);
     lv_obj_set_style_text_font(menu_header_batt_pct_, font, 0);
     lv_label_set_long_mode(menu_header_batt_pct_, LV_LABEL_LONG_CLIP);
-    lv_label_set_text(menu_header_batt_pct_, "--%");
+    lv_label_set_text(menu_header_batt_pct_, I18n::Tr("ui.battery_pct_placeholder"));
 
     const lv_coord_t footer_h = 22;
     lv_obj_t* footer = lv_obj_create(menu_root_);
@@ -82,7 +83,7 @@ void F1PageAdapter::BuildMenuLocked() {
     lv_label_set_long_mode(menu_footer_, LV_LABEL_LONG_CLIP);
     lv_obj_set_width(menu_footer_, LV_PCT(100));
     lv_obj_align(menu_footer_, LV_ALIGN_LEFT_MID, 0, 0);
-    lv_label_set_text(menu_footer_, "[UP/DN] SELECT  | [CONFIRM] ENTER  | [L-CONFIRM] HOME");
+    lv_label_set_text(menu_footer_, I18n::Tr("f1.menu.footer"));
 
     lv_obj_t* body = lv_obj_create(menu_root_);
     lv_obj_set_size(body, kPageWidth, kPageHeight - kHeaderH - footer_h);
@@ -95,17 +96,18 @@ void F1PageAdapter::BuildMenuLocked() {
     lv_obj_set_style_pad_bottom(body, 6, 0);
 
     struct RowText {
-        const char* left;
-        const char* right;
+        const char* left_key;
+        const char* right_key;
     };
     const RowText rows[] = {
-        {"[ PAST RACES      ]", "View 2025/26 Season Results"},
-        {"[ FULL CALENDAR   ]", "2026 Race Schedule"},
-        {"[ DATA REFRESH    ]", "Force API Sync (4G/WiFi)"},
-        {"[ SYSTEM SETTINGS ]", "WiFi, Screen, Sleep Timer"},
-        {"[ BATTERY STATS   ]", "Health: --% / --.--V"},
-        {"[ ABOUT DEVICE    ]", "Tonic F1 Dash v1.0.4"},
-        {"[ REBOOT          ]", "Restart device"},
+        {"f1.menu.items.past_races.left", "f1.menu.items.past_races.right"},
+        {"f1.menu.items.full_calendar.left", "f1.menu.items.full_calendar.right"},
+        {"f1.menu.items.data_refresh.left", "f1.menu.items.data_refresh.right"},
+        {"f1.menu.items.system_settings.left", "f1.menu.items.system_settings.right"},
+        {"f1.menu.items.battery_stats.left", "f1.menu.items.battery_stats.right"},
+        {"f1.menu.items.about_device.left", "f1.menu.items.about_device.right"},
+        {"f1.menu.items.language.left", "f1.menu.items.language.right"},
+        {"f1.menu.items.reboot.left", "f1.menu.items.reboot.right"},
     };
 
     constexpr lv_coord_t row_h = 22;
@@ -127,17 +129,54 @@ void F1PageAdapter::BuildMenuLocked() {
         lv_obj_set_style_text_font(l, font, 0);
         lv_label_set_long_mode(l, LV_LABEL_LONG_CLIP);
         lv_obj_align(l, LV_ALIGN_LEFT_MID, 0, 0);
-        lv_label_set_text(l, rows[i].left);
+        lv_label_set_text(l, I18n::Tr(rows[i].left_key));
 
         lv_obj_t* r = lv_label_create(box);
         menu_item_right_[static_cast<size_t>(i)] = r;
         lv_obj_set_style_text_font(r, font, 0);
         lv_label_set_long_mode(r, LV_LABEL_LONG_CLIP);
         lv_obj_align(r, LV_ALIGN_RIGHT_MID, 0, 0);
-        lv_label_set_text(r, rows[i].right);
+        lv_label_set_text(r, I18n::Tr(rows[i].right_key));
     }
 
     ApplyMenuSelectionLocked();
+}
+
+void F1PageAdapter::UpdateMenuI18nLocked() {
+    if (!built_) {
+        return;
+    }
+    if (menu_header_left_ != nullptr) {
+        lv_label_set_text(menu_header_left_, I18n::Tr("f1.menu.header"));
+    }
+    if (menu_footer_ != nullptr) {
+        lv_label_set_text(menu_footer_, I18n::Tr("f1.menu.footer"));
+    }
+
+    struct RowText {
+        const char* left_key;
+        const char* right_key;
+    };
+    const RowText rows[] = {
+        {"f1.menu.items.past_races.left", "f1.menu.items.past_races.right"},
+        {"f1.menu.items.full_calendar.left", "f1.menu.items.full_calendar.right"},
+        {"f1.menu.items.data_refresh.left", "f1.menu.items.data_refresh.right"},
+        {"f1.menu.items.system_settings.left", "f1.menu.items.system_settings.right"},
+        {"f1.menu.items.battery_stats.left", "f1.menu.items.battery_stats.right"},
+        {"f1.menu.items.about_device.left", "f1.menu.items.about_device.right"},
+        {"f1.menu.items.language.left", "f1.menu.items.language.right"},
+        {"f1.menu.items.reboot.left", "f1.menu.items.reboot.right"},
+    };
+    for (int i = 0; i < static_cast<int>(menu_item_boxes_.size()); i++) {
+        lv_obj_t* l = menu_item_left_[static_cast<size_t>(i)];
+        lv_obj_t* r = menu_item_right_[static_cast<size_t>(i)];
+        if (l != nullptr) {
+            lv_label_set_text(l, I18n::Tr(rows[i].left_key));
+        }
+        if (r != nullptr) {
+            lv_label_set_text(r, I18n::Tr(rows[i].right_key));
+        }
+    }
 }
 
 void F1PageAdapter::ApplyMenuSelectionLocked() {

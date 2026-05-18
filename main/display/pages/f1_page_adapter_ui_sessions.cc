@@ -1,5 +1,6 @@
 #include "pages/f1_page_adapter.h"
 
+#include "i18n.h"
 #include "lcd_display.h"
 #include "lvgl_theme.h"
 #include "pages/f1_page_adapter_common.h"
@@ -34,12 +35,12 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
     lv_obj_set_style_text_font(race_sessions_header_left_, font, 0);
     lv_obj_align(race_sessions_header_left_, LV_ALIGN_LEFT_MID, 0, 0);
     lv_label_set_long_mode(race_sessions_header_left_, LV_LABEL_LONG_CLIP);
-    lv_label_set_text(race_sessions_header_left_, "[ FP1 ] SAUDI ARABIA");
+    lv_label_set_text(race_sessions_header_left_, I18n::Tr("f1.sessions.header_left_placeholder"));
 
     race_sessions_header_center_ = lv_label_create(header);
     lv_obj_set_style_text_font(race_sessions_header_center_, font, 0);
     lv_obj_align(race_sessions_header_center_, LV_ALIGN_CENTER, 0, 0);
-    lv_label_set_text(race_sessions_header_center_, "TIME REMAIN: 12:45");
+    lv_label_set_text(race_sessions_header_center_, I18n::Tr("f1.sessions.header_center_placeholder"));
 
     race_sessions_header_right_ = lv_obj_create(header);
     lv_obj_set_size(race_sessions_header_right_, 88, kHeaderH - 2);
@@ -59,7 +60,7 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
 
     race_sessions_header_batt_pct_ = lv_label_create(race_sessions_header_right_);
     lv_obj_set_style_text_font(race_sessions_header_batt_pct_, font, 0);
-    lv_label_set_text(race_sessions_header_batt_pct_, "95%");
+    lv_label_set_text(race_sessions_header_batt_pct_, I18n::Tr("ui.battery_pct_placeholder"));
 
     constexpr lv_coord_t bottom_h = 24;
     const lv_coord_t body_h = kPageHeight - kHeaderH - bottom_h;
@@ -100,7 +101,7 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
     lv_obj_set_width(race_sessions_no_data_, LV_PCT(100));
     lv_obj_set_style_text_align(race_sessions_no_data_, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(race_sessions_no_data_, LV_ALIGN_CENTER, 0, 0);
-    lv_label_set_text(race_sessions_no_data_, "NO DATA");
+    lv_label_set_text(race_sessions_no_data_, I18n::Tr("ui.no_data"));
     lv_obj_add_flag(race_sessions_no_data_, LV_OBJ_FLAG_HIDDEN);
 
     race_sessions_qualifying_left_ = lv_obj_create(left);
@@ -124,11 +125,11 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
         const lv_coord_t gap_x = best_x + kBestW;
         const lv_coord_t laps_x = gap_x + kGapW;
 
-        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_practice_left_, 0, 0, kPosW, "POS", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
-        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_practice_left_, no_x, 0, kNoW, "NO.", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
+        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_practice_left_, 0, 0, kPosW, I18n::Tr("ui.table.pos"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
+        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_practice_left_, no_x, 0, kNoW, I18n::Tr("ui.table.no"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
         lv_obj_set_style_pad_left(CreateCellLabel(race_sessions_practice_left_, drv_x, 0, kDriverW, "", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP), 2, 0);
         race_sessions_race_hdr_best_ =
-            CreateCellLabel(race_sessions_practice_left_, best_x, 0, kBestW, "STATUS", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+            CreateCellLabel(race_sessions_practice_left_, best_x, 0, kBestW, I18n::Tr("f1.sessions.table.status"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
         lv_obj_set_style_pad_right(race_sessions_race_hdr_best_, 2, 0);
         race_sessions_race_hdr_gap_ =
             CreateCellLabel(race_sessions_practice_left_, gap_x, 0, kGapW, "", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
@@ -215,12 +216,12 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
         const lv_coord_t gap_x = lap_x + kLapW;
         const lv_coord_t st_x = gap_x + kGapW;
 
-        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_qualifying_left_, 0, 0, kPosW, "POS", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
-        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_qualifying_left_, no_x, 0, kNoW, "NO.", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
+        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_qualifying_left_, 0, 0, kPosW, I18n::Tr("ui.table.pos"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
+        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_qualifying_left_, no_x, 0, kNoW, I18n::Tr("ui.table.no"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
         lv_obj_set_style_pad_left(CreateCellLabel(race_sessions_qualifying_left_, drv_x, 0, kDriverW, "", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP), 2, 0);
-        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_qualifying_left_, lap_x, 0, kLapW, "LAP", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
-        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_qualifying_left_, gap_x, 0, kGapW, "GAP", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
-        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_qualifying_left_, st_x, 0, kStW, "ST.", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
+        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_qualifying_left_, lap_x, 0, kLapW, I18n::Tr("f1.sessions.table.lap"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
+        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_qualifying_left_, gap_x, 0, kGapW, I18n::Tr("ui.table.gap"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
+        lv_obj_set_style_pad_right(CreateCellLabel(race_sessions_qualifying_left_, st_x, 0, kStW, I18n::Tr("f1.sessions.table.st"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
 
         CreateCellLabel(
             race_sessions_qualifying_left_,
@@ -285,7 +286,7 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
                 0,
                 y,
                 left_inner_w,
-                "------------- [ DROP ZONE ] -------------",
+                I18n::Tr("f1.sessions.drop_zone"),
                 font,
                 LV_TEXT_ALIGN_LEFT,
                 LV_LABEL_LONG_CLIP);
@@ -319,7 +320,7 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
     lv_obj_set_style_pad_all(race_sessions_qualifying_right_, 0, 0);
 
     {
-        CreateCellLabel(race_sessions_practice_right_, 0, 0, right_inner_w, "STATUS:", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+        CreateCellLabel(race_sessions_practice_right_, 0, 0, right_inner_w, I18n::Tr("f1.sessions.right.status_label"), font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
 
         lv_obj_t* status_box = lv_obj_create(race_sessions_practice_right_);
         lv_obj_set_size(status_box, right_inner_w, kRowH + 6);
@@ -335,7 +336,7 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
         lv_obj_set_style_text_align(status, LV_TEXT_ALIGN_CENTER, 0);
         lv_obj_set_width(status, LV_PCT(100));
         lv_obj_align(status, LV_ALIGN_CENTER, 0, 0);
-        lv_label_set_text(status, "[ GREEN ]");
+        lv_label_set_text(status, I18n::Tr("f1.sessions.status_green"));
 
         CreateCellLabel(
             race_sessions_practice_right_,
@@ -347,9 +348,9 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
             LV_TEXT_ALIGN_LEFT,
             LV_LABEL_LONG_CLIP);
 
-        CreateCellLabel(race_sessions_practice_right_, 0, kRowH * 4, right_inner_w, "TRACK TEMP:", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+        CreateCellLabel(race_sessions_practice_right_, 0, kRowH * 4, right_inner_w, I18n::Tr("f1.sessions.right.track_temp"), font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
         CreateCellLabel(race_sessions_practice_right_, 0, kRowH * 5, right_inner_w, "   42C", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
-        CreateCellLabel(race_sessions_practice_right_, 0, kRowH * 6, right_inner_w, "AIR TEMP:", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+        CreateCellLabel(race_sessions_practice_right_, 0, kRowH * 6, right_inner_w, I18n::Tr("f1.sessions.right.air_temp"), font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
         CreateCellLabel(race_sessions_practice_right_, 0, kRowH * 7, right_inner_w, "   29C", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
         CreateCellLabel(
             race_sessions_practice_right_,
@@ -360,14 +361,14 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
             font,
             LV_TEXT_ALIGN_LEFT,
             LV_LABEL_LONG_CLIP);
-        CreateCellLabel(race_sessions_practice_right_, 0, kRowH * 9, right_inner_w, "HUMIDITY:", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+        CreateCellLabel(race_sessions_practice_right_, 0, kRowH * 9, right_inner_w, I18n::Tr("f1.sessions.right.humidity"), font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
         CreateCellLabel(race_sessions_practice_right_, 0, kRowH * 10, right_inner_w, "   55%", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
     }
 
     {
-        CreateCellLabel(race_sessions_qualifying_right_, 0, 0, right_inner_w, "SECTOR:", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
-        CreateCellLabel(race_sessions_qualifying_right_, 0, kRowH, right_inner_w, "S1  S2  S3", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
-        CreateCellLabel(race_sessions_qualifying_right_, 0, kRowH * 2, right_inner_w, "[P] [P] [.]",
+        CreateCellLabel(race_sessions_qualifying_right_, 0, 0, right_inner_w, I18n::Tr("f1.sessions.right.sector"), font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+        CreateCellLabel(race_sessions_qualifying_right_, 0, kRowH, right_inner_w, I18n::Tr("f1.sessions.right.s123"), font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+        CreateCellLabel(race_sessions_qualifying_right_, 0, kRowH * 2, right_inner_w, I18n::Tr("f1.sessions.right.pit_pattern"),
                         font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
         CreateCellLabel(
             race_sessions_qualifying_right_,
@@ -384,7 +385,7 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
         lv_label_set_long_mode(kz, LV_LABEL_LONG_WRAP);
         lv_obj_set_width(kz, LV_PCT(100));
         lv_obj_align(kz, LV_ALIGN_TOP_LEFT, 0, kRowH * 4);
-        lv_label_set_text(kz, "KNOCKOUT ZONE:\nP11 - P15");
+        lv_label_set_text(kz, I18n::Tr("f1.sessions.right.knockout_zone_placeholder"));
     }
 
     race_sessions_qualifying_body_ = lv_obj_create(race_sessions_root_);
@@ -420,13 +421,13 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
             return l;
         };
 
-        add_cell(0, 0, kPosW, "POS", LV_TEXT_ALIGN_RIGHT);
-        add_cell(no_x, 0, kNoW, "NO.", LV_TEXT_ALIGN_RIGHT);
+        add_cell(0, 0, kPosW, I18n::Tr("ui.table.pos"), LV_TEXT_ALIGN_RIGHT);
+        add_cell(no_x, 0, kNoW, I18n::Tr("ui.table.no"), LV_TEXT_ALIGN_RIGHT);
         add_cell(drv_x, 0, kDriverW, "", LV_TEXT_ALIGN_LEFT);
-        add_cell(lap_x, 0, kLapW, "LAP TIME", LV_TEXT_ALIGN_RIGHT);
-        add_cell(gap_x, 0, kGapW, "GAP", LV_TEXT_ALIGN_RIGHT);
-        add_cell(st_x, 0, kStW, "ST.", LV_TEXT_ALIGN_RIGHT);
-        add_cell(sec_x, 0, kSecW, "SEC(123)", LV_TEXT_ALIGN_LEFT);
+        add_cell(lap_x, 0, kLapW, I18n::Tr("f1.sessions.table.lap_time"), LV_TEXT_ALIGN_RIGHT);
+        add_cell(gap_x, 0, kGapW, I18n::Tr("ui.table.gap"), LV_TEXT_ALIGN_RIGHT);
+        add_cell(st_x, 0, kStW, I18n::Tr("f1.sessions.table.st"), LV_TEXT_ALIGN_RIGHT);
+        add_cell(sec_x, 0, kSecW, I18n::Tr("f1.sessions.table.sector_123"), LV_TEXT_ALIGN_LEFT);
 
         lv_obj_t* sep = lv_obj_create(race_sessions_qualifying_body_);
         lv_obj_set_size(sep, inner_w, 2);
@@ -479,7 +480,7 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
             0,
             base_y + 8 * kRowH,
             inner_w,
-            "--------------------- [ DROP ZONE ] -----------------------",
+            I18n::Tr("f1.sessions.drop_zone_long"),
             font,
             LV_TEXT_ALIGN_LEFT,
             LV_LABEL_LONG_CLIP);
@@ -551,12 +552,12 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
             return l;
         };
 
-        add_cell(0, 0, kPosW, "POS", LV_TEXT_ALIGN_RIGHT);
-        add_cell(no_x, 0, kNoW, "NO.", LV_TEXT_ALIGN_RIGHT);
+        add_cell(0, 0, kPosW, I18n::Tr("ui.table.pos"), LV_TEXT_ALIGN_RIGHT);
+        add_cell(no_x, 0, kNoW, I18n::Tr("ui.table.no"), LV_TEXT_ALIGN_RIGHT);
         add_cell(drv_x, 0, kDriverW, "", LV_TEXT_ALIGN_LEFT);
-        add_cell(gap_x, 0, kGapW, "GAP/STATUS", LV_TEXT_ALIGN_RIGHT);
-        add_cell(pts_x, 0, kPtsW, "PTS", LV_TEXT_ALIGN_RIGHT);
-        add_cell(pit_x, 0, kPitW, "PIT", LV_TEXT_ALIGN_RIGHT);
+        add_cell(gap_x, 0, kGapW, I18n::Tr("f1.sessions.race_result.gap_status"), LV_TEXT_ALIGN_RIGHT);
+        add_cell(pts_x, 0, kPtsW, I18n::Tr("f1.sessions.race_result.pts"), LV_TEXT_ALIGN_RIGHT);
+        add_cell(pit_x, 0, kPitW, I18n::Tr("f1.sessions.race_result.pit"), LV_TEXT_ALIGN_RIGHT);
 
         lv_obj_t* sep = lv_obj_create(race_sessions_race_result_body_);
         lv_obj_set_size(sep, inner_w, 2);
@@ -632,7 +633,7 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
     lv_obj_set_width(race_sessions_ticker_, LV_PCT(100));
     lv_obj_set_style_text_align(race_sessions_ticker_, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(race_sessions_ticker_, LV_ALIGN_CENTER, 0, 0);
-    lv_label_set_text(race_sessions_ticker_, "[NEWS] STROLL REPORTING STEERING ISSUES");
+    lv_label_set_text(race_sessions_ticker_, I18n::Tr("f1.sessions.ticker_placeholder"));
 
     race_sessions_quali_live_root_ = lv_obj_create(race_sessions_root_);
     lv_obj_set_size(race_sessions_quali_live_root_, kPageWidth, kPageHeight);
@@ -647,7 +648,7 @@ void F1PageAdapter::BuildRaceSessionsLocked() {
         lv_obj_set_width(msg, LV_PCT(100));
         lv_obj_set_style_text_align(msg, LV_TEXT_ALIGN_CENTER, 0);
         lv_obj_align(msg, LV_ALIGN_CENTER, 0, 0);
-        lv_label_set_text(msg, "QUALI LIVE\n(N/A)");
+        lv_label_set_text(msg, I18n::Tr("f1.sessions.quali_live_na"));
     }
 
     race_sessions_race_live_root_ = lv_obj_create(race_sessions_root_);

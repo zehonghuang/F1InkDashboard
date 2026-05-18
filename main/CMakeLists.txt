@@ -1,6 +1,7 @@
 set(SOURCES
     "application.cc"
     "backend_url.cc"
+    "i18n.cc"
     "main.cc"
     "settings.cc"
     "system_info.cc"
