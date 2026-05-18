@@ -726,7 +726,8 @@ func OpenF1ScheduleJSON(db *gorm.DB, season int, lang string) (map[string]any, e
 			continue
 		}
 		m := meetingsByKey[mk]
-		raceName := strings.TrimSpace(m.MeetingName)
+		raceNameEn := strings.TrimSpace(m.MeetingName)
+		raceName := raceNameEn
 		if v, ok := meetingNameMap[strconv.Itoa(mk)]; ok && strings.TrimSpace(v) != "" {
 			raceName = strings.TrimSpace(v)
 		}
@@ -772,8 +773,14 @@ func OpenF1ScheduleJSON(db *gorm.DB, season int, lang string) (map[string]any, e
 			"round":    nil,
 			"url":      nil,
 			"raceName": raceName,
-			"Circuit":  circuit,
-			"date":     dateS,
+			"raceName_en": func() string {
+				if strings.TrimSpace(raceNameEn) != "" {
+					return raceNameEn
+				}
+				return raceName
+			}(),
+			"Circuit": circuit,
+			"date":    dateS,
 		}
 		if timeS != "" {
 			raceObj["time"] = timeS
@@ -900,6 +907,34 @@ func CircuitAssetsPayloadFromDB(db *gorm.DB, season int, lang string) (map[strin
 	circuitLocalityMap, _ := fetchI18nText(db, lang, "circuit", "locality", circuitKeys)
 	raceNameMap, _ := fetchI18nText(db, lang, "race", "race_name", raceKeys)
 
+	personKeys := make([]string, 0, 16)
+	{
+		seen := map[string]struct{}{}
+		for _, r := range rows {
+			if len(bytes.TrimSpace(r.AssetsJSON)) == 0 {
+				continue
+			}
+			var payload map[string]any
+			if err := json.Unmarshal(r.AssetsJSON, &payload); err != nil || payload == nil {
+				continue
+			}
+			stats, _ := payload["stats"].(map[string]any)
+			if stats == nil {
+				continue
+			}
+			n := strings.TrimSpace(fmt.Sprintf("%v", stats["fastest_lap_driver"]))
+			if n == "" || n == "<nil>" {
+				continue
+			}
+			if _, ok := seen[n]; ok {
+				continue
+			}
+			seen[n] = struct{}{}
+			personKeys = append(personKeys, n)
+		}
+	}
+	personNameMap, _ := fetchI18nText(db, lang, "person", "name", personKeys)
+
 	items := make([]any, 0, len(rows))
 	for _, r := range rows {
 		cid := strings.TrimSpace(r.CircuitID)
@@ -909,6 +944,38 @@ func CircuitAssetsPayloadFromDB(db *gorm.DB, season int, lang string) (map[strin
 		if len(bytes.TrimSpace(r.AssetsJSON)) > 0 {
 			var payload map[string]any
 			if err := json.Unmarshal(r.AssetsJSON, &payload); err == nil && payload != nil {
+				round := r.Round
+				if v, ok := payload["round"]; ok {
+					if n, err := strconv.Atoi(strings.TrimSpace(fmt.Sprintf("%v", v))); err == nil {
+						round = n
+					}
+				}
+				if round > 0 {
+					if v, ok := raceNameMap[fmt.Sprintf("%d_%d", season, round)]; ok && strings.TrimSpace(v) != "" {
+						payload["race_name"] = strings.TrimSpace(v)
+					}
+				}
+				if v, ok := circuitNameMap[cid]; ok && strings.TrimSpace(v) != "" {
+					payload["circuit_name"] = strings.TrimSpace(v)
+				}
+				if v, ok := circuitCountryMap[cid]; ok && strings.TrimSpace(v) != "" {
+					payload["country"] = strings.TrimSpace(v)
+				}
+				if v, ok := circuitLocalityMap[cid]; ok && strings.TrimSpace(v) != "" {
+					payload["locality"] = strings.TrimSpace(v)
+				}
+				payload["source_map_image_url"] = sanitizeURLAny(payload["source_map_image_url"])
+				payload["source_map_image_url_detail"] = sanitizeURLAny(payload["source_map_image_url_detail"])
+				payload["source_card_image_url"] = sanitizeURLAny(payload["source_card_image_url"])
+
+				stats, _ := payload["stats"].(map[string]any)
+				if stats != nil {
+					n := strings.TrimSpace(fmt.Sprintf("%v", stats["fastest_lap_driver"]))
+					if v, ok := personNameMap[n]; ok && strings.TrimSpace(v) != "" {
+						stats["fastest_lap_driver"] = strings.TrimSpace(v)
+					}
+				}
+
 				if _, ok := payload["circuit_id"]; !ok {
 					payload["circuit_id"] = cid
 				}
@@ -1014,5 +1081,14 @@ func normalizePublicStaticURL(v any, season int, circuitID string, kind string) 
 	if strings.HasPrefix(s, "circuits/") {
 		return "/static/" + s
 	}
+	return s
+}
+
+func sanitizeURLAny(v any) any {
+	s := strings.TrimSpace(fmt.Sprintf("%v", v))
+	if s == "" || s == "<nil>" {
+		return v
+	}
+	s = strings.TrimSpace(strings.Trim(s, "`"))
 	return s
 }

@@ -136,6 +136,38 @@
       "full_name": "奥利弗·贝尔曼"
     }
   },
+  "person": {
+    "Charles Leclerc": {
+      "name": "夏尔·勒克莱尔"
+    },
+    "Kevin Magnussen": {
+      "name": "凯文·马格努森"
+    },
+    "Kimi Antonelli": {
+      "name": "基米·安东内利"
+    },
+    "Lando Norris": {
+      "name": "兰多·诺里斯"
+    },
+    "Lewis Hamilton": {
+      "name": "刘易斯·汉密尔顿"
+    },
+    "Max Verstappen": {
+      "name": "马克斯·维斯塔潘"
+    },
+    "Michael Schumacher": {
+      "name": "迈克尔·舒马赫"
+    },
+    "Oscar Piastri": {
+      "name": "奥斯卡·皮亚斯特里"
+    },
+    "Sergio Perez": {
+      "name": "塞尔吉奥·佩雷斯"
+    },
+    "Valtteri Bottas": {
+      "name": "瓦尔泰里·博塔斯"
+    }
+  },
   "race": {
     "2026_1": {
       "race_name": "澳大利亚大奖赛"

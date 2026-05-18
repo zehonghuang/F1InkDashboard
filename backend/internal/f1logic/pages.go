@@ -227,7 +227,11 @@ func BuildPagesPayload(nowUTC time.Time, tzName string, scheduleJSON map[string]
 	}
 
 	if displayRace != nil && circuitAssets != nil {
-		hit := PickCircuitForRace(getStr(displayRace, "raceName"), circuitID, circuitAssets)
+		raceNamePick := getStr(displayRace, "raceName_en")
+		if strings.TrimSpace(raceNamePick) == "" {
+			raceNamePick = getStr(displayRace, "raceName")
+		}
+		hit := PickCircuitForRace(raceNamePick, circuitID, circuitAssets)
 		if hit != nil {
 			stats, _ := hit["stats"].(map[string]any)
 			if stats == nil {

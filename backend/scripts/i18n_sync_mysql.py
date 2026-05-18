@@ -172,6 +172,12 @@ def _source_text_map(conn, season: int, req: list[tuple[str, str, str]]) -> dict
                 if csn:
                     out[("openf1_meeting", key, "circuit_short_name")] = csn
 
+        person_keys = sorted(by_type.get("person") or set())
+        for k in person_keys:
+            kk = str(k).strip()
+            if kk:
+                out[("person", kk, "name")] = kk
+
     return out
 
 
@@ -261,6 +267,30 @@ def _required_from_db(conn, season: int) -> list[tuple[str, str, str]]:
             req.append(("openf1_meeting", key, "location"))
             req.append(("openf1_meeting", key, "country_name"))
             req.append(("openf1_meeting", key, "circuit_short_name"))
+
+        cur.execute(
+            """
+            SELECT c.assets_json AS assets_json
+            FROM f1_race r
+            JOIN f1_circuit c ON c.id = r.circuit_id
+            WHERE r.season_year = %s
+            """,
+            (season,),
+        )
+        for r in cur.fetchall():
+            raw = r.get("assets_json")
+            if not raw:
+                continue
+            try:
+                payload = json.loads(raw)
+            except Exception:
+                continue
+            stats = payload.get("stats") if isinstance(payload, dict) else None
+            if not isinstance(stats, dict):
+                continue
+            n = str(stats.get("fastest_lap_driver") or "").strip()
+            if n:
+                req.append(("person", n, "name"))
 
     seen = set()
     uniq: list[tuple[str, str, str]] = []
