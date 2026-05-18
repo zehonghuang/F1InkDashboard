@@ -2,6 +2,7 @@
 
 #include "board.h"
 #include "display.h"
+#include "i18n.h"
 #include "settings.h"
 #include "boards/zectrix-s3-epaper-4.2/config.h"
 #include "common/ota_update.h"
@@ -49,6 +50,7 @@ Application::~Application() = default;
 
 void Application::Initialize() {
     auto& board = Board::GetInstance();
+    (void)I18n::Init();
     SetDeviceState(kDeviceStateStarting);
 
     AudioCodec* codec = board.GetAudioCodec();
@@ -201,7 +203,7 @@ void Application::Tick() {
     }
     if (!low_battery_notified_ && level >= 0 && level <= 10) {
         if (display != nullptr) {
-            display->ShowNotification("低电量，请充电", 3000);
+            display->ShowNotification(I18n::Tr("ui.low_battery"), 3000);
         }
         low_battery_notified_ = true;
     }

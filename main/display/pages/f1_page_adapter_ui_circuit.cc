@@ -1,5 +1,6 @@
 #include "pages/f1_page_adapter.h"
 
+#include "i18n.h"
 #include "lcd_display.h"
 #include "lvgl_theme.h"
 #include "pages/f1_page_adapter_common.h"
@@ -30,17 +31,17 @@ void F1PageAdapter::BuildCircuitDetailLocked() {
     circuit_header_left_ = lv_label_create(header);
     lv_obj_set_style_text_font(circuit_header_left_, font, 0);
     lv_obj_align(circuit_header_left_, LV_ALIGN_LEFT_MID, 0, 0);
-    lv_label_set_text(circuit_header_left_, "[BACK]");
+    lv_label_set_text(circuit_header_left_, I18n::Tr("f1.circuit.back"));
 
     circuit_header_center_ = lv_label_create(header);
     lv_obj_set_style_text_font(circuit_header_center_, font, 0);
     lv_obj_align(circuit_header_center_, LV_ALIGN_CENTER, 0, 0);
-    lv_label_set_text(circuit_header_center_, "CIRCUIT");
+    lv_label_set_text(circuit_header_center_, I18n::Tr("f1.circuit.title_default"));
 
     circuit_header_right_ = lv_label_create(header);
     lv_obj_set_style_text_font(circuit_header_right_, font, 0);
     lv_obj_align(circuit_header_right_, LV_ALIGN_RIGHT_MID, 0, 0);
-    lv_label_set_text(circuit_header_right_, "PG 1/2");
+    lv_label_set_text(circuit_header_right_, I18n::Tr("f1.circuit.page_1_2"));
 
     const lv_coord_t footer_h = lv_font_get_line_height(font) + 8;
     lv_obj_t* footer = lv_obj_create(circuit_root_);
@@ -62,7 +63,7 @@ void F1PageAdapter::BuildCircuitDetailLocked() {
     lv_obj_set_style_text_align(circuit_footer_, LV_TEXT_ALIGN_LEFT, 0);
     lv_obj_align(circuit_footer_, LV_ALIGN_LEFT_MID, 0, 0);
     lv_label_set_long_mode(circuit_footer_, LV_LABEL_LONG_CLIP);
-    lv_label_set_text(circuit_footer_, "[PAGE DOWN] FOR STATS");
+    lv_label_set_text(circuit_footer_, I18n::Tr("f1.circuit.footer_stats"));
 
     circuit_map_root_ = lv_obj_create(circuit_root_);
     StyleBox(circuit_map_root_);
@@ -78,7 +79,7 @@ void F1PageAdapter::BuildCircuitDetailLocked() {
 
     circuit_map_placeholder_ = lv_label_create(circuit_map_root_);
     lv_obj_set_style_text_font(circuit_map_placeholder_, font, 0);
-    lv_label_set_text(circuit_map_placeholder_, "地图加载中...");
+    lv_label_set_text(circuit_map_placeholder_, I18n::Tr("f1.circuit.map_loading"));
     lv_obj_set_style_text_align(circuit_map_placeholder_, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_width(circuit_map_placeholder_, LV_PCT(100));
     lv_obj_align(circuit_map_placeholder_, LV_ALIGN_CENTER, 0, 0);
@@ -93,7 +94,7 @@ void F1PageAdapter::BuildCircuitDetailLocked() {
     circuit_stats_title_ = lv_label_create(circuit_stats_root_);
     lv_obj_set_style_text_font(circuit_stats_title_, font, 0);
     lv_obj_align(circuit_stats_title_, LV_ALIGN_TOP_LEFT, 0, 0);
-    lv_label_set_text(circuit_stats_title_, "CIRCUIT INFORMATION");
+    lv_label_set_text(circuit_stats_title_, I18n::Tr("f1.circuit.stats_title"));
 
     const lv_coord_t key_w = 160;
     const lv_coord_t val_w = kPageWidth - 16 - key_w;
@@ -125,14 +126,14 @@ void F1PageAdapter::ApplyCircuitDetailLocked() {
     }
     if (circuit_header_center_ != nullptr) {
         const std::string title =
-            !circuit_name_.empty() ? circuit_name_ : (!circuit_gp_.empty() ? circuit_gp_ : "CIRCUIT");
+            !circuit_name_.empty() ? circuit_name_ : (!circuit_gp_.empty() ? circuit_gp_ : I18n::Tr("f1.circuit.title_default"));
         SetText(circuit_header_center_, title.c_str());
     }
     if (circuit_header_right_ != nullptr) {
-        SetText(circuit_header_right_, circuit_page_ == 0 ? "PG 1/2" : "PG 2/2");
+        SetText(circuit_header_right_, circuit_page_ == 0 ? I18n::Tr("f1.circuit.page_1_2") : I18n::Tr("f1.circuit.page_2_2"));
     }
     if (circuit_footer_ != nullptr) {
-        SetText(circuit_footer_, circuit_page_ == 0 ? "[PAGE DOWN] FOR STATS" : "[PAGE UP] FOR MAP");
+        SetText(circuit_footer_, circuit_page_ == 0 ? I18n::Tr("f1.circuit.footer_stats") : I18n::Tr("f1.circuit.footer_map"));
     }
     SetRootVisible(circuit_map_root_, circuit_page_ == 0);
     SetRootVisible(circuit_stats_root_, circuit_page_ == 1);
@@ -140,55 +141,55 @@ void F1PageAdapter::ApplyCircuitDetailLocked() {
 
     if (circuit_page_ == 1) {
         if (circuit_stats_k_[0] && circuit_stats_v_[0]) {
-            SetText(circuit_stats_k_[0], "CIRCUIT LENGTH");
+            SetText(circuit_stats_k_[0], I18n::Tr("f1.circuit.stats.length"));
             if (circuit_length_km_ > 0) {
                 char buf[32];
-                snprintf(buf, sizeof(buf), "%.3f KM", circuit_length_km_);
+                snprintf(buf, sizeof(buf), I18n::Tr("ui.distance_km_fmt"), circuit_length_km_);
                 SetText(circuit_stats_v_[0], buf);
             } else {
-                SetText(circuit_stats_v_[0], "--");
+                SetText(circuit_stats_v_[0], I18n::Tr("ui.na"));
             }
         }
         if (circuit_stats_k_[1] && circuit_stats_v_[1]) {
-            SetText(circuit_stats_k_[1], "RACE DISTANCE");
+            SetText(circuit_stats_k_[1], I18n::Tr("f1.circuit.stats.race_distance"));
             if (race_distance_km_ > 0) {
                 char buf[32];
-                snprintf(buf, sizeof(buf), "%.3f KM", race_distance_km_);
+                snprintf(buf, sizeof(buf), I18n::Tr("ui.distance_km_fmt"), race_distance_km_);
                 SetText(circuit_stats_v_[1], buf);
             } else {
-                SetText(circuit_stats_v_[1], "--");
+                SetText(circuit_stats_v_[1], I18n::Tr("ui.na"));
             }
         }
         if (circuit_stats_k_[2] && circuit_stats_v_[2]) {
-            SetText(circuit_stats_k_[2], "NUMBER OF LAPS");
+            SetText(circuit_stats_k_[2], I18n::Tr("f1.circuit.stats.laps"));
             if (number_of_laps_ > 0) {
                 SetTextFmt(circuit_stats_v_[2], "%d", number_of_laps_);
             } else {
-                SetText(circuit_stats_v_[2], "--");
+                SetText(circuit_stats_v_[2], I18n::Tr("ui.na"));
             }
         }
         if (circuit_stats_k_[3] && circuit_stats_v_[3]) {
-            SetText(circuit_stats_k_[3], "FIRST GRAND PRIX");
+            SetText(circuit_stats_k_[3], I18n::Tr("f1.circuit.stats.first_gp"));
             if (first_grand_prix_year_ > 0) {
                 SetTextFmt(circuit_stats_v_[3], "%d", first_grand_prix_year_);
             } else {
-                SetText(circuit_stats_v_[3], "--");
+                SetText(circuit_stats_v_[3], I18n::Tr("ui.na"));
             }
         }
         if (circuit_stats_k_[4] && circuit_stats_v_[4]) {
-            SetText(circuit_stats_k_[4], "FASTEST LAP TIME");
-            SetText(circuit_stats_v_[4], fastest_lap_time_.empty() ? "--" : fastest_lap_time_.c_str());
+            SetText(circuit_stats_k_[4], I18n::Tr("f1.circuit.stats.fastest_lap_time"));
+            SetText(circuit_stats_v_[4], fastest_lap_time_.empty() ? I18n::Tr("ui.na") : fastest_lap_time_.c_str());
         }
         if (circuit_stats_k_[5] && circuit_stats_v_[5]) {
-            SetText(circuit_stats_k_[5], "FASTEST LAP DRIVER");
-            SetText(circuit_stats_v_[5], fastest_lap_driver_.empty() ? "--" : fastest_lap_driver_.c_str());
+            SetText(circuit_stats_k_[5], I18n::Tr("f1.circuit.stats.fastest_lap_driver"));
+            SetText(circuit_stats_v_[5], fastest_lap_driver_.empty() ? I18n::Tr("ui.na") : fastest_lap_driver_.c_str());
         }
         if (circuit_stats_k_[6] && circuit_stats_v_[6]) {
-            SetText(circuit_stats_k_[6], "FASTEST LAP YEAR");
+            SetText(circuit_stats_k_[6], I18n::Tr("f1.circuit.stats.fastest_lap_year"));
             if (fastest_lap_year_ > 0) {
                 SetTextFmt(circuit_stats_v_[6], "%d", fastest_lap_year_);
             } else {
-                SetText(circuit_stats_v_[6], "--");
+                SetText(circuit_stats_v_[6], I18n::Tr("ui.na"));
             }
         }
         if (circuit_stats_k_[7] && circuit_stats_v_[7]) {

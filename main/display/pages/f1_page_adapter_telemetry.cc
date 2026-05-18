@@ -1,5 +1,6 @@
 #include "pages/f1_page_adapter.h"
 
+#include "i18n.h"
 #include "lcd_display.h"
 #include "pages/f1_page_adapter_common.h"
 
@@ -11,7 +12,7 @@ namespace {
 
 static std::string FmtClock(double seconds) {
     if (!(seconds > 0.0)) {
-        return "--";
+        return I18n::Tr("ui.na");
     }
     int m = static_cast<int>(seconds / 60.0);
     double s = seconds - static_cast<double>(m) * 60.0;
@@ -197,10 +198,10 @@ void F1PageAdapter::ApplyTelemetryLocked() {
     }
     if (telemetry_graph_ != nullptr) {
         if (telemetry_analysis_loading_) {
-            lv_label_set_text(telemetry_graph_, "LOADING CHART...");
+            lv_label_set_text(telemetry_graph_, I18n::Tr("f1.telemetry.loading_chart"));
             lv_obj_clear_flag(telemetry_graph_, LV_OBJ_FLAG_HIDDEN);
         } else if (!has_chart) {
-            lv_label_set_text(telemetry_graph_, "NO CHART");
+            lv_label_set_text(telemetry_graph_, I18n::Tr("f1.telemetry.no_chart"));
             lv_obj_clear_flag(telemetry_graph_, LV_OBJ_FLAG_HIDDEN);
         } else {
             lv_obj_add_flag(telemetry_graph_, LV_OBJ_FLAG_HIDDEN);

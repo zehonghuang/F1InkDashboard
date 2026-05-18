@@ -1,5 +1,6 @@
 #include "pages/f1_page_adapter.h"
 
+#include "i18n.h"
 #include "lcd_display.h"
 #include "lvgl_theme.h"
 #include "pages/f1_page_adapter_common.h"
@@ -46,7 +47,7 @@ void F1PageAdapter::BuildTelemetryLocked() {
         lv_label_set_long_mode(telemetry_graph_, LV_LABEL_LONG_WRAP);
         lv_obj_set_width(telemetry_graph_, LV_PCT(100));
         lv_obj_align(telemetry_graph_, LV_ALIGN_TOP_LEFT, 0, 0);
-        lv_label_set_text(telemetry_graph_, "LOADING...");
+        lv_label_set_text(telemetry_graph_, I18n::Tr("ui.loading"));
 
         telemetry_meta_ = CreateCellLabel(
             race_sessions_telemetry_body_,
@@ -66,7 +67,7 @@ void F1PageAdapter::BuildTelemetryLocked() {
         lv_obj_set_width(telemetry_no_data_, LV_PCT(100));
         lv_obj_set_style_text_align(telemetry_no_data_, LV_TEXT_ALIGN_CENTER, 0);
         lv_obj_align(telemetry_no_data_, LV_ALIGN_CENTER, 0, 12);
-        lv_label_set_text(telemetry_no_data_, "NO TELEMETRY");
+        lv_label_set_text(telemetry_no_data_, I18n::Tr("f1.telemetry.no_telemetry"));
         lv_obj_add_flag(telemetry_no_data_, LV_OBJ_FLAG_HIDDEN);
 
         telemetry_throttle_bar_ = nullptr;

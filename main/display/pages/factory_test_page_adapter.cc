@@ -1,5 +1,6 @@
 #include "pages/factory_test_page_adapter.h"
 
+#include "i18n.h"
 #include "lcd_display.h"
 #include "lvgl_theme.h"
 
@@ -17,21 +18,27 @@ constexpr lv_coord_t kFooterHeight = 24;
 constexpr lv_coord_t kStepRowHeight = 24;
 constexpr int kStepCount = 7;
 
-const char* const kStepNames[kStepCount] = {
-    "RF", "音频", "RTC", "充电", "LED", "按键", "NFC"
+const char* const kStepNameKeys[kStepCount] = {
+    "factory_test.step.rf",
+    "factory_test.step.audio",
+    "factory_test.step.rtc",
+    "factory_test.step.charge",
+    "factory_test.step.led",
+    "factory_test.step.keys",
+    "factory_test.step.nfc",
 };
 
 const char* StateText(FactoryTestStepState state) {
     switch (state) {
         case FactoryTestStepState::kRunning:
-            return "RUN";
+            return I18n::Tr("factory_test.state.run");
         case FactoryTestStepState::kPass:
-            return "PASS";
+            return I18n::Tr("factory_test.state.pass");
         case FactoryTestStepState::kFail:
-            return "FAIL";
+            return I18n::Tr("factory_test.state.fail");
         case FactoryTestStepState::kWait:
         default:
-            return "WAIT";
+            return I18n::Tr("factory_test.state.wait");
     }
 }
 
@@ -156,7 +163,7 @@ void FactoryTestPageAdapter::Build() {
     if (body_font) {
         lv_obj_set_style_text_font(header_title, body_font, 0);
     }
-    lv_label_set_text(header_title, "FT测试");
+    lv_label_set_text(header_title, I18n::Tr("factory_test.title"));
     lv_obj_align(header_title, LV_ALIGN_LEFT_MID, 0, 0);
 
     header_step_label_ = lv_label_create(header);
@@ -170,7 +177,7 @@ void FactoryTestPageAdapter::Build() {
     if (text_font) {
         lv_obj_set_style_text_font(header_state_label_, text_font, 0);
     }
-    lv_label_set_text(header_state_label_, "WAIT");
+    lv_label_set_text(header_state_label_, I18n::Tr("factory_test.state.wait"));
     lv_obj_align(header_state_label_, LV_ALIGN_RIGHT_MID, 0, 0);
 
     lv_obj_t* step_panel = lv_obj_create(screen_);
@@ -195,7 +202,7 @@ void FactoryTestPageAdapter::Build() {
         if (body_font) {
             lv_obj_set_style_text_font(step_name_labels_[i], body_font, 0);
         }
-        lv_label_set_text(step_name_labels_[i], kStepNames[i]);
+        lv_label_set_text(step_name_labels_[i], I18n::Tr(kStepNameKeys[i]));
         lv_obj_align(step_name_labels_[i], LV_ALIGN_LEFT_MID, 0, 0);
 
         step_state_labels_[i] = lv_label_create(step_rows_[i]);

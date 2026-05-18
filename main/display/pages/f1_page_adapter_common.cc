@@ -2,6 +2,7 @@
 
 #include "application.h"
 #include "assets_fs.h"
+#include "i18n.h"
 
 #include <vector>
 
@@ -70,14 +71,14 @@ void CreateHeader(lv_obj_t* parent,
         lv_obj_set_style_text_font(t, font, 0);
     }
     lv_obj_align(t, LV_ALIGN_LEFT_MID, 0, 0);
-    lv_label_set_text(t, "16:14");
+    lv_label_set_text(t, I18n::Tr("ui.time_placeholder"));
 
     lv_obj_t* d = lv_label_create(bar);
     if (font != nullptr) {
         lv_obj_set_style_text_font(d, font, 0);
     }
     lv_obj_align(d, LV_ALIGN_CENTER, 0, 0);
-    lv_label_set_text(d, "SUN APR 19, 2026");
+    lv_label_set_text(d, I18n::Tr("ui.date_placeholder"));
 
     lv_obj_t* batt = lv_obj_create(bar);
     lv_obj_set_style_bg_opa(batt, LV_OPA_TRANSP, 0);
@@ -99,7 +100,7 @@ void CreateHeader(lv_obj_t* parent,
     if (font != nullptr) {
         lv_obj_set_style_text_font(bp, font, 0);
     }
-    lv_label_set_text(bp, "--%");
+    lv_label_set_text(bp, I18n::Tr("ui.battery_pct_placeholder"));
 
     if (out_time) {
         *out_time = t;

@@ -2,6 +2,7 @@
 
 #include "application.h"
 #include "board.h"
+#include "i18n.h"
 #include "lcd_display.h"
 #include "lvgl_theme.h"
 #include "settings.h"
@@ -477,7 +478,7 @@ void F1PageAdapter::ApplyCircuitImageLocked() {
         }
         circuit_image_pic_active_ = false;
         if (race_track_placeholder_ != nullptr) {
-            lv_label_set_text(race_track_placeholder_, "地图加载失败");
+            lv_label_set_text(race_track_placeholder_, I18n::Tr("f1.race.track_load_failed"));
             lv_obj_clear_flag(race_track_placeholder_, LV_OBJ_FLAG_HIDDEN);
         }
         lv_obj_invalidate(race_track_box_);
@@ -568,7 +569,7 @@ void F1PageAdapter::ApplyCircuitDetailImageLocked() {
         }
         circuit_detail_pic_active_ = false;
         if (circuit_map_placeholder_ != nullptr) {
-            lv_label_set_text(circuit_map_placeholder_, "地图加载失败");
+            lv_label_set_text(circuit_map_placeholder_, I18n::Tr("f1.circuit.map_load_failed"));
             lv_obj_clear_flag(circuit_map_placeholder_, LV_OBJ_FLAG_HIDDEN);
         }
         lv_obj_invalidate(circuit_map_root_);
@@ -970,7 +971,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
             }
             if (menu_focus_ == 5) {
                 if (host_ != nullptr) {
-                    host_->ShowNotification("Checking update...", 1500);
+                    host_->ShowNotification(I18n::Tr("ui.checking_update"), 1500);
                 }
                 OtaUpdateService::Instance().RequestUpdateNow();
             }
@@ -1920,17 +1921,17 @@ void F1PageAdapter::BuildWdcDetailLocked() {
     lv_obj_t* back = lv_label_create(header);
     lv_obj_set_style_text_font(back, font, 0);
     lv_obj_align(back, LV_ALIGN_LEFT_MID, 0, 0);
-    lv_label_set_text(back, "[BACK]");
+    lv_label_set_text(back, I18n::Tr("ui.back"));
 
     wdc_title_ = lv_label_create(header);
     lv_obj_set_style_text_font(wdc_title_, font, 0);
     lv_obj_align(wdc_title_, LV_ALIGN_CENTER, 0, 0);
-    lv_label_set_text(wdc_title_, "2026 DRIVER STANDINGS (WDC)");
+    lv_label_set_text(wdc_title_, I18n::Tr("f1.wdc.title"));
 
     wdc_page_label_ = lv_label_create(header);
     lv_obj_set_style_text_font(wdc_page_label_, font, 0);
     lv_obj_align(wdc_page_label_, LV_ALIGN_RIGHT_MID, 0, 0);
-    lv_label_set_text(wdc_page_label_, "PAGE 01/01");
+    lv_label_set_text(wdc_page_label_, I18n::Tr("ui.page_01_01"));
 
     lv_obj_t* table = lv_obj_create(wdc_root_);
     StyleBox(table);
@@ -1950,11 +1951,11 @@ void F1PageAdapter::BuildWdcDetailLocked() {
     const lv_coord_t pts2_x = kPosW + kDrvW + kTeamW;
     const lv_coord_t trend_x = pts2_x + kPtsW;
 
-    CreateCellLabel(table, 0, 0, kPosW, "POS", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
-    CreateCellLabel(table, kPosW, 0, kDrvW, "DRIVER", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
-    CreateCellLabel(table, team_x, 0, kTeamW, "TEAM", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
-    CreateCellLabel(table, pts2_x, 0, kPtsW, "PTS", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
-    CreateCellLabel(table, trend_x, 0, kTrendW, "TREND", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, 0, 0, kPosW, I18n::Tr("ui.table.pos"), font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, kPosW, 0, kDrvW, I18n::Tr("f1.wdc.driver"), font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, team_x, 0, kTeamW, I18n::Tr("f1.wdc.team"), font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, pts2_x, 0, kPtsW, I18n::Tr("f1.wdc.pts"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, trend_x, 0, kTrendW, I18n::Tr("f1.wdc.trend"), font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
 
     for (int i = 0; i < kWdcRows; i++) {
         const lv_coord_t y = kRowH * (i + 1);
@@ -1987,17 +1988,17 @@ void F1PageAdapter::BuildWccDetailLocked() {
     lv_obj_t* back = lv_label_create(header);
     lv_obj_set_style_text_font(back, font, 0);
     lv_obj_align(back, LV_ALIGN_LEFT_MID, 0, 0);
-    lv_label_set_text(back, "[BACK]");
+    lv_label_set_text(back, I18n::Tr("ui.back"));
 
     wcc_title_ = lv_label_create(header);
     lv_obj_set_style_text_font(wcc_title_, font, 0);
     lv_obj_align(wcc_title_, LV_ALIGN_CENTER, 0, 0);
-    lv_label_set_text(wcc_title_, "2026 CONSTRUCTOR STANDINGS (WCC)");
+    lv_label_set_text(wcc_title_, I18n::Tr("f1.wcc.title"));
 
     wcc_page_label_ = lv_label_create(header);
     lv_obj_set_style_text_font(wcc_page_label_, font, 0);
     lv_obj_align(wcc_page_label_, LV_ALIGN_RIGHT_MID, 0, 0);
-    lv_label_set_text(wcc_page_label_, "PAGE 01/01");
+    lv_label_set_text(wcc_page_label_, I18n::Tr("ui.page_01_01"));
 
     lv_obj_t* table = lv_obj_create(wcc_root_);
     StyleBox(table);
@@ -2018,12 +2019,12 @@ void F1PageAdapter::BuildWccDetailLocked() {
     const lv_coord_t x_bar = x_gap + kGapW;
     const lv_coord_t x_val = x_bar + kBarW;
 
-    CreateCellLabel(table, 0, 0, kPosW, "POS", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
-    CreateCellLabel(table, x_team, 0, kTeamW, "CONSTRUCTOR", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
-    CreateCellLabel(table, x_pts, 0, kPtsW, "PTS", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
-    CreateCellLabel(table, x_gap, 0, kGapW, "GAP", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
-    CreateCellLabel(table, x_bar, 0, kBarW, "SPLIT", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
-    CreateCellLabel(table, x_val, 0, kValW, "P1/P2", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, 0, 0, kPosW, I18n::Tr("ui.table.pos"), font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, x_team, 0, kTeamW, I18n::Tr("f1.wcc.constructor"), font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, x_pts, 0, kPtsW, I18n::Tr("f1.wcc.pts"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, x_gap, 0, kGapW, I18n::Tr("ui.table.gap"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, x_bar, 0, kBarW, I18n::Tr("f1.wcc.split"), font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+    CreateCellLabel(table, x_val, 0, kValW, I18n::Tr("f1.wcc.p1_p2"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP);
 
     for (int i = 0; i < kWccRows; i++) {
         const lv_coord_t y = kRowH * (i + 1);

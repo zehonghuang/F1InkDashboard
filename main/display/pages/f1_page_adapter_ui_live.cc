@@ -1,5 +1,6 @@
 #include "pages/f1_page_adapter.h"
 
+#include "i18n.h"
 #include "lcd_display.h"
 #include "lvgl_theme.h"
 
@@ -32,13 +33,13 @@ void F1PageAdapter::BuildRaceLiveLocked() {
     lv_obj_set_style_text_font(live_header_left_, font, 0);
     lv_obj_align(live_header_left_, LV_ALIGN_LEFT_MID, 0, 0);
     lv_label_set_long_mode(live_header_left_, LV_LABEL_LONG_CLIP);
-    lv_label_set_text(live_header_left_, "[LIVE] MON GP");
+    lv_label_set_text(live_header_left_, I18n::Tr("f1.live.header_left_placeholder"));
 
     live_header_center_ = lv_label_create(header);
     lv_obj_set_style_text_font(live_header_center_, font, 0);
     lv_obj_align(live_header_center_, LV_ALIGN_CENTER, 0, 0);
     lv_label_set_long_mode(live_header_center_, LV_LABEL_LONG_CLIP);
-    lv_label_set_text(live_header_center_, "LAP 45 / 78");
+    lv_label_set_text(live_header_center_, I18n::Tr("f1.live.header_center_placeholder"));
 
     lv_obj_t* right = lv_obj_create(header);
     lv_obj_set_size(right, 120, kHeaderH - 2);
@@ -52,7 +53,7 @@ void F1PageAdapter::BuildRaceLiveLocked() {
 
     live_header_time_ = lv_label_create(right);
     lv_obj_set_style_text_font(live_header_time_, font, 0);
-    lv_label_set_text(live_header_time_, "15:30");
+    lv_label_set_text(live_header_time_, I18n::Tr("ui.time_placeholder"));
 
     live_header_batt_icon_ = lv_label_create(right);
     if (icon_font != nullptr) {
@@ -62,7 +63,7 @@ void F1PageAdapter::BuildRaceLiveLocked() {
 
     live_header_batt_pct_ = lv_label_create(right);
     lv_obj_set_style_text_font(live_header_batt_pct_, font, 0);
-    lv_label_set_text(live_header_batt_pct_, "92%");
+    lv_label_set_text(live_header_batt_pct_, I18n::Tr("ui.battery_pct_placeholder"));
 
     constexpr lv_coord_t bottom_h = 24;
     const lv_coord_t body_h = kPageHeight - kHeaderH - bottom_h;
@@ -101,12 +102,12 @@ void F1PageAdapter::BuildRaceLiveLocked() {
         const lv_coord_t gap_x = chg_x + kChgW;
         const lv_coord_t ty_x = gap_x + kGapW;
 
-        lv_obj_set_style_pad_right(CreateCellLabel(left_box, 0, 0, kPosW, "POS", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
-        lv_obj_set_style_pad_right(CreateCellLabel(left_box, no_x, 0, kNoW, "NO.", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
+        lv_obj_set_style_pad_right(CreateCellLabel(left_box, 0, 0, kPosW, I18n::Tr("ui.table.pos"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
+        lv_obj_set_style_pad_right(CreateCellLabel(left_box, no_x, 0, kNoW, I18n::Tr("ui.table.no"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
         lv_obj_set_style_pad_left(CreateCellLabel(left_box, drv_x, 0, kDrvW, "", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP), 1, 0);
-        lv_obj_set_style_pad_right(CreateCellLabel(left_box, chg_x, 0, kChgW, "CHG", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
-        lv_obj_set_style_pad_right(CreateCellLabel(left_box, gap_x, 0, kGapW, "GAP/INT", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
-        lv_obj_set_style_pad_right(CreateCellLabel(left_box, ty_x, 0, kTyW, "TY", font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
+        lv_obj_set_style_pad_right(CreateCellLabel(left_box, chg_x, 0, kChgW, I18n::Tr("f1.live.table.chg"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
+        lv_obj_set_style_pad_right(CreateCellLabel(left_box, gap_x, 0, kGapW, I18n::Tr("f1.live.table.gap_int"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
+        lv_obj_set_style_pad_right(CreateCellLabel(left_box, ty_x, 0, kTyW, I18n::Tr("f1.live.table.ty"), font, LV_TEXT_ALIGN_RIGHT, LV_LABEL_LONG_CLIP), 2, 0);
 
         CreateCellLabel(
             left_box,
@@ -173,7 +174,7 @@ void F1PageAdapter::BuildRaceLiveLocked() {
     }
 
     {
-        CreateCellLabel(right_box, 0, 0, right_inner_w, "TRACK STATUS:", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+        CreateCellLabel(right_box, 0, 0, right_inner_w, I18n::Tr("f1.live.right.track_status"), font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
         lv_obj_t* status_box = lv_obj_create(right_box);
         lv_obj_set_size(status_box, right_inner_w, kRowH + 8);
         lv_obj_align(status_box, LV_ALIGN_TOP_LEFT, 0, kRowH);
@@ -189,17 +190,17 @@ void F1PageAdapter::BuildRaceLiveLocked() {
         lv_obj_set_style_text_align(live_track_status_, LV_TEXT_ALIGN_CENTER, 0);
         lv_obj_set_width(live_track_status_, LV_PCT(100));
         lv_obj_align(live_track_status_, LV_ALIGN_CENTER, 0, 0);
-        lv_label_set_text(live_track_status_, "[ GREEN ]");
+        lv_label_set_text(live_track_status_, I18n::Tr("f1.live.status_green"));
 
         CreateCellLabel(right_box, 0, kRowH * 3 + 8, right_inner_w, "---------------------", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
 
-        CreateCellLabel(right_box, 0, kRowH * 4 + 8, right_inner_w, "FASTEST LAP:", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
+        CreateCellLabel(right_box, 0, kRowH * 4 + 8, right_inner_w, I18n::Tr("f1.live.right.fastest_lap"), font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
         live_fastest_lap_ = lv_label_create(right_box);
         lv_obj_set_style_text_font(live_fastest_lap_, font, 0);
         lv_label_set_long_mode(live_fastest_lap_, LV_LABEL_LONG_WRAP);
         lv_obj_set_width(live_fastest_lap_, LV_PCT(100));
         lv_obj_align(live_fastest_lap_, LV_ALIGN_TOP_LEFT, 0, kRowH * 5 + 8);
-        lv_label_set_text(live_fastest_lap_, "#16 LEC\n1:14.502 (L38)");
+        lv_label_set_text(live_fastest_lap_, I18n::Tr("f1.live.right.fastest_lap_placeholder"));
 
         CreateCellLabel(right_box, 0, kRowH * 8 + 4, right_inner_w, "---------------------", font, LV_TEXT_ALIGN_LEFT, LV_LABEL_LONG_CLIP);
 
@@ -208,7 +209,7 @@ void F1PageAdapter::BuildRaceLiveLocked() {
         lv_label_set_long_mode(live_temps_, LV_LABEL_LONG_WRAP);
         lv_obj_set_width(live_temps_, LV_PCT(100));
         lv_obj_align(live_temps_, LV_ALIGN_TOP_LEFT, 0, kRowH * 9 + 4);
-        lv_label_set_text(live_temps_, "TRACK: 38C\nAIR:   24C\nHUM:   45%");
+        lv_label_set_text(live_temps_, I18n::Tr("f1.live.right.temps_placeholder"));
     }
 
     lv_obj_t* footer = lv_obj_create(race_sessions_race_live_root_);
@@ -229,5 +230,5 @@ void F1PageAdapter::BuildRaceLiveLocked() {
     lv_obj_set_style_text_align(live_page_, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_width(live_page_, LV_PCT(100));
     lv_obj_align(live_page_, LV_ALIGN_CENTER, 0, 0);
-    lv_label_set_text(live_page_, "PAGE 1/1");
+    lv_label_set_text(live_page_, I18n::Tr("ui.page_1_1"));
 }

@@ -1,5 +1,6 @@
 #include "pages/f1_page_adapter.h"
 
+#include "i18n.h"
 #include "lcd_display.h"
 #include "lvgl_theme.h"
 #include "pages/f1_page_adapter_common.h"
@@ -236,7 +237,7 @@ void F1PageAdapter::BuildRaceLocked() {
     lv_image_set_antialias(race_track_image_, false);
 
     race_track_placeholder_ = lv_label_create(race_track_box_);
-    lv_label_set_text(race_track_placeholder_, "赛道图\n(加载中)");
+    lv_label_set_text(race_track_placeholder_, I18n::Tr("f1.race.track_loading"));
     if (cn_font != nullptr) {
         lv_obj_set_style_text_font(race_track_placeholder_, cn_font, 0);
     }
@@ -259,7 +260,7 @@ void F1PageAdapter::BuildRaceLocked() {
     lv_obj_set_scrollbar_mode(mid_right, LV_SCROLLBAR_MODE_OFF);
 
     race_gp_ = lv_label_create(mid_right);
-    lv_label_set_text(race_gp_, "BAHRAIN GRAND PRIX");
+    lv_label_set_text(race_gp_, I18n::Tr("f1.race.gp_placeholder"));
     lv_obj_set_width(race_gp_, LV_PCT(100));
     lv_label_set_long_mode(race_gp_, LV_LABEL_LONG_WRAP);
     lv_obj_set_style_text_align(race_gp_, LV_TEXT_ALIGN_CENTER, 0);
@@ -268,7 +269,7 @@ void F1PageAdapter::BuildRaceLocked() {
     lv_obj_add_flag(race_gp_, LV_OBJ_FLAG_HIDDEN);
 
     race_round_ = lv_label_create(mid_right);
-    lv_label_set_text(race_round_, "ROUND 04");
+    lv_label_set_text(race_round_, I18n::Tr("f1.race.round_placeholder"));
     lv_obj_align(race_round_, LV_ALIGN_TOP_MID, 0, 22);
     lv_obj_set_style_text_font(race_round_, record_font, 0);
     lv_obj_add_flag(race_round_, LV_OBJ_FLAG_HIDDEN);
@@ -304,13 +305,13 @@ void F1PageAdapter::BuildRaceLocked() {
     lv_obj_set_style_border_width(sep, 0, 0);
 
     race_next_label_ = lv_label_create(mid_right);
-    lv_label_set_text(race_next_label_, "NEXT SESSION IN:");
+    lv_label_set_text(race_next_label_, I18n::Tr("f1.race.next_session_in"));
     lv_obj_align(race_next_label_, LV_ALIGN_TOP_MID, 0, 58);
     lv_obj_set_style_text_font(race_next_label_, record_font, 0);
     lv_obj_add_flag(race_next_label_, LV_OBJ_FLAG_HIDDEN);
 
     race_countdown_ = lv_label_create(mid_right);
-    lv_label_set_text(race_countdown_, "01:45:22");
+    lv_label_set_text(race_countdown_, I18n::Tr("f1.race.countdown_placeholder"));
     lv_obj_align(race_countdown_, LV_ALIGN_TOP_MID, 0, 80);
     lv_obj_set_style_text_font(race_countdown_, record_font, 0);
     lv_obj_add_flag(race_countdown_, LV_OBJ_FLAG_HIDDEN);
