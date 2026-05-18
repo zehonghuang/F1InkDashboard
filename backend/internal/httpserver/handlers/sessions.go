@@ -25,6 +25,7 @@ func F1Sessions(cfg config.Config, db *gorm.DB, cch *cache.TTLCache) gin.Handler
 		if tz == "" {
 			tz = "Asia/Shanghai"
 		}
+		lang := strings.TrimSpace(c.GetString("language"))
 		season := toIntQuery(c, "season", 2026)
 		var roundOverride *int
 		if s := strings.TrimSpace(c.Query("round")); s != "" {
@@ -54,9 +55,9 @@ func F1Sessions(cfg config.Config, db *gorm.DB, cch *cache.TTLCache) gin.Handler
 			limit = 30
 		}
 
-		key := "openf1_schedule_" + strconv.Itoa(season)
+		key := "openf1_schedule_" + strconv.Itoa(season) + "_" + lang
 		scheduleAny, err := cch.GetOrSet(key, 30*time.Second, func() (any, error) {
-			return f1db.OpenF1ScheduleJSON(db, season)
+			return f1db.OpenF1ScheduleJSON(db, season, lang)
 		})
 		if err != nil {
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})
@@ -96,6 +97,7 @@ func F1SessionsCurrentExplicit(cfg config.Config, db *gorm.DB, cch *cache.TTLCac
 		if tz == "" {
 			tz = "Asia/Shanghai"
 		}
+		lang := strings.TrimSpace(c.GetString("language"))
 		season := toIntQuery(c, "season", 2026)
 		var roundOverride *int
 		if s := strings.TrimSpace(c.Query("round")); s != "" {
@@ -121,9 +123,9 @@ func F1SessionsCurrentExplicit(cfg config.Config, db *gorm.DB, cch *cache.TTLCac
 			limit = 30
 		}
 
-		key := "openf1_schedule_" + strconv.Itoa(season)
+		key := "openf1_schedule_" + strconv.Itoa(season) + "_" + lang
 		scheduleAny, err := cch.GetOrSet(key, 30*time.Second, func() (any, error) {
-			return f1db.OpenF1ScheduleJSON(db, season)
+			return f1db.OpenF1ScheduleJSON(db, season, lang)
 		})
 		if err != nil {
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})
@@ -156,6 +158,7 @@ func F1SessionsByPath(cfg config.Config, db *gorm.DB, cch *cache.TTLCache) gin.H
 		if tz == "" {
 			tz = "Asia/Shanghai"
 		}
+		lang := strings.TrimSpace(c.GetString("language"))
 		season, _ := strconv.Atoi(strings.TrimSpace(c.Param("season")))
 		round, _ := strconv.Atoi(strings.TrimSpace(c.Param("round")))
 		sessionName := strings.TrimSpace(c.Param("session_name"))
@@ -176,9 +179,9 @@ func F1SessionsByPath(cfg config.Config, db *gorm.DB, cch *cache.TTLCache) gin.H
 			limit = 30
 		}
 
-		key := "openf1_schedule_" + strconv.Itoa(season)
+		key := "openf1_schedule_" + strconv.Itoa(season) + "_" + lang
 		scheduleAny, err := cch.GetOrSet(key, 30*time.Second, func() (any, error) {
-			return f1db.OpenF1ScheduleJSON(db, season)
+			return f1db.OpenF1ScheduleJSON(db, season, lang)
 		})
 		if err != nil {
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})

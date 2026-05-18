@@ -1,0 +1,477 @@
+{
+  "lang": "zh-CN",
+  "constructor": {
+    "red_bull_racing": {
+      "name": "红牛车队"
+    },
+    "mclaren": {
+      "name": "迈凯伦车队"
+    },
+    "ferrari": {
+      "name": "法拉利车队"
+    },
+    "mercedes": {
+      "name": "梅赛德斯车队"
+    },
+    "aston_martin": {
+      "name": "阿斯顿·马丁车队"
+    },
+    "williams": {
+      "name": "威廉姆斯车队"
+    },
+    "kick_sauber": {
+      "name": "索伯车队"
+    },
+    "alpine": {
+      "name": "阿尔派车队"
+    },
+    "audi": {
+      "name": "奥迪车队"
+    },
+    "cadillac": {
+      "name": "凯迪拉克车队"
+    },
+    "haas_f1_team": {
+      "name": "哈斯车队"
+    },
+    "racing_bulls": {
+      "name": "小红牛车队"
+    },
+    "rb": {
+      "name": "小红牛车队"
+    }
+  },
+  "driver": {
+    "1": {
+      "full_name": "马克斯·维斯塔潘"
+    },
+    "2": {
+      "full_name": "洛根·萨金特"
+    },
+    "3": {
+      "full_name": "马克斯·维斯塔潘"
+    },
+    "4": {
+      "full_name": "兰多·诺里斯"
+    },
+    "5": {
+      "full_name": "加布里埃尔·博托莱托"
+    },
+    "6": {
+      "full_name": "艾萨克·哈贾尔"
+    },
+    "7": {
+      "full_name": "杰克·杜汉"
+    },
+    "10": {
+      "full_name": "皮埃尔·加斯利"
+    },
+    "11": {
+      "full_name": "塞尔吉奥·佩雷斯"
+    },
+    "12": {
+      "full_name": "基米·安东内利"
+    },
+    "14": {
+      "full_name": "费尔南多·阿隆索"
+    },
+    "16": {
+      "full_name": "夏尔·勒克莱尔"
+    },
+    "18": {
+      "full_name": "兰斯·斯特罗尔"
+    },
+    "20": {
+      "full_name": "凯文·马格努森"
+    },
+    "22": {
+      "full_name": "角田裕毅"
+    },
+    "23": {
+      "full_name": "亚历山大·阿尔本"
+    },
+    "24": {
+      "full_name": "周冠宇"
+    },
+    "27": {
+      "full_name": "尼科·霍肯伯格"
+    },
+    "30": {
+      "full_name": "利亚姆·劳森"
+    },
+    "31": {
+      "full_name": "埃斯特班·奥康"
+    },
+    "38": {
+      "full_name": "迪诺·贝加诺维奇"
+    },
+    "41": {
+      "full_name": "阿尔维德·林德布拉德"
+    },
+    "43": {
+      "full_name": "弗朗哥·科拉平托"
+    },
+    "44": {
+      "full_name": "刘易斯·汉密尔顿"
+    },
+    "50": {
+      "full_name": "平川亮"
+    },
+    "55": {
+      "full_name": "卡洛斯·塞恩斯"
+    },
+    "61": {
+      "full_name": "保罗·阿隆"
+    },
+    "63": {
+      "full_name": "乔治·拉塞尔"
+    },
+    "77": {
+      "full_name": "瓦尔泰里·博塔斯"
+    },
+    "81": {
+      "full_name": "奥斯卡·皮亚斯特里"
+    },
+    "87": {
+      "full_name": "奥利弗·贝尔曼"
+    }
+  },
+  "race": {
+    "2026_1": {
+      "race_name": "澳大利亚大奖赛"
+    },
+    "2026_2": {
+      "race_name": "中国大奖赛"
+    },
+    "2026_3": {
+      "race_name": "日本大奖赛"
+    },
+    "2026_4": {
+      "race_name": "迈阿密大奖赛"
+    },
+    "2026_5": {
+      "race_name": "加拿大大奖赛"
+    },
+    "2026_6": {
+      "race_name": "摩纳哥大奖赛"
+    },
+    "2026_7": {
+      "race_name": "巴塞罗那大奖赛"
+    },
+    "2026_8": {
+      "race_name": "奥地利大奖赛"
+    },
+    "2026_9": {
+      "race_name": "英国大奖赛"
+    },
+    "2026_10": {
+      "race_name": "比利时大奖赛"
+    },
+    "2026_11": {
+      "race_name": "匈牙利大奖赛"
+    },
+    "2026_12": {
+      "race_name": "荷兰大奖赛"
+    },
+    "2026_13": {
+      "race_name": "意大利大奖赛"
+    },
+    "2026_14": {
+      "race_name": "西班牙大奖赛"
+    },
+    "2026_15": {
+      "race_name": "阿塞拜疆大奖赛"
+    },
+    "2026_16": {
+      "race_name": "新加坡大奖赛"
+    },
+    "2026_17": {
+      "race_name": "美国大奖赛"
+    },
+    "2026_18": {
+      "race_name": "墨西哥城大奖赛"
+    },
+    "2026_19": {
+      "race_name": "巴西大奖赛"
+    },
+    "2026_20": {
+      "race_name": "拉斯维加斯大奖赛"
+    },
+    "2026_21": {
+      "race_name": "卡塔尔大奖赛"
+    },
+    "2026_22": {
+      "race_name": "阿布扎比大奖赛"
+    }
+  },
+  "openf1_meeting": {
+    "1279": {
+      "meeting_name": "澳大利亚大奖赛",
+      "location": "墨尔本",
+      "country_name": "澳大利亚",
+      "circuit_short_name": "墨尔本"
+    },
+    "1280": {
+      "meeting_name": "中国大奖赛",
+      "location": "上海",
+      "country_name": "中国",
+      "circuit_short_name": "上海"
+    },
+    "1281": {
+      "meeting_name": "日本大奖赛",
+      "location": "铃鹿",
+      "country_name": "日本",
+      "circuit_short_name": "铃鹿"
+    },
+    "1282": {
+      "meeting_name": "巴林大奖赛",
+      "location": "萨基尔",
+      "country_name": "巴林",
+      "circuit_short_name": "萨基尔"
+    },
+    "1283": {
+      "meeting_name": "沙特阿拉伯大奖赛",
+      "location": "吉达",
+      "country_name": "沙特阿拉伯",
+      "circuit_short_name": "吉达"
+    },
+    "1284": {
+      "meeting_name": "迈阿密大奖赛",
+      "location": "迈阿密花园",
+      "country_name": "美国",
+      "circuit_short_name": "迈阿密"
+    },
+    "1285": {
+      "meeting_name": "加拿大大奖赛",
+      "location": "蒙特利尔",
+      "country_name": "加拿大",
+      "circuit_short_name": "蒙特利尔"
+    },
+    "1286": {
+      "meeting_name": "摩纳哥大奖赛",
+      "location": "蒙特卡洛",
+      "country_name": "摩纳哥",
+      "circuit_short_name": "蒙特卡洛"
+    },
+    "1287": {
+      "meeting_name": "巴塞罗那大奖赛",
+      "location": "巴塞罗那",
+      "country_name": "西班牙",
+      "circuit_short_name": "加泰罗尼亚"
+    },
+    "1288": {
+      "meeting_name": "奥地利大奖赛",
+      "location": "施皮尔贝格",
+      "country_name": "奥地利",
+      "circuit_short_name": "施皮尔贝格"
+    },
+    "1289": {
+      "meeting_name": "英国大奖赛",
+      "location": "银石",
+      "country_name": "英国",
+      "circuit_short_name": "银石"
+    },
+    "1290": {
+      "meeting_name": "比利时大奖赛",
+      "location": "斯帕-弗朗科尔尚",
+      "country_name": "比利时",
+      "circuit_short_name": "斯帕-弗朗科尔尚"
+    },
+    "1291": {
+      "meeting_name": "匈牙利大奖赛",
+      "location": "布达佩斯",
+      "country_name": "匈牙利",
+      "circuit_short_name": "亨格罗宁"
+    },
+    "1292": {
+      "meeting_name": "荷兰大奖赛",
+      "location": "赞德沃特",
+      "country_name": "荷兰",
+      "circuit_short_name": "赞德沃特"
+    },
+    "1293": {
+      "meeting_name": "意大利大奖赛",
+      "location": "蒙扎",
+      "country_name": "意大利",
+      "circuit_short_name": "蒙扎"
+    },
+    "1294": {
+      "meeting_name": "西班牙大奖赛",
+      "location": "马德里",
+      "country_name": "西班牙",
+      "circuit_short_name": "马德里赛道"
+    },
+    "1295": {
+      "meeting_name": "阿塞拜疆大奖赛",
+      "location": "巴库",
+      "country_name": "阿塞拜疆",
+      "circuit_short_name": "巴库"
+    },
+    "1296": {
+      "meeting_name": "新加坡大奖赛",
+      "location": "滨海湾",
+      "country_name": "新加坡",
+      "circuit_short_name": "滨海湾"
+    },
+    "1297": {
+      "meeting_name": "美国大奖赛",
+      "location": "奥斯汀",
+      "country_name": "美国",
+      "circuit_short_name": "奥斯汀"
+    },
+    "1298": {
+      "meeting_name": "墨西哥城大奖赛",
+      "location": "墨西哥城",
+      "country_name": "墨西哥",
+      "circuit_short_name": "墨西哥城"
+    },
+    "1299": {
+      "meeting_name": "圣保罗大奖赛",
+      "location": "圣保罗",
+      "country_name": "巴西",
+      "circuit_short_name": "英特拉格斯"
+    },
+    "1300": {
+      "meeting_name": "拉斯维加斯大奖赛",
+      "location": "拉斯维加斯",
+      "country_name": "美国",
+      "circuit_short_name": "拉斯维加斯"
+    },
+    "1301": {
+      "meeting_name": "卡塔尔大奖赛",
+      "location": "卢赛尔",
+      "country_name": "卡塔尔",
+      "circuit_short_name": "卢赛尔"
+    },
+    "1302": {
+      "meeting_name": "阿布扎比大奖赛",
+      "location": "亚斯码头",
+      "country_name": "阿联酋",
+      "circuit_short_name": "亚斯码头赛道"
+    },
+    "1304": {
+      "meeting_name": "季前测试",
+      "location": "巴林",
+      "country_name": "巴林",
+      "circuit_short_name": "萨基尔"
+    },
+    "1305": {
+      "meeting_name": "季前测试",
+      "location": "巴林",
+      "country_name": "巴林",
+      "circuit_short_name": "萨基尔"
+    }
+  },
+  "circuit": {
+    "albert_park": {
+      "name": "阿尔伯特公园大奖赛赛道",
+      "country": "澳大利亚",
+      "locality": "墨尔本"
+    },
+    "shanghai": {
+      "name": "上海国际赛车场",
+      "country": "中国",
+      "locality": "上海"
+    },
+    "suzuka": {
+      "name": "铃鹿赛道",
+      "country": "日本",
+      "locality": "铃鹿"
+    },
+    "miami": {
+      "name": "迈阿密国际赛道",
+      "country": "美国",
+      "locality": "迈阿密"
+    },
+    "villeneuve": {
+      "name": "吉尔·维伦纽夫赛道",
+      "country": "加拿大",
+      "locality": "蒙特利尔"
+    },
+    "monaco": {
+      "name": "摩纳哥赛道",
+      "country": "摩纳哥",
+      "locality": "蒙特卡洛"
+    },
+    "catalunya": {
+      "name": "加泰罗尼亚赛道",
+      "country": "西班牙",
+      "locality": "巴塞罗那"
+    },
+    "red_bull_ring": {
+      "name": "红牛环赛道",
+      "country": "奥地利",
+      "locality": "施皮尔贝格"
+    },
+    "silverstone": {
+      "name": "银石赛道",
+      "country": "英国",
+      "locality": "银石"
+    },
+    "spa": {
+      "name": "斯帕-弗朗科尔尚赛道",
+      "country": "比利时",
+      "locality": "斯帕"
+    },
+    "hungaroring": {
+      "name": "亨格罗宁赛道",
+      "country": "匈牙利",
+      "locality": "布达佩斯"
+    },
+    "zandvoort": {
+      "name": "赞德沃特赛道",
+      "country": "荷兰",
+      "locality": "赞德沃特"
+    },
+    "monza": {
+      "name": "蒙扎国家赛车场",
+      "country": "意大利",
+      "locality": "蒙扎"
+    },
+    "madring": {
+      "name": "马德里赛道",
+      "country": "西班牙",
+      "locality": "马德里"
+    },
+    "baku": {
+      "name": "巴库城市赛道",
+      "country": "阿塞拜疆",
+      "locality": "巴库"
+    },
+    "marina_bay": {
+      "name": "滨海湾街道赛道",
+      "country": "新加坡",
+      "locality": "滨海湾"
+    },
+    "americas": {
+      "name": "美洲赛道",
+      "country": "美国",
+      "locality": "奥斯汀"
+    },
+    "rodriguez": {
+      "name": "埃尔曼诺斯·罗德里格斯赛道",
+      "country": "墨西哥",
+      "locality": "墨西哥城"
+    },
+    "interlagos": {
+      "name": "何塞·卡洛斯·帕塞赛道",
+      "country": "巴西",
+      "locality": "圣保罗"
+    },
+    "vegas": {
+      "name": "拉斯维加斯大道街道赛道",
+      "country": "美国",
+      "locality": "拉斯维加斯"
+    },
+    "losail": {
+      "name": "卢赛尔国际赛道",
+      "country": "卡塔尔",
+      "locality": "卢赛尔"
+    },
+    "yas_marina": {
+      "name": "亚斯码头赛道",
+      "country": "阿联酋",
+      "locality": "阿布扎比"
+    }
+  }
+}

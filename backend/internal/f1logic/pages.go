@@ -427,6 +427,7 @@ func parseDriversAll(driverStandings map[string]any) []any {
 			continue
 		}
 		drv, _ := row["Driver"].(map[string]any)
+		displayName := strings.TrimSpace(getStr(drv, "displayName"))
 		code := strings.TrimSpace(getStr(drv, "code"))
 		if code == "" {
 			id := strings.ToUpper(strings.TrimSpace(getStr(drv, "driverId")))
@@ -447,7 +448,9 @@ func parseDriversAll(driverStandings map[string]any) []any {
 			c0, _ = constructors[0].(map[string]any)
 		}
 		name := strings.TrimSpace(family)
-		if given != "" || family != "" {
+		if displayName != "" {
+			name = displayName
+		} else if given != "" || family != "" {
 			g0 := ""
 			if given != "" {
 				g0 = given[:1]

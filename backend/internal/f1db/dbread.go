@@ -58,7 +58,7 @@ func OpenF1LatestRaceSessionKey(db *gorm.DB, season int) (int, error) {
 	return r.SessionKey, nil
 }
 
-func OpenF1DriverStandingsJSON(db *gorm.DB, sessionKey int) (map[string]any, error) {
+func OpenF1DriverStandingsJSON(db *gorm.DB, sessionKey int, lang string) (map[string]any, error) {
 	type row struct {
 		DriverNumber    int     `gorm:"column:driver_number"`
 		PositionCurrent int     `gorm:"column:position_current"`
@@ -103,19 +103,46 @@ func OpenF1DriverStandingsJSON(db *gorm.DB, sessionKey int) (map[string]any, err
 		return s
 	}
 
+	driverKeys := make([]string, 0, len(rows))
+	for _, it := range rows {
+		if it.DriverNumber <= 0 {
+			continue
+		}
+		driverKeys = append(driverKeys, strconv.Itoa(it.DriverNumber))
+	}
+	driverFullNameMap, _ := fetchI18nText(db, lang, "driver", "full_name", driverKeys)
+
+	consKeys := make([]string, 0, len(rows))
+	for _, it := range rows {
+		if it.TeamName == nil || strings.TrimSpace(*it.TeamName) == "" {
+			continue
+		}
+		consKeys = append(consKeys, constructorID(*it.TeamName))
+	}
+	consNameMap, _ := fetchI18nText(db, lang, "constructor", "name", consKeys)
+
 	drivers := make([]any, 0, len(rows))
 	for _, it := range rows {
+		driverID := strconv.Itoa(it.DriverNumber)
 		drv := map[string]any{
-			"driverId":   strconv.Itoa(it.DriverNumber),
+			"driverId":   driverID,
 			"code":       strings.ToUpper(strings.TrimSpace(it.NameAcronym)),
 			"givenName":  strings.TrimSpace(it.FirstName),
 			"familyName": strings.TrimSpace(it.LastName),
 		}
+		if v, ok := driverFullNameMap[driverID]; ok && strings.TrimSpace(v) != "" {
+			drv["displayName"] = strings.TrimSpace(v)
+		}
 		constructors := make([]any, 0, 1)
 		if it.TeamName != nil && strings.TrimSpace(*it.TeamName) != "" {
+			cid := constructorID(*it.TeamName)
+			teamName := strings.TrimSpace(*it.TeamName)
+			if v, ok := consNameMap[cid]; ok && strings.TrimSpace(v) != "" {
+				teamName = strings.TrimSpace(v)
+			}
 			constructors = append(constructors, map[string]any{
-				"constructorId": constructorID(*it.TeamName),
-				"name":          strings.TrimSpace(*it.TeamName),
+				"constructorId": cid,
+				"name":          teamName,
 			})
 		}
 		drivers = append(drivers, map[string]any{
@@ -139,7 +166,7 @@ func OpenF1DriverStandingsJSON(db *gorm.DB, sessionKey int) (map[string]any, err
 	}, nil
 }
 
-func OpenF1ConstructorStandingsJSON(db *gorm.DB, sessionKey int) (map[string]any, error) {
+func OpenF1ConstructorStandingsJSON(db *gorm.DB, sessionKey int, lang string) (map[string]any, error) {
 	type row struct {
 		TeamName        string  `gorm:"column:team_name"`
 		PositionCurrent int     `gorm:"column:position_current"`
@@ -174,14 +201,28 @@ func OpenF1ConstructorStandingsJSON(db *gorm.DB, sessionKey int) (map[string]any
 		return s
 	}
 
+	consKeys := make([]string, 0, len(rows))
+	for _, it := range rows {
+		if strings.TrimSpace(it.TeamName) == "" {
+			continue
+		}
+		consKeys = append(consKeys, constructorID(it.TeamName))
+	}
+	consNameMap, _ := fetchI18nText(db, lang, "constructor", "name", consKeys)
+
 	out := make([]any, 0, len(rows))
 	for _, it := range rows {
+		cid := constructorID(it.TeamName)
+		teamName := strings.TrimSpace(it.TeamName)
+		if v, ok := consNameMap[cid]; ok && strings.TrimSpace(v) != "" {
+			teamName = strings.TrimSpace(v)
+		}
 		out = append(out, map[string]any{
 			"position": it.PositionCurrent,
 			"points":   it.PointsCurrent,
 			"Constructor": map[string]any{
-				"constructorId": constructorID(it.TeamName),
-				"name":          strings.TrimSpace(it.TeamName),
+				"constructorId": cid,
+				"name":          teamName,
 			},
 		})
 	}
@@ -199,7 +240,7 @@ func OpenF1ConstructorStandingsJSON(db *gorm.DB, sessionKey int) (map[string]any
 	}, nil
 }
 
-func OpenF1LastNResultsJSON(db *gorm.DB, season int, n int) (map[string]any, error) {
+func OpenF1LastNResultsJSON(db *gorm.DB, season int, n int, lang string) (map[string]any, error) {
 	if n <= 0 {
 		return map[string]any{
 			"MRData": map[string]any{
@@ -216,12 +257,14 @@ func OpenF1LastNResultsJSON(db *gorm.DB, season int, n int) (map[string]any, err
 	type sessRow struct {
 		SessionKey   int       `gorm:"column:session_key"`
 		DateStartUTC time.Time `gorm:"column:date_start_utc"`
+		MeetingKey   int       `gorm:"column:meeting_key"`
 		MeetingName  string    `gorm:"column:meeting_name"`
 	}
 	var sess []sessRow
 	if err := db.Raw(`
             SELECT
               s.session_key,
+              s.meeting_key,
               s.date_start_utc,
               COALESCE(m.meeting_name, '') AS meeting_name
             FROM openf1_sessions s
@@ -258,6 +301,15 @@ func OpenF1LastNResultsJSON(db *gorm.DB, season int, n int) (map[string]any, err
 		sessionKeys = append(sessionKeys, it.SessionKey)
 		meta[it.SessionKey] = it
 	}
+
+	meetingKeys := make([]string, 0, len(sess))
+	for _, it := range sess {
+		if it.MeetingKey <= 0 {
+			continue
+		}
+		meetingKeys = append(meetingKeys, strconv.Itoa(it.MeetingKey))
+	}
+	meetingNameMap, _ := fetchI18nText(db, lang, "openf1_meeting", "meeting_name", meetingKeys)
 	sessionKeys = uniqInts(sessionKeys)
 	sort.Ints(sessionKeys)
 
@@ -304,6 +356,11 @@ func OpenF1LastNResultsJSON(db *gorm.DB, season int, n int) (map[string]any, err
 	for _, sk := range sessionKeys {
 		m := meta[sk]
 		name := strings.TrimSpace(m.MeetingName)
+		if m.MeetingKey > 0 {
+			if v, ok := meetingNameMap[strconv.Itoa(m.MeetingKey)]; ok && strings.TrimSpace(v) != "" {
+				name = strings.TrimSpace(v)
+			}
+		}
 		if name == "" {
 			name = fmt.Sprintf("SESSION %d", sk)
 		}
@@ -529,7 +586,7 @@ func abs(v float64) float64 {
 	return v
 }
 
-func OpenF1ScheduleJSON(db *gorm.DB, season int) (map[string]any, error) {
+func OpenF1ScheduleJSON(db *gorm.DB, season int, lang string) (map[string]any, error) {
 	type meetingRow struct {
 		MeetingKey       int        `gorm:"column:meeting_key"`
 		Year             int        `gorm:"column:year"`
@@ -586,9 +643,17 @@ func OpenF1ScheduleJSON(db *gorm.DB, season int) (map[string]any, error) {
 	}
 
 	meetingsByKey := map[int]meetingRow{}
+	meetingKeys := make([]string, 0, len(meetings))
 	for _, m := range meetings {
 		meetingsByKey[m.MeetingKey] = m
+		if m.MeetingKey > 0 {
+			meetingKeys = append(meetingKeys, strconv.Itoa(m.MeetingKey))
+		}
 	}
+	meetingNameMap, _ := fetchI18nText(db, lang, "openf1_meeting", "meeting_name", meetingKeys)
+	meetingLocationMap, _ := fetchI18nText(db, lang, "openf1_meeting", "location", meetingKeys)
+	meetingCountryMap, _ := fetchI18nText(db, lang, "openf1_meeting", "country_name", meetingKeys)
+	meetingCircuitShortMap, _ := fetchI18nText(db, lang, "openf1_meeting", "circuit_short_name", meetingKeys)
 
 	mapSessionType := func(name string) string {
 		s := strings.TrimSpace(strings.ToLower(name))
@@ -662,6 +727,9 @@ func OpenF1ScheduleJSON(db *gorm.DB, season int) (map[string]any, error) {
 		}
 		m := meetingsByKey[mk]
 		raceName := strings.TrimSpace(m.MeetingName)
+		if v, ok := meetingNameMap[strconv.Itoa(mk)]; ok && strings.TrimSpace(v) != "" {
+			raceName = strings.TrimSpace(v)
+		}
 		if raceName == "" {
 			raceName = fmt.Sprintf("MEETING %d", mk)
 		}
@@ -673,10 +741,18 @@ func OpenF1ScheduleJSON(db *gorm.DB, season int) (map[string]any, error) {
 			"country":  nil,
 		}
 		if m.Location != nil {
-			loc["locality"] = *m.Location
+			locality := strings.TrimSpace(*m.Location)
+			if v, ok := meetingLocationMap[strconv.Itoa(mk)]; ok && strings.TrimSpace(v) != "" {
+				locality = strings.TrimSpace(v)
+			}
+			loc["locality"] = locality
 		}
 		if m.CountryName != nil {
-			loc["country"] = *m.CountryName
+			country := strings.TrimSpace(*m.CountryName)
+			if v, ok := meetingCountryMap[strconv.Itoa(mk)]; ok && strings.TrimSpace(v) != "" {
+				country = strings.TrimSpace(v)
+			}
+			loc["country"] = country
 		}
 		circuit := map[string]any{
 			"url":         nil,
@@ -684,7 +760,11 @@ func OpenF1ScheduleJSON(db *gorm.DB, season int) (map[string]any, error) {
 			"Location":    loc,
 		}
 		if m.CircuitShortName != nil && strings.TrimSpace(*m.CircuitShortName) != "" {
-			circuit["circuitName"] = strings.TrimSpace(*m.CircuitShortName)
+			circuitName := strings.TrimSpace(*m.CircuitShortName)
+			if v, ok := meetingCircuitShortMap[strconv.Itoa(mk)]; ok && strings.TrimSpace(v) != "" {
+				circuitName = strings.TrimSpace(v)
+			}
+			circuit["circuitName"] = circuitName
 		}
 
 		raceObj := map[string]any{
@@ -760,7 +840,7 @@ func dtToErgastParts(dt time.Time) (string, string) {
 	return dateS, timeS
 }
 
-func CircuitAssetsPayloadFromDB(db *gorm.DB, season int) (map[string]any, error) {
+func CircuitAssetsPayloadFromDB(db *gorm.DB, season int, lang string) (map[string]any, error) {
 	type row struct {
 		Round        int        `gorm:"column:round"`
 		RaceName     *string    `gorm:"column:race_name"`
@@ -806,6 +886,20 @@ func CircuitAssetsPayloadFromDB(db *gorm.DB, season int) (map[string]any, error)
 		return nil, errors.New("no_circuit_assets")
 	}
 
+	circuitKeys := make([]string, 0, len(rows))
+	raceKeys := make([]string, 0, len(rows))
+	for _, r := range rows {
+		cid := strings.TrimSpace(r.CircuitID)
+		if cid != "" {
+			circuitKeys = append(circuitKeys, cid)
+		}
+		raceKeys = append(raceKeys, fmt.Sprintf("%d_%d", season, r.Round))
+	}
+	circuitNameMap, _ := fetchI18nText(db, lang, "circuit", "name", circuitKeys)
+	circuitCountryMap, _ := fetchI18nText(db, lang, "circuit", "country", circuitKeys)
+	circuitLocalityMap, _ := fetchI18nText(db, lang, "circuit", "locality", circuitKeys)
+	raceNameMap, _ := fetchI18nText(db, lang, "race", "race_name", raceKeys)
+
 	items := make([]any, 0, len(rows))
 	for _, r := range rows {
 		cid := strings.TrimSpace(r.CircuitID)
@@ -831,6 +925,23 @@ func CircuitAssetsPayloadFromDB(db *gorm.DB, season int) (map[string]any, error)
 			}
 		}
 
+		raceName := strPtr(r.RaceName)
+		if v, ok := raceNameMap[fmt.Sprintf("%d_%d", season, r.Round)]; ok && strings.TrimSpace(v) != "" {
+			raceName = strings.TrimSpace(v)
+		}
+		circuitName := strPtr(r.CircuitName)
+		if v, ok := circuitNameMap[cid]; ok && strings.TrimSpace(v) != "" {
+			circuitName = strings.TrimSpace(v)
+		}
+		country := strPtr(r.Country)
+		if v, ok := circuitCountryMap[cid]; ok && strings.TrimSpace(v) != "" {
+			country = strings.TrimSpace(v)
+		}
+		locality := strPtr(r.Locality)
+		if v, ok := circuitLocalityMap[cid]; ok && strings.TrimSpace(v) != "" {
+			locality = strings.TrimSpace(v)
+		}
+
 		dateS := ""
 		timeS := ""
 		if r.RaceStartUTC != nil {
@@ -840,13 +951,13 @@ func CircuitAssetsPayloadFromDB(db *gorm.DB, season int) (map[string]any, error)
 		it := map[string]any{
 			"season":                      season,
 			"round":                       r.Round,
-			"race_name":                   strPtr(r.RaceName),
+			"race_name":                   raceName,
 			"date":                        dateS,
 			"time":                        timeS,
 			"circuit_id":                  cid,
-			"circuit_name":                strPtr(r.CircuitName),
-			"country":                     strPtr(r.Country),
-			"locality":                    strPtr(r.Locality),
+			"circuit_name":                circuitName,
+			"country":                     country,
+			"locality":                    locality,
 			"lat":                         strPtr(r.Latitude),
 			"long":                        strPtr(r.Longitude),
 			"ergast_url":                  strPtr(r.ErgastURL),
