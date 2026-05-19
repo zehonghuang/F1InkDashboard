@@ -4,8 +4,7 @@
   "version": "0.1.0",
   "type": "commonjs",
   "scripts": {
-    "prepare:mp": "node scripts/prepare-mp.js",
-    "postinstall": "node scripts/prepare-mp.js"
+    "prepare:mp": "node scripts/prepare-mp.js"
   },
   "dependencies": {
     "echarts-for-weixin": "^1.0.2",

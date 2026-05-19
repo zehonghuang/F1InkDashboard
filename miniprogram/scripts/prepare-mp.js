@@ -6,6 +6,16 @@ const { execFileSync } = require('child_process');
 
 const projectRoot = path.resolve(__dirname, '..');
 
+function hasFfmpeg() {
+  try {
+    execFileSync('ffmpeg', ['-version'], { stdio: 'ignore' });
+    return true;
+  } catch (e) {
+    if (e && e.code === 'ENOENT') return false;
+    return false;
+  }
+}
+
 function ensureDirSync(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
 }
@@ -217,31 +227,36 @@ async function main() {
   const circuitsDstDir = path.join(projectRoot, 'assets', 'circuits', '2026');
   const circuitsRawDstDir = path.join(circuitsDstDir, 'raw');
 
-  if (!fs.existsSync(circuitsRawSrcDir)) {
-    throw new Error(`Circuit raw dir not found: ${circuitsRawSrcDir}`);
-  }
-
-  fs.rmSync(circuitsRawDstDir, { recursive: true, force: true });
-  ensureDirSync(circuitsRawDstDir);
-  const rawEntries = fs.readdirSync(circuitsRawSrcDir, { withFileTypes: true });
-  for (const ent of rawEntries) {
-    if (!ent.isFile()) continue;
-    if (!ent.name.endsWith('_map.webp')) continue;
-    fs.copyFileSync(path.join(circuitsRawSrcDir, ent.name), path.join(circuitsRawDstDir, ent.name));
-  }
-
   const circuitsPngDstDir = path.join(circuitsDstDir, 'maps');
-  fs.rmSync(circuitsPngDstDir, { recursive: true, force: true });
-  ensureDirSync(circuitsPngDstDir);
-  const copiedWebps = fs.readdirSync(circuitsRawDstDir, { withFileTypes: true });
-  for (const ent of copiedWebps) {
-    if (!ent.isFile()) continue;
-    if (!ent.name.endsWith('_map.webp')) continue;
-    const src = path.join(circuitsRawDstDir, ent.name);
-    const dst = path.join(circuitsPngDstDir, ent.name.replace(/\.webp$/i, '.png'));
-    execFileSync('ffmpeg', ['-y', '-v', 'error', '-i', src, '-vf', 'scale=320:-1', dst], {
-      stdio: 'inherit'
-    });
+  const ffmpegOk = hasFfmpeg();
+  if (!ffmpegOk) {
+    ensureDirSync(circuitsPngDstDir);
+    console.warn('[prepare-mp] ffmpeg not found, skip circuit webp->png conversion');
+  } else if (!fs.existsSync(circuitsRawSrcDir)) {
+    ensureDirSync(circuitsPngDstDir);
+    console.warn(`[prepare-mp] circuit raw dir not found, skip conversion: ${circuitsRawSrcDir}`);
+  } else {
+    fs.rmSync(circuitsRawDstDir, { recursive: true, force: true });
+    ensureDirSync(circuitsRawDstDir);
+    const rawEntries = fs.readdirSync(circuitsRawSrcDir, { withFileTypes: true });
+    for (const ent of rawEntries) {
+      if (!ent.isFile()) continue;
+      if (!ent.name.endsWith('_map.webp')) continue;
+      fs.copyFileSync(path.join(circuitsRawSrcDir, ent.name), path.join(circuitsRawDstDir, ent.name));
+    }
+
+    fs.rmSync(circuitsPngDstDir, { recursive: true, force: true });
+    ensureDirSync(circuitsPngDstDir);
+    const copiedWebps = fs.readdirSync(circuitsRawDstDir, { withFileTypes: true });
+    for (const ent of copiedWebps) {
+      if (!ent.isFile()) continue;
+      if (!ent.name.endsWith('_map.webp')) continue;
+      const src = path.join(circuitsRawDstDir, ent.name);
+      const dst = path.join(circuitsPngDstDir, ent.name.replace(/\.webp$/i, '.png'));
+      execFileSync('ffmpeg', ['-y', '-v', 'error', '-i', src, '-vf', 'scale=320:-1', dst], {
+        stdio: 'inherit'
+      });
+    }
   }
 
   const fontSrc = path.join(repoRoot, 'font', 'Formula1-Bold_web_0.ttf');
@@ -270,11 +285,13 @@ async function main() {
   ];
   for (const it of vendorFiles) {
     const dst = path.join(echartsVendor, it.name);
-    if (fs.existsSync(dst) && fs.statSync(dst).size > 0) {
-      continue;
+    if (fs.existsSync(dst) && fs.statSync(dst).size > 0) continue;
+    try {
+      const buf = await downloadBuffer(it.url);
+      fs.writeFileSync(dst, buf);
+    } catch (e) {
+      console.warn(`[prepare-mp] download failed: ${it.url}`);
     }
-    const buf = await downloadBuffer(it.url);
-    fs.writeFileSync(dst, buf);
   }
 }
 
