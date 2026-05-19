@@ -219,6 +219,22 @@ std::string WifiManager::GetMacAddress() const {
     return mac_address_;
 }
 
+std::string WifiManager::GetDeviceId() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (!device_id_.empty()) {
+        return device_id_;
+    }
+    uint8_t mac[6];
+    if (esp_read_mac(mac, ESP_MAC_WIFI_STA) != ESP_OK) {
+        return "";
+    }
+    char buf[13];
+    snprintf(buf, sizeof(buf), "%02X%02X%02X%02X%02X%02X",
+             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    device_id_ = buf;
+    return device_id_;
+}
+
 void WifiManager::ClearFastReconnectCache(const char* reason) {
     std::lock_guard<std::mutex> lock(mutex_);
 

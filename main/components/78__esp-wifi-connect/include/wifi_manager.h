@@ -76,6 +76,7 @@ public:
     int GetRssi() const;
     int GetChannel() const;
     std::string GetMacAddress() const;
+    std::string GetDeviceId() const;
     void ClearFastReconnectCache(const char* reason);
     void ClearIpFastCache(const char* reason);
     void SetFastProbeTarget(NetworkProbeTarget probe_target);
@@ -120,6 +121,7 @@ private:
 
     std::function<void(WifiEvent)> event_callback_;
     mutable std::string mac_address_;
+    mutable std::string device_id_;
 };
 
 #endif // _WIFI_MANAGER_H_
