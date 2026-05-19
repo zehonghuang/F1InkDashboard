@@ -77,6 +77,10 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/mp/telemetry/controls", handlers.MpTelemetryControls(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/telemetry/sector_controls", handlers.MpTelemetrySectorControls(gormOrNil(database)))
 
+	s.Router.POST("/api/v1/pay/wechat/jsapi/prepay", handlers.WechatPayJSAPIPrepay(cfg))
+	s.Router.GET("/api/v1/pay/wechat/order/:out_trade_no", handlers.WechatPayQueryOrder(cfg))
+	s.Router.POST("/api/v1/pay/wechat/notify", handlers.WechatPayNotify(cfg))
+
 	s.Router.GET("/api/v1/f1/sessions", handlers.F1Sessions(cfg, gormOrNil(database), s.Cache))
 	s.Router.GET("/api/v1/f1/sessions/current", handlers.F1SessionsCurrentExplicit(cfg, gormOrNil(database), s.Cache))
 	s.Router.GET("/api/v1/f1/sessions/:season/:round/:session_name", handlers.F1SessionsByPath(cfg, gormOrNil(database), s.Cache))

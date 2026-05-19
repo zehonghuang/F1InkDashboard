@@ -24,6 +24,29 @@ go run ./cmd/server
 - `BACKEND_LOG_REQUESTS`（默认 `1`）
 - `BACKEND_LOG_OUTGOING_HTTP`（默认 `1`）
 
+## 微信支付（V3）
+
+后端提供独立的微信支付接口（JSAPI 预支付 / 回调 / 查单）。
+
+环境变量：
+
+- `WECHATPAY_ENABLED`（默认 `0`）
+- `WECHATPAY_MCH_ID`：商户号 mchid
+- `WECHATPAY_APP_ID`：小程序/公众号 appid（JSAPI 下单使用）
+- `WECHATPAY_NOTIFY_URL`：微信支付回调地址（必须是公网可访问 HTTPS URL）
+- `WECHATPAY_API_V3_KEY`：APIv3Key（32 字节）
+- `WECHATPAY_MERCHANT_CERT_SERIAL`：商户 API 证书序列号（serial_no）
+- `WECHATPAY_MERCHANT_PRIVATE_KEY_PEM`：商户私钥 PEM（多行可直接粘贴）
+- `WECHATPAY_MERCHANT_PRIVATE_KEY_PATH`：商户私钥文件路径（如使用文件存储私钥）
+- `WECHATPAY_PLATFORM_CERT_PEM`：微信支付平台证书 PEM（可包含多段 CERTIFICATE）
+- `WECHATPAY_API_TOKEN`：可选，用于保护“下单/查单”接口（通过 `?token=...` 传入）
+
+API：
+
+- `POST /api/v1/pay/wechat/jsapi/prepay?token=...`：创建 JSAPI 预支付单（返回 prepay_id 与前端调起支付所需签名参数）
+- `GET /api/v1/pay/wechat/order/:out_trade_no?token=...`：按 out_trade_no 查单
+- `POST /api/v1/pay/wechat/notify`：微信支付回调通知（验签 + 解密）
+
 ## API
 
 - `GET /health`

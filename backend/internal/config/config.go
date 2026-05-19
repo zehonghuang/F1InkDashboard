@@ -16,6 +16,21 @@ type MySQLConfig struct {
 	Charset  string
 }
 
+type WechatPayConfig struct {
+	Enabled bool
+
+	MchID      string
+	AppID      string
+	NotifyURL  string
+	ApiV3Key   string
+	ApiToken   string
+	SerialNo   string
+	PrivateKey string
+	KeyPath    string
+
+	PlatformCertPEM string
+}
+
 type Config struct {
 	ListenAddr     string
 	StaticDir      string
@@ -23,7 +38,8 @@ type Config struct {
 	TrustedProxies []string
 	LogRequests    bool
 
-	MySQL MySQLConfig
+	MySQL     MySQLConfig
+	WechatPay WechatPayConfig
 
 	NewsWsEnabled   bool
 	NewsIngestToken string
@@ -47,6 +63,7 @@ func FromEnv() Config {
 		TrustedProxies:    parseTrustedProxies(os.Getenv("BACKEND_TRUSTED_PROXIES")),
 		LogRequests:       getenvBool("BACKEND_LOG_REQUESTS", true),
 		MySQL:             mysqlFromEnv(),
+		WechatPay:         wechatPayFromEnv(),
 		NewsWsEnabled:     getenvBool("NEWS_WS_ENABLED", false),
 		NewsIngestToken:   getenvTrim("NEWS_INGEST_TOKEN", ""),
 		OpenF1Enabled:     getenvBool("OPENF1_ENABLED", false),
@@ -75,6 +92,21 @@ func mysqlFromEnv() MySQLConfig {
 		Password: password,
 		DB:       db,
 		Charset:  charset,
+	}
+}
+
+func wechatPayFromEnv() WechatPayConfig {
+	return WechatPayConfig{
+		Enabled:         getenvBool("WECHATPAY_ENABLED", false),
+		MchID:           getenvTrim("WECHATPAY_MCH_ID", ""),
+		AppID:           getenvTrim("WECHATPAY_APP_ID", ""),
+		NotifyURL:       getenvTrim("WECHATPAY_NOTIFY_URL", ""),
+		ApiV3Key:        getenvTrim("WECHATPAY_API_V3_KEY", ""),
+		ApiToken:        getenvTrim("WECHATPAY_API_TOKEN", ""),
+		SerialNo:        getenvTrim("WECHATPAY_MERCHANT_CERT_SERIAL", ""),
+		PrivateKey:      strings.TrimSpace(os.Getenv("WECHATPAY_MERCHANT_PRIVATE_KEY_PEM")),
+		KeyPath:         getenvTrim("WECHATPAY_MERCHANT_PRIVATE_KEY_PATH", ""),
+		PlatformCertPEM: strings.TrimSpace(os.Getenv("WECHATPAY_PLATFORM_CERT_PEM")),
 	}
 }
 
