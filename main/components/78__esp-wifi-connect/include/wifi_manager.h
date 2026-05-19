@@ -116,7 +116,7 @@ private:
     bool initialized_ = false;
     bool station_active_ = false;
     bool config_mode_active_ = false;
-    NetworkProbeTarget probe_target_ = NetworkProbeTarget::Mqtt;
+    NetworkProbeTarget probe_target_ = NetworkProbeTarget::PublicInternet;
 
     std::function<void(WifiEvent)> event_callback_;
     mutable std::string mac_address_;
