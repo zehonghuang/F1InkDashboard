@@ -13,6 +13,7 @@ enum class UiPageId : uint8_t {
     F1 = 2,
     BreakingNews = 3,
     Meme = 4,
+    ServiceReconnect = 5,
     Gallery = F1,
 };
 
@@ -45,6 +46,8 @@ enum class UiPageCustomEventId : int32_t {
     F1TelemetryAnalysisData = 207,
     F1TelemetryMetaData = 208,
     WsOverlayShow = 300,
+    ServiceReconnectShow = 310,
+    ServiceReconnectHide = 311,
     GalleryPrev = PagePrev,
     GalleryNext = PageNext,
 };

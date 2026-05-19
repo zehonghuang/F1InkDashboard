@@ -29,6 +29,7 @@ set(SOURCES
     "display/pages/f1_page_adapter_ui_quick_switch.cc"
     "display/pages/f1_page_adapter_ui_telemetry.cc"
     "display/pages/breaking_news_page_adapter.cc"
+    "display/pages/service_reconnect_page_adapter.cc"
     "display/pages/meme_page_adapter.cc"
     "display/pages/wifi_setup_page_adapter.cc"
     "display/lvgl_display/lvgl_display.cc"

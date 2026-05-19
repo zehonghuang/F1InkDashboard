@@ -77,6 +77,10 @@ void FetchTask(void* arg) {
 
     std::vector<uint8_t> bytes;
     if (HttpGetToBuffer(a->url, bytes, kMaxJsonBytes)) {
+        UiPageEvent n{};
+        n.type = UiPageEventType::Custom;
+        n.i32 = static_cast<int32_t>(UiPageCustomEventId::ServiceReconnectHide);
+        a->host->DispatchPageEvent(n, false);
         UiPageEvent e{};
         e.type = UiPageEventType::Custom;
         e.i32 = static_cast<int32_t>(UiPageCustomEventId::F1Data);
@@ -84,6 +88,10 @@ void FetchTask(void* arg) {
         e.ptr = payload;
         a->host->DispatchPageEvent(e, false);
     } else {
+        UiPageEvent n{};
+        n.type = UiPageEventType::Custom;
+        n.i32 = static_cast<int32_t>(UiPageCustomEventId::ServiceReconnectShow);
+        a->host->DispatchPageEvent(n, false);
         ESP_LOGW(kTag, "HTTP GET failed url=%s", a->url.c_str());
     }
 
@@ -100,6 +108,10 @@ void SessionsFetchTask(void* arg) {
 
     std::vector<uint8_t> bytes;
     if (HttpGetToBuffer(a->url, bytes, kMaxJsonBytes)) {
+        UiPageEvent n{};
+        n.type = UiPageEventType::Custom;
+        n.i32 = static_cast<int32_t>(UiPageCustomEventId::ServiceReconnectHide);
+        a->host->DispatchPageEvent(n, false);
         a->page->MarkSessionsFetchDone();
         UiPageEvent e{};
         e.type = UiPageEventType::Custom;
@@ -108,6 +120,10 @@ void SessionsFetchTask(void* arg) {
         e.ptr = payload;
         a->host->DispatchPageEvent(e, false);
     } else {
+        UiPageEvent n{};
+        n.type = UiPageEventType::Custom;
+        n.i32 = static_cast<int32_t>(UiPageCustomEventId::ServiceReconnectShow);
+        a->host->DispatchPageEvent(n, false);
         ESP_LOGW(kTag, "sessions fetch failed url=%s", a->url.c_str());
         a->page->MarkSessionsFetchDone();
     }
@@ -153,6 +169,10 @@ void TelemetryMetaFetchTask(void* arg) {
 
     std::vector<uint8_t> bytes;
     const bool ok = HttpGetToBuffer(a->url, bytes, 8 * 1024);
+    UiPageEvent n{};
+    n.type = UiPageEventType::Custom;
+    n.i32 = static_cast<int32_t>(ok ? UiPageCustomEventId::ServiceReconnectHide : UiPageCustomEventId::ServiceReconnectShow);
+    a->host->DispatchPageEvent(n, false);
     UiPageEvent e{};
     e.type = UiPageEventType::Custom;
     e.i32 = static_cast<int32_t>(UiPageCustomEventId::F1TelemetryMetaData);

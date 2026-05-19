@@ -5,6 +5,7 @@
 #include "pages/meme_page_adapter.h"
 #include "pages/f1_page_adapter.h"
 #include "pages/breaking_news_page_adapter.h"
+#include "pages/service_reconnect_page_adapter.h"
 #include "pages/factory_test_page_adapter.h"
 #include "pages/wifi_setup_page_adapter.h"
 #include "settings.h"
@@ -344,13 +345,40 @@ bool LcdDisplay::HideWsOverlayIfVisible() {
     if (page_registry_.HasActive() && page_registry_.ActiveId() == UiPageId::Meme) {
         return BackLocked();
     }
+    if (page_registry_.HasActive() && page_registry_.ActiveId() == UiPageId::ServiceReconnect) {
+        return true;
+    }
     return false;
 }
 
 bool LcdDisplay::IsWsOverlayVisible() const {
     DisplayLockGuard lock(const_cast<LcdDisplay*>(this));
     return page_registry_.HasActive() &&
-        (page_registry_.ActiveId() == UiPageId::BreakingNews || page_registry_.ActiveId() == UiPageId::Meme);
+        (page_registry_.ActiveId() == UiPageId::BreakingNews ||
+         page_registry_.ActiveId() == UiPageId::Meme ||
+         page_registry_.ActiveId() == UiPageId::ServiceReconnect);
+}
+
+void LcdDisplay::ShowServiceReconnectOverlay(const std::string& text) {
+    SetupUI();
+    DisplayLockGuard lock(this);
+    if (service_reconnect_page_adapter_ != nullptr) {
+        service_reconnect_page_adapter_->UpdateText(text);
+    }
+    (void)NavigateToLocked(UiPageId::ServiceReconnect);
+}
+
+bool LcdDisplay::HideServiceReconnectOverlayIfVisible() {
+    DisplayLockGuard lock(this);
+    if (page_registry_.HasActive() && page_registry_.ActiveId() == UiPageId::ServiceReconnect) {
+        return BackLocked();
+    }
+    return false;
+}
+
+bool LcdDisplay::IsServiceReconnectOverlayVisible() const {
+    DisplayLockGuard lock(const_cast<LcdDisplay*>(this));
+    return page_registry_.HasActive() && page_registry_.ActiveId() == UiPageId::ServiceReconnect;
 }
 
 void LcdDisplay::ShowRaw1bppFrame(const uint8_t* data, size_t len) {
@@ -449,6 +477,13 @@ void LcdDisplay::SetupUI() {
     breaking_news_page_adapter_ = breaking.get();
     if (!RegisterPageLocked(std::move(breaking))) {
         breaking_news_page_adapter_ = nullptr;
+        return;
+    }
+
+    auto service_reconnect = std::make_unique<ServiceReconnectPageAdapter>(this);
+    service_reconnect_page_adapter_ = service_reconnect.get();
+    if (!RegisterPageLocked(std::move(service_reconnect))) {
+        service_reconnect_page_adapter_ = nullptr;
         return;
     }
 

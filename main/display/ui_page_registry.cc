@@ -14,6 +14,12 @@ const char* UiPageIdName(UiPageId id) {
             return "WifiSetup";
         case UiPageId::F1:
             return "F1";
+        case UiPageId::BreakingNews:
+            return "BreakingNews";
+        case UiPageId::Meme:
+            return "Meme";
+        case UiPageId::ServiceReconnect:
+            return "ServiceReconnect";
         default:
             return "Unknown";
     }

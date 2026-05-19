@@ -833,6 +833,19 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         return false;
     }
     const auto id = static_cast<UiPageCustomEventId>(event.i32);
+    if (id == UiPageCustomEventId::ServiceReconnectShow) {
+        if (host_ != nullptr) {
+            host_->ShowServiceReconnectOverlay(I18n::Tr("ui.service_reconnecting"));
+            host_->RequestUrgentFullRefresh();
+        }
+        return true;
+    }
+    if (id == UiPageCustomEventId::ServiceReconnectHide) {
+        if (host_ != nullptr && host_->HideServiceReconnectOverlayIfVisible()) {
+            host_->RequestUrgentFullRefresh();
+        }
+        return true;
+    }
     if (id == UiPageCustomEventId::QuickSwitchShow) {
         if (menu_visible_) {
             menu_visible_ = false;
