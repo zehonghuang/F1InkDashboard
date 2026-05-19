@@ -5,6 +5,46 @@
   </view>
 
   <view class="section">
+    <view class="profile">
+      <view class="avatar">
+        <image
+          wx:if="{{profile && profile.avatarUrl}}"
+          class="avatar-img"
+          src="{{profile.avatarUrl}}"
+          mode="aspectFill"
+        />
+        <view wx:else class="avatar-placeholder">{{avatarText}}</view>
+      </view>
+      <view class="profile-main">
+        <view class="profile-name">{{displayName}}</view>
+        <view class="profile-sub">
+          <text wx:if="{{isLoggedIn}}">已登录</text>
+          <text wx:else>游客浏览中（登录可同步设置）</text>
+        </view>
+      </view>
+      <view class="profile-actions">
+        <button
+          wx:if="{{!isLoggedIn}}"
+          class="btn btn-primary"
+          bindtap="onLogin"
+          loading="{{loadingLogin}}"
+        >
+          微信登录
+        </button>
+        <button
+          wx:if="{{!isLoggedIn}}"
+          class="btn btn-ghost"
+          bindtap="onGetProfile"
+          loading="{{loadingProfile}}"
+        >
+          获取头像昵称
+        </button>
+        <button wx:if="{{isLoggedIn}}" class="btn btn-ghost" bindtap="onLogout">退出登录</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
     <view class="section-title">偏好设置</view>
     <view class="row" bindtap="onTapItem">
       <view class="row-key">默认赛季</view>
