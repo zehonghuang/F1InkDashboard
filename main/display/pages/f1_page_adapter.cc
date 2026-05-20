@@ -835,13 +835,19 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
     const auto id = static_cast<UiPageCustomEventId>(event.i32);
     if (id == UiPageCustomEventId::ServiceReconnectShow) {
         if (host_ != nullptr) {
-            host_->ShowServiceReconnectOverlay(I18n::Tr("ui.service_reconnecting"));
+            if (host_->service_reconnect_page_adapter_ != nullptr) {
+                host_->service_reconnect_page_adapter_->UpdateText(I18n::Tr("ui.service_reconnecting"));
+            }
+            (void)host_->NavigateToLocked(UiPageId::ServiceReconnect);
             host_->RequestUrgentFullRefresh();
         }
         return true;
     }
     if (id == UiPageCustomEventId::ServiceReconnectHide) {
-        if (host_ != nullptr && host_->HideServiceReconnectOverlayIfVisible()) {
+        if (host_ != nullptr &&
+            host_->page_registry_.HasActive() &&
+            host_->page_registry_.ActiveId() == UiPageId::ServiceReconnect) {
+            (void)host_->BackLocked();
             host_->RequestUrgentFullRefresh();
         }
         return true;

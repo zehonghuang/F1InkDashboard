@@ -346,7 +346,7 @@ bool LcdDisplay::HideWsOverlayIfVisible() {
         return BackLocked();
     }
     if (page_registry_.HasActive() && page_registry_.ActiveId() == UiPageId::ServiceReconnect) {
-        return true;
+        return BackLocked();
     }
     return false;
 }
