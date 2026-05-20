@@ -715,6 +715,31 @@ void F1PageAdapter::Build() {
     BuildQuickSwitchLocked();
     SetRootVisible(quick_switch_root_, false);
 
+    service_reconnect_root_ = lv_obj_create(screen_);
+    lv_obj_set_size(service_reconnect_root_, kPageWidth, kPageHeight);
+    lv_obj_align(service_reconnect_root_, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_bg_opa(service_reconnect_root_, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(service_reconnect_root_, 0, 0);
+    lv_obj_set_style_pad_all(service_reconnect_root_, 0, 0);
+
+    service_reconnect_box_ = lv_obj_create(service_reconnect_root_);
+    lv_obj_set_size(service_reconnect_box_, 280, 90);
+    lv_obj_align(service_reconnect_box_, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_style_bg_color(service_reconnect_box_, lv_color_white(), 0);
+    lv_obj_set_style_bg_opa(service_reconnect_box_, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(service_reconnect_box_, 2, 0);
+    lv_obj_set_style_border_color(service_reconnect_box_, lv_color_black(), 0);
+    lv_obj_set_style_pad_all(service_reconnect_box_, 10, 0);
+
+    service_reconnect_label_ = lv_label_create(service_reconnect_box_);
+    lv_obj_set_width(service_reconnect_label_, LV_PCT(100));
+    lv_label_set_long_mode(service_reconnect_label_, LV_LABEL_LONG_WRAP);
+    lv_obj_align(service_reconnect_label_, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_style_text_font(service_reconnect_label_, font, 0);
+    lv_obj_set_style_text_color(service_reconnect_label_, lv_color_black(), 0);
+    lv_label_set_text(service_reconnect_label_, "");
+    SetRootVisible(service_reconnect_root_, false);
+
     (void)text_font;
     (void)small_font;
 
@@ -744,8 +769,10 @@ void F1PageAdapter::OnHide() {
     active_ = false;
     menu_visible_ = false;
     quick_switch_visible_ = false;
+    service_reconnect_visible_ = false;
     SetRootVisible(menu_root_, false);
     SetRootVisible(quick_switch_root_, false);
+    SetRootVisible(service_reconnect_root_, false);
     if (host_ != nullptr) {
         host_->SetPicOverlayExcludeRect(false, 0, 0, 0, 0);
     }
@@ -773,14 +800,15 @@ void F1PageAdapter::UpdateOverlayZLocked() {
         bool fullscreen = false;
     };
 
-    OverlayItem items[3] = {
+    OverlayItem items[4] = {
         {OverlayItem::Kind::Pic, nullptr, nullptr, LEVEL_PIC, (host_ != nullptr && host_->HasPicContent()), false},
         {OverlayItem::Kind::Lvgl, menu_root_, nullptr, LEVEL_MENU, menu_visible_, true},
+        {OverlayItem::Kind::Lvgl, service_reconnect_root_, service_reconnect_box_, LEVEL_ALARM, service_reconnect_visible_, false},
         {OverlayItem::Kind::Lvgl, quick_switch_root_, quick_switch_box_, LEVEL_QUICK_SWITCH, quick_switch_visible_, false},
     };
 
-    for (int i = 0; i < 3; i++) {
-        for (int j = i + 1; j < 3; j++) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = i + 1; j < 4; j++) {
             if (items[i].level > items[j].level) {
                 OverlayItem t = items[i];
                 items[i] = items[j];
@@ -835,21 +863,26 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
     const auto id = static_cast<UiPageCustomEventId>(event.i32);
     if (id == UiPageCustomEventId::ServiceReconnectShow) {
         if (host_ != nullptr) {
-            if (host_->service_reconnect_page_adapter_ != nullptr) {
-                host_->service_reconnect_page_adapter_->UpdateText(I18n::Tr("ui.service_reconnecting"));
+            service_reconnect_visible_ = true;
+            SetRootVisible(service_reconnect_root_, true);
+            if (service_reconnect_label_ != nullptr) {
+                lv_label_set_text(service_reconnect_label_, I18n::Tr("ui.service_reconnecting"));
             }
-            (void)host_->NavigateToLocked(UiPageId::ServiceReconnect);
+            UpdateOverlayZLocked();
             host_->RequestUrgentFullRefresh();
         }
         return true;
     }
     if (id == UiPageCustomEventId::ServiceReconnectHide) {
-        if (host_ != nullptr &&
-            host_->page_registry_.HasActive() &&
-            host_->page_registry_.ActiveId() == UiPageId::ServiceReconnect) {
-            (void)host_->BackLocked();
+        if (host_ != nullptr) {
+            service_reconnect_visible_ = false;
+            SetRootVisible(service_reconnect_root_, false);
+            UpdateOverlayZLocked();
             host_->RequestUrgentFullRefresh();
         }
+        return true;
+    }
+    if (service_reconnect_visible_) {
         return true;
     }
     if (id == UiPageCustomEventId::QuickSwitchShow) {

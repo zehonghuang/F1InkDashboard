@@ -113,6 +113,10 @@ private:
     lv_obj_t* circuit_stats_root_ = nullptr;
     lv_obj_t* menu_root_ = nullptr;
     lv_obj_t* quick_switch_root_ = nullptr;
+    lv_obj_t* service_reconnect_root_ = nullptr;
+    lv_obj_t* service_reconnect_box_ = nullptr;
+    lv_obj_t* service_reconnect_label_ = nullptr;
+    bool service_reconnect_visible_ = false;
 
     int view_index_ = 0;
     int off_week_focus_ = 0;

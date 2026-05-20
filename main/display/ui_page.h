@@ -13,7 +13,6 @@ enum class UiPageId : uint8_t {
     F1 = 2,
     BreakingNews = 3,
     Meme = 4,
-    ServiceReconnect = 5,
     Gallery = F1,
 };
 

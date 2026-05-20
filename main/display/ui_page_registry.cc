@@ -18,8 +18,6 @@ const char* UiPageIdName(UiPageId id) {
             return "BreakingNews";
         case UiPageId::Meme:
             return "Meme";
-        case UiPageId::ServiceReconnect:
-            return "ServiceReconnect";
         default:
             return "Unknown";
     }
