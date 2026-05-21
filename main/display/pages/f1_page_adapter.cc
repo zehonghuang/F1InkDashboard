@@ -1011,6 +1011,8 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
                 I18n::SetLanguage(next);
                 UpdateMenuI18nLocked();
                 UpdateMenuStatusLocked();
+                pending_sessions_force_fetch_ = true;
+                StartFetchIfNeededLocked(true);
                 if (host_ != nullptr) {
                     std::string s = I18n::Tr("ui.language_set");
                     s += " ";
