@@ -56,6 +56,7 @@ private:
     void BuildQuickSwitchLocked();
     void ApplyViewLocked();
     void StartFetchIfNeededLocked(bool force);
+    int64_t FetchRetryDelayMsLocked() const;
     void StartSessionsFetchIfNeededLocked(bool force);
     void StartTelemetryAnalysisFetchLocked(bool force);
     void StartCircuitFetchIfNeededLocked(const char* map_url);
@@ -196,6 +197,7 @@ private:
     std::atomic<bool> fetch_inflight_{false};
     int64_t last_fetch_ms_ = 0;
     int64_t last_attempt_ms_ = 0;
+    int fetch_fail_count_ = 0;
     int64_t refresh_interval_ms_ = 60LL * 60 * 1000;
     bool is_race_week_ = false;
     bool pending_sessions_force_fetch_ = false;
