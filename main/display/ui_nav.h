@@ -27,17 +27,32 @@ Data structure (stack_)
   stack_ = [ root ]                   // depth=1, IsAtRoot()==true
   stack_ = [ root, child ]            // depth=2, IsAtRoot()==false
 
-ASCII view:
+ASCII view (UiNavController stack only):
 
+  stack_ = [root]
   +----------------------------+
   | root = RaceRoot / OffRoot  |  <---- ToggleRoot() only works here (depth<=1)
   +--------------+-------------+
                  |
                  | Enter() resolves a child based on root focus slot
                  v
+  stack_ = [root, child]
           +--------------+
           |   child      |  <---- Back() pops stack, returns to root
           +--------------+
+
+ASCII view (typical "3rd layer" via child local state, NOT stack):
+
+  UiPageId::F1
+    -> UiNavController stack: [RaceRoot] -> [RaceRoot, RaceSessions]
+         -> RaceSessions local enum: race_sessions_page_
+              +-------------------+
+              | QualiResult       |
+              | RaceResult        |
+              | QualiLive         |
+              | RaceLive          |
+              | Telemetry         |
+              +-------------------+
 
 Key rule: only Enter() from root
 --------------------------------
@@ -60,6 +75,36 @@ When IsAtRoot()==false:
     - if delegate returns false, Prev() falls back to Back() (exit child).
   Next() calls UiNavNext(Current()).
     - no auto Back(); the child decides what Next means.
+
+Nested / multi-layer navigation (important)
+-------------------------------------------
+UiNavController stores `stack_` as a vector, so the data structure itself CAN
+represent deeper nesting. However, the current policy is:
+
+  Enter() is allowed ONLY when IsAtRoot()==true.
+
+So by default, UiNavController forms a "two-layer" structure:
+  root -> child
+
+If you need an additional "third layer", there are two valid patterns:
+
+  Pattern A: Child owns its own sub-state-machine (most common here)
+    - Keep UiNavController as the "coarse navigation" (root/child).
+    - Inside a child node, manage deeper screens with a local enum/state.
+    - Example (F1): NavNode::RaceSessions is a child, and inside it
+      `race_sessions_page_` switches QualiResult/RaceResult/.../Telemetry.
+
+    ASCII:
+      UiPageId::F1
+        -> UiNavController stack: [RaceRoot] -> [RaceRoot, RaceSessions]
+             -> RaceSessions local state: race_sessions_page_=Telemetry
+
+  Pattern B: Extend UiNavController to allow Enter() from non-root
+    - Remove/relax the `IsAtRoot()` guard in Enter().
+    - Generalize UiNavResolveChild() to resolve from (current node + focus),
+      not only from (root + focus).
+    - This yields a true stack-based multi-layer navigation, but requires a
+      clearer focus/selection model for every node.
 
 Delegate contract (methods UiNavController calls)
 -------------------------------------------------
