@@ -39,6 +39,52 @@ private:
     template <typename, typename>
     friend class UiNavController;
 
+    /*
+    =============================================================================
+    F1 internal navigation graph (UiNavController<Node>)
+    =============================================================================
+
+    This page (F1PageAdapter) is a "multi-view page" and uses UiNavController to
+    manage view switching WITHOUT leaving UiPageId::F1.
+
+    Node enum = NavNode
+      - RaceRoot / OffRoot are two interchangeable roots (root_a/root_b)
+      - Enter() from a root resolves a child based on the current quadrant focus
+
+    Root layout (both RaceRoot and OffRoot are 2x2 quadrants)
+
+      focus slots (logical order, wrap by Prev/Next):
+        RaceRoot seq: {1,0,3,2}
+        OffRoot  seq: {0,1,3,2}
+
+      physical quadrant indices (used by LVGL selection highlight):
+        0 = top-left,  1 = top-right,  2 = bottom-left,  3 = bottom-right
+
+    Child resolution tables:
+      nav_children_race_[physical_quadrant] -> NavNode child (or -1 if none)
+      nav_children_off_ [physical_quadrant] -> NavNode child (or -1 if none)
+
+    Example tree:
+
+      RaceRoot (root_a)                 OffRoot (root_b)
+        |-- (Q?) -> Circuit               |-- (Q?) -> Wdc
+        |-- (Q?) -> RaceSessions          |-- (Q?) -> Wcc
+        '-- (Q?) -> ...                   '-- (Q?) -> Circuit
+
+    Visibility mapping (UiNavActivate):
+      view_index_ == 0                 -> RaceRoot (race_root_)
+      view_index_ == (int)NavNode::OffRoot     -> standings_root_ (OffRoot UI)
+      view_index_ == (int)NavNode::Wdc         -> wdc_root_
+      view_index_ == (int)NavNode::Wcc         -> wcc_root_
+      view_index_ == (int)NavNode::Circuit     -> circuit_root_ (+ sub pages)
+      view_index_ == (int)NavNode::RaceSessions-> race_sessions_root_
+
+    Note:
+      RaceSessions itself contains another subpage state machine
+      (race_sessions_page_: QualiResult/RaceResult/.../Telemetry) handled in
+      HandleEvent() and ApplyRaceSessionsLocked().
+    =============================================================================
+    */
     enum class NavNode : uint8_t { RaceRoot = 0, OffRoot = 1, Wdc = 2, Wcc = 3, Circuit = 4, RaceSessions = 5 };
 
     enum class RaceSessionsSubPage : uint8_t { QualiResult = 0, RaceResult = 1, QualiLive = 2, RaceLive = 3, Telemetry = 4 };

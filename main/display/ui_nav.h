@@ -4,6 +4,90 @@
 #include <cstdint>
 #include <vector>
 
+/*
+================================================================================
+UiNavController: UI "page tree" controller (root toggle + stack)
+================================================================================
+
+This controller is a tiny navigation state machine designed for "one page with
+multiple internal views" (e.g. F1PageAdapter), rather than the global page stack
+owned by LcdDisplay.
+
+It models navigation as:
+  - Two interchangeable roots: root_a <-> root_b (typically RaceRoot / OffRoot)
+  - A stack of nodes: [root, child, ...]
+
+The controller is generic:
+  Node     : an enum (or small POD) representing a UI view
+  Delegate : the page adapter that owns view state + LVGL widgets
+
+Data structure (stack_)
+-----------------------
+
+  stack_ = [ root ]                   // depth=1, IsAtRoot()==true
+  stack_ = [ root, child ]            // depth=2, IsAtRoot()==false
+
+ASCII view:
+
+  +----------------------------+
+  | root = RaceRoot / OffRoot  |  <---- ToggleRoot() only works here (depth<=1)
+  +--------------+-------------+
+                 |
+                 | Enter() resolves a child based on root focus slot
+                 v
+          +--------------+
+          |   child      |  <---- Back() pops stack, returns to root
+          +--------------+
+
+Key rule: only Enter() from root
+--------------------------------
+Enter() is intentionally limited:
+  - Only allowed when IsAtRoot()==true.
+  - It maps a root "focus slot" -> a child node via UiNavResolveChild().
+
+This fits the "4-quadrant home" UX:
+  - root has N focus slots (usually 4)
+  - focused slot decides which child page to enter
+
+Prev/Next routing model
+-----------------------
+
+When IsAtRoot()==true:
+  Prev()/Next() cycles root focus slot (wrap), then calls UiNavActivate(root).
+
+When IsAtRoot()==false:
+  Prev() calls UiNavPrev(Current()).
+    - if delegate returns false, Prev() falls back to Back() (exit child).
+  Next() calls UiNavNext(Current()).
+    - no auto Back(); the child decides what Next means.
+
+Delegate contract (methods UiNavController calls)
+-------------------------------------------------
+Delegate must provide:
+
+  int  UiNavRootSlotCount(Node root);
+  int  UiNavRootFocus(Node root);
+  void UiNavSetRootFocus(Node root, int focus);
+  bool UiNavResolveChild(Node root, int focus, Node& out_child);
+
+  bool UiNavPrev(Node node);      // return false to indicate "cannot prev"
+  void UiNavNext(Node node);      // no return; child decides boundaries
+
+  void UiNavActivate(Node node);  // "apply this view": show/hide LVGL roots,
+                                  // build/rebuild page, start fetch, etc.
+
+Typical usage in F1PageAdapter
+------------------------------
+Node = F1PageAdapter::NavNode (RaceRoot/OffRoot/Wdc/Wcc/Circuit/RaceSessions)
+Root focus slot count is fixed at 4 quadrants.
+
+UiNavActivate(node) maps node -> view_index_ and calls ApplyViewLocked() to
+switch visibility among:
+  race_root_, standings_root_, wdc_root_, wcc_root_, circuit_root_,
+  race_sessions_root_.
+================================================================================
+*/
+
 template <typename Node, typename Delegate>
 class UiNavController {
 public:

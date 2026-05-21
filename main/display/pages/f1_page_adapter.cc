@@ -864,6 +864,21 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         return true;
     }
     if (quick_switch_visible_) {
+        /*
+        ========================================================================
+        QuickSwitch overlay input routing
+        ========================================================================
+
+        PagePrev / PageNext are overloaded:
+          - When QuickSwitch overlay is visible: they move the focus INSIDE the
+            overlay list and wrap around.
+          - They MUST NOT fall through to nav_.Prev()/nav_.Next(), otherwise the
+            underlying page selection would change while the overlay is shown.
+
+        Priority (high -> low):
+          QuickSwitch > Menu > RaceSessions internal nav > nav_.Prev/Next
+        ========================================================================
+        */
         if (id == UiPageCustomEventId::PagePrev || id == UiPageCustomEventId::GalleryPrev) {
             quick_switch_focus_--;
             if (quick_switch_focus_ < 0) {
@@ -923,6 +938,21 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         return true;
     }
     if (menu_visible_) {
+        /*
+        ========================================================================
+        Menu overlay input routing
+        ========================================================================
+
+        When Menu overlay is visible:
+          - PagePrev / PageNext move selection within menu items (wrap).
+          - ConfirmClick activates selected item (then closes menu).
+          - ConfirmLongPress closes menu without action.
+
+        Notes:
+          - The menu is an overlay; it should not mutate the underlying nav_
+            root/current while open.
+        ========================================================================
+        */
         if (id == UiPageCustomEventId::PagePrev || id == UiPageCustomEventId::GalleryPrev) {
             menu_focus_--;
             if (menu_focus_ < 0) {
@@ -1010,6 +1040,20 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         return true;
     }
     if (id == UiPageCustomEventId::PagePrevDoubleClick) {
+        /*
+        ========================================================================
+        Double click on Up/Down: cycle sub pages inside RaceSessions
+        ========================================================================
+
+        Only applies when current NavNode is RaceSessions AND we are NOT in
+        Telemetry sub page. Telemetry is "modal" (has its own Prev/Next meaning
+        as driver switch), so we intentionally disable subpage cycling there.
+
+        Mapping:
+          PrevDoubleClick : (cur + 3) % 4    // backward
+          NextDoubleClick : (cur + 1) % 4    // forward
+        ========================================================================
+        */
         if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
             const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
             if (p != RaceSessionsSubPage::Telemetry) {
@@ -1047,6 +1091,28 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
             const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
             if (p == RaceSessionsSubPage::Telemetry) {
+                /*
+                =================================================================
+                Telemetry sub page: PagePrev/PageNext switches driver selection
+                =================================================================
+
+                Telemetry view shows analysis for ONE selected driver. The driver
+                is selected from the result list (QualiResult or RaceResult),
+                remembered by telemetry_prev_page_.
+
+                Implementation detail:
+                  - We reuse UiPagedListMoveRowWithAutoPage() to move the focused
+                    row within the "source result list".
+                  - That helper may output page_dir != 0, meaning we should turn
+                    the result list page (circular), THEN re-position focus.
+
+                Why the extra manual page+focus update after page_dir != 0?
+                  - UiPagedListMoveRowWithAutoPage() deliberately does NOT change
+                    `*_page_` (caller owns page state + LVGL rebuild).
+                  - When turning to previous page, we want focus at LAST row of
+                    the new page (so the selection feels continuous).
+                =================================================================
+                */
                 const bool from_quali = telemetry_prev_page_ == static_cast<int>(RaceSessionsSubPage::QualiResult);
                 int page_dir = 0;
                 if (from_quali) {
@@ -1110,6 +1176,11 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
                 return true;
             }
             if (p == RaceSessionsSubPage::QualiResult) {
+                /*
+                =================================================================
+                QualiResult sub page: PagePrev moves row focus / auto page turn
+                =================================================================
+                */
                 int page_dir = 0;
                 if (UiPagedListMoveRowWithAutoPage(-1,
                                                   static_cast<int>(quali_result_rows_.size()),
@@ -1142,6 +1213,11 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
                 }
                 return true;
             } else if (p == RaceSessionsSubPage::RaceResult) {
+                /*
+                =================================================================
+                RaceResult sub page: PagePrev moves row focus / auto page turn
+                =================================================================
+                */
                 int page_dir = 0;
                 if (UiPagedListMoveRowWithAutoPage(-1,
                                                   static_cast<int>(race_result_rows_.size()),
@@ -1185,6 +1261,13 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         if (!nav_.IsAtRoot() && nav_.Current() == NavNode::RaceSessions) {
             const auto p = static_cast<RaceSessionsSubPage>(static_cast<uint8_t>(race_sessions_page_));
             if (p == RaceSessionsSubPage::Telemetry) {
+                /*
+                =================================================================
+                Telemetry sub page: PageNext switches driver selection
+                =================================================================
+                Same as PagePrev but dir=+1.
+                =================================================================
+                */
                 const bool from_quali = telemetry_prev_page_ == static_cast<int>(RaceSessionsSubPage::QualiResult);
                 int page_dir = 0;
                 if (from_quali) {
@@ -1248,6 +1331,11 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
                 return true;
             }
             if (p == RaceSessionsSubPage::QualiResult) {
+                /*
+                =================================================================
+                QualiResult sub page: PageNext moves row focus / auto page turn
+                =================================================================
+                */
                 int page_dir = 0;
                 if (UiPagedListMoveRowWithAutoPage(1,
                                                   static_cast<int>(quali_result_rows_.size()),
@@ -1280,6 +1368,11 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
                 }
                 return true;
             } else if (p == RaceSessionsSubPage::RaceResult) {
+                /*
+                =================================================================
+                RaceResult sub page: PageNext moves row focus / auto page turn
+                =================================================================
+                */
                 int page_dir = 0;
                 if (UiPagedListMoveRowWithAutoPage(1,
                                                   static_cast<int>(race_result_rows_.size()),
