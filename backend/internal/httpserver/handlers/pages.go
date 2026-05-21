@@ -71,7 +71,8 @@ func UiPages(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir stri
 			return
 		}
 		season := toIntQuery(c, "season", 2026)
-		ui := f1logic.BuildUiPagesPayload(pages, season)
+		lang := strings.TrimSpace(c.GetString("language"))
+		ui := f1logic.BuildUiPagesPayload(pages, season, lang)
 		c.JSON(200, ui)
 	}
 }
@@ -84,7 +85,8 @@ func UiPagesRaceDay(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticD
 			return
 		}
 		season := toIntQuery(c, "season", 2026)
-		ui := f1logic.BuildUiPagesPayload(pages, season)
+		lang := strings.TrimSpace(c.GetString("language"))
+		ui := f1logic.BuildUiPagesPayload(pages, season, lang)
 		pg, _ := ui["pages"].(map[string]any)
 		c.JSON(200, gin.H{
 			"generated_at_utc": ui["generated_at_utc"],
@@ -103,7 +105,8 @@ func UiPagesOffWeek(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticD
 			return
 		}
 		season := toIntQuery(c, "season", 2026)
-		ui := f1logic.BuildUiPagesPayload(pages, season)
+		lang := strings.TrimSpace(c.GetString("language"))
+		ui := f1logic.BuildUiPagesPayload(pages, season, lang)
 		pg, _ := ui["pages"].(map[string]any)
 		c.JSON(200, gin.H{
 			"generated_at_utc": ui["generated_at_utc"],
@@ -151,16 +154,9 @@ func buildPagesResponse(ctx context.Context, cfg config.Config, db *gorm.DB, cch
 
 	lastResults, _ := f1db.OpenF1LastNResultsJSON(db, season, 5, lang)
 
-	lastWinnerAny, _ := cch.GetOrSet("ergast_last_winner", 300*time.Second, func() (any, error) {
-		if s, ok := thirdparty.ErgastLastWinner(ctx); ok {
-			return s, nil
-		}
-		return nil, nil
-	})
-
-	airTempAny, _ := cch.GetOrSet("open_meteo_current_temp_c", 120*time.Second, func() (any, error) {
-		if t, ok := thirdparty.OpenMeteoCurrentTempC(ctx); ok {
-			return t, nil
+	weatherAny, _ := cch.GetOrSet("openf1_weather_latest", 30*time.Second, func() (any, error) {
+		if v, ok := thirdparty.OpenF1LatestWeather(ctx); ok {
+			return v, nil
 		}
 		return nil, nil
 	})
@@ -189,7 +185,7 @@ func buildPagesResponse(ctx context.Context, cfg config.Config, db *gorm.DB, cch
 		}
 	}
 
-	pages := f1logic.BuildPagesPayload(nowUTC, tzName, scheduleJSON, season, driverStandings, constructorStandings, circuitAssets, lastWinnerAny, airTempAny, newsAny, lastResults)
+	pages := f1logic.BuildPagesPayload(nowUTC, tzName, scheduleJSON, season, driverStandings, constructorStandings, circuitAssets, weatherAny, newsAny, lastResults)
 
 	pages["sources"] = map[string]any{
 		"mysql_enabled": true,

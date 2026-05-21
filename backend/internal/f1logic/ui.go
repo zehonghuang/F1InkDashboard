@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func BuildUiPagesPayload(pagesPayload map[string]any, season int) map[string]any {
+func BuildUiPagesPayload(pagesPayload map[string]any, season int, lang string) map[string]any {
 	tzName, _ := pagesPayload["tz"].(string)
 	if strings.TrimSpace(tzName) == "" {
 		tzName = "UTC"
@@ -27,6 +27,9 @@ func BuildUiPagesPayload(pagesPayload map[string]any, season int) map[string]any
 		}
 	}
 
+	langNorm := strings.ToLower(strings.TrimSpace(lang))
+	isZh := strings.HasPrefix(langNorm, "zh")
+
 	raceDay, _ := pagesPayload["race_day"].(map[string]any)
 	offWeek, _ := pagesPayload["off_week"].(map[string]any)
 
@@ -34,17 +37,28 @@ func BuildUiPagesPayload(pagesPayload map[string]any, season int) map[string]any
 	if raceDay != nil {
 		race, _ = raceDay["race"].(map[string]any)
 	}
-	gpName := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", race["name"])))
-	if gpName != "" && !strings.HasSuffix(gpName, " GRAND PRIX") {
-		gpName = gpName + " GRAND PRIX"
+	gpName := strings.TrimSpace(fmt.Sprintf("%v", race["name"]))
+	if !isZh {
+		gpName = strings.ToUpper(gpName)
+		if gpName != "" && !strings.HasSuffix(gpName, " GRAND PRIX") {
+			gpName = gpName + " GRAND PRIX"
+		}
 	}
 	roundRaw := race["round"]
 	roundNo, ok := toInt(roundRaw)
 	roundText := any(nil)
 	if ok {
-		roundText = fmt.Sprintf("ROUND %02d", roundNo)
+		if isZh {
+			roundText = fmt.Sprintf("第%02d站", roundNo)
+		} else {
+			roundText = fmt.Sprintf("ROUND %02d", roundNo)
+		}
 	} else if roundRaw != nil && strings.TrimSpace(fmt.Sprintf("%v", roundRaw)) != "" {
-		roundText = fmt.Sprintf("ROUND %v", roundRaw)
+		if isZh {
+			roundText = fmt.Sprintf("第%v站", roundRaw)
+		} else {
+			roundText = fmt.Sprintf("ROUND %v", roundRaw)
+		}
 	}
 
 	nextSessionObj := map[string]any{}
@@ -59,20 +73,31 @@ func BuildUiPagesPayload(pagesPayload map[string]any, season int) map[string]any
 	}
 	nextLabel := ""
 	if countdown != nil {
-		nextLabel = "NEXT SESSION IN:"
+		if isZh {
+			nextLabel = "下一节开始："
+		} else {
+			nextLabel = "NEXT SESSION IN:"
+		}
 	}
 
 	pr := map[string]any{}
 	if raceDay != nil {
 		pr, _ = raceDay["preview_race"].(map[string]any)
 	}
-	prName := strings.ToUpper(strings.TrimSpace(fmt.Sprintf("%v", pr["name"])))
-	if prName != "" && !strings.HasSuffix(prName, " GRAND PRIX") {
-		prName = prName + " GRAND PRIX"
+	prName := strings.TrimSpace(fmt.Sprintf("%v", pr["name"]))
+	if !isZh {
+		prName = strings.ToUpper(prName)
+		if prName != "" && !strings.HasSuffix(prName, " GRAND PRIX") {
+			prName = prName + " GRAND PRIX"
+		}
 	}
 	nextGPText := ""
 	if prName != "" && prName != gpName {
-		nextGPText = "NEXT: " + prName
+		if isZh {
+			nextGPText = "下一站：" + prName
+		} else {
+			nextGPText = "NEXT: " + prName
+		}
 	}
 
 	scheduleSrc := []any{}
@@ -97,15 +122,43 @@ func BuildUiPagesPayload(pagesPayload map[string]any, season int) map[string]any
 	}
 	statusTag := func(status string) string {
 		if strings.ToUpper(strings.TrimSpace(status)) == "DONE" {
+			if isZh {
+				return "[完成]"
+			}
 			return "[DONE]"
 		}
 		return ""
+	}
+
+	weekdayShort := func(dt time.Time) string {
+		if !isZh {
+			return dt.In(tz).Format("Mon")
+		}
+		switch dt.In(tz).Weekday() {
+		case time.Monday:
+			return "周一"
+		case time.Tuesday:
+			return "周二"
+		case time.Wednesday:
+			return "周三"
+		case time.Thursday:
+			return "周四"
+		case time.Friday:
+			return "周五"
+		case time.Saturday:
+			return "周六"
+		default:
+			return "周日"
+		}
 	}
 
 	scheduleTable := map[string]any{
 		"title":   "SCHEDULE (Local Time)",
 		"columns": []any{},
 		"rows":    []any{},
+	}
+	if isZh {
+		scheduleTable["title"] = "赛程（当地时间）"
 	}
 	rows := make([]any, 0, len(scheduleSrc))
 	for _, it := range scheduleSrc {
@@ -114,6 +167,17 @@ func BuildUiPagesPayload(pagesPayload map[string]any, season int) map[string]any
 			continue
 		}
 		day, tm := splitWhen(fmt.Sprintf("%v", m["when"]))
+		if isZh {
+			if utc, ok := m["utc"].(string); ok && strings.TrimSpace(utc) != "" {
+				if dt, err := time.Parse(time.RFC3339Nano, strings.ReplaceAll(utc, "Z", "+00:00")); err == nil {
+					day = weekdayShort(dt)
+					tm = dt.In(tz).Format("15:04")
+				} else if dt, err := time.Parse(time.RFC3339, strings.ReplaceAll(utc, "Z", "+00:00")); err == nil {
+					day = weekdayShort(dt)
+					tm = dt.In(tz).Format("15:04")
+				}
+			}
+		}
 		rows = append(rows, map[string]any{
 			"session":    fmt.Sprintf("%v:", m["key"]),
 			"day":        day,
@@ -149,23 +213,62 @@ func BuildUiPagesPayload(pagesPayload map[string]any, season int) map[string]any
 		}
 		return "--"
 	}
-	lastWinner := any(nil)
-	lapRecord := any(nil)
-	if raceDay != nil {
-		lastWinner = raceDay["last_winner"]
-		lapRecord = raceDay["lap_record"]
+	fmtPct := func(v any) string {
+		if f, ok := toFloat64(v); ok {
+			return fmt.Sprintf("%d%%", int(f+0.5))
+		}
+		return "--"
+	}
+	fmtHpa := func(v any) string {
+		if f, ok := toFloat64(v); ok {
+			return fmt.Sprintf("%dhPa", int(f+0.5))
+		}
+		return "--"
+	}
+	fmtMs := func(v any) string {
+		if f, ok := toFloat64(v); ok {
+			return fmt.Sprintf("%.1fm/s", f)
+		}
+		return "--"
+	}
+	fmtDeg := func(v any) string {
+		if f, ok := toFloat64(v); ok {
+			return fmt.Sprintf("%d°", int(f+0.5))
+		}
+		return "--"
 	}
 
 	weatherKV := map[string]any{
 		"title":   "WEATHER",
 		"columns": []any{},
-		"rows": []any{
-			map[string]any{"k": "WEATHER:", "v": fmtTemp(airC)},
-			map[string]any{"k": "TRACK:", "v": fmtTemp(trackC)},
-			map[string]any{"k": "TYRE:", "v": tyreText},
-			map[string]any{"k": "LAST WINNER:", "v": fmt.Sprintf("%v", lastWinner)},
-			map[string]any{"k": "LAP RECORD:", "v": fmt.Sprintf("%v", lapRecord)},
-		},
+		"rows":    []any{},
+	}
+	rowsW := make([]any, 0, 8)
+	rowsW = append(rowsW, map[string]any{"k": "AIR:", "v": fmtTemp(airC)})
+	rowsW = append(rowsW, map[string]any{"k": "TRACK:", "v": fmtTemp(trackC)})
+	if weatherObj != nil {
+		rowsW = append(rowsW, map[string]any{"k": "HUMID:", "v": fmtPct(weatherObj["humidity"])})
+		rowsW = append(rowsW, map[string]any{"k": "PRESS:", "v": fmtHpa(weatherObj["pressure"])})
+		rowsW = append(rowsW, map[string]any{"k": "RAIN:", "v": fmt.Sprintf("%v", weatherObj["rainfall"])})
+		rowsW = append(rowsW, map[string]any{"k": "WIND:", "v": fmtMs(weatherObj["wind_speed"])})
+		rowsW = append(rowsW, map[string]any{"k": "W DIR:", "v": fmtDeg(weatherObj["wind_direction"])})
+	}
+	rowsW = append(rowsW, map[string]any{"k": "TYRE:", "v": tyreText})
+	weatherKV["rows"] = rowsW
+	if isZh {
+		weatherKV["title"] = "天气"
+		rowsZh := make([]any, 0, 8)
+		rowsZh = append(rowsZh, map[string]any{"k": "气温：", "v": fmtTemp(airC)})
+		rowsZh = append(rowsZh, map[string]any{"k": "赛道：", "v": fmtTemp(trackC)})
+		if weatherObj != nil {
+			rowsZh = append(rowsZh, map[string]any{"k": "湿度：", "v": fmtPct(weatherObj["humidity"])})
+			rowsZh = append(rowsZh, map[string]any{"k": "气压：", "v": fmtHpa(weatherObj["pressure"])})
+			rowsZh = append(rowsZh, map[string]any{"k": "降雨：", "v": fmt.Sprintf("%v", weatherObj["rainfall"])})
+			rowsZh = append(rowsZh, map[string]any{"k": "风速：", "v": fmtMs(weatherObj["wind_speed"])})
+			rowsZh = append(rowsZh, map[string]any{"k": "风向：", "v": fmtDeg(weatherObj["wind_direction"])})
+		}
+		rowsZh = append(rowsZh, map[string]any{"k": "轮胎：", "v": tyreText})
+		weatherKV["rows"] = rowsZh
 	}
 
 	raceDayUI := map[string]any{
@@ -221,6 +324,17 @@ func BuildUiPagesPayload(pagesPayload map[string]any, season int) map[string]any
 			"rows":    buildConstructorsTableRows(constructors),
 		},
 		"news": news,
+	}
+	if isZh {
+		offWeekUI["header"] = map[string]any{
+			"left":  fmt.Sprintf("%d 赛季积分榜", season),
+			"right": "距离下一站",
+		}
+		offWeekUI["days"] = map[string]any{
+			"value": daysToNext,
+			"unit":  "天",
+			"until": until,
+		}
 	}
 
 	details := buildDetails(pagesPayload, driversAll, constructorsAll, season)

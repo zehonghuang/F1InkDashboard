@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func BuildPagesPayload(nowUTC time.Time, tzName string, scheduleJSON map[string]any, season int, driverStandings map[string]any, constructorStandings map[string]any, circuitAssets map[string]any, lastWinner any, airTempC any, news any, lastNResults map[string]any) map[string]any {
+func BuildPagesPayload(nowUTC time.Time, tzName string, scheduleJSON map[string]any, season int, driverStandings map[string]any, constructorStandings map[string]any, circuitAssets map[string]any, weatherAny any, news any, lastNResults map[string]any) map[string]any {
 	tz, err := time.LoadLocation(tzName)
 	if err != nil {
 		tzName = "UTC"
@@ -171,16 +171,55 @@ func BuildPagesPayload(nowUTC time.Time, tzName string, scheduleJSON map[string]
 		}
 	}
 
-	air, airOK := toFloat64(airTempC)
 	weather := map[string]any{
 		"air_c":             nil,
 		"track_c":           nil,
 		"track_c_estimated": false,
+		"humidity":          nil,
+		"pressure":          nil,
+		"rainfall":          nil,
+		"wind_direction":    nil,
+		"wind_speed":        nil,
+		"date_utc":          nil,
+		"source":            "openf1",
 	}
-	if airOK {
-		weather["air_c"] = air
+	if m, ok := weatherAny.(map[string]any); ok {
+		if f, ok := toFloat64(m["air_temperature"]); ok {
+			weather["air_c"] = f
+		}
+		if f, ok := toFloat64(m["track_temperature"]); ok {
+			weather["track_c"] = f
+		}
+		if v, ok := m["humidity"]; ok {
+			weather["humidity"] = v
+		}
+		if v, ok := m["pressure"]; ok {
+			weather["pressure"] = v
+		}
+		if v, ok := m["rainfall"]; ok {
+			weather["rainfall"] = v
+		}
+		if v, ok := m["wind_direction"]; ok {
+			weather["wind_direction"] = v
+		}
+		if v, ok := m["wind_speed"]; ok {
+			weather["wind_speed"] = v
+		}
+		if s, ok := m["date"].(string); ok && strings.TrimSpace(s) != "" {
+			weather["date_utc"] = s
+		}
+	}
+	air, airOK := toFloat64(weather["air_c"])
+	track, trackOK := toFloat64(weather["track_c"])
+	if airOK && !trackOK {
 		weather["track_c"] = math.Round((air+13.0)*10) / 10
 		weather["track_c_estimated"] = true
+	}
+	if trackOK {
+		weather["track_c"] = math.Round(track*10) / 10
+	}
+	if airOK {
+		weather["air_c"] = math.Round(air*10) / 10
 	}
 
 	circuitID := ""
@@ -191,11 +230,6 @@ func BuildPagesPayload(nowUTC time.Time, tzName string, scheduleJSON map[string]
 			}
 		}
 	}
-	lapRecord := any(nil)
-	if circuitID == "bahrain" {
-		lapRecord = "1:31.447"
-	}
-
 	raceDay := map[string]any{
 		"header": header,
 		"race": map[string]any{
@@ -221,8 +255,6 @@ func BuildPagesPayload(nowUTC time.Time, tzName string, scheduleJSON map[string]
 		"schedule":     sessions,
 		"weather":      weather,
 		"tyre":         nil,
-		"last_winner":  lastWinner,
-		"lap_record":   lapRecord,
 		"circuit":      nil,
 	}
 

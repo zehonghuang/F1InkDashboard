@@ -37,6 +37,18 @@ struct BdfFont {
     std::array<BdfGlyph, 128> glyphs;
 };
 
+static bool HasNonAsciiUtf8(const char* s) {
+    if (s == nullptr) {
+        return false;
+    }
+    for (const unsigned char* p = reinterpret_cast<const unsigned char*>(s); *p != 0; p++) {
+        if (*p >= 0x80) {
+            return true;
+        }
+    }
+    return false;
+}
+
 static int HexVal(char c) {
     if (c >= '0' && c <= '9') {
         return c - '0';
@@ -270,6 +282,9 @@ void F1PageAdapter::BuildRaceLocked() {
 
     race_round_ = lv_label_create(mid_right);
     lv_label_set_text(race_round_, I18n::Tr("f1.race.round_placeholder"));
+    lv_obj_set_width(race_round_, LV_PCT(100));
+    lv_label_set_long_mode(race_round_, LV_LABEL_LONG_CLIP);
+    lv_obj_set_style_text_align(race_round_, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(race_round_, LV_ALIGN_TOP_MID, 0, 22);
     lv_obj_set_style_text_font(race_round_, record_font, 0);
     lv_obj_add_flag(race_round_, LV_OBJ_FLAG_HIDDEN);
@@ -306,12 +321,18 @@ void F1PageAdapter::BuildRaceLocked() {
 
     race_next_label_ = lv_label_create(mid_right);
     lv_label_set_text(race_next_label_, I18n::Tr("f1.race.next_session_in"));
+    lv_obj_set_width(race_next_label_, LV_PCT(100));
+    lv_label_set_long_mode(race_next_label_, LV_LABEL_LONG_CLIP);
+    lv_obj_set_style_text_align(race_next_label_, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(race_next_label_, LV_ALIGN_TOP_MID, 0, 58);
     lv_obj_set_style_text_font(race_next_label_, record_font, 0);
     lv_obj_add_flag(race_next_label_, LV_OBJ_FLAG_HIDDEN);
 
     race_countdown_ = lv_label_create(mid_right);
     lv_label_set_text(race_countdown_, I18n::Tr("f1.race.countdown_placeholder"));
+    lv_obj_set_width(race_countdown_, LV_PCT(100));
+    lv_label_set_long_mode(race_countdown_, LV_LABEL_LONG_CLIP);
+    lv_obj_set_style_text_align(race_countdown_, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(race_countdown_, LV_ALIGN_TOP_MID, 0, 80);
     lv_obj_set_style_text_font(race_countdown_, record_font, 0);
     lv_obj_add_flag(race_countdown_, LV_OBJ_FLAG_HIDDEN);
@@ -448,6 +469,31 @@ void F1PageAdapter::RenderRaceRightFormula1Locked() {
         return;
     }
 
+    const char* gp = lv_label_get_text(race_gp_);
+    const char* rd = lv_label_get_text(race_round_);
+    const char* nl = lv_label_get_text(race_next_label_);
+    const char* cd = lv_label_get_text(race_countdown_);
+    const char* ng = lv_label_get_text(race_next_gp_);
+
+    const bool need_utf8 =
+        HasNonAsciiUtf8(gp) || HasNonAsciiUtf8(rd) || HasNonAsciiUtf8(nl) || HasNonAsciiUtf8(cd) || HasNonAsciiUtf8(ng);
+    if (need_utf8) {
+        lv_obj_add_flag(race_right_canvas_, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(race_gp_, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(race_round_, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(race_next_label_, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(race_countdown_, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(race_next_gp_, LV_OBJ_FLAG_HIDDEN);
+        return;
+    }
+
+    lv_obj_clear_flag(race_right_canvas_, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(race_gp_, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(race_round_, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(race_next_label_, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(race_countdown_, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(race_next_gp_, LV_OBJ_FLAG_HIDDEN);
+
     lv_draw_buf_t* db = lv_canvas_get_draw_buf(race_right_canvas_);
     if (db == nullptr) {
         return;
@@ -561,11 +607,11 @@ void F1PageAdapter::RenderRaceRightFormula1Locked() {
         return 2;
     };
 
-    const char* gp = lv_label_get_text(race_gp_);
-    const char* rd = lv_label_get_text(race_round_);
-    const char* nl = lv_label_get_text(race_next_label_);
-    const char* cd = lv_label_get_text(race_countdown_);
-    const char* ng = lv_label_get_text(race_next_gp_);
+    gp = lv_label_get_text(race_gp_);
+    rd = lv_label_get_text(race_round_);
+    nl = lv_label_get_text(race_next_label_);
+    cd = lv_label_get_text(race_countdown_);
+    ng = lv_label_get_text(race_next_gp_);
 
     int gp_lines = 0;
     if (gp && gp[0]) {
