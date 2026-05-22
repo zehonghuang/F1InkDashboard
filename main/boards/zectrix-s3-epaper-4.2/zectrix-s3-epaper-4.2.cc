@@ -58,7 +58,7 @@ void ShowF1Async(void* user_data) {
     if (display == nullptr) {
         return;
     }
-    display->ShowF1Page();
+    display->ShowMainPage();
     display->RequestUrgentFullRefresh();
 }
 
@@ -437,7 +437,7 @@ private:
     }
 
     bool DispatchF1(UiPageCustomEventId id) {
-        if (display_ == nullptr || display_->GetActivePageId() != UiPageId::F1) {
+        if (display_ == nullptr || !display_->IsMainPageActive()) {
             return false;
         }
         UiPageEvent e;
@@ -608,7 +608,7 @@ private:
             if (display_ != nullptr && display_->IsWsOverlayVisible()) {
                 return;
             }
-            if (display_ != nullptr && display_->GetActivePageId() == UiPageId::F1) {
+            if (display_ != nullptr && display_->IsMainPageActive()) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
                 e.i32 = static_cast<int32_t>(UiPageCustomEventId::PagePrev);
@@ -624,7 +624,7 @@ private:
             if (display_ != nullptr && display_->IsWsOverlayVisible()) {
                 return;
             }
-            if (display_ != nullptr && display_->GetActivePageId() == UiPageId::F1) {
+            if (display_ != nullptr && display_->IsMainPageActive()) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
                 e.i32 = static_cast<int32_t>(UiPageCustomEventId::PagePrevDoubleClick);
@@ -648,7 +648,7 @@ private:
                 (void)DispatchF1(combo_id_);
                 return;
             }
-            if (display_ != nullptr && display_->GetActivePageId() == UiPageId::F1) {
+            if (display_ != nullptr && display_->IsMainPageActive()) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
                 e.i32 = static_cast<int32_t>(UiPageCustomEventId::JumpOffWeek);
@@ -665,7 +665,7 @@ private:
             if (display_ != nullptr && display_->IsWsOverlayVisible()) {
                 return;
             }
-            if (display_ != nullptr && display_->GetActivePageId() == UiPageId::F1) {
+            if (display_ != nullptr && display_->IsMainPageActive()) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
                 e.i32 = static_cast<int32_t>(UiPageCustomEventId::PageNext);
@@ -681,7 +681,7 @@ private:
             if (display_ != nullptr && display_->IsWsOverlayVisible()) {
                 return;
             }
-            if (display_ != nullptr && display_->GetActivePageId() == UiPageId::F1) {
+            if (display_ != nullptr && display_->IsMainPageActive()) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
                 e.i32 = static_cast<int32_t>(UiPageCustomEventId::PageNextDoubleClick);
@@ -705,7 +705,7 @@ private:
                 (void)DispatchF1(combo_id_);
                 return;
             }
-            if (display_ != nullptr && display_->GetActivePageId() == UiPageId::F1) {
+            if (display_ != nullptr && display_->IsMainPageActive()) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
                 e.i32 = static_cast<int32_t>(UiPageCustomEventId::QuickSwitchShow);
@@ -727,7 +727,7 @@ private:
                 display_->RequestUrgentFullRefresh();
                 return;
             }
-            if (display_ != nullptr && display_->GetActivePageId() == UiPageId::F1) {
+            if (display_ != nullptr && display_->IsMainPageActive()) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
                 e.i32 = static_cast<int32_t>(UiPageCustomEventId::ConfirmClick);
@@ -745,7 +745,7 @@ private:
             if (display_ != nullptr && display_->IsWsOverlayVisible()) {
                 return;
             }
-            if (display_ != nullptr && display_->GetActivePageId() == UiPageId::F1) {
+            if (display_ != nullptr && display_->IsMainPageActive()) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
                 e.i32 = static_cast<int32_t>(UiPageCustomEventId::ConfirmDoubleClick);
@@ -768,7 +768,7 @@ private:
                     return;
                 }
             }
-            if (display_ != nullptr && display_->GetActivePageId() == UiPageId::F1) {
+            if (display_ != nullptr && display_->IsMainPageActive()) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
                 e.i32 = static_cast<int32_t>(UiPageCustomEventId::ConfirmLongPress);

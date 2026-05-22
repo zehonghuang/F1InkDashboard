@@ -1,6 +1,6 @@
 #include "backend_url.h"
 
-#include "display/pages/f1_page_adapter_net.h"
+#include "common/url_utils.h"
 #include "settings.h"
 
 namespace {

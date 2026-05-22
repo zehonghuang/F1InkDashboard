@@ -1,9 +1,10 @@
 #include "ws_client_service.h"
 
 #include "backend_url.h"
+#include "common/http_fetch.h"
+#include "common/url_utils.h"
 #include "display/lcd_display.h"
 #include "display/ui_page.h"
-#include "display/pages/f1_page_adapter_net.h"
 #include "application.h"
 #include "common/sleep_manager.h"
 

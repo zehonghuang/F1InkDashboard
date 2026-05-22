@@ -2,6 +2,7 @@
 
 #include "board.h"
 #include "display.h"
+#include "app_profile.h"
 #include "i18n.h"
 #include "settings.h"
 #include "boards/zectrix-s3-epaper-4.2/config.h"
@@ -224,8 +225,8 @@ void Application::Tick() {
         return;
     }
     const UiPageId pid = lcd->GetActivePageId();
-    if (pid != UiPageId::F1) {
-        sm_kick(30 * 1000, "not_f1");
+    if (!AllowLightSleepWhenActivePage(pid)) {
+        sm_kick(30 * 1000, "not_idle");
         return;
     }
 

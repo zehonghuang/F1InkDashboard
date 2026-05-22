@@ -1,6 +1,7 @@
 #include "lcd_display.h"
 
 #include "lvgl_theme.h"
+#include "app_profile.h"
 #include "board.h"
 #include "pages/meme_page_adapter.h"
 #include "pages/f1_page_adapter.h"
@@ -413,9 +414,19 @@ void LcdDisplay::ShowF1Page() {
     (void)NavigateTo(UiPageId::F1);
 }
 
+void LcdDisplay::ShowMainPage() {
+    SetupUI();
+    (void)NavigateTo(GetMainUiPageId());
+}
+
 bool LcdDisplay::IsFactoryTestPageActive() {
     DisplayLockGuard lock(this);
     return page_registry_.HasActive() && page_registry_.ActiveId() == UiPageId::FactoryTest;
+}
+
+bool LcdDisplay::IsMainPageActive() {
+    DisplayLockGuard lock(this);
+    return page_registry_.HasActive() && IsMainUiPageId(page_registry_.ActiveId());
 }
 
 void LcdDisplay::SetupUI() {

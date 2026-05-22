@@ -1,5 +1,6 @@
 set(SOURCES
     "application.cc"
+    "app_profile.cc"
     "backend_url.cc"
     "i18n.cc"
     "main.cc"
@@ -38,6 +39,8 @@ set(SOURCES
     "display/lvgl_display/lvgl_font.cc"
     "common/sleep_manager.cc"
     "common/time_sync.cc"
+    "common/url_utils.cc"
+    "common/http_fetch.cc"
     "common/ota_update.cc"
     "boards/common/board.cc"
     "boards/common/button.cc"

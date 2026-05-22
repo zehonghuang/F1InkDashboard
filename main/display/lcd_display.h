@@ -89,7 +89,9 @@ public:
     void ShowFactoryTestPage();
     void ShowWifiSetupPage(const std::string& ap_ssid, const std::string& web_url, const std::string& status);
     void ShowF1Page();
+    void ShowMainPage();
     bool IsFactoryTestPageActive();
+    bool IsMainPageActive();
     FactoryTestPageAdapter* GetFactoryTestPageAdapter() { return factory_test_page_adapter_; }
 
     void ShowWsOverlay(const std::string& text);

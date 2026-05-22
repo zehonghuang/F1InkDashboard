@@ -1,6 +1,7 @@
 #include "common/ota_update.h"
 
-#include "pages/f1_page_adapter_net.h"
+#include "common/http_fetch.h"
+#include "common/url_utils.h"
 #include "settings.h"
 #include "common/sleep_manager.h"
 #include "board.h"
