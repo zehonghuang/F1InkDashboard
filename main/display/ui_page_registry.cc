@@ -14,6 +14,12 @@ const char* UiPageIdName(UiPageId id) {
             return "WifiSetup";
         case UiPageId::Home:
             return "Home";
+        case UiPageId::OverlayText:
+            return "OverlayText";
+        case UiPageId::OverlayMedia:
+            return "OverlayMedia";
+        case UiPageId::OverlayMenu:
+            return "OverlayMenu";
         default:
             return "Unknown";
     }

@@ -11,6 +11,9 @@ enum class UiPageId : uint8_t {
     FactoryTest = 0,
     WifiSetup = 1,
     Home = 2,
+    OverlayText = 3,
+    OverlayMedia = 4,
+    OverlayMenu = 5,
     Gallery = Home,
 };
 
@@ -30,6 +33,7 @@ enum class UiPageCustomEventId : int32_t {
     ComboUpConfirm = 121,
     ComboDownConfirm = 122,
     ComboAll = 123,
+    MenuShow = 130,
 };
 
 struct UiPageEvent {

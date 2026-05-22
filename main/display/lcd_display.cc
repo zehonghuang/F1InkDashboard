@@ -5,6 +5,9 @@
 #include "board.h"
 #include "pages/factory_test_page_adapter.h"
 #include "pages/main_page_adapter.h"
+#include "pages/overlay_media_page_adapter.h"
+#include "pages/overlay_menu_page_adapter.h"
+#include "pages/overlay_text_page_adapter.h"
 #include "pages/wifi_setup_page_adapter.h"
 #include "settings.h"
 #include "common/sleep_manager.h"
@@ -201,6 +204,8 @@ LcdDisplay::~LcdDisplay() {
         factory_test_page_adapter_ = nullptr;
         wifi_setup_page_adapter_ = nullptr;
         main_page_adapter_ = nullptr;
+        overlay_text_page_adapter_ = nullptr;
+        overlay_media_page_adapter_ = nullptr;
         ui_setup_done_ = false;
         if (factory_test_screen_ != nullptr) {
             lv_obj_del(factory_test_screen_);
@@ -213,6 +218,18 @@ LcdDisplay::~LcdDisplay() {
         if (main_screen_ != nullptr) {
             lv_obj_del(main_screen_);
             main_screen_ = nullptr;
+        }
+        if (overlay_text_screen_ != nullptr) {
+            lv_obj_del(overlay_text_screen_);
+            overlay_text_screen_ = nullptr;
+        }
+        if (overlay_media_screen_ != nullptr) {
+            lv_obj_del(overlay_media_screen_);
+            overlay_media_screen_ = nullptr;
+        }
+        if (overlay_menu_screen_ != nullptr) {
+            lv_obj_del(overlay_menu_screen_);
+            overlay_menu_screen_ = nullptr;
         }
     }
 
@@ -308,20 +325,64 @@ void LcdDisplay::DispatchPageEvent(const UiPageEvent& e, bool only_active) {
 }
 
 void LcdDisplay::ShowWsOverlay(const std::string& text) {
-    (void)text;
+    SetupUI();
+    DisplayLockGuard lock(this);
+    if (overlay_text_page_adapter_ != nullptr) {
+        overlay_text_page_adapter_->UpdateText(text);
+    }
+    (void)NavigateToLocked(UiPageId::OverlayText);
 }
 
 void LcdDisplay::ShowMemeOverlay(const std::string& title, std::vector<uint8_t> png_bytes) {
-    (void)title;
-    (void)png_bytes;
+    SetupUI();
+    DisplayLockGuard lock(this);
+    if (overlay_media_page_adapter_ != nullptr) {
+        overlay_media_page_adapter_->Update(title, std::move(png_bytes));
+    }
+    (void)NavigateToLocked(UiPageId::OverlayMedia);
 }
 
 bool LcdDisplay::HideWsOverlayIfVisible() {
+    DisplayLockGuard lock(this);
+    if (!page_registry_.HasActive()) {
+        return false;
+    }
+    const UiPageId id = page_registry_.ActiveId();
+    if (id == UiPageId::OverlayText || id == UiPageId::OverlayMedia) {
+        return BackLocked();
+    }
     return false;
 }
 
 bool LcdDisplay::IsWsOverlayVisible() const {
-    return false;
+    DisplayLockGuard lock(const_cast<LcdDisplay*>(this));
+    if (!page_registry_.HasActive()) {
+        return false;
+    }
+    const UiPageId id = page_registry_.ActiveId();
+    return id == UiPageId::OverlayText || id == UiPageId::OverlayMedia;
+}
+
+void LcdDisplay::ShowMenuOverlay(const std::string& title, const std::vector<std::string>& items, int selected) {
+    SetupUI();
+    DisplayLockGuard lock(this);
+    if (overlay_menu_page_adapter_ != nullptr) {
+        overlay_menu_page_adapter_->Update(title, items, selected);
+    }
+    (void)NavigateToLocked(UiPageId::OverlayMenu);
+}
+
+bool LcdDisplay::HideMenuOverlayIfVisible() {
+    DisplayLockGuard lock(this);
+    if (!page_registry_.HasActive() || page_registry_.ActiveId() != UiPageId::OverlayMenu) {
+        return false;
+    }
+    return BackLocked();
+}
+
+bool LcdDisplay::IsMenuOverlayVisible() const {
+    DisplayLockGuard lock(const_cast<LcdDisplay*>(this));
+    return page_registry_.HasActive() && page_registry_.ActiveId() == UiPageId::OverlayMenu;
 }
 
 void LcdDisplay::ShowRaw1bppFrame(const uint8_t* data, size_t len) {
@@ -384,11 +445,6 @@ void LcdDisplay::ShowMainPage() {
     (void)NavigateTo(GetMainUiPageId());
 }
 
-void LcdDisplay::ShowMainPage() {
-    SetupUI();
-    (void)NavigateTo(GetMainUiPageId());
-}
-
 bool LcdDisplay::IsFactoryTestPageActive() {
     DisplayLockGuard lock(this);
     return page_registry_.HasActive() && page_registry_.ActiveId() == UiPageId::FactoryTest;
@@ -423,6 +479,27 @@ void LcdDisplay::SetupUI() {
     main_page_adapter_ = main_page.get();
     if (!RegisterPageLocked(std::move(main_page))) {
         main_page_adapter_ = nullptr;
+        return;
+    }
+
+    auto overlay_text_page = std::make_unique<OverlayTextPageAdapter>(this);
+    overlay_text_page_adapter_ = overlay_text_page.get();
+    if (!RegisterPageLocked(std::move(overlay_text_page))) {
+        overlay_text_page_adapter_ = nullptr;
+        return;
+    }
+
+    auto overlay_media_page = std::make_unique<OverlayMediaPageAdapter>(this);
+    overlay_media_page_adapter_ = overlay_media_page.get();
+    if (!RegisterPageLocked(std::move(overlay_media_page))) {
+        overlay_media_page_adapter_ = nullptr;
+        return;
+    }
+
+    auto overlay_menu_page = std::make_unique<OverlayMenuPageAdapter>(this);
+    overlay_menu_page_adapter_ = overlay_menu_page.get();
+    if (!RegisterPageLocked(std::move(overlay_menu_page))) {
+        overlay_menu_page_adapter_ = nullptr;
         return;
     }
 

@@ -14,6 +14,9 @@
 class FactoryTestPageAdapter;
 class WifiSetupPageAdapter;
 class MainPageAdapter;
+class OverlayTextPageAdapter;
+class OverlayMediaPageAdapter;
+class OverlayMenuPageAdapter;
 
 class LcdDisplay : public LvglDisplay {
 public:
@@ -30,12 +33,18 @@ protected:
     lv_obj_t* factory_test_screen_ = nullptr;
     lv_obj_t* wifi_setup_screen_ = nullptr;
     lv_obj_t* main_screen_ = nullptr;
+    lv_obj_t* overlay_text_screen_ = nullptr;
+    lv_obj_t* overlay_media_screen_ = nullptr;
+    lv_obj_t* overlay_menu_screen_ = nullptr;
 
     UiPageRegistry page_registry_;
     std::vector<UiPageId> page_stack_;
     FactoryTestPageAdapter* factory_test_page_adapter_ = nullptr;
     WifiSetupPageAdapter* wifi_setup_page_adapter_ = nullptr;
     MainPageAdapter* main_page_adapter_ = nullptr;
+    OverlayTextPageAdapter* overlay_text_page_adapter_ = nullptr;
+    OverlayMediaPageAdapter* overlay_media_page_adapter_ = nullptr;
+    OverlayMenuPageAdapter* overlay_menu_page_adapter_ = nullptr;
     bool ui_setup_done_ = false;
     bool raw_1bpp_visible_ = false;
 
@@ -57,6 +66,9 @@ protected:
     friend class FactoryTestPageAdapter;
     friend class WifiSetupPageAdapter;
     friend class MainPageAdapter;
+    friend class OverlayTextPageAdapter;
+    friend class OverlayMediaPageAdapter;
+    friend class OverlayMenuPageAdapter;
 
     LcdDisplay(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_handle_t panel, int width, int height);
 
@@ -89,6 +101,10 @@ public:
     void ShowMemeOverlay(const std::string& title, std::vector<uint8_t> png_bytes);
     bool HideWsOverlayIfVisible();
     bool IsWsOverlayVisible() const;
+
+    void ShowMenuOverlay(const std::string& title, const std::vector<std::string>& items, int selected = 0);
+    bool HideMenuOverlayIfVisible();
+    bool IsMenuOverlayVisible() const;
 
     void ShowRaw1bppFrame(const uint8_t* data, size_t len);
     bool HideRaw1bppFrameIfVisible();

@@ -565,7 +565,7 @@ private:
             if (display_ != nullptr && display_->IsWsOverlayVisible()) {
                 return;
             }
-            if (display_ != nullptr && display_->IsMainPageActive()) {
+            if (display_ != nullptr && (display_->IsMainPageActive() || display_->IsMenuOverlayVisible())) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
                 e.i32 = static_cast<int32_t>(UiPageCustomEventId::PagePrev);
@@ -581,7 +581,7 @@ private:
             if (display_ != nullptr && display_->IsWsOverlayVisible()) {
                 return;
             }
-            if (display_ != nullptr && display_->IsMainPageActive()) {
+            if (display_ != nullptr && (display_->IsMainPageActive() || display_->IsMenuOverlayVisible())) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
                 e.i32 = static_cast<int32_t>(UiPageCustomEventId::PagePrevDoubleClick);
@@ -614,7 +614,7 @@ private:
             if (display_ != nullptr && display_->IsWsOverlayVisible()) {
                 return;
             }
-            if (display_ != nullptr && display_->IsMainPageActive()) {
+            if (display_ != nullptr && (display_->IsMainPageActive() || display_->IsMenuOverlayVisible())) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
                 e.i32 = static_cast<int32_t>(UiPageCustomEventId::PageNext);
@@ -630,7 +630,7 @@ private:
             if (display_ != nullptr && display_->IsWsOverlayVisible()) {
                 return;
             }
-            if (display_ != nullptr && display_->IsMainPageActive()) {
+            if (display_ != nullptr && (display_->IsMainPageActive() || display_->IsMenuOverlayVisible())) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
                 e.i32 = static_cast<int32_t>(UiPageCustomEventId::PageNextDoubleClick);
@@ -654,6 +654,14 @@ private:
                 (void)DispatchF1(combo_id_);
                 return;
             }
+            if (display_ != nullptr && display_->IsMainPageActive()) {
+                UiPageEvent e;
+                e.type = UiPageEventType::Custom;
+                e.i32 = static_cast<int32_t>(UiPageCustomEventId::MenuShow);
+                display_->DispatchPageEvent(e, true);
+                display_->RequestUrgentFullRefresh();
+                return;
+            }
         });
 
         confirm_button_.OnClick([this]() {
@@ -668,7 +676,7 @@ private:
                 display_->RequestUrgentFullRefresh();
                 return;
             }
-            if (display_ != nullptr && display_->IsMainPageActive()) {
+            if (display_ != nullptr && (display_->IsMainPageActive() || display_->IsMenuOverlayVisible())) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
                 e.i32 = static_cast<int32_t>(UiPageCustomEventId::ConfirmClick);
@@ -686,7 +694,7 @@ private:
             if (display_ != nullptr && display_->IsWsOverlayVisible()) {
                 return;
             }
-            if (display_ != nullptr && display_->IsMainPageActive()) {
+            if (display_ != nullptr && (display_->IsMainPageActive() || display_->IsMenuOverlayVisible())) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
                 e.i32 = static_cast<int32_t>(UiPageCustomEventId::ConfirmDoubleClick);
@@ -709,7 +717,7 @@ private:
                     return;
                 }
             }
-            if (display_ != nullptr && display_->IsMainPageActive()) {
+            if (display_ != nullptr && (display_->IsMainPageActive() || display_->IsMenuOverlayVisible())) {
                 UiPageEvent e;
                 e.type = UiPageEventType::Custom;
                 e.i32 = static_cast<int32_t>(UiPageCustomEventId::ConfirmLongPress);

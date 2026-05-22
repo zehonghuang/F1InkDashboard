@@ -47,6 +47,17 @@ lv_obj_t* MainPageAdapter::Screen() const {
 void MainPageAdapter::OnShow() {}
 
 bool MainPageAdapter::HandleEvent(const UiPageEvent& event) {
-    (void)event;
+    if (host_ == nullptr) {
+        return false;
+    }
+    if (event.type != UiPageEventType::Custom) {
+        return false;
+    }
+    const auto id = static_cast<UiPageCustomEventId>(event.i32);
+    if (id == UiPageCustomEventId::MenuShow) {
+        host_->ShowMenuOverlay("Menu", {"Item A", "Item B", "Item C"}, 0);
+        host_->RequestUrgentFullRefresh();
+        return true;
+    }
     return false;
 }
