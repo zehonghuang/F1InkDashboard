@@ -17,17 +17,7 @@ void F1PageAdapter::BuildRaceLiveLocked() {
     const lv_font_t* small_font = &lv_font_montserrat_14;
     const lv_font_t* font = cn_font ? cn_font : small_font;
 
-    lv_obj_t* header = lv_obj_create(race_sessions_race_live_root_);
-    lv_obj_set_size(header, kPageWidth, kHeaderH);
-    lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 0);
-    lv_obj_set_style_bg_opa(header, LV_OPA_TRANSP, 0);
-    lv_obj_set_style_border_width(header, 1, 0);
-    lv_obj_set_style_border_side(header, LV_BORDER_SIDE_BOTTOM, 0);
-    lv_obj_set_style_border_color(header, lv_color_black(), 0);
-    lv_obj_set_style_pad_left(header, 8, 0);
-    lv_obj_set_style_pad_right(header, 8, 0);
-    lv_obj_set_style_pad_top(header, 4, 0);
-    lv_obj_set_style_pad_bottom(header, 4, 0);
+    lv_obj_t* header = CreateHeaderBar(race_sessions_race_live_root_);
 
     live_header_left_ = lv_label_create(header);
     lv_obj_set_style_text_font(live_header_left_, font, 0);
