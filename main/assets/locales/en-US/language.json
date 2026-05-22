@@ -8,6 +8,7 @@
     "ui.distance_km_fmt": "%.3f KM",
     "ui.loading": "LOADING...",
     "ui.low_battery": "Low battery, please charge",
+    "ui.service_reconnecting": "Reconnecting to service...",
     "ui.language_set": "Language set:",
     "ui.na": "--",
     "ui.no_data": "NO DATA",

@@ -5,6 +5,7 @@ enum class NetworkProbeTarget {
     HttpOta = 0,
     WebSocket = 1,
     Mqtt = 2,
+    PublicInternet = 3,
 };
 
 #endif  // NETWORK_PROBE_TARGET_H

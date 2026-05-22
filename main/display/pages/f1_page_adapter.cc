@@ -630,6 +630,7 @@ void F1PageAdapter::Build() {
     const lv_font_t* text_font = lvgl_theme && lvgl_theme->text_font() ? lvgl_theme->text_font()->font()
                                                                        : nullptr;
     const lv_font_t* small_font = &lv_font_montserrat_14;
+    const lv_font_t* font = text_font ? text_font : small_font;
 
     if (refresh_timer_ == nullptr) {
         esp_timer_create_args_t t = {};
@@ -715,8 +716,32 @@ void F1PageAdapter::Build() {
     BuildQuickSwitchLocked();
     SetRootVisible(quick_switch_root_, false);
 
-    (void)text_font;
-    (void)small_font;
+    service_reconnect_root_ = lv_obj_create(screen_);
+    lv_obj_set_size(service_reconnect_root_, kPageWidth, kPageHeight);
+    lv_obj_align(service_reconnect_root_, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_set_style_bg_opa(service_reconnect_root_, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(service_reconnect_root_, 0, 0);
+    lv_obj_set_style_pad_all(service_reconnect_root_, 0, 0);
+
+    service_reconnect_box_ = lv_obj_create(service_reconnect_root_);
+    lv_obj_set_size(service_reconnect_box_, 280, 90);
+    lv_obj_align(service_reconnect_box_, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_style_bg_color(service_reconnect_box_, lv_color_white(), 0);
+    lv_obj_set_style_bg_opa(service_reconnect_box_, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(service_reconnect_box_, 2, 0);
+    lv_obj_set_style_border_color(service_reconnect_box_, lv_color_black(), 0);
+    lv_obj_set_style_pad_all(service_reconnect_box_, 10, 0);
+
+    service_reconnect_label_ = lv_label_create(service_reconnect_box_);
+    lv_obj_set_width(service_reconnect_label_, LV_PCT(100));
+    lv_label_set_long_mode(service_reconnect_label_, LV_LABEL_LONG_WRAP);
+    lv_obj_align(service_reconnect_label_, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_style_text_font(service_reconnect_label_, font, 0);
+    lv_obj_set_style_text_color(service_reconnect_label_, lv_color_black(), 0);
+    lv_label_set_text(service_reconnect_label_, "");
+    SetRootVisible(service_reconnect_root_, false);
+
+    (void)font;
 
     host_->RegisterStatusBarWidgetsInLock({status_time_, status_date_, status_batt_icon_, status_batt_pct_});
     host_->RegisterStatusBarWidgetsInLock({nullptr, nullptr, race_sessions_header_batt_icon_, race_sessions_header_batt_pct_});
@@ -744,8 +769,10 @@ void F1PageAdapter::OnHide() {
     active_ = false;
     menu_visible_ = false;
     quick_switch_visible_ = false;
+    service_reconnect_visible_ = false;
     SetRootVisible(menu_root_, false);
     SetRootVisible(quick_switch_root_, false);
+    SetRootVisible(service_reconnect_root_, false);
     if (host_ != nullptr) {
         host_->SetPicOverlayExcludeRect(false, 0, 0, 0, 0);
     }
@@ -773,14 +800,15 @@ void F1PageAdapter::UpdateOverlayZLocked() {
         bool fullscreen = false;
     };
 
-    OverlayItem items[3] = {
+    OverlayItem items[4] = {
         {OverlayItem::Kind::Pic, nullptr, nullptr, LEVEL_PIC, (host_ != nullptr && host_->HasPicContent()), false},
         {OverlayItem::Kind::Lvgl, menu_root_, nullptr, LEVEL_MENU, menu_visible_, true},
+        {OverlayItem::Kind::Lvgl, service_reconnect_root_, service_reconnect_box_, LEVEL_ALARM, service_reconnect_visible_, false},
         {OverlayItem::Kind::Lvgl, quick_switch_root_, quick_switch_box_, LEVEL_QUICK_SWITCH, quick_switch_visible_, false},
     };
 
-    for (int i = 0; i < 3; i++) {
-        for (int j = i + 1; j < 3; j++) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = i + 1; j < 4; j++) {
             if (items[i].level > items[j].level) {
                 OverlayItem t = items[i];
                 items[i] = items[j];
@@ -833,6 +861,47 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         return false;
     }
     const auto id = static_cast<UiPageCustomEventId>(event.i32);
+    if (id == UiPageCustomEventId::ServiceReconnectShow) {
+        if (host_ != nullptr) {
+            service_reconnect_visible_ = true;
+            SetRootVisible(service_reconnect_root_, true);
+            if (service_reconnect_label_ != nullptr) {
+                lv_label_set_text(service_reconnect_label_, I18n::Tr("ui.service_reconnecting"));
+            }
+            UpdateOverlayZLocked();
+            host_->RequestUrgentFullRefresh();
+        }
+        return true;
+    }
+    if (id == UiPageCustomEventId::ServiceReconnectHide) {
+        if (host_ != nullptr) {
+            service_reconnect_visible_ = false;
+            SetRootVisible(service_reconnect_root_, false);
+            UpdateOverlayZLocked();
+            host_->RequestUrgentFullRefresh();
+        }
+        return true;
+    }
+    if (id == UiPageCustomEventId::F1MainFetchFailed) {
+        if (!active_) {
+            return true;
+        }
+        fetch_fail_count_++;
+        RestartRefreshTimerLocked();
+        StartFetchIfNeededLocked(true);
+        return true;
+    }
+    if (service_reconnect_visible_) {
+        if (id != UiPageCustomEventId::F1Tick &&
+            id != UiPageCustomEventId::F1Data &&
+            id != UiPageCustomEventId::F1SessionsData &&
+            id != UiPageCustomEventId::F1CircuitImage &&
+            id != UiPageCustomEventId::F1CircuitDetailImage &&
+            id != UiPageCustomEventId::F1TelemetryAnalysisData &&
+            id != UiPageCustomEventId::F1TelemetryMetaData) {
+            return true;
+        }
+    }
     if (id == UiPageCustomEventId::QuickSwitchShow) {
         if (menu_visible_) {
             menu_visible_ = false;
@@ -1535,7 +1604,23 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
             return true;
         }
         if (payload) {
-            (void)ApplyUiJsonLocked(payload->c_str(), payload->size());
+            const bool ok = ApplyUiJsonLocked(payload->c_str(), payload->size());
+            if (ok) {
+                fetch_fail_count_ = 0;
+                last_fetch_ms_ = NowMs();
+                RestartRefreshTimerLocked();
+            } else {
+                fetch_fail_count_++;
+                RestartRefreshTimerLocked();
+                if (host_ != nullptr) {
+                    service_reconnect_visible_ = true;
+                    SetRootVisible(service_reconnect_root_, true);
+                    if (service_reconnect_label_ != nullptr) {
+                        lv_label_set_text(service_reconnect_label_, I18n::Tr("ui.service_reconnecting"));
+                    }
+                    UpdateOverlayZLocked();
+                }
+            }
         }
         MaybeAutoEnterRaceLiveLocked();
         if (pending_sessions_force_fetch_) {
@@ -1699,7 +1784,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
         if (!active_) {
             return true;
         }
-        StartFetchIfNeededLocked(false);
+        StartFetchIfNeededLocked(fetch_fail_count_ > 0);
         if (view_index_ == 5) {
             StartSessionsFetchIfNeededLocked(false);
         }
@@ -2235,16 +2320,21 @@ void F1PageAdapter::RestartRefreshTimerLocked() {
     if (refresh_timer_ == nullptr) {
         return;
     }
-    const int64_t us = refresh_interval_ms_ * 1000;
+    int64_t interval_ms = refresh_interval_ms_;
+    const int64_t retry_delay = FetchRetryDelayMsLocked();
+    if (retry_delay > 0 && (interval_ms <= 0 || retry_delay < interval_ms)) {
+        interval_ms = retry_delay;
+    }
+    const int64_t us = interval_ms * 1000;
     if (us <= 0) {
         return;
     }
     (void)esp_timer_stop(refresh_timer_);
     const esp_err_t err = esp_timer_start_periodic(refresh_timer_, us);
     if (err != ESP_OK) {
-        ESP_LOGW(kTag, "timer start failed err=%d interval_ms=%lld", static_cast<int>(err), static_cast<long long>(refresh_interval_ms_));
+        ESP_LOGW(kTag, "timer start failed err=%d interval_ms=%lld", static_cast<int>(err), static_cast<long long>(interval_ms));
     } else {
-        ESP_LOGI(kTag, "timer started interval_ms=%lld", static_cast<long long>(refresh_interval_ms_));
+        ESP_LOGI(kTag, "timer started interval_ms=%lld", static_cast<long long>(interval_ms));
     }
 }
 

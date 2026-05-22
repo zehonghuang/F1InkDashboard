@@ -79,6 +79,8 @@ static const char* ProbeTargetToString(NetworkProbeTarget probe_target) {
             return "websocket";
         case NetworkProbeTarget::Mqtt:
             return "mqtt";
+        case NetworkProbeTarget::PublicInternet:
+            return "public_internet";
     }
     return "unknown";
 }
@@ -409,6 +411,13 @@ static bool ResolveProbeEndpoint(NetworkProbeTarget probe_target,
     *host = "";
     *port = 0;
     *source = "missing";
+
+    if (probe_target == NetworkProbeTarget::PublicInternet) {
+        *host = "example.com";
+        *port = 443;
+        *source = "public.example.com";
+        return true;
+    }
 
     if (probe_target == NetworkProbeTarget::Mqtt) {
         std::string endpoint;

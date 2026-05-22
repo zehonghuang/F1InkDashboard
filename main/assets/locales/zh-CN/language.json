@@ -8,6 +8,7 @@
     "ui.distance_km_fmt": "%.3f KM",
     "ui.loading": "加载中...",
     "ui.low_battery": "低电量，请充电",
+    "ui.service_reconnecting": "服务重连中...",
     "ui.language_set": "语言已设置：",
     "ui.na": "--",
     "ui.no_data": "暂无数据",
