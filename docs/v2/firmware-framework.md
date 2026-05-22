@@ -51,6 +51,7 @@
 - 页面注册/切换/事件派发：`UiPageRegistry` 见 [ui_page_registry.cc](file:///c:/F1InkDashboard/main/display/ui_page_registry.cc)
 - 页面栈（Back/NavigateTo）：`LcdDisplay` 见 [lcd_display.cc](file:///c:/F1InkDashboard/main/display/lcd_display.cc)
 - 板级显示集成（面板 flush / EPD 刷新策略）：`CustomLcdDisplay` 见 [custom_lcd_display.cc](file:///c:/F1InkDashboard/main/boards/zectrix-s3-epaper-4.2/custom_lcd_display.cc)
+- 覆盖层（Overlay）Z 序/阻挡：`OverlayItem` + `UpdateOverlayZ()` 见 [overlay_z.cc](file:///c:/F1InkDashboard/main/display/overlay_z.cc)
 
 ## 业务抽象切入点（为多业务/多赛事做准备）
 

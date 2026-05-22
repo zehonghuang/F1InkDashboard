@@ -15,6 +15,7 @@ set(SOURCES
     "display/display.cc"
     "display/lcd_display.cc"
     "display/ui_page_registry.cc"
+    "display/overlay_z.cc"
     "display/pages/factory_test_page_adapter.cc"
     "display/pages/f1_page_adapter.cc"
     "display/pages/f1_page_adapter_common.cc"
