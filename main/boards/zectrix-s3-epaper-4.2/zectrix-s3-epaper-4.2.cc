@@ -28,7 +28,6 @@
 #include "ssid_manager.h"
 #include "settings.h"
 #include "wifi_manager.h"
-#include "ws_client_service.h"
 #include "common/time_sync.h"
 #include "common/sleep_manager.h"
 
@@ -361,24 +360,6 @@ private:
                 TimeSyncService::Instance().RequestSync();
                 Application::GetInstance().NotifyNetworkConnected();
                 if (display_ != nullptr) {
-                    if (ws_openf1_ == nullptr) {
-                        ws_openf1_ = std::make_unique<WsClientService>(display_, WsClientService::Mode::OpenF1);
-                    }
-                    if (ws_news_ == nullptr) {
-                        ws_news_ = std::make_unique<WsClientService>(display_, WsClientService::Mode::News);
-                    }
-                }
-                if (ws_openf1_ != nullptr) {
-                    Settings s("websocket", false);
-                    const std::string url = s.GetString("url", "");
-                    ws_openf1_->Start(url);
-                }
-                if (ws_news_ != nullptr) {
-                    Settings s("websocket", false);
-                    const std::string url = s.GetString("url", "");
-                    ws_news_->Start(url);
-                }
-                if (display_ != nullptr) {
                     wifi_onboarding_active_ = false;
                     auto* args = new ShowF1AsyncArgs();
                     args->display = display_;
@@ -387,33 +368,9 @@ private:
                 break;
             case WifiEvent::Disconnected:
                 Application::GetInstance().NotifyNetworkDisconnected();
-                if (ws_openf1_ != nullptr) {
-                    ws_openf1_->Stop();
-                }
-                if (ws_news_ != nullptr) {
-                    ws_news_->Stop();
-                }
                 UpdateWifiSetupPage(I18n::Tr("wifi.onboarding.disconnected_retry"), false);
                 break;
             case WifiEvent::ConfigModeEnter:
-                if (display_ != nullptr) {
-                    if (ws_openf1_ == nullptr) {
-                        ws_openf1_ = std::make_unique<WsClientService>(display_, WsClientService::Mode::OpenF1);
-                    }
-                    if (ws_news_ == nullptr) {
-                        ws_news_ = std::make_unique<WsClientService>(display_, WsClientService::Mode::News);
-                    }
-                }
-                if (ws_openf1_ != nullptr) {
-                    Settings s("websocket", false);
-                    const std::string url = s.GetString("url", "");
-                    ws_openf1_->Start(url);
-                }
-                if (ws_news_ != nullptr) {
-                    Settings s("websocket", false);
-                    const std::string url = s.GetString("url", "");
-                    ws_news_->Start(url);
-                }
                 UpdateWifiSetupPage(I18n::Tr("wifi.onboarding.enter_ap"), false);
                 break;
             case WifiEvent::ConfigModeExit:
@@ -648,14 +605,6 @@ private:
                 (void)DispatchF1(combo_id_);
                 return;
             }
-            if (display_ != nullptr && display_->IsMainPageActive()) {
-                UiPageEvent e;
-                e.type = UiPageEventType::Custom;
-                e.i32 = static_cast<int32_t>(UiPageCustomEventId::JumpOffWeek);
-                display_->DispatchPageEvent(e, true);
-                display_->RequestUrgentFullRefresh();
-                return;
-            }
         });
 
         down_button_.OnClick([this]() {
@@ -703,14 +652,6 @@ private:
                 suppress_up_ = true;
                 suppress_down_ = true;
                 (void)DispatchF1(combo_id_);
-                return;
-            }
-            if (display_ != nullptr && display_->IsMainPageActive()) {
-                UiPageEvent e;
-                e.type = UiPageEventType::Custom;
-                e.i32 = static_cast<int32_t>(UiPageCustomEventId::QuickSwitchShow);
-                display_->DispatchPageEvent(e, true);
-                display_->RequestUrgentFullRefresh();
                 return;
             }
         });
@@ -872,8 +813,6 @@ private:
     i2c_master_bus_handle_t i2c_bus_ = nullptr;
     std::unique_ptr<RtcPcf8563> rtc_;
     std::unique_ptr<ZectrixNfc> nfc_;
-    std::unique_ptr<WsClientService> ws_openf1_;
-    std::unique_ptr<WsClientService> ws_news_;
     ChargeStatus charge_status_;
     Button up_button_;
     Button down_button_;

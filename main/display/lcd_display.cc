@@ -3,10 +3,8 @@
 #include "lvgl_theme.h"
 #include "app_profile.h"
 #include "board.h"
-#include "pages/meme_page_adapter.h"
-#include "pages/f1_page_adapter.h"
-#include "pages/breaking_news_page_adapter.h"
 #include "pages/factory_test_page_adapter.h"
+#include "pages/main_page_adapter.h"
 #include "pages/wifi_setup_page_adapter.h"
 #include "settings.h"
 #include "common/sleep_manager.h"
@@ -202,9 +200,7 @@ LcdDisplay::~LcdDisplay() {
         page_registry_.Reset();
         factory_test_page_adapter_ = nullptr;
         wifi_setup_page_adapter_ = nullptr;
-        f1_page_adapter_ = nullptr;
-        breaking_news_page_adapter_ = nullptr;
-        meme_page_adapter_ = nullptr;
+        main_page_adapter_ = nullptr;
         ui_setup_done_ = false;
         if (factory_test_screen_ != nullptr) {
             lv_obj_del(factory_test_screen_);
@@ -214,17 +210,9 @@ LcdDisplay::~LcdDisplay() {
             lv_obj_del(wifi_setup_screen_);
             wifi_setup_screen_ = nullptr;
         }
-        if (f1_screen_ != nullptr) {
-            lv_obj_del(f1_screen_);
-            f1_screen_ = nullptr;
-        }
-        if (breaking_news_screen_ != nullptr) {
-            lv_obj_del(breaking_news_screen_);
-            breaking_news_screen_ = nullptr;
-        }
-        if (meme_screen_ != nullptr) {
-            lv_obj_del(meme_screen_);
-            meme_screen_ = nullptr;
+        if (main_screen_ != nullptr) {
+            lv_obj_del(main_screen_);
+            main_screen_ = nullptr;
         }
     }
 
@@ -320,38 +308,20 @@ void LcdDisplay::DispatchPageEvent(const UiPageEvent& e, bool only_active) {
 }
 
 void LcdDisplay::ShowWsOverlay(const std::string& text) {
-    SetupUI();
-    DisplayLockGuard lock(this);
-    if (breaking_news_page_adapter_ != nullptr) {
-        breaking_news_page_adapter_->UpdateText(text);
-    }
-    (void)NavigateToLocked(UiPageId::BreakingNews);
+    (void)text;
 }
 
 void LcdDisplay::ShowMemeOverlay(const std::string& title, std::vector<uint8_t> png_bytes) {
-    SetupUI();
-    DisplayLockGuard lock(this);
-    if (meme_page_adapter_ != nullptr) {
-        meme_page_adapter_->Update(title, std::move(png_bytes));
-    }
-    (void)NavigateToLocked(UiPageId::Meme);
+    (void)title;
+    (void)png_bytes;
 }
 
 bool LcdDisplay::HideWsOverlayIfVisible() {
-    DisplayLockGuard lock(this);
-    if (page_registry_.HasActive() && page_registry_.ActiveId() == UiPageId::BreakingNews) {
-        return BackLocked();
-    }
-    if (page_registry_.HasActive() && page_registry_.ActiveId() == UiPageId::Meme) {
-        return BackLocked();
-    }
     return false;
 }
 
 bool LcdDisplay::IsWsOverlayVisible() const {
-    DisplayLockGuard lock(const_cast<LcdDisplay*>(this));
-    return page_registry_.HasActive() &&
-        (page_registry_.ActiveId() == UiPageId::BreakingNews || page_registry_.ActiveId() == UiPageId::Meme);
+    return false;
 }
 
 void LcdDisplay::ShowRaw1bppFrame(const uint8_t* data, size_t len) {
@@ -409,9 +379,9 @@ void LcdDisplay::ShowWifiSetupPage(const std::string& ap_ssid,
     (void)NavigateToLocked(UiPageId::WifiSetup);
 }
 
-void LcdDisplay::ShowF1Page() {
+void LcdDisplay::ShowMainPage() {
     SetupUI();
-    (void)NavigateTo(UiPageId::F1);
+    (void)NavigateTo(GetMainUiPageId());
 }
 
 void LcdDisplay::ShowMainPage() {
@@ -449,24 +419,10 @@ void LcdDisplay::SetupUI() {
         return;
     }
 
-    auto f1_page = std::make_unique<F1PageAdapter>(this);
-    f1_page_adapter_ = f1_page.get();
-    if (!RegisterPageLocked(std::move(f1_page))) {
-        f1_page_adapter_ = nullptr;
-        return;
-    }
-
-    auto breaking = std::make_unique<BreakingNewsPageAdapter>(this);
-    breaking_news_page_adapter_ = breaking.get();
-    if (!RegisterPageLocked(std::move(breaking))) {
-        breaking_news_page_adapter_ = nullptr;
-        return;
-    }
-
-    auto meme = std::make_unique<MemePageAdapter>(this);
-    meme_page_adapter_ = meme.get();
-    if (!RegisterPageLocked(std::move(meme))) {
-        meme_page_adapter_ = nullptr;
+    auto main_page = std::make_unique<MainPageAdapter>(this);
+    main_page_adapter_ = main_page.get();
+    if (!RegisterPageLocked(std::move(main_page))) {
+        main_page_adapter_ = nullptr;
         return;
     }
 

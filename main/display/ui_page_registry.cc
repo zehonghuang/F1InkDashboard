@@ -12,12 +12,8 @@ const char* UiPageIdName(UiPageId id) {
             return "FactoryTest";
         case UiPageId::WifiSetup:
             return "WifiSetup";
-        case UiPageId::F1:
-            return "F1";
-        case UiPageId::BreakingNews:
-            return "BreakingNews";
-        case UiPageId::Meme:
-            return "Meme";
+        case UiPageId::Home:
+            return "Home";
         default:
             return "Unknown";
     }

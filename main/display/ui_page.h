@@ -10,10 +10,8 @@
 enum class UiPageId : uint8_t {
     FactoryTest = 0,
     WifiSetup = 1,
-    F1 = 2,
-    BreakingNews = 3,
-    Meme = 4,
-    Gallery = F1,
+    Home = 2,
+    Gallery = Home,
 };
 
 enum class UiPageEventType : uint8_t {
@@ -23,8 +21,6 @@ enum class UiPageEventType : uint8_t {
 enum class UiPageCustomEventId : int32_t {
     PagePrev = 100,
     PageNext = 101,
-    JumpRaceDay = 102,
-    JumpOffWeek = 103,
     ConfirmClick = 110,
     ConfirmLongPress = 111,
     ConfirmDoubleClick = 112,
@@ -34,22 +30,6 @@ enum class UiPageCustomEventId : int32_t {
     ComboUpConfirm = 121,
     ComboDownConfirm = 122,
     ComboAll = 123,
-    QuickSwitchShow = 130,
-    F1Data = 200,
-    F1Tick = 201,
-    F1CircuitImage = 202,
-    F1CircuitDetailImage = 203,
-    F1SessionsData = 204,
-    F1ForceSessionsFetch = 205,
-    F1OpenF1WsEvent = 206,
-    F1TelemetryAnalysisData = 207,
-    F1TelemetryMetaData = 208,
-    F1MainFetchFailed = 209,
-    WsOverlayShow = 300,
-    ServiceReconnectShow = 310,
-    ServiceReconnectHide = 311,
-    GalleryPrev = PagePrev,
-    GalleryNext = PageNext,
 };
 
 struct UiPageEvent {

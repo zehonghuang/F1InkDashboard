@@ -6,7 +6,6 @@
 #include "common/sleep_manager.h"
 #include "board.h"
 #include "system_info.h"
-#include "backend_url.h"
 #include "i18n.h"
 
 #include <cJSON.h>
@@ -222,9 +221,6 @@ bool OtaUpdateService::BuildManifestUrlLocked(std::string& out) {
 #ifdef CONFIG_OTA_URL
         base = CONFIG_OTA_URL;
 #endif
-    }
-    if (base.empty()) {
-        base = GetBackendBaseUrl();
     }
     base = NormalizeUrl(base);
     if (base.empty()) {

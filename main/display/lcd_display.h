@@ -13,9 +13,7 @@
 
 class FactoryTestPageAdapter;
 class WifiSetupPageAdapter;
-class F1PageAdapter;
-class BreakingNewsPageAdapter;
-class MemePageAdapter;
+class MainPageAdapter;
 
 class LcdDisplay : public LvglDisplay {
 public:
@@ -31,17 +29,13 @@ protected:
     esp_lcd_panel_handle_t panel_ = nullptr;
     lv_obj_t* factory_test_screen_ = nullptr;
     lv_obj_t* wifi_setup_screen_ = nullptr;
-    lv_obj_t* f1_screen_ = nullptr;
-    lv_obj_t* breaking_news_screen_ = nullptr;
-    lv_obj_t* meme_screen_ = nullptr;
+    lv_obj_t* main_screen_ = nullptr;
 
     UiPageRegistry page_registry_;
     std::vector<UiPageId> page_stack_;
     FactoryTestPageAdapter* factory_test_page_adapter_ = nullptr;
     WifiSetupPageAdapter* wifi_setup_page_adapter_ = nullptr;
-    F1PageAdapter* f1_page_adapter_ = nullptr;
-    BreakingNewsPageAdapter* breaking_news_page_adapter_ = nullptr;
-    MemePageAdapter* meme_page_adapter_ = nullptr;
+    MainPageAdapter* main_page_adapter_ = nullptr;
     bool ui_setup_done_ = false;
     bool raw_1bpp_visible_ = false;
 
@@ -62,9 +56,7 @@ protected:
 
     friend class FactoryTestPageAdapter;
     friend class WifiSetupPageAdapter;
-    friend class F1PageAdapter;
-    friend class BreakingNewsPageAdapter;
-    friend class MemePageAdapter;
+    friend class MainPageAdapter;
 
     LcdDisplay(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_handle_t panel, int width, int height);
 
@@ -88,7 +80,6 @@ public:
     void UpdateStatusBarInLock(bool update_all = false) { UpdateStatusBarLocked(update_all); }
     void ShowFactoryTestPage();
     void ShowWifiSetupPage(const std::string& ap_ssid, const std::string& web_url, const std::string& status);
-    void ShowF1Page();
     void ShowMainPage();
     bool IsFactoryTestPageActive();
     bool IsMainPageActive();
