@@ -12,6 +12,7 @@
 #include "pages/f1_page_adapter_net.h"
 #include "pages/f1_page_adapter_payloads.h"
 #include "ui_paged_list_nav.h"
+#include "overlay_z.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -789,71 +790,13 @@ void F1PageAdapter::UpdateOverlayZLocked() {
         LEVEL_ALARM = 20,
         LEVEL_QUICK_SWITCH = 30,
     };
-
-    struct OverlayItem {
-        enum class Kind : uint8_t { Lvgl = 0, Pic = 1 };
-        Kind kind = Kind::Lvgl;
-        lv_obj_t* root = nullptr;
-        lv_obj_t* blocker = nullptr;
-        int level = 0;
-        bool visible = false;
-        bool fullscreen = false;
+    const OverlayItem items[4] = {
+        {OverlayKind::Pic, nullptr, nullptr, LEVEL_PIC, (host_ != nullptr && host_->HasPicContent()), false},
+        {OverlayKind::Lvgl, menu_root_, nullptr, LEVEL_MENU, menu_visible_, true},
+        {OverlayKind::Lvgl, service_reconnect_root_, service_reconnect_box_, LEVEL_ALARM, service_reconnect_visible_, false},
+        {OverlayKind::Lvgl, quick_switch_root_, quick_switch_box_, LEVEL_QUICK_SWITCH, quick_switch_visible_, false},
     };
-
-    OverlayItem items[4] = {
-        {OverlayItem::Kind::Pic, nullptr, nullptr, LEVEL_PIC, (host_ != nullptr && host_->HasPicContent()), false},
-        {OverlayItem::Kind::Lvgl, menu_root_, nullptr, LEVEL_MENU, menu_visible_, true},
-        {OverlayItem::Kind::Lvgl, service_reconnect_root_, service_reconnect_box_, LEVEL_ALARM, service_reconnect_visible_, false},
-        {OverlayItem::Kind::Lvgl, quick_switch_root_, quick_switch_box_, LEVEL_QUICK_SWITCH, quick_switch_visible_, false},
-    };
-
-    for (int i = 0; i < 4; i++) {
-        for (int j = i + 1; j < 4; j++) {
-            if (items[i].level > items[j].level) {
-                OverlayItem t = items[i];
-                items[i] = items[j];
-                items[j] = t;
-            }
-        }
-    }
-
-    OverlayItem* top_block = nullptr;
-    for (auto& it : items) {
-        if (it.kind != OverlayItem::Kind::Lvgl || !it.visible) {
-            continue;
-        }
-        if (it.level <= LEVEL_PIC) {
-            continue;
-        }
-        if (top_block == nullptr || it.level > top_block->level) {
-            top_block = &it;
-        }
-    }
-
-    if (host_ != nullptr) {
-        if (top_block != nullptr) {
-            if (top_block->fullscreen) {
-                host_->SetPicOverlayExcludeRect(true, 0, 0, host_->width(), host_->height());
-            } else if (top_block->blocker != nullptr) {
-                lv_area_t a{};
-                lv_obj_get_coords(top_block->blocker, &a);
-                host_->SetPicOverlayExcludeRect(true, a.x1, a.y1, (a.x2 - a.x1 + 1), (a.y2 - a.y1 + 1));
-            } else {
-                host_->SetPicOverlayExcludeRect(false, 0, 0, 0, 0);
-            }
-        } else {
-            host_->SetPicOverlayExcludeRect(false, 0, 0, 0, 0);
-        }
-    }
-
-    for (const auto& it : items) {
-        if (it.kind != OverlayItem::Kind::Lvgl) {
-            continue;
-        }
-        if (it.visible && it.root != nullptr) {
-            lv_obj_move_foreground(it.root);
-        }
-    }
+    UpdateOverlayZ(host_, items, 4, LEVEL_PIC);
 }
 
 bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
