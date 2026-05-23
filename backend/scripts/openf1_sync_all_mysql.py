@@ -76,8 +76,18 @@ def _http_get_json(client: httpx.Client, limiter: _RateLimiter, url: str, params
             r = client.get(url, params=params)
             if r.status_code == 429:
                 raise RuntimeError("openf1 429 rate_limited")
+            if r.status_code == 404:
+                try:
+                    data = r.json()
+                    if isinstance(data, dict) and data.get("detail") == "No results found.":
+                        return []
+                except Exception:
+                    pass
+                return []
             r.raise_for_status()
             data = r.json()
+            if isinstance(data, dict) and data.get("detail") == "No results found.":
+                return []
             if not isinstance(data, list):
                 raise RuntimeError("openf1 response is not a list")
             return [it for it in data if isinstance(it, dict)]

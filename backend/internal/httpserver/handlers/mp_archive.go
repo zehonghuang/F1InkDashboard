@@ -257,7 +257,11 @@ func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 			if startUTC.IsZero() {
 				continue
 			}
-			if startUTC.After(nowUTC) {
+			showFromUTC := earliestWeekendStartUTC(r)
+			if showFromUTC.IsZero() {
+				showFromUTC = startUTC
+			}
+			if showFromUTC.After(nowUTC) {
 				continue
 			}
 			dateISO := startUTC.In(loc).Format("2006-01-02")
@@ -388,6 +392,29 @@ func parseScheduleStartUTC(r map[string]any) time.Time {
 		return time.Time{}
 	}
 	return dt.UTC()
+}
+
+func earliestWeekendStartUTC(r map[string]any) time.Time {
+	fields := []string{"FirstPractice", "SecondPractice", "ThirdPractice", "Qualifying", "SprintQualifying", "Sprint", "Race"}
+	var earliest time.Time
+	for _, f := range fields {
+		v, ok := r[f]
+		if !ok || v == nil {
+			continue
+		}
+		m, ok := v.(map[string]any)
+		if !ok || m == nil {
+			continue
+		}
+		dt := parseScheduleStartUTC(m)
+		if dt.IsZero() {
+			continue
+		}
+		if earliest.IsZero() || dt.Before(earliest) {
+			earliest = dt
+		}
+	}
+	return earliest
 }
 
 func extractScheduleRaces(schedule map[string]any) []map[string]any {

@@ -34,11 +34,26 @@
   gap: 8rpx;
 }
 
+.driver-row {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 12rpx;
+  min-width: 0;
+}
+
 .driver {
   font-weight: 800;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.driver-no {
+  flex: none;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 24rpx;
+  font-weight: 700;
 }
 
 .team {

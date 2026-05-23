@@ -11,7 +11,10 @@
           <image class="avatar" src="{{item.headshot_url}}" mode="aspectFit" wx:if="{{item.headshot_url}}" />
         </view>
         <view class="card-mid">
-          <view class="driver">{{item.full_name || item.driver_name || item.name_acronym || item.driver_number}}</view>
+          <view class="driver-row">
+            <view class="driver">{{item.full_name || item.driver_name || item.name_acronym || item.driver_number}}</view>
+            <view class="driver-no">#{{item.driver_number}}</view>
+          </view>
           <view class="team">{{item.team_name || '-'}}</view>
           <view class="lap">{{item.lap_time || '-'}}</view>
         </view>
