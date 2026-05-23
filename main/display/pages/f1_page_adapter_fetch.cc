@@ -77,6 +77,10 @@ void FetchTask(void* arg) {
 
     std::vector<uint8_t> bytes;
     if (HttpGetToBuffer(a->url, bytes, kMaxJsonBytes)) {
+        UiPageEvent n{};
+        n.type = UiPageEventType::Custom;
+        n.i32 = static_cast<int32_t>(UiPageCustomEventId::ServiceReconnectHide);
+        a->host->DispatchPageEvent(n, false);
         UiPageEvent e{};
         e.type = UiPageEventType::Custom;
         e.i32 = static_cast<int32_t>(UiPageCustomEventId::F1Data);
@@ -84,6 +88,14 @@ void FetchTask(void* arg) {
         e.ptr = payload;
         a->host->DispatchPageEvent(e, false);
     } else {
+        UiPageEvent r{};
+        r.type = UiPageEventType::Custom;
+        r.i32 = static_cast<int32_t>(UiPageCustomEventId::F1MainFetchFailed);
+        a->host->DispatchPageEvent(r, false);
+        UiPageEvent n{};
+        n.type = UiPageEventType::Custom;
+        n.i32 = static_cast<int32_t>(UiPageCustomEventId::ServiceReconnectShow);
+        a->host->DispatchPageEvent(n, false);
         ESP_LOGW(kTag, "HTTP GET failed url=%s", a->url.c_str());
     }
 
@@ -100,6 +112,10 @@ void SessionsFetchTask(void* arg) {
 
     std::vector<uint8_t> bytes;
     if (HttpGetToBuffer(a->url, bytes, kMaxJsonBytes)) {
+        UiPageEvent n{};
+        n.type = UiPageEventType::Custom;
+        n.i32 = static_cast<int32_t>(UiPageCustomEventId::ServiceReconnectHide);
+        a->host->DispatchPageEvent(n, false);
         a->page->MarkSessionsFetchDone();
         UiPageEvent e{};
         e.type = UiPageEventType::Custom;
@@ -108,6 +124,10 @@ void SessionsFetchTask(void* arg) {
         e.ptr = payload;
         a->host->DispatchPageEvent(e, false);
     } else {
+        UiPageEvent n{};
+        n.type = UiPageEventType::Custom;
+        n.i32 = static_cast<int32_t>(UiPageCustomEventId::ServiceReconnectShow);
+        a->host->DispatchPageEvent(n, false);
         ESP_LOGW(kTag, "sessions fetch failed url=%s", a->url.c_str());
         a->page->MarkSessionsFetchDone();
     }
@@ -153,6 +173,10 @@ void TelemetryMetaFetchTask(void* arg) {
 
     std::vector<uint8_t> bytes;
     const bool ok = HttpGetToBuffer(a->url, bytes, 8 * 1024);
+    UiPageEvent n{};
+    n.type = UiPageEventType::Custom;
+    n.i32 = static_cast<int32_t>(ok ? UiPageCustomEventId::ServiceReconnectHide : UiPageCustomEventId::ServiceReconnectShow);
+    a->host->DispatchPageEvent(n, false);
     UiPageEvent e{};
     e.type = UiPageEventType::Custom;
     e.i32 = static_cast<int32_t>(UiPageCustomEventId::F1TelemetryMetaData);
@@ -309,16 +333,36 @@ void F1PageAdapter::MarkTelemetryMetaFetchDone() {
     sm_set_busy(SleepBusySrc::Net, busy);
 }
 
+int64_t F1PageAdapter::FetchRetryDelayMsLocked() const {
+    if (fetch_fail_count_ <= 0) {
+        return 0;
+    }
+    int c = fetch_fail_count_;
+    if (c > 8) {
+        c = 8;
+    }
+    int64_t d = 2000LL;
+    d = d << (c - 1);
+    if (d > 60LL * 1000) {
+        d = 60LL * 1000;
+    }
+    return d;
+}
+
 void F1PageAdapter::StartFetchIfNeededLocked(bool force) {
     if (fetch_inflight_.load()) {
         return;
     }
     const int64_t now = NowMs();
+    const int64_t retry_delay = FetchRetryDelayMsLocked();
+    if (retry_delay > 0 && last_attempt_ms_ > 0 && now - last_attempt_ms_ < retry_delay) {
+        return;
+    }
     if (!force) {
         if (last_fetch_ms_ > 0 && now - last_fetch_ms_ < refresh_interval_ms_) {
             return;
         }
-        if (last_fetch_ms_ == 0 && last_attempt_ms_ > 0 && now - last_attempt_ms_ < 30 * 1000) {
+        if (fetch_fail_count_ == 0 && last_fetch_ms_ == 0 && last_attempt_ms_ > 0 && now - last_attempt_ms_ < 30 * 1000) {
             return;
         }
     }
@@ -349,7 +393,6 @@ void F1PageAdapter::StartFetchIfNeededLocked(bool force) {
     }
     fetch_inflight_.store(true);
     sm_set_busy(SleepBusySrc::Net, true);
-    last_fetch_ms_ = now;
 }
 
 void F1PageAdapter::StartSessionsFetchIfNeededLocked(bool force) {

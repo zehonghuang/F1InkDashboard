@@ -44,7 +44,10 @@ enum class UiPageCustomEventId : int32_t {
     F1OpenF1WsEvent = 206,
     F1TelemetryAnalysisData = 207,
     F1TelemetryMetaData = 208,
+    F1MainFetchFailed = 209,
     WsOverlayShow = 300,
+    ServiceReconnectShow = 310,
+    ServiceReconnectHide = 311,
     GalleryPrev = PagePrev,
     GalleryNext = PageNext,
 };

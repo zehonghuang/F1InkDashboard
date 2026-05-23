@@ -86,7 +86,7 @@ private:
     esp_netif_ip_info_t ip_fast_info_{};
     esp_ip4_addr_t ip_fast_dns_{};
     int64_t ip_fast_cached_ms_ = 0;
-    NetworkProbeTarget probe_target_ = NetworkProbeTarget::Mqtt;
+    NetworkProbeTarget probe_target_ = NetworkProbeTarget::PublicInternet;
     
     // Exponential backoff for scan interval
     int scan_min_interval_microseconds_ = 10 * 1000 * 1000;   // Default 10 seconds
