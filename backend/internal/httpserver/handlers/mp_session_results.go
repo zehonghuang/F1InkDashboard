@@ -15,6 +15,7 @@ import (
 func MpSessionResults(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
+			LogReqError(c, "mp_session_results", "mysql_required", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
 			return
 		}
@@ -35,6 +36,7 @@ func MpSessionResults(db *gorm.DB) gin.HandlerFunc {
 			FROM openf1_session_result
 			WHERE session_key = ?
 		`, sessionKey).Scan(&rows).Error; err != nil {
+			LogReqError(c, "mp_session_results", "results_unavailable", err)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "results_unavailable"})
 			return
 		}

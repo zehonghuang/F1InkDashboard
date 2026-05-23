@@ -14,6 +14,7 @@ import (
 func TelemetryLapsAvailable(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
+			LogReqError(c, "telemetry_laps_available", "mysql_required", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
 			return
 		}
@@ -29,6 +30,7 @@ func TelemetryLapsAvailable(db *gorm.DB) gin.HandlerFunc {
 func TelemetryLaps(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
+			LogReqError(c, "telemetry_laps", "mysql_required", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
 			return
 		}
@@ -55,6 +57,7 @@ func TelemetryLaps(db *gorm.DB) gin.HandlerFunc {
 func TelemetryLapControls(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
+			LogReqError(c, "telemetry_lap_controls", "mysql_required", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
 			return
 		}
@@ -81,6 +84,7 @@ func TelemetryLapControls(db *gorm.DB) gin.HandlerFunc {
 func TelemetryLapTrace(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
+			LogReqError(c, "telemetry_lap_trace", "mysql_required", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
 			return
 		}
@@ -131,6 +135,7 @@ func TelemetryLapTrace(db *gorm.DB) gin.HandlerFunc {
 func TelemetryFastestLap(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
+			LogReqError(c, "telemetry_fastest_lap", "mysql_required", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
 			return
 		}
@@ -182,6 +187,7 @@ func TelemetryFastestLap(db *gorm.DB) gin.HandlerFunc {
 func TelemetryLapControlsSeries(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
+			LogReqError(c, "telemetry_lap_controls_series", "mysql_required", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
 			return
 		}

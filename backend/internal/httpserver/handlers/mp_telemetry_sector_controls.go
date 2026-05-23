@@ -16,6 +16,7 @@ import (
 func MpTelemetrySectorControls(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
+			LogReqError(c, "mp_telemetry_sector_controls", "mysql_required", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
 			return
 		}

@@ -16,6 +16,7 @@ import (
 func MpRaceSessions(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
+			LogReqError(c, "mp_race_sessions", "mysql_required", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
 			return
 		}
@@ -39,6 +40,7 @@ func MpRaceSessions(db *gorm.DB) gin.HandlerFunc {
 		lang := strings.TrimSpace(c.GetString("language"))
 		scheduleJSON, err := f1db.OpenF1ScheduleJSON(db, season, lang)
 		if err != nil {
+			LogReqError(c, "mp_race_sessions", "schedule_unavailable", err)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})
 			return
 		}

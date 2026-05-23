@@ -20,6 +20,7 @@ import (
 func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
+			LogReqError(c, "mp_archive", "mysql_required", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
 			return
 		}
@@ -38,12 +39,14 @@ func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 		lang := strings.TrimSpace(c.GetString("language"))
 		scheduleJSON, err := f1db.OpenF1ScheduleJSON(db, season, lang)
 		if err != nil {
+			LogReqError(c, "mp_archive", "schedule_unavailable", err)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})
 			return
 		}
 
 		races := extractScheduleRaces(scheduleJSON)
 		if races == nil {
+			LogReqError(c, "mp_archive", "schedule_unavailable", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})
 			return
 		}

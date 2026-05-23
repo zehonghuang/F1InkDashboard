@@ -130,25 +130,30 @@ func buildPagesResponse(ctx context.Context, cfg config.Config, db *gorm.DB, cch
 	nowUTC := time.Now().UTC()
 
 	if db == nil {
+		LogReqError(c, "pages", "mysql_required", nil)
 		return gin.H{"ok": false, "error": "mysql_required"}, http.StatusServiceUnavailable
 	}
 
 	scheduleJSON, err := f1db.OpenF1ScheduleJSON(db, season, lang)
 	if err != nil {
+		LogReqError(c, "pages", "schedule_unavailable", err)
 		return gin.H{"ok": false, "error": "schedule_unavailable"}, http.StatusServiceUnavailable
 	}
 
 	latestSK, err := f1db.OpenF1LatestRaceSessionKey(db, season)
 	if err != nil {
+		LogReqError(c, "pages", "championship_unavailable", err)
 		return gin.H{"ok": false, "error": "championship_unavailable"}, http.StatusServiceUnavailable
 	}
 
 	driverStandings, err := f1db.OpenF1DriverStandingsJSON(db, latestSK, lang, season)
 	if err != nil {
+		LogReqError(c, "pages", "driver_standings_unavailable", err)
 		return gin.H{"ok": false, "error": "driver_standings_unavailable"}, http.StatusServiceUnavailable
 	}
 	constructorStandings, err := f1db.OpenF1ConstructorStandingsJSON(db, latestSK, lang)
 	if err != nil {
+		LogReqError(c, "pages", "constructor_standings_unavailable", err)
 		return gin.H{"ok": false, "error": "constructor_standings_unavailable"}, http.StatusServiceUnavailable
 	}
 

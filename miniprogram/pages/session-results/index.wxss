@@ -51,9 +51,9 @@
 
 .driver-no {
   flex: none;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 24rpx;
-  font-weight: 700;
+  color: #ffffff;
+  font-size: 26rpx;
+  font-weight: 900;
 }
 
 .team {

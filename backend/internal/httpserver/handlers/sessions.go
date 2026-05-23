@@ -18,6 +18,7 @@ import (
 func F1Sessions(cfg config.Config, db *gorm.DB, cch *cache.TTLCache) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
+			LogReqError(c, "f1_sessions", "mysql_required", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
 			return
 		}
@@ -60,11 +61,13 @@ func F1Sessions(cfg config.Config, db *gorm.DB, cch *cache.TTLCache) gin.Handler
 			return f1db.OpenF1ScheduleJSON(db, season, lang)
 		})
 		if err != nil {
+			LogReqError(c, "f1_sessions", "schedule_unavailable", err)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})
 			return
 		}
 		scheduleJSON, _ := scheduleAny.(map[string]any)
 		if scheduleJSON == nil {
+			LogReqError(c, "f1_sessions", "schedule_unavailable", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})
 			return
 		}
@@ -72,6 +75,7 @@ func F1Sessions(cfg config.Config, db *gorm.DB, cch *cache.TTLCache) gin.Handler
 		nowUTC := time.Now().UTC()
 		out, err := f1logic.BuildSessionsPayload(db, nowUTC, tz, scheduleJSON, season, roundOverride, session, q, limit)
 		if err != nil {
+			LogReqError(c, "f1_sessions", "build_failed", err)
 			c.JSON(502, gin.H{"ok": false, "error": "build_failed"})
 			return
 		}
@@ -90,6 +94,7 @@ func F1SessionsCurrent(cfg config.Config, db *gorm.DB, cch *cache.TTLCache) gin.
 func F1SessionsCurrentExplicit(cfg config.Config, db *gorm.DB, cch *cache.TTLCache) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
+			LogReqError(c, "f1_sessions_current", "mysql_required", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
 			return
 		}
@@ -128,11 +133,13 @@ func F1SessionsCurrentExplicit(cfg config.Config, db *gorm.DB, cch *cache.TTLCac
 			return f1db.OpenF1ScheduleJSON(db, season, lang)
 		})
 		if err != nil {
+			LogReqError(c, "f1_sessions_current", "schedule_unavailable", err)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})
 			return
 		}
 		scheduleJSON, _ := scheduleAny.(map[string]any)
 		if scheduleJSON == nil {
+			LogReqError(c, "f1_sessions_current", "schedule_unavailable", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})
 			return
 		}
@@ -140,6 +147,7 @@ func F1SessionsCurrentExplicit(cfg config.Config, db *gorm.DB, cch *cache.TTLCac
 		nowUTC := time.Now().UTC()
 		out, err := f1logic.BuildSessionsPayload(db, nowUTC, tz, scheduleJSON, season, roundOverride, "auto", q, limit)
 		if err != nil {
+			LogReqError(c, "f1_sessions_current", "build_failed", err)
 			c.JSON(502, gin.H{"ok": false, "error": "build_failed"})
 			return
 		}
@@ -151,6 +159,7 @@ func F1SessionsCurrentExplicit(cfg config.Config, db *gorm.DB, cch *cache.TTLCac
 func F1SessionsByPath(cfg config.Config, db *gorm.DB, cch *cache.TTLCache) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
+			LogReqError(c, "f1_sessions_by_path", "mysql_required", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
 			return
 		}
@@ -184,11 +193,13 @@ func F1SessionsByPath(cfg config.Config, db *gorm.DB, cch *cache.TTLCache) gin.H
 			return f1db.OpenF1ScheduleJSON(db, season, lang)
 		})
 		if err != nil {
+			LogReqError(c, "f1_sessions_by_path", "schedule_unavailable", err)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})
 			return
 		}
 		scheduleJSON, _ := scheduleAny.(map[string]any)
 		if scheduleJSON == nil {
+			LogReqError(c, "f1_sessions_by_path", "schedule_unavailable", nil)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})
 			return
 		}
@@ -197,6 +208,7 @@ func F1SessionsByPath(cfg config.Config, db *gorm.DB, cch *cache.TTLCache) gin.H
 		roundOverride := round
 		out, err := f1logic.BuildSessionsPayload(db, nowUTC, tz, scheduleJSON, season, &roundOverride, sessionName, q, limit)
 		if err != nil {
+			LogReqError(c, "f1_sessions_by_path", "build_failed", err)
 			c.JSON(502, gin.H{"ok": false, "error": "build_failed"})
 			return
 		}

@@ -1,0 +1,42 @@
+{
+  "description": "TOINC F1 数据分析小程序",
+  "compileType": "miniprogram",
+  "appid": "wx9675b8d24100b48a",
+  "projectname": "toinc_f1",
+  "miniprogramRoot": "miniprogram",
+  "setting": {
+    "useCompilerModule": false,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    },
+    "useIsolateContext": true,
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "minifyJS": true,
+    "useMultiFrameRuntime": true,
+    "es6": true,
+    "postcss": false,
+    "compileWorklet": false,
+    "minified": false,
+    "uglifyFileName": false,
+    "uploadWithSourceMap": true,
+    "enhance": true,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "checkSiteMap": false,
+    "useCompilerPlugins": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true
+  },
+  "simulatorPluginLibVersion": {},
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "editorSetting": {}
+}

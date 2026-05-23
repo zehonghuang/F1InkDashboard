@@ -1,4 +1,4 @@
-# toinc_F1 Backend
+# toinc\_F1 Backend
 
 提供 F1 两个页面所需数据的 HTTP API。数据来源为第三方公开接口（赛历/积分榜/天气/新闻），并做轻量缓存以降低请求频率。
 
@@ -35,7 +35,7 @@ go run ./cmd/server
 - `WECHATPAY_APP_ID`：小程序/公众号 appid（JSAPI 下单使用）
 - `WECHATPAY_NOTIFY_URL`：微信支付回调地址（必须是公网可访问 HTTPS URL）
 - `WECHATPAY_API_V3_KEY`：APIv3Key（32 字节）
-- `WECHATPAY_MERCHANT_CERT_SERIAL`：商户 API 证书序列号（serial_no）
+- `WECHATPAY_MERCHANT_CERT_SERIAL`：商户 API 证书序列号（serial\_no）
 - `WECHATPAY_MERCHANT_PRIVATE_KEY_PEM`：商户私钥 PEM（多行可直接粘贴）
 - `WECHATPAY_MERCHANT_PRIVATE_KEY_PATH`：商户私钥文件路径（如使用文件存储私钥）
 - `WECHATPAY_PLATFORM_CERT_PEM`：微信支付平台证书 PEM（可包含多段 CERTIFICATE）
@@ -43,8 +43,8 @@ go run ./cmd/server
 
 API：
 
-- `POST /api/v1/pay/wechat/jsapi/prepay?token=...`：创建 JSAPI 预支付单（返回 prepay_id 与前端调起支付所需签名参数）
-- `GET /api/v1/pay/wechat/order/:out_trade_no?token=...`：按 out_trade_no 查单
+- `POST /api/v1/pay/wechat/jsapi/prepay?token=...`：创建 JSAPI 预支付单（返回 prepay\_id 与前端调起支付所需签名参数）
+- `GET /api/v1/pay/wechat/order/:out_trade_no?token=...`：按 out\_trade\_no 查单
 - `POST /api/v1/pay/wechat/notify`：微信支付回调通知（验签 + 解密）
 
 ## API
@@ -81,12 +81,13 @@ UI 直用接口额外字段：
 - `is_race_week`: `true/false`
 - `default_page`: `"race_day"` 或 `"off_week"`（固件可据此决定默认显示页）
 
-``` powershell
+```powershell
 $env:NEWS_WS_ENABLED="1"                                                                                                         
 $env:NEWS_INGEST_TOKEN="devtoken"
 $env:OPENF1_MODE="mock"          
 $env:OPENF1_ENABLED="1"   
 $env:OPENF1_INGEST_TOKEN="devtoken"
+$env:OPENF1_SCHEDULER_ENABLED="true"
 
 $env:TOINC_F1_MYSQL_ENABLED="1"
 ```
@@ -97,7 +98,7 @@ $env:TOINC_F1_MYSQL_ENABLED="1"
 
 ### 创建新库
 
-- 使用现有初始化 SQL：[001_create_ergast_f1_schema_mysql.sql](file:///c:/Users/GinTonic/Desktop/zectrix/backend/sql/001_create_ergast_f1_schema_mysql.sql)
+- 使用现有初始化 SQL：[001\_create\_ergast\_f1\_schema\_mysql.sql](file:///c:/Users/GinTonic/Desktop/zectrix/backend/sql/001_create_ergast_f1_schema_mysql.sql)
   - 该文件默认 `CREATE DATABASE toinc_F1` / `USE toinc_F1`
   - 如果你要新库名（例如 `toinc_F1_dev`），把 SQL 里的库名替换后再执行
 
@@ -140,7 +141,7 @@ $env:TOINC_F1_MYSQL_ENABLED="1"
 $env:TOINC_F1_MYSQL_DB="toinc_F1_dev"
 ```
 
-### 同步 OpenF1 car_data / laps 到 MySQL
+### 同步 OpenF1 car\_data / laps 到 MySQL
 
 ```bash
 cd backend
@@ -148,6 +149,7 @@ python scripts/openf1_sync_mysql.py --driver-number 12,63 --enable-laps
 ```
 
 约束：
+
 - 总请求频率：每秒 <= 3，每分钟 <= 30（脚本内置限速）
 
 ## OpenF1 Mock
@@ -172,7 +174,7 @@ set OPENF1_INGEST_TOKEN=devtoken
 推送频率控制：
 
 - `OPENF1_PUSH_HZ`：后端向 `WS /ws/openf1` 推送的频率（默认 5Hz）
-- 推送采用“每个 topic（若存在 driver_number 则按 topic+driver_number）缓存最新一条”，每个 tick 只把最新值推给固件
+- 推送采用“每个 topic（若存在 driver\_number 则按 topic+driver\_number）缓存最新一条”，每个 tick 只把最新值推给固件
 
 推送一组 mock（默认读取 `backend/mock/openf1_mock_packets.jsonl`）：
 
@@ -234,3 +236,4 @@ cd backend
 cd backend
 .venv/Scripts/python scripts/meme_assets_to_bin.py --audio .\mock\meme.mp3 --out-dir .\out --prefix meme --audio-ac 1 --audio-ar 16000
 ```
+
