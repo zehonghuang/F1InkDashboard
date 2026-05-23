@@ -21,17 +21,7 @@ void F1PageAdapter::BuildMenuLocked() {
     lv_obj_set_style_border_width(menu_root_, 0, 0);
     lv_obj_set_style_pad_all(menu_root_, 0, 0);
 
-    lv_obj_t* header = lv_obj_create(menu_root_);
-    lv_obj_set_size(header, kPageWidth, kHeaderH);
-    lv_obj_align(header, LV_ALIGN_TOP_LEFT, 0, 0);
-    lv_obj_set_style_bg_opa(header, LV_OPA_TRANSP, 0);
-    lv_obj_set_style_border_width(header, 1, 0);
-    lv_obj_set_style_border_side(header, LV_BORDER_SIDE_BOTTOM, 0);
-    lv_obj_set_style_border_color(header, lv_color_black(), 0);
-    lv_obj_set_style_pad_left(header, 8, 0);
-    lv_obj_set_style_pad_right(header, 8, 0);
-    lv_obj_set_style_pad_top(header, 4, 0);
-    lv_obj_set_style_pad_bottom(header, 4, 0);
+    lv_obj_t* header = CreateHeaderBar(menu_root_);
 
     menu_header_left_ = lv_label_create(header);
     lv_obj_set_style_text_font(menu_header_left_, font, 0);

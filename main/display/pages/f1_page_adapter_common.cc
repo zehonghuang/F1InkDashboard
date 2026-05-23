@@ -47,13 +47,7 @@ lv_obj_t* CreateCellLabel(lv_obj_t* parent,
     return l;
 }
 
-void CreateHeader(lv_obj_t* parent,
-                  const lv_font_t* font,
-                  const lv_font_t* icon_font,
-                  lv_obj_t** out_time,
-                  lv_obj_t** out_date,
-                  lv_obj_t** out_batt_icon,
-                  lv_obj_t** out_batt_pct) {
+lv_obj_t* CreateHeaderBar(lv_obj_t* parent) {
     lv_obj_t* bar = lv_obj_create(parent);
     lv_obj_set_size(bar, kPageWidth, kHeaderH);
     lv_obj_align(bar, LV_ALIGN_TOP_MID, 0, 0);
@@ -65,6 +59,17 @@ void CreateHeader(lv_obj_t* parent,
     lv_obj_set_style_pad_right(bar, 8, 0);
     lv_obj_set_style_pad_top(bar, 4, 0);
     lv_obj_set_style_pad_bottom(bar, 4, 0);
+    return bar;
+}
+
+void CreateHeader(lv_obj_t* parent,
+                  const lv_font_t* font,
+                  const lv_font_t* icon_font,
+                  lv_obj_t** out_time,
+                  lv_obj_t** out_date,
+                  lv_obj_t** out_batt_icon,
+                  lv_obj_t** out_batt_pct) {
+    lv_obj_t* bar = CreateHeaderBar(parent);
 
     lv_obj_t* t = lv_label_create(bar);
     if (font != nullptr) {

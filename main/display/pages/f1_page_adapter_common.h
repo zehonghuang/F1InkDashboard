@@ -22,6 +22,7 @@ inline constexpr size_t kMaxCircuitImageBytes = 800 * 1024;
 
 void StyleScreen(lv_obj_t* obj);
 void StyleBox(lv_obj_t* obj);
+lv_obj_t* CreateHeaderBar(lv_obj_t* parent);
 lv_obj_t* CreateCellLabel(lv_obj_t* parent,
                           lv_coord_t x,
                           lv_coord_t y,
