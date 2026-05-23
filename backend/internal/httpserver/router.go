@@ -5,6 +5,7 @@ import (
 	"toinc_f1_backend/internal/config"
 	"toinc_f1_backend/internal/db"
 	"toinc_f1_backend/internal/httpserver/handlers"
+	"toinc_f1_backend/internal/openf1scheduler"
 	"toinc_f1_backend/internal/ws"
 
 	"github.com/gin-gonic/gin"
@@ -93,6 +94,8 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/telemetry/fastest_lap", handlers.TelemetryFastestLap(gormOrNil(database)))
 
 	handlers.RegisterCompatPlaceholders(s.Router)
+
+	openf1scheduler.Start(cfg, gormOrNil(database))
 
 	return s
 }

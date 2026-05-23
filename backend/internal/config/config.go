@@ -47,6 +47,17 @@ type Config struct {
 	OpenF1Enabled     bool
 	OpenF1Mode        string
 	OpenF1IngestToken string
+
+	OpenF1SchedulerEnabled        bool
+	OpenF1SchedulerIntervalSec    int
+	OpenF1SchedulerGraceMin       int
+	OpenF1SchedulerCatchUpEnabled bool
+	OpenF1SchedulerCatchUpLimit   int
+	OpenF1SchedulerPython         string
+	OpenF1SchedulerScript         string
+	OpenF1SchedulerMaxReqPerSec   int
+	OpenF1SchedulerMaxReqPerMin   int
+	OpenF1SchedulerQuiet          bool
 }
 
 func FromEnv() Config {
@@ -69,6 +80,17 @@ func FromEnv() Config {
 		OpenF1Enabled:     getenvBool("OPENF1_ENABLED", false),
 		OpenF1Mode:        getenvTrim("OPENF1_MODE", "mock"),
 		OpenF1IngestToken: getenvTrim("OPENF1_INGEST_TOKEN", ""),
+
+		OpenF1SchedulerEnabled:      getenvBool("OPENF1_SCHEDULER_ENABLED", false),
+		OpenF1SchedulerIntervalSec:  getenvInt("OPENF1_SCHEDULER_INTERVAL_SEC", 60),
+		OpenF1SchedulerGraceMin:     getenvInt("OPENF1_SCHEDULER_GRACE_MIN", 10),
+		OpenF1SchedulerCatchUpEnabled: getenvBool("OPENF1_SCHEDULER_CATCHUP_ENABLED", true),
+		OpenF1SchedulerCatchUpLimit:   getenvInt("OPENF1_SCHEDULER_CATCHUP_LIMIT", 20),
+		OpenF1SchedulerPython:       getenvTrim("OPENF1_SCHEDULER_PYTHON", "python"),
+		OpenF1SchedulerScript:       getenvTrim("OPENF1_SCHEDULER_SCRIPT", "scripts/openf1_sync_all_mysql.py"),
+		OpenF1SchedulerMaxReqPerSec: getenvInt("OPENF1_SCHEDULER_MAX_REQ_PER_SEC", 3),
+		OpenF1SchedulerMaxReqPerMin: getenvInt("OPENF1_SCHEDULER_MAX_REQ_PER_MIN", 30),
+		OpenF1SchedulerQuiet:        getenvBool("OPENF1_SCHEDULER_QUIET", true),
 	}
 }
 

@@ -809,6 +809,7 @@ def _sync_one(
     inserter,
     label: str,
     quiet: bool,
+    summary: dict | None = None,
 ) -> tuple[int, int]:
     url = f"{base}/v1/{endpoint}"
     try:
@@ -816,6 +817,8 @@ def _sync_one(
     except Exception as e:
         if not quiet:
             print(f"openf1 failed ({label}): {type(e).__name__}: {e}", file=sys.stderr, flush=True)
+        if summary is not None:
+            summary[label] = {"endpoint": endpoint, "rows": 0, "insert_attempt": 0, "error": f"{type(e).__name__}: {e}"}
         return (0, 0)
     inserted = 0
     if rows:
@@ -824,6 +827,8 @@ def _sync_one(
         conn.commit()
     if not quiet:
         print(f"openf1 ok ({label}): rows={len(rows)} insert_attempt={inserted}", flush=True)
+    if summary is not None:
+        summary[label] = {"endpoint": endpoint, "rows": len(rows) if rows else 0, "insert_attempt": int(inserted)}
     return (len(rows), inserted)
 
 
@@ -841,6 +846,7 @@ def main() -> int:
     ap.add_argument("--max-req-per-second", type=int, default=3)
     ap.add_argument("--max-req-per-minute", type=int, default=30)
     ap.add_argument("--quiet", action="store_true", default=False)
+    ap.add_argument("--summary-json", action="store_true", default=False)
     args = ap.parse_args()
 
     base = (args.openf1_base or "").rstrip("/")
@@ -865,6 +871,9 @@ def main() -> int:
     conn = _mysql_connect()
     try:
         with httpx.Client(timeout=30.0) as client:
+            summary: dict | None = {} if args.summary_json else None
+            summary_session_key: int | None = None
+
             def _sync_one_session_data(resolved_session_key: int, driver_numbers_override: list[int] | None) -> None:
                 drivers = _http_get_json(client, limiter, f"{base}/v1/drivers", params={"session_key": str(resolved_session_key)})
                 if drivers:
@@ -1087,6 +1096,7 @@ def main() -> int:
                 raise SystemExit(f"no sessions found for session_key={session_key}")
             session = sessions[0]
             resolved_session_key = int(session.get("session_key"))
+            summary_session_key = int(resolved_session_key)
             resolved_meeting_key = session.get("meeting_key")
             if args.meeting_key is not None:
                 mk = str(args.meeting_key)
@@ -1110,6 +1120,7 @@ def main() -> int:
                 _upsert_sessions,
                 f"sessions session_key={resolved_session_key}",
                 args.quiet,
+                summary,
             )
             if resolved_meeting_key is not None:
                 _sync_one(
@@ -1122,6 +1133,7 @@ def main() -> int:
                     _upsert_meetings,
                     f"meetings meeting_key={resolved_meeting_key}",
                     args.quiet,
+                    summary,
                 )
 
             drivers = _http_get_json(client, limiter, f"{base}/v1/drivers", params={"session_key": str(resolved_session_key)})
@@ -1131,6 +1143,8 @@ def main() -> int:
                 conn.commit()
                 if not args.quiet:
                     print(f"openf1 ok (drivers): rows={len(drivers)} upsert={n}", flush=True)
+                if summary is not None:
+                    summary["drivers"] = {"endpoint": "drivers", "rows": len(drivers), "insert_attempt": int(n)}
 
             if not driver_numbers:
                 driver_numbers = sorted({int(it.get("driver_number")) for it in drivers if it.get("driver_number") is not None})
@@ -1145,6 +1159,7 @@ def main() -> int:
                 _upsert_session_result,
                 "session_result",
                 args.quiet,
+                summary,
             )
             _sync_one(
                 client,
@@ -1156,6 +1171,7 @@ def main() -> int:
                 _upsert_starting_grid,
                 "starting_grid",
                 args.quiet,
+                summary,
             )
             _sync_one(
                 client,
@@ -1167,6 +1183,7 @@ def main() -> int:
                 _upsert_stints,
                 "stints",
                 args.quiet,
+                summary,
             )
             _sync_one(
                 client,
@@ -1178,6 +1195,7 @@ def main() -> int:
                 _upsert_championship_drivers,
                 "championship_drivers",
                 args.quiet,
+                summary,
             )
             _sync_one(
                 client,
@@ -1189,6 +1207,7 @@ def main() -> int:
                 _upsert_championship_teams,
                 "championship_teams",
                 args.quiet,
+                summary,
             )
 
             _sync_one(
@@ -1201,6 +1220,7 @@ def main() -> int:
                 _insert_weather,
                 "weather",
                 args.quiet,
+                summary,
             )
             _sync_one(
                 client,
@@ -1212,6 +1232,7 @@ def main() -> int:
                 _insert_race_control,
                 "race_control",
                 args.quiet,
+                summary,
             )
             _sync_one(
                 client,
@@ -1223,6 +1244,7 @@ def main() -> int:
                 _insert_pit,
                 "pit",
                 args.quiet,
+                summary,
             )
             _sync_one(
                 client,
@@ -1234,6 +1256,7 @@ def main() -> int:
                 _insert_overtakes,
                 "overtakes",
                 args.quiet,
+                summary,
             )
             _sync_one(
                 client,
@@ -1245,14 +1268,15 @@ def main() -> int:
                 _insert_intervals,
                 "intervals",
                 args.quiet,
+                summary,
             )
 
             for dn in driver_numbers:
                 params = {"session_key": str(resolved_session_key), "driver_number": str(int(dn))}
-                _sync_one(client, limiter, conn, base, "car_data", params, _insert_car_data, f"car_data driver={dn}", args.quiet)
-                _sync_one(client, limiter, conn, base, "laps", params, _insert_laps, f"laps driver={dn}", args.quiet)
-                _sync_one(client, limiter, conn, base, "location", params, _insert_location, f"location driver={dn}", args.quiet)
-                _sync_one(client, limiter, conn, base, "position", params, _insert_position, f"position driver={dn}", args.quiet)
+                _sync_one(client, limiter, conn, base, "car_data", params, _insert_car_data, f"car_data driver={dn}", args.quiet, summary)
+                _sync_one(client, limiter, conn, base, "laps", params, _insert_laps, f"laps driver={dn}", args.quiet, summary)
+                _sync_one(client, limiter, conn, base, "location", params, _insert_location, f"location driver={dn}", args.quiet, summary)
+                _sync_one(client, limiter, conn, base, "position", params, _insert_position, f"position driver={dn}", args.quiet, summary)
             _sync_one(
                 client,
                 limiter,
@@ -1263,7 +1287,36 @@ def main() -> int:
                 _insert_team_radio,
                 "team_radio",
                 args.quiet,
+                summary,
             )
+
+            if summary is not None and summary_session_key is not None:
+                totals_rows = 0
+                totals_ins = 0
+                ok = True
+                for v in summary.values():
+                    if not isinstance(v, dict):
+                        continue
+                    rr = v.get("rows") or 0
+                    ii = v.get("insert_attempt") or 0
+                    try:
+                        totals_rows += int(rr)
+                    except Exception:
+                        pass
+                    try:
+                        totals_ins += int(ii)
+                    except Exception:
+                        pass
+                    if v.get("error"):
+                        ok = False
+                print(
+                    json.dumps(
+                        {"ok": ok, "session_key": int(summary_session_key), "totals": {"rows": totals_rows, "insert_attempt": totals_ins}, "endpoints": summary},
+                        ensure_ascii=False,
+                        separators=(",", ":"),
+                    ),
+                    flush=True,
+                )
 
     finally:
         conn.close()

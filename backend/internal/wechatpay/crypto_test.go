@@ -49,11 +49,9 @@ func TestParseRSAPrivateKeyFromPEM_PKCS1AndPKCS8(t *testing.T) {
 }
 
 func TestDecryptAES256GCM(t *testing.T) {
-	key := make([]byte, 32)
+	apiV3Key := "0123456789abcdef0123456789abcdef"
+	key := []byte(apiV3Key)
 	nonce := make([]byte, 12)
-	if _, err := rand.Read(key); err != nil {
-		t.Fatal(err)
-	}
 	if _, err := rand.Read(nonce); err != nil {
 		t.Fatal(err)
 	}
@@ -71,7 +69,7 @@ func TestDecryptAES256GCM(t *testing.T) {
 	ct := gcm.Seal(nil, nonce, plain, aad)
 	enc := base64.StdEncoding.EncodeToString(ct)
 
-	got, err := decryptAES256GCM(string(key), EncryptedResource{
+	got, err := decryptAES256GCM(apiV3Key, EncryptedResource{
 		Ciphertext:     enc,
 		Nonce:          string(nonce),
 		AssociatedData: string(aad),
