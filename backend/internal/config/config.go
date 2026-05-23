@@ -37,6 +37,7 @@ type Config struct {
 	UpdateDir      string
 	TrustedProxies []string
 	LogRequests    bool
+	RequireMySQL   bool
 
 	MySQL     MySQLConfig
 	WechatPay WechatPayConfig
@@ -73,6 +74,7 @@ func FromEnv() Config {
 		UpdateDir:         updateDir,
 		TrustedProxies:    parseTrustedProxies(os.Getenv("BACKEND_TRUSTED_PROXIES")),
 		LogRequests:       getenvBool("BACKEND_LOG_REQUESTS", true),
+		RequireMySQL:      getenvBool("BACKEND_REQUIRE_MYSQL", true),
 		MySQL:             mysqlFromEnv(),
 		WechatPay:         wechatPayFromEnv(),
 		NewsWsEnabled:     getenvBool("NEWS_WS_ENABLED", false),
@@ -81,16 +83,16 @@ func FromEnv() Config {
 		OpenF1Mode:        getenvTrim("OPENF1_MODE", "mock"),
 		OpenF1IngestToken: getenvTrim("OPENF1_INGEST_TOKEN", ""),
 
-		OpenF1SchedulerEnabled:      getenvBool("OPENF1_SCHEDULER_ENABLED", false),
-		OpenF1SchedulerIntervalSec:  getenvInt("OPENF1_SCHEDULER_INTERVAL_SEC", 60),
-		OpenF1SchedulerGraceMin:     getenvInt("OPENF1_SCHEDULER_GRACE_MIN", 10),
+		OpenF1SchedulerEnabled:        getenvBool("OPENF1_SCHEDULER_ENABLED", false),
+		OpenF1SchedulerIntervalSec:    getenvInt("OPENF1_SCHEDULER_INTERVAL_SEC", 60),
+		OpenF1SchedulerGraceMin:       getenvInt("OPENF1_SCHEDULER_GRACE_MIN", 10),
 		OpenF1SchedulerCatchUpEnabled: getenvBool("OPENF1_SCHEDULER_CATCHUP_ENABLED", true),
 		OpenF1SchedulerCatchUpLimit:   getenvInt("OPENF1_SCHEDULER_CATCHUP_LIMIT", 20),
-		OpenF1SchedulerPython:       getenvTrim("OPENF1_SCHEDULER_PYTHON", "python"),
-		OpenF1SchedulerScript:       getenvTrim("OPENF1_SCHEDULER_SCRIPT", "scripts/openf1_sync_all_mysql.py"),
-		OpenF1SchedulerMaxReqPerSec: getenvInt("OPENF1_SCHEDULER_MAX_REQ_PER_SEC", 3),
-		OpenF1SchedulerMaxReqPerMin: getenvInt("OPENF1_SCHEDULER_MAX_REQ_PER_MIN", 30),
-		OpenF1SchedulerQuiet:        getenvBool("OPENF1_SCHEDULER_QUIET", true),
+		OpenF1SchedulerPython:         getenvTrim("OPENF1_SCHEDULER_PYTHON", "python"),
+		OpenF1SchedulerScript:         getenvTrim("OPENF1_SCHEDULER_SCRIPT", "scripts/openf1_sync_all_mysql.py"),
+		OpenF1SchedulerMaxReqPerSec:   getenvInt("OPENF1_SCHEDULER_MAX_REQ_PER_SEC", 3),
+		OpenF1SchedulerMaxReqPerMin:   getenvInt("OPENF1_SCHEDULER_MAX_REQ_PER_MIN", 30),
+		OpenF1SchedulerQuiet:          getenvBool("OPENF1_SCHEDULER_QUIET", true),
 	}
 }
 

@@ -17,6 +17,8 @@ if (-not $env:TOINC_F1_MYSQL_PASSWORD) { $env:TOINC_F1_MYSQL_PASSWORD = "123456"
 if (-not $env:TOINC_F1_MYSQL_DB) { $env:TOINC_F1_MYSQL_DB = "toinc_F1" }
 if (-not $env:TOINC_F1_MYSQL_CHARSET) { $env:TOINC_F1_MYSQL_CHARSET = "utf8mb4" }
 
+if (-not $env:OPENF1_SCHEDULER_ENABLED) { $env:OPENF1_SCHEDULER_ENABLED = "true" }
+
 if ($BackendBin) {
     & $BackendBin
     exit $LASTEXITCODE
