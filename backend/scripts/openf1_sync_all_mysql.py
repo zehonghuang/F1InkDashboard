@@ -76,6 +76,17 @@ def _http_get_json(client: httpx.Client, limiter: _RateLimiter, url: str, params
             r = client.get(url, params=params)
             if r.status_code == 429:
                 raise RuntimeError("openf1 429 rate_limited")
+            if r.status_code == 401:
+                detail = ""
+                try:
+                    data = r.json()
+                    if isinstance(data, dict) and data.get("detail"):
+                        detail = str(data.get("detail"))
+                except Exception:
+                    pass
+                if detail:
+                    raise RuntimeError(f"openf1 401 unauthorized: {detail}")
+                raise RuntimeError("openf1 401 unauthorized")
             if r.status_code == 404:
                 try:
                     data = r.json()
@@ -97,6 +108,29 @@ def _http_get_json(client: httpx.Client, limiter: _RateLimiter, url: str, params
                 break
             time.sleep(2.0 + attempt * 2.0)
     raise RuntimeError(f"openf1 request failed: {type(last_err).__name__}: {last_err}")
+
+
+def _get_openf1_headers(base: str, access_token: str, username: str, password: str) -> dict:
+    token = (access_token or "").strip()
+    if token:
+        return {"Authorization": f"Bearer {token}"}
+
+    u = (username or "").strip()
+    p = (password or "").strip()
+    if not u or not p:
+        return {}
+
+    r = httpx.post(
+        f"{base.rstrip('/')}/token",
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        data={"username": u, "password": p},
+        timeout=30.0,
+    )
+    r.raise_for_status()
+    data = r.json()
+    if not isinstance(data, dict) or not data.get("access_token"):
+        raise RuntimeError("openf1 token response invalid")
+    return {"Authorization": f"Bearer {str(data.get('access_token')).strip()}"}
 
 
 def _as_json(v) -> str | None:
@@ -845,6 +879,12 @@ def _sync_one(
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--openf1-base", default=os.getenv("OPENF1_API_BASE", "https://api.openf1.org"))
+    ap.add_argument(
+        "--openf1-access-token",
+        default=os.getenv("OPENF1_ACCESS_TOKEN") or os.getenv("OPENF1_API_KEY") or os.getenv("OPENF1_API_TOKEN") or "",
+    )
+    ap.add_argument("--openf1-username", default=os.getenv("OPENF1_USERNAME", ""))
+    ap.add_argument("--openf1-password", default=os.getenv("OPENF1_PASSWORD", ""))
     ap.add_argument("--session-key", default="latest")
     ap.add_argument("--meeting-key", default=None)
     ap.add_argument("--driver-number", action="append", default=None)
@@ -880,12 +920,41 @@ def main() -> int:
 
     conn = _mysql_connect()
     try:
-        with httpx.Client(timeout=30.0) as client:
+        headers = {"accept": "application/json"}
+        headers.update(_get_openf1_headers(base, args.openf1_access_token, args.openf1_username, args.openf1_password))
+        with httpx.Client(timeout=30.0, headers=headers) as client:
             summary: dict | None = {} if args.summary_json else None
             summary_session_key: int | None = None
+            summary_input_session_key: int | None = None
+            try:
+                if args.session_key not in (None, "", "none") and str(args.session_key).isdigit():
+                    summary_input_session_key = int(str(args.session_key))
+            except Exception:
+                pass
+
+            def _exit_with_summary(err: Exception, label: str, endpoint: str, session_key_value: int | None) -> None:
+                if summary is not None:
+                    summary[label] = {"endpoint": endpoint, "rows": 0, "insert_attempt": 0, "error": f"{type(err).__name__}: {err}"}
+                    print(
+                        json.dumps(
+                            {
+                                "ok": False,
+                                "session_key": session_key_value,
+                                "totals": {"rows": 0, "insert_attempt": 0},
+                                "endpoints": summary,
+                            },
+                            ensure_ascii=False,
+                            separators=(",", ":"),
+                        ),
+                        flush=True,
+                    )
+                raise SystemExit(1) from None
 
             def _sync_one_session_data(resolved_session_key: int, driver_numbers_override: list[int] | None) -> None:
-                drivers = _http_get_json(client, limiter, f"{base}/v1/drivers", params={"session_key": str(resolved_session_key)})
+                try:
+                    drivers = _http_get_json(client, limiter, f"{base}/v1/drivers", params={"session_key": str(resolved_session_key)})
+                except Exception as e:
+                    _exit_with_summary(e, f"drivers session_key={resolved_session_key}", "drivers", int(resolved_session_key))
                 if drivers:
                     with conn.cursor() as cur:
                         n = _upsert_drivers(cur, drivers)
@@ -1101,7 +1170,10 @@ def main() -> int:
                     return 0
 
             session_key = str(args.session_key)
-            sessions = _http_get_json(client, limiter, f"{base}/v1/sessions", params={"session_key": session_key})
+            try:
+                sessions = _http_get_json(client, limiter, f"{base}/v1/sessions", params={"session_key": session_key})
+            except Exception as e:
+                _exit_with_summary(e, f"sessions session_key={session_key}", "sessions", summary_input_session_key)
             if not sessions:
                 raise SystemExit(f"no sessions found for session_key={session_key}")
             session = sessions[0]
@@ -1111,7 +1183,10 @@ def main() -> int:
             if args.meeting_key is not None:
                 mk = str(args.meeting_key)
                 if mk == "latest":
-                    meetings = _http_get_json(client, limiter, f"{base}/v1/meetings", params={"meeting_key": "latest"})
+                    try:
+                        meetings = _http_get_json(client, limiter, f"{base}/v1/meetings", params={"meeting_key": "latest"})
+                    except Exception as e:
+                        _exit_with_summary(e, "meetings meeting_key=latest", "meetings", int(resolved_session_key))
                     if meetings:
                         resolved_meeting_key = int(meetings[0].get("meeting_key"))
                 else:
@@ -1146,7 +1221,10 @@ def main() -> int:
                     summary,
                 )
 
-            drivers = _http_get_json(client, limiter, f"{base}/v1/drivers", params={"session_key": str(resolved_session_key)})
+            try:
+                drivers = _http_get_json(client, limiter, f"{base}/v1/drivers", params={"session_key": str(resolved_session_key)})
+            except Exception as e:
+                _exit_with_summary(e, f"drivers session_key={resolved_session_key}", "drivers", int(resolved_session_key))
             if drivers:
                 with conn.cursor() as cur:
                     n = _upsert_drivers(cur, drivers)

@@ -12,6 +12,23 @@
   justify-content: flex-start;
 }
 
+.actions {
+  margin-top: 16rpx;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.mini-btn {
+  padding: 0 18rpx;
+  height: 56rpx;
+  line-height: 56rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 24rpx;
+}
+
 .lap-pill {
   display: inline-flex;
   align-items: center;

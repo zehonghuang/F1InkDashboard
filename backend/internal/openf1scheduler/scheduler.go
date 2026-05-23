@@ -1,6 +1,7 @@
 package openf1scheduler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -283,7 +285,13 @@ func (s *Scheduler) runOne(r sessionRow) {
 
 	start := time.Now()
 	log.Printf("openf1 scheduler sync start: session_key=%d %s", r.SessionKey, name)
-	out, err := cmd.CombinedOutput()
+	var stdoutBuf bytes.Buffer
+	var stderrBuf bytes.Buffer
+	cmd.Stdout = &stdoutBuf
+	cmd.Stderr = &stderrBuf
+	err = cmd.Run()
+	out := stdoutBuf.Bytes()
+	stderrOut := strings.TrimSpace(stderrBuf.String())
 	cost := time.Since(start).Truncate(time.Millisecond)
 
 	ok := err == nil
@@ -294,14 +302,28 @@ func (s *Scheduler) runOne(r sessionRow) {
 	if err != nil {
 		errMsg = err.Error()
 	}
+	if stderrOut != "" {
+		if errMsg != "" {
+			errMsg = errMsg + "; " + stderrOut
+		} else {
+			errMsg = stderrOut
+		}
+	}
 	if len(out) > 0 {
-		endpointsJSON = string(out)
-		var v map[string]any
-		if e := json.Unmarshal(out, &v); e == nil {
-			if b, ok2 := v["ok"].(bool); ok2 {
+		endpointsJSON = strings.TrimSpace(string(out))
+		var summary any
+		if e := json.Unmarshal([]byte(endpointsJSON), &summary); e == nil {
+			if b, e2 := json.Marshal(summary); e2 == nil {
+				endpointsJSON = string(b)
+			}
+			v, ok2 := summary.(map[string]any)
+			if !ok2 {
+				goto parsedDone
+			}
+			if b, ok3 := v["ok"].(bool); ok3 {
 				ok = b && err == nil
 			}
-			if m, ok2 := v["totals"].(map[string]any); ok2 {
+			if m, ok3 := v["totals"].(map[string]any); ok3 {
 				if n, ok3 := toInt(m["rows"]); ok3 {
 					totalRows = n
 				}
@@ -309,8 +331,8 @@ func (s *Scheduler) runOne(r sessionRow) {
 					totalIns = n
 				}
 			}
-			if !ok && errMsg == "" {
-				if m, ok2 := v["endpoints"].(map[string]any); ok2 {
+			if !ok && (errMsg == "" || strings.HasPrefix(errMsg, "exit status")) {
+				if m, ok3 := v["endpoints"].(map[string]any); ok3 {
 					for _, ev := range m {
 						em, ok3 := ev.(map[string]any)
 						if !ok3 {
@@ -324,7 +346,12 @@ func (s *Scheduler) runOne(r sessionRow) {
 				}
 			}
 		}
+	parsedDone:
+		if !json.Valid([]byte(endpointsJSON)) {
+			endpointsJSON = ""
+		}
 	}
+	errMsg = truncateString(errMsg, 512)
 
 	if runID > 0 {
 		_ = s.db.Exec(
@@ -428,4 +455,18 @@ func nilIfEmptyJSON(s string) any {
 		return nil
 	}
 	return json.RawMessage([]byte(s))
+}
+
+func truncateString(s string, max int) string {
+	if max <= 0 {
+		return ""
+	}
+	if len(s) <= max {
+		return s
+	}
+	r := []rune(s)
+	if len(r) <= max {
+		return s
+	}
+	return string(r[len(r)-max:])
 }

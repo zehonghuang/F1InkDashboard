@@ -1,24 +1,136 @@
 <view class="page has-tabbar">
   <view class="header">
-    <view class="title">⚖️ 全局性能对比</view>
-    <view class="subtitle">跨分站/多车手脚法对齐</view>
+    <view class="title">对比</view>
+    <view class="subtitle" wx:if="{{sessionKey}}">Session {{sessionKey}}</view>
+    <view class="subtitle" wx:else>从“车手”页点“加入对比”，自动填充 A / B</view>
+  </view>
+
+  <view class="tabs">
+    <view class="tab {{activeTab === 'driver' ? 'tab-active' : ''}}" bindtap="onSelectTab" data-tab="driver">车手</view>
+    <view class="tab {{activeTab === 'team' ? 'tab-active' : ''}}" bindtap="onSelectTab" data-tab="team">车队</view>
   </view>
 
   <view class="section">
-    <view class="section-title">对比维度</view>
-    <view class="item" bindtap="onPickMode">按赛道</view>
-    <view class="item-desc">同一赛道不同赛季/车手对齐</view>
-    <view class="divider" />
-    <view class="item" bindtap="onPickMode">按日期</view>
-    <view class="item-desc">按周末日期快速回看</view>
-    <view class="divider" />
-    <view class="item" bindtap="onPickMode">按车手</view>
-    <view class="item-desc">对比驾驶风格/刹车点</view>
+    <view class="section-title">A</view>
+    <view class="slot-row">
+      <view class="slot-main">
+        <view class="slot-name">{{slotA.title}}</view>
+        <view class="slot-meta">{{slotA.sub}}</view>
+      </view>
+      <button class="mini-btn" wx:if="{{slotA.driverNumber}}" bindtap="onClearA">清空</button>
+    </view>
+    <view class="slot-actions" wx:if="{{slotA.driverNumber}}">
+      <picker mode="selector" range="{{slotA.lapOptions}}" range-key="label" value="{{slotA.lapIndex}}" bindchange="onLapChangeA">
+        <view class="lap-pill">
+          <view class="lap-text">{{(slotA.lapOptions[slotA.lapIndex] && slotA.lapOptions[slotA.lapIndex].label) || "最快圈"}}</view>
+          <view class="lap-arrow">▼</view>
+        </view>
+      </picker>
+    </view>
   </view>
 
   <view class="section">
-    <view class="section-title">提示</view>
-    <view class="section-desc">当前仅搭好 UI 框架与入口，后续接入后端数据后即可展示图表与 KPI。</view>
-    <button class="btn btn-primary" bindtap="onPickMode">开始对比</button>
+    <view class="section-title">B</view>
+    <view class="slot-row">
+      <view class="slot-main">
+        <view class="slot-name">{{slotB.title}}</view>
+        <view class="slot-meta">{{slotB.sub}}</view>
+      </view>
+      <button class="mini-btn" wx:if="{{slotB.driverNumber}}" bindtap="onClearB">清空</button>
+    </view>
+    <view class="slot-actions" wx:if="{{slotB.driverNumber}}">
+      <picker mode="selector" range="{{slotB.lapOptions}}" range-key="label" value="{{slotB.lapIndex}}" bindchange="onLapChangeB">
+        <view class="lap-pill">
+          <view class="lap-text">{{(slotB.lapOptions[slotB.lapIndex] && slotB.lapOptions[slotB.lapIndex].label) || "最快圈"}}</view>
+          <view class="lap-arrow">▼</view>
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{activeTab === 'driver' && canCompare}}">
+    <view class="section-title">车手对比</view>
+    <view class="section-desc" wx:if="{{driverCompareText}}">{{driverCompareText}}</view>
+    <view class="kv">
+      <view class="kv-row">
+        <view class="kv-k">A 排名</view>
+        <view class="kv-v">{{driverA.position}}</view>
+      </view>
+      <view class="kv-row">
+        <view class="kv-k">B 排名</view>
+        <view class="kv-v">{{driverB.position}}</view>
+      </view>
+      <view class="kv-row">
+        <view class="kv-k">A 最快圈</view>
+        <view class="kv-v">{{driverA.lapTime}}</view>
+      </view>
+      <view class="kv-row">
+        <view class="kv-k">B 最快圈</view>
+        <view class="kv-v">{{driverB.lapTime}}</view>
+      </view>
+      <view class="kv-row">
+        <view class="kv-k">Δ圈速(A-B)</view>
+        <view class="kv-v">{{driverA.deltaLap}}</view>
+      </view>
+      <view class="kv-row">
+        <view class="kv-k">A 车队</view>
+        <view class="kv-v">{{driverA.team}}</view>
+      </view>
+      <view class="kv-row">
+        <view class="kv-k">B 车队</view>
+        <view class="kv-v">{{driverB.team}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{activeTab === 'driver' && canCompare}}">
+    <view class="section-title">油门 / 刹车 (%)</view>
+    <view class="section-desc" wx:if="{{lapInfoA || lapInfoB}}">{{lapInfoA}}{{lapInfoA && lapInfoB ? "  vs  " : ""}}{{lapInfoB}}</view>
+    <ec-canvas canvasId="cmp_tb_chart" heightRpx="360" option="{{chartOptionTB}}" />
+  </view>
+
+  <view class="section" wx:if="{{activeTab === 'driver' && canCompare}}">
+    <view class="section-title">Speed (km/h) + Δ(A-B)</view>
+    <view class="section-desc" wx:if="{{kpiText}}">{{kpiText}}</view>
+    <ec-canvas canvasId="cmp_speed_chart" heightRpx="360" option="{{chartOptionSpeed}}" />
+  </view>
+
+  <view class="section" wx:if="{{activeTab === 'team' && canCompare}}">
+    <view class="section-title">车队对比</view>
+    <view class="section-desc" wx:if="{{teamCompareText}}">{{teamCompareText}}</view>
+    <view class="kv">
+      <view class="kv-row">
+        <view class="kv-k">A 车队</view>
+        <view class="kv-v">{{teamA.name}}</view>
+      </view>
+      <view class="kv-row">
+        <view class="kv-k">B 车队</view>
+        <view class="kv-v">{{teamB.name}}</view>
+      </view>
+      <view class="kv-row">
+        <view class="kv-k">A 最佳排名</view>
+        <view class="kv-v">{{teamA.bestPos}}</view>
+      </view>
+      <view class="kv-row">
+        <view class="kv-k">B 最佳排名</view>
+        <view class="kv-v">{{teamB.bestPos}}</view>
+      </view>
+      <view class="kv-row">
+        <view class="kv-k">A 最快圈</view>
+        <view class="kv-v">{{teamA.bestLap}}</view>
+      </view>
+      <view class="kv-row">
+        <view class="kv-k">B 最快圈</view>
+        <view class="kv-v">{{teamB.bestLap}}</view>
+      </view>
+      <view class="kv-row">
+        <view class="kv-k">Top2 积分位(越低越好)</view>
+        <view class="kv-v">{{teamA.posSum}} vs {{teamB.posSum}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{slotA.driverNumber || slotB.driverNumber}}">
+    <button class="btn btn-primary" bindtap="onClearAll">清空全部</button>
   </view>
 </view>

@@ -13,6 +13,10 @@
     </picker>
   </view>
 
+  <view class="actions">
+    <button class="mini-btn" bindtap="onAddToCompare">加入对比</button>
+  </view>
+
   <view class="section">
     <view class="section-title">油门 / 刹车 (%)</view>
     <view class="section-desc" wx:if="{{lapInfo}}">{{lapInfo}}</view>

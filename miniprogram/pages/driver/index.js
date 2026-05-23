@@ -41,6 +41,27 @@ Page({
       this.loadChart()
     })
   },
+  onAddToCompare() {
+    const app = getApp()
+    const apiBase = (app && app.globalData && app.globalData.apiBase) || ""
+    if (!apiBase) {
+      wx.showToast({ title: "未配置 API Base", icon: "none" })
+      return
+    }
+    const sessionKey = Number(this.data.sessionKey || 0)
+    const driverNumber = Number(this.data.driverNumber || 0)
+    if (!sessionKey || !driverNumber) return
+    const item = {
+      sessionKey,
+      driverNumber,
+      driverName: this.data.driverName || "",
+      raceName: this.data.raceName || "",
+      sessionName: this.data.sessionName || "",
+      lapNumber: Number(this.data.selectedLapNumber || 0)
+    }
+    wx.setStorageSync("mp_compare_pending_add", { ts: Date.now(), item })
+    wx.switchTab({ url: "/pages/compare/index" })
+  },
   loadLapOptions() {
     const app = getApp()
     const apiBase = (app && app.globalData && app.globalData.apiBase) || ""

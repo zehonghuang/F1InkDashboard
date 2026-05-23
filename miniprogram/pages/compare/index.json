@@ -1,4 +1,6 @@
 {
-  "usingComponents": {},
+  "usingComponents": {
+    "ec-canvas": "/components/ec-canvas/index"
+  },
   "navigationBarTitleText": "对比"
 }
