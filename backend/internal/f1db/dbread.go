@@ -13,6 +13,12 @@ import (
 	"gorm.io/gorm"
 )
 
+var (
+	ErrNoOpenF1ChampionshipData = errors.New("no_openf1_championship_data")
+	ErrNoDriverStandings        = errors.New("no_driver_standings")
+	ErrNoConstructorStandings   = errors.New("no_constructor_standings")
+)
+
 func OpenF1LatestRaceSessionKey(db *gorm.DB, season int) (int, error) {
 	type row struct {
 		SessionKey int `gorm:"column:session_key"`
@@ -53,7 +59,7 @@ func OpenF1LatestRaceSessionKey(db *gorm.DB, season int) (int, error) {
 		return 0, err2
 	}
 	if r.SessionKey == 0 {
-		return 0, errors.New("no_openf1_championship_data")
+		return 0, ErrNoOpenF1ChampionshipData
 	}
 	return r.SessionKey, nil
 }
@@ -87,7 +93,7 @@ func OpenF1DriverStandingsJSON(db *gorm.DB, sessionKey int, lang string, season 
 		return nil, err
 	}
 	if len(rows) == 0 {
-		return nil, errors.New("no_driver_standings")
+		return nil, ErrNoDriverStandings
 	}
 
 	constructorID := func(teamName string) string {
@@ -186,7 +192,7 @@ func OpenF1ConstructorStandingsJSON(db *gorm.DB, sessionKey int, lang string) (m
 		return nil, err
 	}
 	if len(rows) == 0 {
-		return nil, errors.New("no_constructor_standings")
+		return nil, ErrNoConstructorStandings
 	}
 
 	constructorID := func(teamName string) string {

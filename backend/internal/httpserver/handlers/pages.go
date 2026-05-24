@@ -3,6 +3,8 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -148,13 +150,41 @@ func buildPagesResponse(ctx context.Context, cfg config.Config, db *gorm.DB, cch
 
 	driverStandings, err := f1db.OpenF1DriverStandingsJSON(db, latestSK, lang, season)
 	if err != nil {
-		LogReqError(c, "pages", "driver_standings_unavailable", err)
-		return gin.H{"ok": false, "error": "driver_standings_unavailable"}, http.StatusServiceUnavailable
+		if errors.Is(err, f1db.ErrNoDriverStandings) {
+			driverStandings = map[string]any{
+				"MRData": map[string]any{
+					"series": "f1",
+					"url":    fmt.Sprintf("mysql://toinc_F1/openf1_championship_drivers?session_key=%d", latestSK),
+					"StandingsTable": map[string]any{
+						"StandingsLists": []any{
+							map[string]any{"DriverStandings": []any{}},
+						},
+					},
+				},
+			}
+		} else {
+			LogReqError(c, "pages", "driver_standings_unavailable", err)
+			return gin.H{"ok": false, "error": "driver_standings_unavailable"}, http.StatusServiceUnavailable
+		}
 	}
 	constructorStandings, err := f1db.OpenF1ConstructorStandingsJSON(db, latestSK, lang)
 	if err != nil {
-		LogReqError(c, "pages", "constructor_standings_unavailable", err)
-		return gin.H{"ok": false, "error": "constructor_standings_unavailable"}, http.StatusServiceUnavailable
+		if errors.Is(err, f1db.ErrNoConstructorStandings) {
+			constructorStandings = map[string]any{
+				"MRData": map[string]any{
+					"series": "f1",
+					"url":    fmt.Sprintf("mysql://toinc_F1/openf1_championship_teams?session_key=%d", latestSK),
+					"StandingsTable": map[string]any{
+						"StandingsLists": []any{
+							map[string]any{"ConstructorStandings": []any{}},
+						},
+					},
+				},
+			}
+		} else {
+			LogReqError(c, "pages", "constructor_standings_unavailable", err)
+			return gin.H{"ok": false, "error": "constructor_standings_unavailable"}, http.StatusServiceUnavailable
+		}
 	}
 
 	lastResults, _ := f1db.OpenF1LastNResultsJSON(db, season, 5, lang)
