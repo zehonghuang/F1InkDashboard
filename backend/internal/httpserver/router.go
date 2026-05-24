@@ -72,6 +72,8 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/ui/pages/race-day", handlers.UiPagesRaceDay(cfg, gormOrNil(database), s.Cache, cfg.StaticDir))
 	s.Router.GET("/api/v1/ui/pages/off-week", handlers.UiPagesOffWeek(cfg, gormOrNil(database), s.Cache, cfg.StaticDir))
 
+	s.Router.POST("/api/v1/device/boot", handlers.DeviceBoot(gormOrNil(database)))
+
 	s.Router.GET("/api/v1/mp/archive", handlers.MpArchive(gormOrNil(database), cfg.StaticDir))
 	s.Router.GET("/api/v1/mp/race-sessions", handlers.MpRaceSessions(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/session-results", handlers.MpSessionResults(gormOrNil(database)))

@@ -39,6 +39,7 @@ set(SOURCES
     "common/sleep_manager.cc"
     "common/time_sync.cc"
     "common/ota_update.cc"
+    "common/device_boot_report.cc"
     "boards/common/board.cc"
     "boards/common/button.cc"
     "boards/common/i2c_bus_lock.cc"
