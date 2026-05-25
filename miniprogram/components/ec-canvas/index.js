@@ -42,7 +42,9 @@ Component({
   observers: {
     heightRpx(v) {
       const style = this.buildCanvasStyle(v)
-      this.setData({ canvasStyle: style })
+      this.setData({ canvasStyle: style }, () => {
+        this.resizeToDom()
+      })
     },
     option(v) {
       if (v) {
@@ -81,7 +83,7 @@ Component({
           const w = res && res.width
           const h = res && res.height
           if (!w || !h) return
-          const dpr = 1
+          const dpr = wx.getSystemInfoSync().pixelRatio || 2
           this._chart = echarts.init(canvas, null, { width: w, height: h, devicePixelRatio: dpr })
           canvas.setChart(this._chart)
           this.setData({ inited: true }, () => {
@@ -122,7 +124,38 @@ Component({
       }
       try {
         this._chart.setOption(option, true)
+        this.resizeToDom()
       } catch (e) {}
+    },
+    resizeToDom() {
+      if (!this._chart) return
+      const query = wx.createSelectorQuery().in(this)
+      if (this.data.isUseNewCanvas) {
+        query
+          .select('.ec-canvas')
+          .fields({ node: true, size: true })
+          .exec((res) => {
+            const info = res && res[0]
+            const width = info && info.width
+            const height = info && info.height
+            if (!width || !height) return
+            try {
+              this._chart.resize({ width, height })
+            } catch (e) {}
+          })
+      } else {
+        query
+          .select('.ec-canvas')
+          .boundingClientRect((rect) => {
+            const width = rect && rect.width
+            const height = rect && rect.height
+            if (!width || !height) return
+            try {
+              this._chart.resize({ width, height })
+            } catch (e) {}
+          })
+          .exec()
+      }
     },
     touchStart(e) {
       if (this._chart && e.touches && e.touches.length) {

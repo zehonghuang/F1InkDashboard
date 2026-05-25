@@ -195,16 +195,18 @@ Page({
           xAxis: {
             type: "category",
             data: xLabels,
-            axisLabel: { color: "rgba(255,255,255,0.55)", interval: 0 },
-            axisLine: { lineStyle: { color: "rgba(255,255,255,0.18)" } },
+            axisLabel: { color: "rgba(255,255,255,0.55)", interval: 0, fontSize: 12 },
+            axisLine: { lineStyle: { color: "rgba(255,255,255,0.18)", width: 1 } },
             axisTick: { show: false }
           },
           yAxis: {
             type: "value",
             min: 0,
             max: 100,
-            axisLabel: { color: "rgba(255,255,255,0.55)" },
-            splitLine: { lineStyle: { color: "rgba(255,255,255,0.08)" } },
+            axisLabel: { color: "rgba(255,255,255,0.55)", fontSize: 12 },
+            splitLine: { lineStyle: { color: "rgba(255,255,255,0.08)", width: 1 } },
+            minorTick: { show: true, splitNumber: 2, lineStyle: { color: "rgba(255,255,255,0.06)", width: 1 } },
+            minorSplitLine: { show: true, lineStyle: { color: "rgba(255,255,255,0.04)", width: 1 } },
             axisLine: { show: false }
           },
           series: [
@@ -214,16 +216,16 @@ Page({
               data: throttle,
               showSymbol: false,
               smooth: false,
-              lineStyle: { width: 2 },
+              lineStyle: { width: 1.5 },
               markLine: {
                 silent: true,
                 symbol: "none",
-                lineStyle: { color: "rgba(255,255,255,0.12)", type: "dashed" },
+                lineStyle: { color: "rgba(255,255,255,0.12)", type: "dashed", width: 1 },
                 label: { show: false },
                 data: [{ xAxis: i1 }, { xAxis: i2 }]
               }
             },
-            { name: "Brake", type: "line", data: brake, showSymbol: false, smooth: false, lineStyle: { width: 2 } }
+            { name: "Brake", type: "line", data: brake, showSymbol: false, smooth: false, lineStyle: { width: 1.5 } }
           ]
         }
 
@@ -236,14 +238,16 @@ Page({
           xAxis: {
             type: "category",
             data: xLabels,
-            axisLabel: { color: "rgba(255,255,255,0.55)", interval: 0 },
-            axisLine: { lineStyle: { color: "rgba(255,255,255,0.18)" } },
+            axisLabel: { color: "rgba(255,255,255,0.55)", interval: 0, fontSize: 12 },
+            axisLine: { lineStyle: { color: "rgba(255,255,255,0.18)", width: 1 } },
             axisTick: { show: false }
           },
           yAxis: {
             type: "value",
-            axisLabel: { color: "rgba(255,255,255,0.55)" },
-            splitLine: { lineStyle: { color: "rgba(255,255,255,0.08)" } },
+            axisLabel: { color: "rgba(255,255,255,0.55)", fontSize: 12 },
+            splitLine: { lineStyle: { color: "rgba(255,255,255,0.08)", width: 1 } },
+            minorTick: { show: true, splitNumber: 2, lineStyle: { color: "rgba(255,255,255,0.06)", width: 1 } },
+            minorSplitLine: { show: true, lineStyle: { color: "rgba(255,255,255,0.04)", width: 1 } },
             axisLine: { show: false }
           },
           series: [
@@ -253,11 +257,11 @@ Page({
               data: speed,
               showSymbol: false,
               smooth: false,
-              lineStyle: { width: 2 },
+              lineStyle: { width: 1.5 },
               markLine: {
                 silent: true,
                 symbol: "none",
-                lineStyle: { color: "rgba(255,255,255,0.12)", type: "dashed" },
+                lineStyle: { color: "rgba(255,255,255,0.12)", type: "dashed", width: 1 },
                 label: { show: false },
                 data: [{ xAxis: i1 }, { xAxis: i2 }]
               }

@@ -339,3 +339,162 @@ export function renderLapControlsSeriesChart(canvas, payload) {
     plugins: [sectorLinesPlugin(lines)]
   });
 }
+
+function normalizeHexColor(s) {
+  if (!s) return null;
+  const t = String(s).trim();
+  if (!t) return null;
+  if (/^#[0-9a-fA-F]{6}$/.test(t)) return t.toUpperCase();
+  if (/^[0-9a-fA-F]{6}$/.test(t)) return `#${t}`.toUpperCase();
+  return null;
+}
+
+function boxplotPlugin() {
+  return {
+    id: "boxplot",
+    afterDatasetsDraw(chart) {
+      const ds0 = chart.data?.datasets?.[0];
+      const items = Array.isArray(ds0?.data) ? ds0.data : [];
+      if (!items.length) return;
+      const xScale = chart.scales?.x;
+      const yScale = chart.scales?.y;
+      if (!xScale || !yScale) return;
+      const { ctx } = chart;
+      const boxW = Math.max(10, Math.min(28, (xScale.width / Math.max(2, items.length)) * 0.6));
+
+      ctx.save();
+      ctx.lineWidth = 2;
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
+        const x = xScale.getPixelForValue(i);
+        if (!Number.isFinite(x)) continue;
+        const q1 = Number(it?.q1);
+        const q3 = Number(it?.q3);
+        const med = Number(it?.median);
+        const wl = Number(it?.whisker_low);
+        const wh = Number(it?.whisker_high);
+        if (![q1, q3, med, wl, wh].every((v) => Number.isFinite(v))) continue;
+
+        const color = normalizeHexColor(it?.team_colour) || "#111111";
+        const fill = "rgba(17,17,17,0.08)";
+
+        const yQ1 = yScale.getPixelForValue(q1);
+        const yQ3 = yScale.getPixelForValue(q3);
+        const yMed = yScale.getPixelForValue(med);
+        const yWL = yScale.getPixelForValue(wl);
+        const yWH = yScale.getPixelForValue(wh);
+
+        const left = x - boxW / 2;
+        const top = Math.min(yQ1, yQ3);
+        const h = Math.abs(yQ3 - yQ1);
+
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = color;
+        ctx.beginPath();
+        ctx.rect(left, top, boxW, Math.max(1, h));
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(left, yMed);
+        ctx.lineTo(left + boxW, yMed);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x, yQ3);
+        ctx.lineTo(x, yWH);
+        ctx.moveTo(x, yQ1);
+        ctx.lineTo(x, yWL);
+        ctx.stroke();
+
+        const capW = boxW * 0.7;
+        ctx.beginPath();
+        ctx.moveTo(x - capW / 2, yWH);
+        ctx.lineTo(x + capW / 2, yWH);
+        ctx.moveTo(x - capW / 2, yWL);
+        ctx.lineTo(x + capW / 2, yWL);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  };
+}
+
+export function renderLapTimeBoxplotChart(canvas, labels, items) {
+  const med = (items || []).map((x) => ({ x: x.label, y: x.median, ...x }));
+  const bounds = (items || []).reduce(
+    (acc, it) => {
+      const lo0 = Number(it?.min);
+      const lo1 = Number(it?.whisker_low);
+      const hi0 = Number(it?.max);
+      const hi1 = Number(it?.whisker_high);
+      const lo = Number.isFinite(lo1) ? lo1 : lo0;
+      const hi = Number.isFinite(hi1) ? hi1 : hi0;
+      if (!Number.isFinite(lo) || !Number.isFinite(hi)) return acc;
+      if (acc == null) return { lo, hi };
+      return { lo: Math.min(acc.lo, lo), hi: Math.max(acc.hi, hi) };
+    },
+    null
+  );
+
+  const opt = baseOptions({ title: "Lap Time Boxplot" });
+  opt.interaction = { mode: "nearest", intersect: true };
+  opt.plugins.tooltip.callbacks = {
+    title: (ctx) => String(ctx?.[0]?.label ?? ""),
+    label: (ctx) => {
+      const raw = ctx?.raw || {};
+      const q1 = raw?.q1;
+      const medV = raw?.median;
+      const q3 = raw?.q3;
+      const wl = raw?.whisker_low;
+      const wh = raw?.whisker_high;
+      const n = raw?.sample_count;
+      if ([q1, medV, q3, wl, wh].every((v) => Number.isFinite(Number(v)))) {
+        return `n=${n} wl=${Number(wl).toFixed(3)} q1=${Number(q1).toFixed(3)} med=${Number(medV).toFixed(
+          3
+        )} q3=${Number(q3).toFixed(3)} wh=${Number(wh).toFixed(3)}`;
+      }
+      return `median: ${Number(ctx.parsed.y).toFixed(3)} s`;
+    }
+  };
+  opt.scales.x = {
+    type: "category",
+    labels,
+    grid: { color: "#e6e6e6" },
+    ticks: { color: "#111", maxRotation: 0, autoSkip: false }
+  };
+  opt.scales.y = {
+    grid: { color: "#e6e6e6" },
+    ticks: { color: "#111" },
+    title: { display: true, text: "Lap Time (s)", color: "#111" }
+  };
+  if (bounds && Number.isFinite(bounds.lo) && Number.isFinite(bounds.hi) && bounds.hi > bounds.lo) {
+    const range = bounds.hi - bounds.lo;
+    const pad = range / 2;
+    const minY = Math.max(0, bounds.lo - pad);
+    const maxY = bounds.hi + pad;
+    opt.scales.y.min = Math.floor(minY * 1000) / 1000;
+    opt.scales.y.max = Math.ceil(maxY * 1000) / 1000;
+  }
+
+  return new Chart(canvas, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "median",
+          data: med,
+          parsing: { xAxisKey: "x", yAxisKey: "y" },
+          showLine: false,
+          pointRadius: 2,
+          pointHoverRadius: 8,
+          borderColor: "rgba(0,0,0,0)",
+          backgroundColor: "rgba(0,0,0,0)"
+        },
+      ]
+    },
+    options: opt,
+    plugins: [boxplotPlugin()]
+  });
+}

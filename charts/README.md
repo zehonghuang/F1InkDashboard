@@ -17,6 +17,7 @@ API：
 - `GET /api/v1/telemetry/laps/available`
 - `GET /api/v1/telemetry/laps?driver_number=63&session_key=9161`
 - `GET /api/v1/telemetry/lap_trace?driver_number=63&session_key=9161&lap_number=8`
+- `GET /api/v1/telemetry/lap_time_boxplot?session_key=9161&driver_numbers=63,44,1`
 
 ## Python 批量渲染 PNG
 

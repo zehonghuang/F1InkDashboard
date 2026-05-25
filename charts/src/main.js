@@ -1,6 +1,13 @@
 import "./styles.css";
-import { fetchAvailableDrivers, fetchLaps, fetchLapTrace, fetchLapControlsSeries, apiBase } from "./api";
-import { destroyIfAny, renderLapTimeChart, renderSpeedChart, renderLapTraceChart, renderLapControlsSeriesChart } from "./charts";
+import { fetchAvailableDrivers, fetchLaps, fetchLapTrace, fetchLapControlsSeries, fetchLapTimeBoxplot, apiBase } from "./api";
+import {
+  destroyIfAny,
+  renderLapTimeChart,
+  renderSpeedChart,
+  renderLapTraceChart,
+  renderLapControlsSeriesChart,
+  renderLapTimeBoxplotChart
+} from "./charts";
 
 function el(tag, props = {}, children = []) {
   const e = document.createElement(tag);
@@ -69,12 +76,14 @@ async function bootstrap() {
   const speedChartRef = { current: null };
   const traceChartRef = { current: null };
   const seriesChartRef = { current: null };
+  const boxplotChartRef = { current: null };
 
   const title = el("div", { className: "title", text: "Telemetry Dashboard (Laps)" });
   const subtitle = el("div", { className: "subtitle", text: `API: ${apiBase()}` });
   const header = el("div", { className: "header" }, [title, subtitle]);
 
   const driverSelect = el("select");
+  const boxplotDriverSelect = el("select", { multiple: true, size: "8" });
   const sessionInput = el("input", { type: "number", placeholder: "留空=latest" });
   const lapThirdSelect = el("select");
   lapThirdSelect.appendChild(option("all", "全部"));
@@ -83,6 +92,10 @@ async function bootstrap() {
   lapThirdSelect.appendChild(option("3", "后 1/3"));
   const lapSelect = el("select");
   const loadBtn = el("button", { text: "加载" });
+  const boxplotBtn = el("button", { text: "加载箱线图" });
+  const boxplotSelectAllBtn = el("button", { text: "全选" });
+  const boxplotClearBtn = el("button", { text: "清空" });
+  const includePitOut = el("input", { type: "checkbox" });
   const statusText = el("div", { className: "subtitle", text: "" });
 
   const controls = el("div", { className: "controls" }, [
@@ -91,6 +104,10 @@ async function bootstrap() {
     el("div", {}, [el("label", { text: "Lap 范围" }), lapThirdSelect]),
     el("div", {}, [el("label", { text: "查看圈" }), lapSelect]),
     el("div", {}, [el("label", { text: " " }), loadBtn]),
+    el("div", {}, [el("label", { text: "Boxplot Drivers (Ctrl/Shift 多选)" }), boxplotDriverSelect]),
+    el("div", {}, [el("label", { text: " " }), el("div", {}, [boxplotSelectAllBtn, boxplotClearBtn])]),
+    el("div", {}, [el("label", { text: "包含 pit out" }), includePitOut]),
+    el("div", {}, [el("label", { text: " " }), boxplotBtn]),
     el("div", {}, [el("label", { text: "状态" }), statusText])
   ]);
 
@@ -98,10 +115,12 @@ async function bootstrap() {
   const speedCanvas = el("canvas");
   const traceCanvas = el("canvas");
   const seriesCanvas = el("canvas");
+  const boxplotCanvas = el("canvas");
   const lapWrap = el("div", { style: "height: 340px;" }, [lapCanvas]);
   const speedWrap = el("div", { style: "height: 340px;" }, [speedCanvas]);
   const traceWrap = el("div", { style: "height: 340px;" }, [traceCanvas]);
   const seriesWrap = el("div", { style: "height: 340px;" }, [seriesCanvas]);
+  const boxplotWrap = el("div", { style: "height: 420px;" }, [boxplotCanvas]);
 
   const lapLegend = el("div", { className: "legend" }, [
     el("span", { className: "legend-item" }, [el("span", { className: "sample-line" }), el("span", { text: "Lap" })]),
@@ -140,7 +159,8 @@ async function bootstrap() {
     seriesWrap,
     seriesLegend
   ]);
-  const grid = el("div", { className: "grid" }, [lapCard, speedCard, traceCard, seriesCard]);
+  const boxplotCard = el("div", { className: "card" }, [el("h3", { text: "Lap Time Boxplot (s)" }), boxplotWrap]);
+  const grid = el("div", { className: "grid" }, [lapCard, speedCard, traceCard, seriesCard, boxplotCard]);
 
   const container = el("div", { className: "container" }, [header, controls, grid]);
   root.appendChild(container);
@@ -208,23 +228,71 @@ async function bootstrap() {
     }
   }
 
+  async function loadBoxplot() {
+    const sk = sessionInput.value ? parseInt(sessionInput.value, 10) : null;
+    const driverNumbers = Array.from(boxplotDriverSelect.selectedOptions || [])
+      .map((o) => parseInt(o.value, 10))
+      .filter((x) => Number.isFinite(x) && x > 0);
+    destroyIfAny(boxplotChartRef);
+    boxplotBtn.disabled = true;
+    setStatus("加载箱线图中...");
+    try {
+      if (sk == null || !Number.isFinite(sk) || sk <= 0) {
+        throw new Error("boxplot 需要填写 session_key");
+      }
+      if (!driverNumbers.length) {
+        throw new Error("boxplot 至少选择 1 个车手");
+      }
+      const res = await fetchLapTimeBoxplot({ sessionKey: sk, driverNumbers, includePitOut: includePitOut.checked });
+      const items = (res.items || []).map((x) => ({
+        ...x,
+        label: x?.name_acronym || String(x?.driver_number ?? "")
+      }));
+      const labels = items.map((x) => x.label);
+      boxplotChartRef.current = renderLapTimeBoxplotChart(boxplotCanvas, labels, items);
+      setStatus(`boxplot session_key=${sk} drivers=${items.length}`);
+    } catch (e) {
+      setStatus(String(e?.message || e));
+    } finally {
+      boxplotBtn.disabled = false;
+    }
+  }
+
   loadBtn.addEventListener("click", load);
   lapThirdSelect.addEventListener("change", load);
   lapSelect.addEventListener("change", load);
+  boxplotBtn.addEventListener("click", loadBoxplot);
+  boxplotDriverSelect.addEventListener("change", loadBoxplot);
+  includePitOut.addEventListener("change", loadBoxplot);
+  boxplotSelectAllBtn.addEventListener("click", () => {
+    for (const o of Array.from(boxplotDriverSelect.options || [])) o.selected = true;
+    loadBoxplot();
+  });
+  boxplotClearBtn.addEventListener("click", () => {
+    for (const o of Array.from(boxplotDriverSelect.options || [])) o.selected = false;
+    destroyIfAny(boxplotChartRef);
+    setStatus("boxplot 已清空");
+  });
 
   setStatus("读取 driver 列表...");
   try {
     const items = await fetchAvailableDrivers();
     driverSelect.innerHTML = "";
+    boxplotDriverSelect.innerHTML = "";
     for (const it of items) {
       const dn = it.driver_number;
       driverSelect.appendChild(option(dn, dn));
+      boxplotDriverSelect.appendChild(option(dn, dn));
     }
     if (items.length) {
       driverSelect.value = String(items[0].driver_number);
       if (items[0].latest_session_key) sessionInput.value = String(items[0].latest_session_key);
+      for (let i = 0; i < Math.min(5, boxplotDriverSelect.options.length); i++) {
+        boxplotDriverSelect.options[i].selected = true;
+      }
       setStatus("就绪");
       await load();
+      await loadBoxplot();
     } else {
       setStatus("MySQL 里没有 openf1_laps 数据");
     }

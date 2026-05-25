@@ -1,5 +1,7 @@
 {
-  "usingComponents": {},
+  "usingComponents": {
+    "ec-canvas": "/components/ec-canvas/index"
+  },
   "navigationBarTitleText": "车手排名",
   "enablePullDownRefresh": true,
   "backgroundTextStyle": "dark"

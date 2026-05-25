@@ -4,7 +4,12 @@
     <view class="subtitle">{{raceName}}</view>
   </view>
 
-  <view class="list">
+  <view class="tabs">
+    <view class="tab {{activeTab===0?'tab-active':''}}" data-tab="0" bindtap="onTabTap">排名</view>
+    <view class="tab {{activeTab===1?'tab-active':''}}" data-tab="1" bindtap="onTabTap">箱线图</view>
+  </view>
+
+  <view wx:if="{{activeTab===0}}" class="list">
     <block wx:for="{{items}}" wx:key="driver_number">
       <view class="card" style="{{item.cardStyle}}" bindtap="onDriverTap" data-driver-number="{{item.driver_number}}" data-driver-name="{{item.full_name || item.driver_name || ''}}">
         <view class="card-left">
@@ -23,5 +28,51 @@
         </view>
       </view>
     </block>
+  </view>
+
+  <view wx:if="{{activeTab===1}}" class="boxplot">
+    <view class="boxplot-bar">
+      <view class="boxplot-selected">{{selectedDriverText}}</view>
+      <view class="boxplot-btn" bindtap="onOpenPicker">选择车手</view>
+    </view>
+    <view class="boxplot-chart">
+      <ec-canvas
+        wx:if="{{!showPicker}}"
+        canvasId="boxplot_chart"
+        heightRpx="{{boxplotHeightRpx}}"
+        option="{{chartOptionBoxplot}}"
+      />
+    </view>
+  </view>
+
+  <view wx:if="{{showPicker}}" class="picker-mask" bindtap="onClosePicker"></view>
+  <view wx:if="{{showPicker}}" class="picker">
+    <view class="picker-header">
+      <view class="picker-title">选择车手</view>
+      <view class="picker-actions">
+        <view class="picker-btn" bindtap="onPickerCancel">取消</view>
+        <view class="picker-btn picker-btn-primary" bindtap="onPickerConfirm">确定</view>
+      </view>
+    </view>
+    <view class="picker-list">
+      <block wx:for="{{items}}" wx:key="driver_number">
+        <view class="card" style="{{item.cardStyle}}" bindtap="onTogglePickDriver" data-driver-number="{{item.driver_number}}">
+          <view class="card-left">
+            <image class="avatar" src="{{item.headshot_url}}" mode="aspectFit" wx:if="{{item.headshot_url}}" />
+          </view>
+          <view class="card-mid">
+            <view class="driver-row">
+              <view class="driver-no">#{{item.driver_number}}</view>
+              <view class="driver">{{item.full_name || item.driver_name || item.name_acronym || item.driver_number}}</view>
+            </view>
+            <view class="team">{{item.team_name || '-'}}</view>
+            <view class="lap">{{item.lap_time || '-'}}</view>
+          </view>
+          <view class="card-right">
+            <view class="pick-mark">{{pickedMap[item.driver_number] ? '✓' : ''}}</view>
+          </view>
+        </view>
+      </block>
+    </view>
   </view>
 </view>

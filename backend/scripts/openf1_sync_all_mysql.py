@@ -65,6 +65,9 @@ def _mysql_connect():
         charset="utf8mb4",
         cursorclass=pymysql.cursors.DictCursor,
         autocommit=False,
+        connect_timeout=5,
+        read_timeout=60,
+        write_timeout=60,
     )
 
 
@@ -848,6 +851,7 @@ def main() -> int:
     ap.add_argument("--session-key", default="latest")
     ap.add_argument("--meeting-key", default=None)
     ap.add_argument("--driver-number", action="append", default=None)
+    ap.add_argument("--mode", default="full")
     ap.add_argument("--sync-all-sessions", action="store_true", default=False)
     ap.add_argument("--sync-all-team-radio", action="store_true", default=False)
     ap.add_argument("--sync-all-data", action="store_true", default=False)
@@ -864,6 +868,10 @@ def main() -> int:
         raise SystemExit("--openf1-base is required")
 
     limiter = _RateLimiter(max_per_second=args.max_req_per_second, max_per_minute=args.max_req_per_minute)
+
+    mode = str(args.mode or "full").strip().lower()
+    if mode not in ("full", "laps", "results"):
+        raise SystemExit("--mode must be: full|laps|results")
 
     driver_numbers: list[int] = []
     if args.driver_number:
@@ -902,130 +910,132 @@ def main() -> int:
                     limiter,
                     conn,
                     base,
-                    "session_result",
-                    {"session_key": str(resolved_session_key)},
-                    _upsert_session_result,
-                    f"session_result session_key={resolved_session_key}",
-                    args.quiet,
-                )
-                _sync_one(
-                    client,
-                    limiter,
-                    conn,
-                    base,
-                    "starting_grid",
-                    {"session_key": str(resolved_session_key)},
-                    _upsert_starting_grid,
-                    f"starting_grid session_key={resolved_session_key}",
-                    args.quiet,
-                )
-                _sync_one(
-                    client,
-                    limiter,
-                    conn,
-                    base,
-                    "stints",
-                    {"session_key": str(resolved_session_key)},
-                    _upsert_stints,
-                    f"stints session_key={resolved_session_key}",
-                    args.quiet,
-                )
-                _sync_one(
-                    client,
-                    limiter,
-                    conn,
-                    base,
-                    "championship_drivers",
-                    {"session_key": str(resolved_session_key)},
-                    _upsert_championship_drivers,
-                    f"championship_drivers session_key={resolved_session_key}",
-                    args.quiet,
-                )
-                _sync_one(
-                    client,
-                    limiter,
-                    conn,
-                    base,
-                    "championship_teams",
-                    {"session_key": str(resolved_session_key)},
-                    _upsert_championship_teams,
-                    f"championship_teams session_key={resolved_session_key}",
-                    args.quiet,
-                )
-
-                _sync_one(
-                    client,
-                    limiter,
-                    conn,
-                    base,
-                    "weather",
-                    {"session_key": str(resolved_session_key)},
-                    _insert_weather,
-                    f"weather session_key={resolved_session_key}",
-                    args.quiet,
-                )
-                _sync_one(
-                    client,
-                    limiter,
-                    conn,
-                    base,
                     "race_control",
                     {"session_key": str(resolved_session_key)},
                     _insert_race_control,
                     f"race_control session_key={resolved_session_key}",
                     args.quiet,
                 )
-                _sync_one(
-                    client,
-                    limiter,
-                    conn,
-                    base,
-                    "pit",
-                    {"session_key": str(resolved_session_key)},
-                    _insert_pit,
-                    f"pit session_key={resolved_session_key}",
-                    args.quiet,
-                )
-                _sync_one(
-                    client,
-                    limiter,
-                    conn,
-                    base,
-                    "overtakes",
-                    {"session_key": str(resolved_session_key)},
-                    _insert_overtakes,
-                    f"overtakes session_key={resolved_session_key}",
-                    args.quiet,
-                )
-                _sync_one(
-                    client,
-                    limiter,
-                    conn,
-                    base,
-                    "intervals",
-                    {"session_key": str(resolved_session_key)},
-                    _insert_intervals,
-                    f"intervals session_key={resolved_session_key}",
-                    args.quiet,
-                )
-                _sync_one(
-                    client,
-                    limiter,
-                    conn,
-                    base,
-                    "team_radio",
-                    {"session_key": str(resolved_session_key)},
-                    _insert_team_radio,
-                    f"team_radio session_key={resolved_session_key}",
-                    args.quiet,
-                )
+                if mode in ("full", "results"):
+                    _sync_one(
+                        client,
+                        limiter,
+                        conn,
+                        base,
+                        "session_result",
+                        {"session_key": str(resolved_session_key)},
+                        _upsert_session_result,
+                        f"session_result session_key={resolved_session_key}",
+                        args.quiet,
+                    )
+                if mode == "full":
+                    _sync_one(
+                        client,
+                        limiter,
+                        conn,
+                        base,
+                        "starting_grid",
+                        {"session_key": str(resolved_session_key)},
+                        _upsert_starting_grid,
+                        f"starting_grid session_key={resolved_session_key}",
+                        args.quiet,
+                    )
+                    _sync_one(
+                        client,
+                        limiter,
+                        conn,
+                        base,
+                        "stints",
+                        {"session_key": str(resolved_session_key)},
+                        _upsert_stints,
+                        f"stints session_key={resolved_session_key}",
+                        args.quiet,
+                    )
+                    _sync_one(
+                        client,
+                        limiter,
+                        conn,
+                        base,
+                        "championship_drivers",
+                        {"session_key": str(resolved_session_key)},
+                        _upsert_championship_drivers,
+                        f"championship_drivers session_key={resolved_session_key}",
+                        args.quiet,
+                    )
+                    _sync_one(
+                        client,
+                        limiter,
+                        conn,
+                        base,
+                        "championship_teams",
+                        {"session_key": str(resolved_session_key)},
+                        _upsert_championship_teams,
+                        f"championship_teams session_key={resolved_session_key}",
+                        args.quiet,
+                    )
+                    _sync_one(
+                        client,
+                        limiter,
+                        conn,
+                        base,
+                        "weather",
+                        {"session_key": str(resolved_session_key)},
+                        _insert_weather,
+                        f"weather session_key={resolved_session_key}",
+                        args.quiet,
+                    )
+                    _sync_one(
+                        client,
+                        limiter,
+                        conn,
+                        base,
+                        "pit",
+                        {"session_key": str(resolved_session_key)},
+                        _insert_pit,
+                        f"pit session_key={resolved_session_key}",
+                        args.quiet,
+                    )
+                    _sync_one(
+                        client,
+                        limiter,
+                        conn,
+                        base,
+                        "overtakes",
+                        {"session_key": str(resolved_session_key)},
+                        _insert_overtakes,
+                        f"overtakes session_key={resolved_session_key}",
+                        args.quiet,
+                    )
+                    _sync_one(
+                        client,
+                        limiter,
+                        conn,
+                        base,
+                        "intervals",
+                        {"session_key": str(resolved_session_key)},
+                        _insert_intervals,
+                        f"intervals session_key={resolved_session_key}",
+                        args.quiet,
+                    )
+                    _sync_one(
+                        client,
+                        limiter,
+                        conn,
+                        base,
+                        "team_radio",
+                        {"session_key": str(resolved_session_key)},
+                        _insert_team_radio,
+                        f"team_radio session_key={resolved_session_key}",
+                        args.quiet,
+                    )
 
                 for dn in dns:
                     params = {"session_key": str(resolved_session_key), "driver_number": str(int(dn))}
-                    _sync_one(client, limiter, conn, base, "car_data", params, _insert_car_data, f"car_data session_key={resolved_session_key} driver={dn}", args.quiet)
                     _sync_one(client, limiter, conn, base, "laps", params, _insert_laps, f"laps session_key={resolved_session_key} driver={dn}", args.quiet)
-                    _sync_one(client, limiter, conn, base, "location", params, _insert_location, f"location session_key={resolved_session_key} driver={dn}", args.quiet)
-                    _sync_one(client, limiter, conn, base, "position", params, _insert_position, f"position session_key={resolved_session_key} driver={dn}", args.quiet)
+                    if mode == "full":
+                        _sync_one(client, limiter, conn, base, "car_data", params, _insert_car_data, f"car_data session_key={resolved_session_key} driver={dn}", args.quiet)
+                        _sync_one(client, limiter, conn, base, "location", params, _insert_location, f"location session_key={resolved_session_key} driver={dn}", args.quiet)
+                        _sync_one(client, limiter, conn, base, "position", params, _insert_position, f"position session_key={resolved_session_key} driver={dn}", args.quiet)
 
             if args.sync_all_sessions:
                 y0 = int(args.year_from)
@@ -1164,79 +1174,6 @@ def main() -> int:
                 limiter,
                 conn,
                 base,
-                "session_result",
-                {"session_key": str(resolved_session_key)},
-                _upsert_session_result,
-                "session_result",
-                args.quiet,
-                summary,
-            )
-            _sync_one(
-                client,
-                limiter,
-                conn,
-                base,
-                "starting_grid",
-                {"session_key": str(resolved_session_key)},
-                _upsert_starting_grid,
-                "starting_grid",
-                args.quiet,
-                summary,
-            )
-            _sync_one(
-                client,
-                limiter,
-                conn,
-                base,
-                "stints",
-                {"session_key": str(resolved_session_key)},
-                _upsert_stints,
-                "stints",
-                args.quiet,
-                summary,
-            )
-            _sync_one(
-                client,
-                limiter,
-                conn,
-                base,
-                "championship_drivers",
-                {"session_key": str(resolved_session_key)},
-                _upsert_championship_drivers,
-                "championship_drivers",
-                args.quiet,
-                summary,
-            )
-            _sync_one(
-                client,
-                limiter,
-                conn,
-                base,
-                "championship_teams",
-                {"session_key": str(resolved_session_key)},
-                _upsert_championship_teams,
-                "championship_teams",
-                args.quiet,
-                summary,
-            )
-
-            _sync_one(
-                client,
-                limiter,
-                conn,
-                base,
-                "weather",
-                {"session_key": str(resolved_session_key)},
-                _insert_weather,
-                "weather",
-                args.quiet,
-                summary,
-            )
-            _sync_one(
-                client,
-                limiter,
-                conn,
-                base,
                 "race_control",
                 {"session_key": str(resolved_session_key)},
                 _insert_race_control,
@@ -1244,61 +1181,137 @@ def main() -> int:
                 args.quiet,
                 summary,
             )
-            _sync_one(
-                client,
-                limiter,
-                conn,
-                base,
-                "pit",
-                {"session_key": str(resolved_session_key)},
-                _insert_pit,
-                "pit",
-                args.quiet,
-                summary,
-            )
-            _sync_one(
-                client,
-                limiter,
-                conn,
-                base,
-                "overtakes",
-                {"session_key": str(resolved_session_key)},
-                _insert_overtakes,
-                "overtakes",
-                args.quiet,
-                summary,
-            )
-            _sync_one(
-                client,
-                limiter,
-                conn,
-                base,
-                "intervals",
-                {"session_key": str(resolved_session_key)},
-                _insert_intervals,
-                "intervals",
-                args.quiet,
-                summary,
-            )
+            if mode in ("full", "results"):
+                _sync_one(
+                    client,
+                    limiter,
+                    conn,
+                    base,
+                    "session_result",
+                    {"session_key": str(resolved_session_key)},
+                    _upsert_session_result,
+                    "session_result",
+                    args.quiet,
+                    summary,
+                )
+            if mode == "full":
+                _sync_one(
+                    client,
+                    limiter,
+                    conn,
+                    base,
+                    "starting_grid",
+                    {"session_key": str(resolved_session_key)},
+                    _upsert_starting_grid,
+                    "starting_grid",
+                    args.quiet,
+                    summary,
+                )
+                _sync_one(
+                    client,
+                    limiter,
+                    conn,
+                    base,
+                    "stints",
+                    {"session_key": str(resolved_session_key)},
+                    _upsert_stints,
+                    "stints",
+                    args.quiet,
+                    summary,
+                )
+                _sync_one(
+                    client,
+                    limiter,
+                    conn,
+                    base,
+                    "championship_drivers",
+                    {"session_key": str(resolved_session_key)},
+                    _upsert_championship_drivers,
+                    "championship_drivers",
+                    args.quiet,
+                    summary,
+                )
+                _sync_one(
+                    client,
+                    limiter,
+                    conn,
+                    base,
+                    "championship_teams",
+                    {"session_key": str(resolved_session_key)},
+                    _upsert_championship_teams,
+                    "championship_teams",
+                    args.quiet,
+                    summary,
+                )
+                _sync_one(
+                    client,
+                    limiter,
+                    conn,
+                    base,
+                    "weather",
+                    {"session_key": str(resolved_session_key)},
+                    _insert_weather,
+                    "weather",
+                    args.quiet,
+                    summary,
+                )
+                _sync_one(
+                    client,
+                    limiter,
+                    conn,
+                    base,
+                    "pit",
+                    {"session_key": str(resolved_session_key)},
+                    _insert_pit,
+                    "pit",
+                    args.quiet,
+                    summary,
+                )
+                _sync_one(
+                    client,
+                    limiter,
+                    conn,
+                    base,
+                    "overtakes",
+                    {"session_key": str(resolved_session_key)},
+                    _insert_overtakes,
+                    "overtakes",
+                    args.quiet,
+                    summary,
+                )
+                _sync_one(
+                    client,
+                    limiter,
+                    conn,
+                    base,
+                    "intervals",
+                    {"session_key": str(resolved_session_key)},
+                    _insert_intervals,
+                    "intervals",
+                    args.quiet,
+                    summary,
+                )
 
             for dn in driver_numbers:
                 params = {"session_key": str(resolved_session_key), "driver_number": str(int(dn))}
-                _sync_one(client, limiter, conn, base, "car_data", params, _insert_car_data, f"car_data driver={dn}", args.quiet, summary)
                 _sync_one(client, limiter, conn, base, "laps", params, _insert_laps, f"laps driver={dn}", args.quiet, summary)
-                _sync_one(client, limiter, conn, base, "location", params, _insert_location, f"location driver={dn}", args.quiet, summary)
-                _sync_one(client, limiter, conn, base, "position", params, _insert_position, f"position driver={dn}", args.quiet, summary)
-            _sync_one(
-                client,
-                limiter,
-                conn,
-                base,
-                "team_radio",
-                {"session_key": str(resolved_session_key)},
-                _insert_team_radio,
-                "team_radio",
-                args.quiet,
-                summary,
-            )
+                if mode == "full":
+                    _sync_one(client, limiter, conn, base, "car_data", params, _insert_car_data, f"car_data driver={dn}", args.quiet, summary)
+                    _sync_one(client, limiter, conn, base, "location", params, _insert_location, f"location driver={dn}", args.quiet, summary)
+                    _sync_one(client, limiter, conn, base, "position", params, _insert_position, f"position driver={dn}", args.quiet, summary)
+            if mode == "full" or (mode == "results" and args.sync_all_team_radio):
+                _sync_one(
+                    client,
+                    limiter,
+                    conn,
+                    base,
+                    "team_radio",
+                    {"session_key": str(resolved_session_key)},
+                    _insert_team_radio,
+                    "team_radio",
+                    args.quiet,
+                    summary,
+                )
 
             if summary is not None and summary_session_key is not None:
                 totals_rows = 0

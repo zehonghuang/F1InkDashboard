@@ -94,6 +94,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/telemetry/lap_controls_series", handlers.TelemetryLapControlsSeries(gormOrNil(database)))
 	s.Router.GET("/api/v1/telemetry/lap_trace", handlers.TelemetryLapTrace(gormOrNil(database)))
 	s.Router.GET("/api/v1/telemetry/fastest_lap", handlers.TelemetryFastestLap(gormOrNil(database)))
+	s.Router.GET("/api/v1/telemetry/lap_time_boxplot", handlers.TelemetryLapTimeBoxplot(gormOrNil(database)))
 
 	handlers.RegisterCompatPlaceholders(s.Router)
 

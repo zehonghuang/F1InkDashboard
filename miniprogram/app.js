@@ -1,9 +1,7 @@
 App({
   onLaunch() {
-    const v = wx.getStorageSync("apiBase")
-    if (v) {
-      this.globalData.apiBase = v
-    }
+    const defaultApiBase = "https://winpc-f1.normal-person.icu"
+    this.globalData.apiBase = defaultApiBase.replace(/\/+$/, "")
 
     try {
       const base64 = require("./assets/fonts/formula1_base64.js")

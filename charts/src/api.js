@@ -61,3 +61,15 @@ export async function fetchLapControlsSeries({ driverNumber, sessionKey, lapNumb
   if (!j.ok) throw new Error(j.error || "backend error");
   return j;
 }
+
+export async function fetchLapTimeBoxplot({ sessionKey, driverNumbers, includePitOut }) {
+  const qs = new URLSearchParams();
+  qs.set("session_key", String(sessionKey));
+  qs.set("driver_numbers", (driverNumbers || []).join(","));
+  if (includePitOut) qs.set("include_pit_out", "1");
+  const r = await fetch(`${apiBase()}/api/v1/telemetry/lap_time_boxplot?${qs.toString()}`);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || "backend error");
+  return j;
+}

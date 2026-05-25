@@ -1,7 +1,7 @@
 {
   "description": "TOINC F1 数据分析小程序",
   "compileType": "miniprogram",
-  "appid": "wx9675b8d24100b48a",
+  "appid": "wxe3e3476ee4181910",
   "projectname": "toinc_f1_miniprogram",
   "miniprogramRoot": "./",
   "setting": {
