@@ -479,6 +479,42 @@ Page({
           data: [{ xAxis: 1 }, { xAxis: 2 }]
         }
 
+        const markerHtml = (color) =>
+          `<span style="display:inline-block;margin-right:6px;border-radius:6px;width:8px;height:8px;background-color:${color};"></span>`
+
+        const valueAtX = (pairs, x) => {
+          if (!Array.isArray(pairs) || !pairs.length || !Number.isFinite(x)) return null
+          let l = 0
+          let r = pairs.length - 1
+          while (l < r) {
+            const m = (l + r) >> 1
+            const xm = pairs[m] && pairs[m].length ? Number(pairs[m][0]) : NaN
+            if (!Number.isFinite(xm)) {
+              r = m > 0 ? m - 1 : 0
+              continue
+            }
+            if (xm < x) l = m + 1
+            else r = m
+          }
+          const cand = []
+          cand.push(l)
+          if (l - 1 >= 0) cand.push(l - 1)
+          let bestI = cand[0]
+          let bestD = Infinity
+          for (const i of cand) {
+            const xi = pairs[i] && pairs[i].length ? Number(pairs[i][0]) : NaN
+            const yi = pairs[i] && pairs[i].length > 1 ? Number(pairs[i][1]) : NaN
+            if (!Number.isFinite(xi) || !Number.isFinite(yi)) continue
+            const d = Math.abs(xi - x)
+            if (d < bestD) {
+              bestD = d
+              bestI = i
+            }
+          }
+          const y = pairs[bestI] && pairs[bestI].length > 1 ? Number(pairs[bestI][1]) : NaN
+          return Number.isFinite(y) ? y : null
+        }
+
         const buildOptionPct = (series) => {
           if (!series.length) return null
           return {
@@ -489,15 +525,17 @@ Page({
               confine: true,
               formatter: (params) => {
                 const p0 = Array.isArray(params) ? params[0] : null
-                const xv = p0 && Array.isArray(p0.value) ? p0.value[0] : null
-                const header = formatX(xv)
-                const lines = header ? [header] : []
-                for (const p of params || []) {
-                  const vv = p && Array.isArray(p.value) ? p.value[1] : null
-                  const val = vv != null && Number.isFinite(Number(vv)) ? `${Math.round(Number(vv))}%` : "N/A"
-                  lines.push(`${p.marker || ""} ${p.seriesName}: ${val}`)
+                const xv0 = p0 && p0.axisValue != null ? Number(p0.axisValue) : p0 && Array.isArray(p0.value) ? Number(p0.value[0]) : NaN
+                const header = formatX(xv0)
+                const out = []
+                if (header) out.push(`<div>${header}</div>`)
+                for (const s of series) {
+                  const yv = valueAtX(s.data, xv0)
+                  const val = yv != null ? `${Math.round(Number(yv))}%` : "N/A"
+                  const c = (s && s.lineStyle && s.lineStyle.color) || "#ffffff"
+                  out.push(`<div>${markerHtml(c)}${s.name}: ${val}</div>`)
                 }
-                return lines.join("\n")
+                return out.join("")
               }
             },
             legend: { type: "scroll", top: 8, textStyle: { color: "rgba(255,255,255,0.7)" } },
@@ -530,15 +568,17 @@ Page({
                   confine: true,
                   formatter: (params) => {
                     const p0 = Array.isArray(params) ? params[0] : null
-                    const xv = p0 && Array.isArray(p0.value) ? p0.value[0] : null
-                    const header = formatX(xv)
-                    const lines = header ? [header] : []
-                    for (const p of params || []) {
-                      const vv = p && Array.isArray(p.value) ? p.value[1] : null
-                      const val = vv != null && Number.isFinite(Number(vv)) ? `${Math.round(Number(vv))} km/h` : "N/A"
-                      lines.push(`${p.marker || ""} ${p.seriesName}: ${val}`)
+                    const xv0 = p0 && p0.axisValue != null ? Number(p0.axisValue) : p0 && Array.isArray(p0.value) ? Number(p0.value[0]) : NaN
+                    const header = formatX(xv0)
+                    const out = []
+                    if (header) out.push(`<div>${header}</div>`)
+                    for (const s of speedSeries) {
+                      const yv = valueAtX(s.data, xv0)
+                      const val = yv != null ? `${Math.round(Number(yv))} km/h` : "N/A"
+                      const c = (s && s.lineStyle && s.lineStyle.color) || "#ffffff"
+                      out.push(`<div>${markerHtml(c)}${s.name}: ${val}</div>`)
                     }
-                    return lines.join("\n")
+                    return out.join("")
                   }
                 },
                 legend: { type: "scroll", top: 8, textStyle: { color: "rgba(255,255,255,0.7)" } },
