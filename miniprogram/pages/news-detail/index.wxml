@@ -2,10 +2,10 @@
   <view class="detail-card">
     <view class="detail-title">{{ title }}</view>
     <view class="detail-meta">
-      <view class="detail-tag">{{ tag }}</view>
+      <view class="detail-tag">{{ tagText }}</view>
       <view class="detail-dot">•</view>
-      <view class="detail-time">{{ time }}</view>
+      <view class="detail-time">{{ timeText }}</view>
     </view>
-    <view class="detail-content">{{ content }}</view>
+    <view class="detail-content">{{ contentText }}</view>
   </view>
 </view>
