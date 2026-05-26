@@ -4,7 +4,15 @@
     <view class="subtitle">News • Updates • Insights</view>
   </view>
 
-  <swiper wx:if="{{ banners.length }}" class="hero-swiper" circular autoplay indicator-dots>
+  <swiper
+    wx:if="{{ banners.length }}"
+    class="hero-swiper"
+    circular
+    autoplay
+    indicator-dots
+    indicator-color="rgba(255,255,255,0.45)"
+    indicator-active-color="#ffffff"
+  >
     <block wx:for="{{ banners }}" wx:key="id">
       <swiper-item>
         <view class="hero-banner" bindtap="onTapCard" data-id="{{ item.id }}">
