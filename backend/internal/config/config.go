@@ -31,6 +31,12 @@ type WechatPayConfig struct {
 	PlatformCertPEM string
 }
 
+type WechatMiniConfig struct {
+	Enabled bool
+	AppID   string
+	Secret  string
+}
+
 type Config struct {
 	ListenAddr     string
 	StaticDir      string
@@ -41,6 +47,7 @@ type Config struct {
 
 	MySQL     MySQLConfig
 	WechatPay WechatPayConfig
+	WechatMini WechatMiniConfig
 
 	NewsWsEnabled   bool
 	NewsIngestToken string
@@ -77,6 +84,7 @@ func FromEnv() Config {
 		RequireMySQL:      getenvBool("BACKEND_REQUIRE_MYSQL", true),
 		MySQL:             mysqlFromEnv(),
 		WechatPay:         wechatPayFromEnv(),
+		WechatMini:        wechatMiniFromEnv(),
 		NewsWsEnabled:     getenvBool("NEWS_WS_ENABLED", false),
 		NewsIngestToken:   getenvTrim("NEWS_INGEST_TOKEN", ""),
 		OpenF1Enabled:     getenvBool("OPENF1_ENABLED", false),
@@ -131,6 +139,14 @@ func wechatPayFromEnv() WechatPayConfig {
 		PrivateKey:      strings.TrimSpace(os.Getenv("WECHATPAY_MERCHANT_PRIVATE_KEY_PEM")),
 		KeyPath:         getenvTrim("WECHATPAY_MERCHANT_PRIVATE_KEY_PATH", ""),
 		PlatformCertPEM: strings.TrimSpace(os.Getenv("WECHATPAY_PLATFORM_CERT_PEM")),
+	}
+}
+
+func wechatMiniFromEnv() WechatMiniConfig {
+	return WechatMiniConfig{
+		Enabled: getenvBool("WECHAT_MINI_ENABLED", false),
+		AppID:   getenvTrim("WECHAT_MINI_APP_ID", ""),
+		Secret:  getenvTrim("WECHAT_MINI_SECRET", ""),
 	}
 }
 

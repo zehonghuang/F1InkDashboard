@@ -53,6 +53,12 @@ func logStartupConfig(cfg config.Config) {
 		mk("TOINC_F1_MYSQL_CHARSET"),
 	)
 
+	log.Printf("startup env WECHAT_MINI_ENABLED=%s WECHAT_MINI_APP_ID=%s WECHAT_MINI_SECRET=%s",
+		mk("WECHAT_MINI_ENABLED"),
+		mk("WECHAT_MINI_APP_ID"),
+		mk("WECHAT_MINI_SECRET"),
+	)
+
 	if !cfg.MySQL.Enabled {
 		log.Printf("startup mysql disabled: set TOINC_F1_MYSQL_ENABLED=1, otherwise /api/v1/ui/pages will return mysql_required")
 		return
@@ -84,5 +90,20 @@ func validateStartupConfig(cfg config.Config) {
 	}
 	if !cfg.MySQL.Enabled {
 		log.Fatalf("startup config invalid: mysql disabled (set TOINC_F1_MYSQL_ENABLED=1, or set BACKEND_REQUIRE_MYSQL=0)")
+	}
+
+	if cfg.WechatMini.Enabled {
+		missingMini := make([]string, 0, 4)
+		reqMini := func(key string) {
+			v, ok := os.LookupEnv(key)
+			if !ok || strings.TrimSpace(v) == "" {
+				missingMini = append(missingMini, key)
+			}
+		}
+		reqMini("WECHAT_MINI_APP_ID")
+		reqMini("WECHAT_MINI_SECRET")
+		if len(missingMini) > 0 {
+			log.Fatalf("startup config invalid: missing env %s (set WECHAT_MINI_ENABLED=0 to disable mini-program login)", strings.Join(missingMini, ","))
+		}
 	}
 }

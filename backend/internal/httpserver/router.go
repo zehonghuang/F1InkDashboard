@@ -80,6 +80,14 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/mp/telemetry/controls", handlers.MpTelemetryControls(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/telemetry/sector_controls", handlers.MpTelemetrySectorControls(gormOrNil(database)))
 
+	mpAuth := s.Router.Group("/api/v1/mp/auth")
+	mpAuth.POST("/login", handlers.MpAuthLogin(cfg, gormOrNil(database)))
+	mpAuthAuth := mpAuth.Group("")
+	mpAuthAuth.Use(handlers.MpAuthRequired(gormOrNil(database)))
+	mpAuthAuth.GET("/me", handlers.MpAuthMe(gormOrNil(database)))
+	mpAuthAuth.POST("/bind_device", handlers.MpAuthBindDevice(gormOrNil(database)))
+	mpAuthAuth.POST("/logout", handlers.MpAuthLogout(gormOrNil(database)))
+
 	s.Router.POST("/api/v1/pay/wechat/jsapi/prepay", handlers.WechatPayJSAPIPrepay(cfg))
 	s.Router.GET("/api/v1/pay/wechat/order/:out_trade_no", handlers.WechatPayQueryOrder(cfg))
 	s.Router.POST("/api/v1/pay/wechat/notify", handlers.WechatPayNotify(cfg))
