@@ -14,6 +14,7 @@ function formatRelativeTime(iso) {
 }
 
 const LAYOUT_CODE = {
+  BREAKING: "BREAKING",
   HERO: "HERO",
   FEATURE: "FEATURE",
   STANDARD: "STANDARD",
@@ -34,6 +35,20 @@ const TYPE_CODE = {
 }
 
 const MOCK_NEWS = [
+  {
+    id: "n_20260526_breaking_winner",
+    layoutCode: LAYOUT_CODE.BREAKING,
+    pinned: true,
+    weight: 1200,
+    typeCode: TYPE_CODE.PADDOCK,
+    tagText: "Breaking",
+    title: "Breaking：赛后速报",
+    summary: "欢迎页占位：后续可用于赛后热点图与一句话摘要。",
+    coverUrl: "/assets/images/breaking-new-01.jpg",
+    publishedAt: "2026-05-26T09:15:00+08:00",
+    source: { name: "Race Control", url: "" },
+    content: { formatCode: "PLAIN", text: "Breaking 占位正文。" }
+  },
   {
     id: "n_20260526_hero_rules",
     layoutCode: LAYOUT_CODE.HERO,

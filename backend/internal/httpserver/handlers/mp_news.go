@@ -20,20 +20,20 @@ type mpNewsContent struct {
 }
 
 type mpNewsItem struct {
-	ID              string         `json:"id"`
-	LayoutCode      string         `json:"layout_code"`
-	HeroDisplayCode string         `json:"hero_display_code,omitempty"`
-	TypeCode        string         `json:"type_code"`
-	Pinned          bool           `json:"pinned"`
-	Weight          int            `json:"weight"`
-	TagText         string         `json:"tag_text"`
-	Title           string         `json:"title"`
-	Summary         string         `json:"summary"`
-	CoverURL        string         `json:"cover_url"`
-	PublishedAt     string         `json:"published_at"`
-	TimeText        string         `json:"time_text"`
-	Source          *mpNewsSource  `json:"source,omitempty"`
-	Content         *mpNewsContent `json:"content,omitempty"`
+	ID              string                `json:"id"`
+	LayoutCode      MpNewsLayoutCode      `json:"layout_code"`
+	HeroDisplayCode MpNewsHeroDisplayCode `json:"hero_display_code,omitempty"`
+	TypeCode        MpNewsTypeCode        `json:"type_code"`
+	Pinned          bool                  `json:"pinned"`
+	Weight          int                   `json:"weight"`
+	TagText         string                `json:"tag_text"`
+	Title           string                `json:"title"`
+	Summary         string                `json:"summary"`
+	CoverURL        string                `json:"cover_url"`
+	PublishedAt     string                `json:"published_at"`
+	TimeText        string                `json:"time_text"`
+	Source          *mpNewsSource         `json:"source,omitempty"`
+	Content         *mpNewsContent        `json:"content,omitempty"`
 }
 
 func MpNewsList() gin.HandlerFunc {
@@ -136,10 +136,25 @@ func MpNewsDetail() gin.HandlerFunc {
 func mpMockNews(now time.Time) []mpNewsItem {
 	items := []mpNewsItem{
 		{
+			ID:              "n_20260526_breaking_winner",
+			LayoutCode:      MpNewsLayoutCodeBreaking,
+			HeroDisplayCode: MpNewsHeroDisplayCodeBanner,
+			TypeCode:        MpNewsTypeCodePaddock,
+			Pinned:          true,
+			Weight:          1200,
+			TagText:         "Breaking",
+			Title:           "Breaking：赛后速报",
+			Summary:         "欢迎页占位：后续可用于赛后热点图与一句话摘要。",
+			CoverURL:        "/static/news/breaking-new-01.jpg",
+			PublishedAt:     "2026-05-26T09:15:00+08:00",
+			Source:          &mpNewsSource{Name: "Race Control", URL: ""},
+			Content:         &mpNewsContent{FormatCode: "PLAIN", Text: "Breaking 占位正文。"},
+		},
+		{
 			ID:              "n_20260526_hero_rules",
-			LayoutCode:      "HERO",
-			HeroDisplayCode: "BANNER",
-			TypeCode:        "REGULATION",
+			LayoutCode:      MpNewsLayoutCodeHero,
+			HeroDisplayCode: MpNewsHeroDisplayCodeBanner,
+			TypeCode:        MpNewsTypeCodeRegulation,
 			Pinned:          true,
 			Weight:          980,
 			TagText:         "FIA / 规则",
@@ -155,9 +170,9 @@ func mpMockNews(now time.Time) []mpNewsItem {
 		},
 		{
 			ID:              "n_20260526_hero_paddock",
-			LayoutCode:      "HERO",
-			HeroDisplayCode: "BANNER",
-			TypeCode:        "PADDOCK",
+			LayoutCode:      MpNewsLayoutCodeHero,
+			HeroDisplayCode: MpNewsHeroDisplayCodeBanner,
+			TypeCode:        MpNewsTypeCodePaddock,
 			Pinned:          false,
 			Weight:          900,
 			TagText:         "围场动态",
@@ -170,8 +185,8 @@ func mpMockNews(now time.Time) []mpNewsItem {
 		},
 		{
 			ID:          "n_20260526_feat_upgrades",
-			LayoutCode:  "FEATURE",
-			TypeCode:    "TECH",
+			LayoutCode:  MpNewsLayoutCodeFeature,
+			TypeCode:    MpNewsTypeCodeTech,
 			Pinned:      false,
 			Weight:      820,
 			TagText:     "围场动态",
@@ -184,8 +199,8 @@ func mpMockNews(now time.Time) []mpNewsItem {
 		},
 		{
 			ID:          "n_20260525_feat_strategy",
-			LayoutCode:  "FEATURE",
-			TypeCode:    "STRATEGY",
+			LayoutCode:  MpNewsLayoutCodeFeature,
+			TypeCode:    MpNewsTypeCodeStrategy,
 			Pinned:      false,
 			Weight:      760,
 			TagText:     "赛道 / 轮胎",
@@ -198,8 +213,8 @@ func mpMockNews(now time.Time) []mpNewsItem {
 		},
 		{
 			ID:          "n_20260525_std_driver",
-			LayoutCode:  "STANDARD",
-			TypeCode:    "DRIVER",
+			LayoutCode:  MpNewsLayoutCodeStandard,
+			TypeCode:    MpNewsTypeCodeDriver,
 			Pinned:      false,
 			Weight:      620,
 			TagText:     "人物",
@@ -212,8 +227,8 @@ func mpMockNews(now time.Time) []mpNewsItem {
 		},
 		{
 			ID:          "n_20260526_bullet_1",
-			LayoutCode:  "BULLETIN",
-			TypeCode:    "PADDOCK",
+			LayoutCode:  MpNewsLayoutCodeBulletin,
+			TypeCode:    MpNewsTypeCodePaddock,
 			Pinned:      false,
 			Weight:      540,
 			TagText:     "快讯",
@@ -226,8 +241,8 @@ func mpMockNews(now time.Time) []mpNewsItem {
 		},
 		{
 			ID:          "n_20260526_bullet_2",
-			LayoutCode:  "BULLETIN",
-			TypeCode:    "PADDOCK",
+			LayoutCode:  MpNewsLayoutCodeBulletin,
+			TypeCode:    MpNewsTypeCodePaddock,
 			Pinned:      false,
 			Weight:      520,
 			TagText:     "快讯",
