@@ -479,9 +479,6 @@ Page({
           data: [{ xAxis: 1 }, { xAxis: 2 }]
         }
 
-        const markerHtml = (color) =>
-          `<span style="display:inline-block;margin-right:6px;border-radius:6px;width:8px;height:8px;background-color:${color};"></span>`
-
         const valueAtX = (pairs, x) => {
           if (!Array.isArray(pairs) || !pairs.length || !Number.isFinite(x)) return null
           let l = 0
@@ -515,6 +512,30 @@ Page({
           return Number.isFinite(y) ? y : null
         }
 
+        const buildGridX = (n) => {
+          const nn = Number.isFinite(Number(n)) ? Math.max(60, Math.min(600, Math.floor(Number(n)))) : 240
+          const out = []
+          if (nn <= 1) return [0, 3]
+          for (let i = 0; i < nn; i++) {
+            const x = (3 * i) / (nn - 1)
+            out.push(Math.round(x * 10000) / 10000)
+          }
+          return out
+        }
+
+        const resamplePairs = (pairs, gridX) => {
+          const out = []
+          for (const x of gridX) {
+            out.push([x, valueAtX(pairs, x)])
+          }
+          return out
+        }
+
+        const gridX = buildGridX(240)
+        const throttleSeriesAligned = throttleSeries.map((s) => Object.assign({}, s, { data: resamplePairs(s.data, gridX) }))
+        const brakeSeriesAligned = brakeSeries.map((s) => Object.assign({}, s, { data: resamplePairs(s.data, gridX) }))
+        const speedSeriesAligned = speedSeries.map((s) => Object.assign({}, s, { data: resamplePairs(s.data, gridX) }))
+
         const buildOptionPct = (series) => {
           if (!series.length) return null
           return {
@@ -523,19 +544,22 @@ Page({
             tooltip: {
               trigger: "axis",
               confine: true,
+              backgroundColor: "rgba(0,0,0,0.85)",
+              borderWidth: 0,
+              textStyle: { color: "#fff", fontSize: 12, lineHeight: 18 },
               formatter: (params) => {
-                const p0 = Array.isArray(params) ? params[0] : null
+                const arr = Array.isArray(params) ? params : []
+                const p0 = arr[0] || null
                 const xv0 = p0 && p0.axisValue != null ? Number(p0.axisValue) : p0 && Array.isArray(p0.value) ? Number(p0.value[0]) : NaN
                 const header = formatX(xv0)
-                const out = []
-                if (header) out.push(`<div>${header}</div>`)
-                for (const s of series) {
-                  const yv = valueAtX(s.data, xv0)
-                  const val = yv != null ? `${Math.round(Number(yv))}%` : "N/A"
-                  const c = (s && s.lineStyle && s.lineStyle.color) || "#ffffff"
-                  out.push(`<div>${markerHtml(c)}${s.name}: ${val}</div>`)
+                const lines = header ? [header] : []
+                for (const p of arr) {
+                  const raw = p && Array.isArray(p.data) ? p.data[1] : p && p.value != null && Array.isArray(p.value) ? p.value[1] : null
+                  const yv = raw != null ? Number(raw) : NaN
+                  const val = Number.isFinite(yv) ? `${Math.round(yv)}%` : "N/A"
+                  lines.push(`${p && p.marker ? p.marker : ""} ${p && p.seriesName ? p.seriesName : ""}: ${val}`.trim())
                 }
-                return out.join("")
+                return lines.join("\n")
               }
             },
             legend: { type: "scroll", top: 8, textStyle: { color: "rgba(255,255,255,0.7)" } },
@@ -554,11 +578,11 @@ Page({
           }
         }
 
-        const optionThrottle = buildOptionPct(throttleSeries)
-        const optionBrake = buildOptionPct(brakeSeries)
+        const optionThrottle = buildOptionPct(throttleSeriesAligned)
+        const optionBrake = buildOptionPct(brakeSeriesAligned)
 
         const optionSpeed =
-          speedSeries.length === 0
+          speedSeriesAligned.length === 0
             ? null
             : {
                 backgroundColor: "#000000",
@@ -566,19 +590,22 @@ Page({
                 tooltip: {
                   trigger: "axis",
                   confine: true,
+                  backgroundColor: "rgba(0,0,0,0.85)",
+                  borderWidth: 0,
+                  textStyle: { color: "#fff", fontSize: 12, lineHeight: 18 },
                   formatter: (params) => {
-                    const p0 = Array.isArray(params) ? params[0] : null
+                    const arr = Array.isArray(params) ? params : []
+                    const p0 = arr[0] || null
                     const xv0 = p0 && p0.axisValue != null ? Number(p0.axisValue) : p0 && Array.isArray(p0.value) ? Number(p0.value[0]) : NaN
                     const header = formatX(xv0)
-                    const out = []
-                    if (header) out.push(`<div>${header}</div>`)
-                    for (const s of speedSeries) {
-                      const yv = valueAtX(s.data, xv0)
-                      const val = yv != null ? `${Math.round(Number(yv))} km/h` : "N/A"
-                      const c = (s && s.lineStyle && s.lineStyle.color) || "#ffffff"
-                      out.push(`<div>${markerHtml(c)}${s.name}: ${val}</div>`)
+                    const lines = header ? [header] : []
+                    for (const p of arr) {
+                      const raw = p && Array.isArray(p.data) ? p.data[1] : p && p.value != null && Array.isArray(p.value) ? p.value[1] : null
+                      const yv = raw != null ? Number(raw) : NaN
+                      const val = Number.isFinite(yv) ? `${Math.round(yv)} km/h` : "N/A"
+                      lines.push(`${p && p.marker ? p.marker : ""} ${p && p.seriesName ? p.seriesName : ""}: ${val}`.trim())
                     }
-                    return out.join("")
+                    return lines.join("\n")
                   }
                 },
                 legend: { type: "scroll", top: 8, textStyle: { color: "rgba(255,255,255,0.7)" } },
@@ -591,7 +618,7 @@ Page({
                   minorSplitLine: { show: true, lineStyle: { color: "rgba(255,255,255,0.04)", width: 1 } },
                   axisLine: { show: false }
                 },
-                series: speedSeries.map((s) => Object.assign({}, s, { markLine: markSectors }))
+                series: speedSeriesAligned.map((s) => Object.assign({}, s, { markLine: markSectors }))
               }
 
         const telemetryLapInfo = lapParts.length ? `最快圈：${lapParts.join(" / ")}` : "最快圈对比"
