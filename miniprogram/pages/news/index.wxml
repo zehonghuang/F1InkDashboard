@@ -1,0 +1,20 @@
+<view class="page has-tabbar">
+  <view class="header">
+    <view class="title">F1 资讯</view>
+    <view class="subtitle">News • Updates • Insights</view>
+  </view>
+
+  <view class="news-list">
+    <block wx:for="{{ cards }}" wx:key="id">
+      <view class="news-card" bindtap="onTapCard" data-id="{{ item.id }}">
+        <view class="news-title">{{ item.title }}</view>
+        <view class="news-summary">{{ item.summary }}</view>
+        <view class="news-meta">
+          <view class="news-tag">{{ item.tag }}</view>
+          <view class="news-dot">•</view>
+          <view class="news-time">{{ item.time }}</view>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>

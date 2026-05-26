@@ -118,9 +118,6 @@ Page({
       url: `/pages/race-sessions/index?season=${season}&round=${rd}&raceName=${encodeURIComponent(name || "")}`
     })
   },
-  onGoCompare() {
-    wx.switchTab({ url: "/pages/compare/index" })
-  },
   onQueryInput(e) {
     this.setData({ query: e.detail.value })
   },

@@ -27,12 +27,6 @@
   </view>
 
   <view class="section">
-    <view class="section-title">⚖️ 全局性能对比</view>
-    <view class="section-desc">- 跨分站/多车手脚法对齐</view>
-    <button class="btn btn-primary" bindtap="onGoCompare">进入对比</button>
-  </view>
-
-  <view class="section">
     <view class="section-title">🔍 快速检索</view>
     <view class="section-desc">- 按赛道或特定日期查询</view>
     <input class="input" value="{{query}}" placeholder="例如：摩纳哥 / 05.24" placeholder-class="input-placeholder" bindinput="onQueryInput" />
