@@ -37,7 +37,7 @@ type mpNewsItem struct {
 	Content         *mpNewsContent        `json:"content,omitempty"`
 }
 
-func MpNewsList() gin.HandlerFunc {
+func MpNewsList(staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tzName := strings.TrimSpace(c.Query("tz"))
 		if tzName == "" {
@@ -63,7 +63,11 @@ func MpNewsList() gin.HandlerFunc {
 
 		baseURL := inferBaseURL(c)
 		now := time.Now().In(loc)
-		items := mpMockNews(now)
+		items, err := mpNewsLoadIndex(staticDir, now)
+		if err != nil {
+			c.JSON(500, gin.H{"ok": false, "error": "news_unavailable"})
+			return
+		}
 
 		total := len(items)
 		start := (page - 1) * pageSize
@@ -96,7 +100,7 @@ func MpNewsList() gin.HandlerFunc {
 	}
 }
 
-func MpNewsDetail() gin.HandlerFunc {
+func MpNewsDetail(staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := strings.TrimSpace(c.Param("id"))
 		if id == "" {
@@ -116,256 +120,23 @@ func MpNewsDetail() gin.HandlerFunc {
 
 		baseURL := inferBaseURL(c)
 		now := time.Now().In(loc)
-		items := mpMockNews(now)
-		for _, it := range items {
-			if it.ID != id {
-				continue
+		it, err := mpNewsLoadItem(staticDir, id, now)
+		if err != nil {
+			if err == errMpNewsNotFound {
+				c.JSON(http.StatusNotFound, gin.H{"ok": false, "error": "news_not_found"})
+				return
 			}
-			c.JSON(200, gin.H{
-				"ok":               true,
-				"generated_at_utc": time.Now().UTC().Format(time.RFC3339Nano),
-				"tz":               tzName,
-				"base_url":         baseURL,
-				"item":             it,
-			})
+			c.JSON(500, gin.H{"ok": false, "error": "news_unavailable"})
 			return
 		}
-		c.JSON(http.StatusNotFound, gin.H{"ok": false, "error": "news_not_found"})
+		c.JSON(200, gin.H{
+			"ok":               true,
+			"generated_at_utc": time.Now().UTC().Format(time.RFC3339Nano),
+			"tz":               tzName,
+			"base_url":         baseURL,
+			"item":             it,
+		})
 	}
-}
-
-func mpMockNews(now time.Time) []mpNewsItem {
-	items := []mpNewsItem{
-		{
-			ID:              "n_20260526_breaking_winner",
-			LayoutCode:      MpNewsLayoutCodeBreaking,
-			HeroDisplayCode: MpNewsHeroDisplayCodeBanner,
-			TypeCode:        MpNewsTypeCodePaddock,
-			Pinned:          true,
-			Weight:          1200,
-			TagText:         "Breaking",
-			Title:           "Breaking：赛后速报",
-			Summary:         "欢迎页占位：后续可用于赛后热点图与一句话摘要。",
-			CoverURL:        "/static/news/breaking-new-01.jpg",
-			PublishedAt:     "2026-05-26T09:15:00+08:00",
-			Source:          &mpNewsSource{Name: "Race Control", URL: ""},
-			Content:         &mpNewsContent{FormatCode: "PLAIN", Text: "Breaking 占位正文。"},
-		},
-		{
-			ID:          "n_f1_antonelli_russell_wolff",
-			LayoutCode:  MpNewsLayoutCodeFeature,
-			TypeCode:    MpNewsTypeCodePaddock,
-			Pinned:      false,
-			Weight:      880,
-			TagText:     "Mercedes / 采访",
-			Title:       "沃尔夫谈队内竞争：允许安东内利与拉塞尔硬碰硬，但会设底线",
-			Summary:     "基于 Formula1.com 报道要点的中文改写：既鼓励公平竞争，也强调团队利益优先。",
-			CoverURL:    "/static/circuits/2026/raw/miami_map.webp",
-			PublishedAt: "2026-05-25T18:30:00+08:00",
-			Source: &mpNewsSource{
-				Name: "Formula1.com",
-				URL:  "https://www.formula1.com/en/latest/article/this-fight-is-on-wolff-sets-out-mercedes-approach-to-allowing-antonelli-and-russell-to-battle.282V0RVxx0wvyd1TOprbrc",
-			},
-			Content: &mpNewsContent{
-				FormatCode: "RICH_TEXT_NODES",
-				Nodes: []any{
-					map[string]any{
-						"name": "img",
-						"attrs": map[string]any{
-							"src":   "/static/circuits/2026/raw/miami_map.webp",
-							"mode":  "widthFix",
-							"style": "width:100%;display:block;border-radius:16rpx;overflow:hidden;margin:0 0 12rpx 0;",
-						},
-					},
-					map[string]any{
-						"name": "p",
-						"children": []any{
-							map[string]any{
-								"type": "text",
-								"text": "这是一份基于原文关键信息的中文改写（非逐字翻译）。文章核心讨论：当车队两位车手处于争冠/争分形势时，如何在“允许竞争”和“保护团队收益”之间取得平衡。",
-							},
-						},
-					},
-					map[string]any{
-						"name": "p",
-						"children": []any{
-							map[string]any{
-								"type": "text",
-								"text": "背景：在加拿大站周末，梅赛德斯两位车手在场上多次近距离交锋，过程中出现了较激烈的对抗与争议沟通，最终也暴露出潜在的双车退赛风险。车队方面需要复盘并明确规则。",
-							},
-						},
-					},
-					map[string]any{
-						"name": "p",
-						"children": []any{
-							map[string]any{
-								"type": "text",
-								"text": "沃尔夫的态度大致是：竞争可以继续，甚至会更明确地允许车手争夺位置；但赛后会把某些场景拿出来复盘，说明哪些选择本可以避免，并与车手讨论如何降低风险。",
-							},
-						},
-					},
-					map[string]any{
-						"name": "p",
-						"children": []any{
-							map[string]any{
-								"type": "text",
-								"text": "“允许竞争”的前提是车手要对风险有清晰判断：在哪些弯、哪些轮胎/能量状态下可以强攻，哪些时候要优先把车带回终点。车队不会希望在明显没有收益的情况下把双车推到高风险边缘。",
-							},
-						},
-					},
-					map[string]any{
-						"name": "p",
-						"children": []any{
-							map[string]any{
-								"type": "text",
-								"text": "另一方面，团队层面的底线也会存在：当车队认为继续缠斗会让积分、节奏或对手压力变得不可控时，车队可能会通过无线电把对抗“收一收”，确保拿到该拿的分数。",
-							},
-						},
-					},
-					map[string]any{
-						"name": "p",
-						"children": []any{
-							map[string]any{
-								"type": "text",
-								"text": "文章还提到车队会关注车手在高压下的无线电沟通质量：情绪化表达可以理解，但需要把注意力更多放在驾驶与决策上，避免把精力消耗在“争辩对错”。",
-							},
-						},
-					},
-					map[string]any{
-						"name": "p",
-						"children": []any{
-							map[string]any{
-								"type": "text",
-								"text": "总结：梅赛德斯倾向于让两位车手在规则内自由竞争，同时通过复盘、风险提示与必要时的团队指令，确保赛季目标不被一次冲动的对抗打断。",
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			ID:              "n_20260526_hero_rules",
-			LayoutCode:      MpNewsLayoutCodeHero,
-			HeroDisplayCode: MpNewsHeroDisplayCodeBanner,
-			TypeCode:        MpNewsTypeCodeRegulation,
-			Pinned:          true,
-			Weight:          980,
-			TagText:         "FIA / 规则",
-			Title:           "2026 赛季新规要点速览：动力单元与空气动力学方向",
-			Summary:         "整理动力单元、电能占比、DRS 变化等核心信息，方便快速了解新规影响。",
-			CoverURL:        "/static/circuits/2026/raw/shanghai_map.webp",
-			PublishedAt:     "2026-05-26T08:40:00+08:00",
-			Source:          &mpNewsSource{Name: "FIA", URL: ""},
-			Content: &mpNewsContent{
-				FormatCode: "PLAIN",
-				Text:       "这里先做占位。后续接入接口后，可以把正文以富文本（rich-text）或 WebView 阅读原文的方式展示。",
-			},
-		},
-		{
-			ID:              "n_20260526_hero_paddock",
-			LayoutCode:      MpNewsLayoutCodeHero,
-			HeroDisplayCode: MpNewsHeroDisplayCodeBanner,
-			TypeCode:        MpNewsTypeCodePaddock,
-			Pinned:          false,
-			Weight:          900,
-			TagText:         "围场动态",
-			Title:           "本周末焦点事件追踪：升级、处罚与关键发车位变动",
-			Summary:         "将练习赛后信息按“升级/处罚/排位节奏”聚合，便于快速抓住关注点。",
-			CoverURL:        "/static/circuits/2026/raw/monaco_map.webp",
-			PublishedAt:     "2026-05-26T07:50:00+08:00",
-			Source:          &mpNewsSource{Name: "Paddock", URL: ""},
-			Content:         &mpNewsContent{FormatCode: "PLAIN", Text: "这里先做占位。后续可接入聚合资讯正文。"},
-		},
-		{
-			ID:          "n_20260526_feat_upgrades",
-			LayoutCode:  MpNewsLayoutCodeFeature,
-			TypeCode:    MpNewsTypeCodeTech,
-			Pinned:      false,
-			Weight:      820,
-			TagText:     "围场动态",
-			Title:       "车队升级进度跟踪：本周末主要部件更新清单",
-			Summary:     "按车队梳理前翼、底板、散热与尾翼变化，并标注升级意图与风险点。",
-			CoverURL:    "/static/circuits/2026/raw/miami_map.webp",
-			PublishedAt: "2026-05-26T06:20:00+08:00",
-			Source:      &mpNewsSource{Name: "Paddock", URL: ""},
-			Content:     &mpNewsContent{FormatCode: "PLAIN", Text: "这里先做占位。后续正文可从后端聚合并缓存。"},
-		},
-		{
-			ID:          "n_20260525_feat_strategy",
-			LayoutCode:  MpNewsLayoutCodeFeature,
-			TypeCode:    MpNewsTypeCodeStrategy,
-			Pinned:      false,
-			Weight:      760,
-			TagText:     "赛道 / 轮胎",
-			Title:       "本站轮胎策略前瞻：长距离衰减与进站窗口推演",
-			Summary:     "结合练习赛长距离与历史数据，给出 1/2 停策略对比与关键触发条件。",
-			CoverURL:    "/static/circuits/2026/raw/monaco_map.webp",
-			PublishedAt: "2026-05-25T21:10:00+08:00",
-			Source:      &mpNewsSource{Name: "Strategy Desk", URL: ""},
-			Content:     &mpNewsContent{FormatCode: "PLAIN", Text: "这里先做占位。后续可以加入策略图表与关键段落高亮。"},
-		},
-		{
-			ID:          "n_20260525_std_driver",
-			LayoutCode:  MpNewsLayoutCodeStandard,
-			TypeCode:    MpNewsTypeCodeDriver,
-			Pinned:      false,
-			Weight:      620,
-			TagText:     "人物",
-			Title:       "车手专访节选：如何在高温下保持轮胎温度窗口",
-			Summary:     "从驾驶风格、刹车点与能量回收入手，拆解“保胎”的具体操作。",
-			CoverURL:    "/static/circuits/2026/raw/suzuka_map.webp",
-			PublishedAt: "2026-05-25T11:35:00+08:00",
-			Source:      &mpNewsSource{Name: "Interview", URL: ""},
-			Content:     &mpNewsContent{FormatCode: "PLAIN", Text: "这里先做占位。后续可以支持分段引用、收藏与分享。"},
-		},
-		{
-			ID:          "n_20260526_bullet_1",
-			LayoutCode:  MpNewsLayoutCodeBulletin,
-			TypeCode:    MpNewsTypeCodePaddock,
-			Pinned:      false,
-			Weight:      540,
-			TagText:     "快讯",
-			Title:       "练习赛出现红旗，赛会通报清理时间约 12 分钟",
-			Summary:     "快讯占位：后续可用于高频小消息的行式布局。",
-			CoverURL:    "",
-			PublishedAt: "2026-05-26T09:05:00+08:00",
-			Source:      &mpNewsSource{Name: "Race Control", URL: ""},
-			Content:     &mpNewsContent{FormatCode: "PLAIN", Text: "快讯占位正文。"},
-		},
-		{
-			ID:          "n_20260526_bullet_2",
-			LayoutCode:  MpNewsLayoutCodeBulletin,
-			TypeCode:    MpNewsTypeCodePaddock,
-			Pinned:      false,
-			Weight:      520,
-			TagText:     "快讯",
-			Title:       "赛会更新：部分弯道限界点位将加强监控",
-			Summary:     "快讯占位：后续可用于处罚/公告/赛会通告等短内容。",
-			CoverURL:    "",
-			PublishedAt: "2026-05-26T08:55:00+08:00",
-			Source:      &mpNewsSource{Name: "Stewards", URL: ""},
-			Content:     &mpNewsContent{FormatCode: "PLAIN", Text: "快讯占位正文。"},
-		},
-	}
-
-	for i := range items {
-		items[i].TimeText = mpRelativeTime(items[i].PublishedAt, now)
-	}
-
-	out := make([]mpNewsItem, 0, len(items))
-	for _, it := range items {
-		out = append(out, it)
-	}
-
-	for i := 0; i < len(out)-1; i++ {
-		for j := i + 1; j < len(out); j++ {
-			if mpNewsLess(out[i], out[j]) {
-				continue
-			}
-			out[i], out[j] = out[j], out[i]
-		}
-	}
-	return out
 }
 
 func mpNewsLess(a, b mpNewsItem) bool {

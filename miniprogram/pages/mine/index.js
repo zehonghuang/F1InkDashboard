@@ -7,9 +7,15 @@ Page({
     displayName: "游客",
     avatarText: "G",
     loadingLogin: false,
-    loadingProfile: false
+    loadingProfile: false,
+    statusBarHeight: 0
   },
   onLoad() {
+    try {
+      const sys = wx.getSystemInfoSync()
+      const h = Number(sys && sys.statusBarHeight) || 0
+      this.setData({ statusBarHeight: h })
+    } catch (e) {}
     this.refreshAuth()
   },
   onShow() {

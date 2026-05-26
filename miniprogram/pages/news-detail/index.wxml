@@ -1,4 +1,6 @@
 <view class="page">
+  <view wx:if="{{ loading }}" class="status">加载中...</view>
+  <view wx:if="{{ !loading && errorText }}" class="status status-error">{{ errorText }}</view>
   <view class="detail-card">
     <view class="detail-title">{{ title }}</view>
     <view class="detail-meta">

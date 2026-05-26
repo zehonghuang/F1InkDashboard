@@ -1,0 +1,22 @@
+{
+  "id": "n_20260526_breaking_winner",
+  "layout_code": "BREAKING",
+  "hero_display_code": "BANNER",
+  "type_code": "PADDOCK",
+  "pinned": true,
+  "weight": 1200,
+  "tag_text": "Breaking",
+  "title": "Breaking：赛后速报",
+  "summary": "欢迎页占位：后续可用于赛后热点图与一句话摘要。",
+  "cover_url": "/static/circuits/2026/raw/miami_card.webp",
+  "published_at": "2026-05-26T09:15:00+08:00",
+  "source": {
+    "name": "Race Control",
+    "url": ""
+  },
+  "content": {
+    "format_code": "PLAIN",
+    "text": "Breaking 占位正文。"
+  }
+}
+

@@ -1,0 +1,21 @@
+{
+  "id": "n_20260526_bullet_1",
+  "layout_code": "BULLETIN",
+  "type_code": "PADDOCK",
+  "pinned": false,
+  "weight": 540,
+  "tag_text": "快讯",
+  "title": "练习赛出现红旗，赛会通报清理时间约 12 分钟",
+  "summary": "快讯占位：后续可用于高频小消息的行式布局。",
+  "cover_url": "",
+  "published_at": "2026-05-26T09:05:00+08:00",
+  "source": {
+    "name": "Race Control",
+    "url": ""
+  },
+  "content": {
+    "format_code": "PLAIN",
+    "text": "快讯占位正文。"
+  }
+}
+

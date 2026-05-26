@@ -5,10 +5,14 @@
     <view class="welcome-tip">点击进入</view>
   </view>
 
-  <view class="header">
+  <view class="header" style="padding-top: calc({{ statusBarHeight }}px + 12rpx);">
     <view class="title">F1 资讯</view>
     <view class="subtitle">News • Updates • Insights</view>
   </view>
+
+  <view wx:if="{{ loading }}" class="status">加载中...</view>
+  <view wx:if="{{ !loading && errorText }}" class="status status-error">{{ errorText }}</view>
+  <view wx:if="{{ !loading && !errorText && !banners.length && !list.length }}" class="status">暂无资讯</view>
 
   <swiper
     wx:if="{{ banners.length }}"

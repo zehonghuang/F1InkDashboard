@@ -1,5 +1,6 @@
 Component({
   data: {
+    visible: true,
     selected: 'news',
     list: [
       {
@@ -20,6 +21,9 @@ Component({
     ]
   },
   methods: {
+    setVisible(visible) {
+      this.setData({ visible: Boolean(visible) })
+    },
     setSelectedByRoute(route) {
       const matched = this.data.list.find((x) => x.pagePath === `/${route}`)
       this.setData({ selected: matched ? matched.key : 'news' })
