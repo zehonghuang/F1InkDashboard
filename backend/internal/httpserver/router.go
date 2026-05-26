@@ -79,6 +79,8 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/mp/session-results", handlers.MpSessionResults(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/telemetry/controls", handlers.MpTelemetryControls(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/telemetry/sector_controls", handlers.MpTelemetrySectorControls(gormOrNil(database)))
+	s.Router.GET("/api/v1/mp/news", handlers.MpNewsList())
+	s.Router.GET("/api/v1/mp/news/:id", handlers.MpNewsDetail())
 
 	s.Router.POST("/api/v1/pay/wechat/jsapi/prepay", handlers.WechatPayJSAPIPrepay(cfg))
 	s.Router.GET("/api/v1/pay/wechat/order/:out_trade_no", handlers.WechatPayQueryOrder(cfg))
