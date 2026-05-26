@@ -2,16 +2,54 @@ Page({
   data: {
     raceName: "",
     sessionName: "",
+    sessionCode: "",
     sessionKey: 0,
     items: [],
-    activeTab: 0,
+    tabs: [],
+    activeTabKey: "rank",
     chartOptionBoxplot: null,
     boxplotHeightRpx: 520,
     selectedDriverNumbers: [],
     selectedDriverText: "",
+    chartOptionTB: null,
+    chartOptionSpeed: null,
+    telemetryHeightRpx: 520,
+    telemetryDriverNumbers: [],
+    telemetrySelectedText: "",
+    telemetryLapInfo: "",
     showPicker: false,
+    pickerMode: "",
     pickedDriverNumbers: [],
     pickedMap: {}
+  },
+  buildTabs(sessionCode, sessionName) {
+    const code = String(sessionCode || "")
+      .trim()
+      .toUpperCase()
+    const name = String(sessionName || "").trim()
+    const isRace = code === "RACE" || (/正赛/.test(name) && !/排位/.test(name))
+    const isSprintRace =
+      code === "SPRINT" || /冲刺赛正赛/.test(name) || (/\bsprint\b/i.test(name) && !/\bqual/i.test(name))
+    const isQuali = code === "Q" || /排位/.test(name) || /\bqual/i.test(name)
+    const isSprintQuali = code === "SQ" || /冲刺赛排位/.test(name) || (/\bsprint\b/i.test(name) && /\bqual/i.test(name))
+
+    if (isRace || isSprintRace) {
+      return [
+        { key: "rank", label: "排名" },
+        { key: "boxplot", label: "箱线图" }
+      ]
+    }
+    if (isQuali || isSprintQuali) {
+      return [
+        { key: "rank", label: "排名" },
+        { key: "tb", label: "刹车/油门" },
+        { key: "speed", label: "速度" }
+      ]
+    }
+    return [{ key: "rank", label: "排名" }]
+  },
+  hasTab(key) {
+    return (this.data.tabs || []).some((t) => t && t.key === key)
   },
   normalizeTeamColor(v) {
     const s = String(v || "").trim()
@@ -63,9 +101,12 @@ Page({
   },
   onLoad(options) {
     const raceName = decodeURIComponent(options.raceName || "")
+    const sessionCode = decodeURIComponent(options.sessionCode || "")
     const sessionName = decodeURIComponent(options.sessionName || "")
     const sessionKey = Number(options.sessionKey || 0)
-    this.setData({ raceName, sessionName, sessionKey }, () => {
+    const tabs = this.buildTabs(sessionCode, sessionName)
+    const activeTabKey = (tabs && tabs[0] && tabs[0].key) || "rank"
+    this.setData({ raceName, sessionName, sessionCode, sessionKey, tabs, activeTabKey }, () => {
       if (sessionName) {
         wx.setNavigationBarTitle({ title: sessionName })
       }
@@ -73,13 +114,21 @@ Page({
     })
   },
   onShow() {
-    if (this.data.activeTab === 1) {
+    if (this.data.activeTabKey === "boxplot") {
       this.updateBoxplotHeight()
+      return
+    }
+    if (this.data.activeTabKey === "tb" || this.data.activeTabKey === "speed") {
+      this.updateTelemetryHeight()
     }
   },
   onPullDownRefresh() {
-    if (this.data.activeTab === 1) {
+    if (this.data.activeTabKey === "boxplot") {
       this.loadBoxplot({ isPullDown: true })
+      return
+    }
+    if (this.data.activeTabKey === "tb" || this.data.activeTabKey === "speed") {
+      this.loadTelemetry({ isPullDown: true })
       return
     }
     this.loadResults({ isPullDown: true })
@@ -108,16 +157,23 @@ Page({
           const cardStyle = c ? `border-left: 10rpx solid ${c}; padding-left: 16rpx;` : ""
           return Object.assign({}, it, { cardStyle })
         })
-        const selected = this.selectDefaultDrivers(mapped, this.data.selectedDriverNumbers)
+        const selected = this.hasTab("boxplot") ? this.selectDefaultDrivers(mapped, this.data.selectedDriverNumbers) : []
+        const telemetrySelected = this.hasTab("tb") || this.hasTab("speed") ? this.selectDefaultDrivers(mapped, this.data.telemetryDriverNumbers) : []
         this.setData(
           {
             items: mapped,
             selectedDriverNumbers: selected,
-            selectedDriverText: this.buildSelectedText(mapped, selected)
+            selectedDriverText: this.buildSelectedText(mapped, selected),
+            telemetryDriverNumbers: telemetrySelected,
+            telemetrySelectedText: this.buildSelectedText(mapped, telemetrySelected)
           },
           () => {
-            if (this.data.activeTab === 1) {
+            if (this.data.activeTabKey === "boxplot") {
               this.loadBoxplot()
+              return
+            }
+            if (this.data.activeTabKey === "tb" || this.data.activeTabKey === "speed") {
+              this.loadTelemetry()
             }
           }
         )
@@ -152,12 +208,17 @@ Page({
     return labels.length ? `对比：${labels.join(" / ")}` : "请选择车手"
   },
   onTabTap(e) {
-    const t = Number((e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.tab) || 0)
-    if (t === this.data.activeTab) return
-    this.setData({ activeTab: t }, () => {
-      if (t === 1) {
+    const key = String((e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.tab) || "")
+    if (!key || key === this.data.activeTabKey) return
+    this.setData({ activeTabKey: key }, () => {
+      if (key === "boxplot") {
         this.updateBoxplotHeight()
         this.loadBoxplot()
+        return
+      }
+      if (key === "tb" || key === "speed") {
+        this.updateTelemetryHeight()
+        this.loadTelemetry()
       }
     })
   },
@@ -165,19 +226,38 @@ Page({
     const picked = Array.isArray(this.data.selectedDriverNumbers) ? this.data.selectedDriverNumbers.slice() : []
     const pickedMap = {}
     for (const dn of picked) pickedMap[dn] = true
-    this.setData({ showPicker: true, pickedDriverNumbers: picked, pickedMap })
+    this.setData({ showPicker: true, pickerMode: "boxplot", pickedDriverNumbers: picked, pickedMap })
+  },
+  onOpenTelemetryPicker() {
+    const picked = Array.isArray(this.data.telemetryDriverNumbers) ? this.data.telemetryDriverNumbers.slice() : []
+    const pickedMap = {}
+    for (const x of picked) pickedMap[x] = true
+    this.setData({ showPicker: true, pickerMode: "telemetry", pickedDriverNumbers: picked, pickedMap })
   },
   onClosePicker() {
-    this.setData({ showPicker: false })
+    this.setData({ showPicker: false, pickerMode: "" })
   },
   onPickerCancel() {
-    this.setData({ showPicker: false })
+    this.setData({ showPicker: false, pickerMode: "" })
   },
   onPickerConfirm() {
     const picked = Array.isArray(this.data.pickedDriverNumbers) ? this.data.pickedDriverNumbers.slice() : []
+    if (this.data.pickerMode === "telemetry") {
+      this.setData(
+        {
+          showPicker: false,
+          pickerMode: "",
+          telemetryDriverNumbers: picked,
+          telemetrySelectedText: this.buildSelectedText(this.data.items, picked)
+        },
+        () => this.loadTelemetry()
+      )
+      return
+    }
     this.setData(
       {
         showPicker: false,
+        pickerMode: "",
         selectedDriverNumbers: picked,
         selectedDriverText: this.buildSelectedText(this.data.items, picked)
       },
@@ -207,7 +287,7 @@ Page({
   onTogglePickDriver(e) {
     const dn = Number((e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.driverNumber) || 0)
     if (!dn) return
-    const cur = Array.isArray(this.data.pickedDriverNumbers) ? this.data.pickedDriverNumbers.slice() : []
+    let cur = Array.isArray(this.data.pickedDriverNumbers) ? this.data.pickedDriverNumbers.slice() : []
     const i = cur.indexOf(dn)
     if (i >= 0) cur.splice(i, 1)
     else cur.push(dn)
@@ -215,6 +295,249 @@ Page({
     const pickedMap = {}
     for (const v of cur) pickedMap[v] = true
     this.setData({ pickedDriverNumbers: cur, pickedMap })
+  },
+  updateTelemetryHeight() {
+    try {
+      const sys = wx.getSystemInfoSync()
+      const winW = Number(sys.windowWidth) || 375
+      const safeBottom = sys.safeArea && sys.safeArea.bottom ? Number(sys.safeArea.bottom) : Number(sys.windowHeight) || 700
+      const query = wx.createSelectorQuery().in(this)
+      query
+        .select(".telemetry-chart")
+        .boundingClientRect((rect) => {
+          if (!rect || !Number.isFinite(rect.top)) return
+          const remainPx = safeBottom - Number(rect.top) - 16
+          if (!(remainPx > 200)) return
+          const rpx = Math.max(420, Math.min(1100, Math.floor((remainPx * 750) / winW)))
+          if (rpx !== this.data.telemetryHeightRpx) {
+            this.setData({ telemetryHeightRpx: rpx })
+          }
+        })
+        .exec()
+    } catch (e) {}
+  },
+  loadTelemetry(opts) {
+    const done = () => {
+      if (opts && opts.isPullDown) {
+        wx.stopPullDownRefresh()
+      }
+    }
+    const app = getApp()
+    const apiBase = (app && app.globalData && app.globalData.apiBase) || ""
+    const sessionKey = Number(this.data.sessionKey || 0)
+    const selected = Array.isArray(this.data.telemetryDriverNumbers) ? this.data.telemetryDriverNumbers.filter((x) => Number(x) > 0) : []
+    if (!apiBase || !sessionKey || !selected.length) {
+      this.setData({ chartOptionTB: null, chartOptionSpeed: null, telemetryLapInfo: "" })
+      done()
+      return
+    }
+    const metaByDn = {}
+    for (const it of this.data.items || []) {
+      const dn = Number(it && it.driver_number)
+      if (!dn) continue
+      const label = String(it.name_acronym || it.full_name || it.driver_name || dn)
+      const color = this.normalizeTeamColor(it.team_color) || "#ffffff"
+      metaByDn[dn] = { label, color }
+    }
+
+    const toNumOrNull = (v) => {
+      const n = Number(v)
+      return Number.isFinite(n) ? n : null
+    }
+
+    const fetchOne = (driverNumber) => {
+      const dn = Number(driverNumber)
+      const url = `${apiBase.replace(/\/+$/, "")}/api/v1/mp/telemetry/sector_controls?session_key=${sessionKey}&driver_number=${dn}&max_points=900`
+      return new Promise((resolve) => {
+        wx.request({
+          url,
+          method: "GET",
+          success: (res) => resolve({ dn, data: (res && res.data) || {} }),
+          fail: () => resolve({ dn, data: null })
+        })
+      })
+    }
+
+    Promise.all(selected.map((dn) => fetchOne(dn)))
+      .then((rows) => {
+        const tbSeries = []
+        const speedSeries = []
+        const lapParts = []
+
+        for (const row of rows || []) {
+          const dn = row && row.dn ? Number(row.dn) : 0
+          const data = row && row.data ? row.data : null
+          if (!dn || !data) continue
+          const points = Array.isArray(data.points) ? data.points : []
+          if (!points.length) continue
+
+          const meta = metaByDn[dn] || { label: String(dn), color: "#ffffff" }
+          const baseColor = meta.color || "#ffffff"
+          const label = meta.label || String(dn)
+
+          if (data.lap_time) {
+            lapParts.push(`${label} ${data.lap_time}`)
+          } else {
+            lapParts.push(label)
+          }
+
+          const throttlePts = []
+          const brakePts = []
+          const speedPts = []
+          for (const p of points) {
+            const x = toNumOrNull(p && p.x)
+            if (x == null) continue
+            const th = toNumOrNull(p && p.throttle)
+            const br = toNumOrNull(p && p.brake)
+            const sp = toNumOrNull(p && p.speed)
+            if (th != null) throttlePts.push([x, th])
+            if (br != null) brakePts.push([x, br])
+            if (sp != null) speedPts.push([x, sp])
+          }
+
+          tbSeries.push({
+            name: `${label} Throttle`,
+            type: "line",
+            data: throttlePts,
+            showSymbol: false,
+            smooth: false,
+            lineStyle: { width: 1.5, color: baseColor }
+          })
+          tbSeries.push({
+            name: `${label} Brake`,
+            type: "line",
+            data: brakePts,
+            showSymbol: false,
+            smooth: false,
+            lineStyle: { width: 1.5, color: this.hexToRgba(baseColor, 0.85) || baseColor, type: "dashed" }
+          })
+
+          speedSeries.push({
+            name: label,
+            type: "line",
+            data: speedPts,
+            showSymbol: false,
+            smooth: false,
+            lineStyle: { width: 1.6, color: baseColor }
+          })
+        }
+
+        const formatX = (xv) => {
+          const x = Number(xv)
+          if (!Number.isFinite(x)) return ""
+          const sec = x < 1 ? 1 : x < 2 ? 2 : 3
+          const pct = Math.round((x - (sec - 1)) * 100)
+          return `S${sec} ${Math.max(0, Math.min(100, pct))}%`
+        }
+
+        const axisX = {
+          type: "value",
+          min: 0,
+          max: 3,
+          axisLabel: {
+            color: "rgba(255,255,255,0.55)",
+            fontSize: 12,
+            formatter: (v) => {
+              const x = Number(v)
+              if (x === 0) return "S1"
+              if (x === 1) return "S2"
+              if (x === 2) return "S3"
+              return ""
+            }
+          },
+          axisLine: { lineStyle: { color: "rgba(255,255,255,0.18)", width: 1 } },
+          axisTick: { show: false },
+          splitLine: { show: false }
+        }
+
+        const markSectors = {
+          silent: true,
+          symbol: "none",
+          lineStyle: { color: "rgba(255,255,255,0.12)", type: "dashed", width: 1 },
+          label: { show: false },
+          data: [{ xAxis: 1 }, { xAxis: 2 }]
+        }
+
+        const optionTB =
+          tbSeries.length === 0
+            ? null
+            : {
+                backgroundColor: "#000000",
+                grid: { left: 18, right: 18, top: 52, bottom: 22, containLabel: true },
+                tooltip: {
+                  trigger: "axis",
+                  confine: true,
+                  formatter: (params) => {
+                    const p0 = Array.isArray(params) ? params[0] : null
+                    const xv = p0 && Array.isArray(p0.value) ? p0.value[0] : null
+                    const header = formatX(xv)
+                    const lines = header ? [header] : []
+                    for (const p of params || []) {
+                      const vv = p && Array.isArray(p.value) ? p.value[1] : null
+                      const val = vv != null && Number.isFinite(Number(vv)) ? `${Math.round(Number(vv))}%` : "N/A"
+                      lines.push(`${p.marker || ""} ${p.seriesName}: ${val}`)
+                    }
+                    return lines.join("\n")
+                  }
+                },
+                legend: { type: "scroll", top: 8, textStyle: { color: "rgba(255,255,255,0.7)" } },
+                xAxis: axisX,
+                yAxis: {
+                  type: "value",
+                  min: 0,
+                  max: 100,
+                  axisLabel: { color: "rgba(255,255,255,0.55)", fontSize: 12 },
+                  splitLine: { lineStyle: { color: "rgba(255,255,255,0.08)", width: 1 } },
+                  minorTick: { show: true, splitNumber: 2, lineStyle: { color: "rgba(255,255,255,0.06)", width: 1 } },
+                  minorSplitLine: { show: true, lineStyle: { color: "rgba(255,255,255,0.04)", width: 1 } },
+                  axisLine: { show: false }
+                },
+                series: tbSeries.map((s) => Object.assign({}, s, { markLine: markSectors }))
+              }
+
+        const optionSpeed =
+          speedSeries.length === 0
+            ? null
+            : {
+                backgroundColor: "#000000",
+                grid: { left: 18, right: 18, top: 52, bottom: 22, containLabel: true },
+                tooltip: {
+                  trigger: "axis",
+                  confine: true,
+                  formatter: (params) => {
+                    const p0 = Array.isArray(params) ? params[0] : null
+                    const xv = p0 && Array.isArray(p0.value) ? p0.value[0] : null
+                    const header = formatX(xv)
+                    const lines = header ? [header] : []
+                    for (const p of params || []) {
+                      const vv = p && Array.isArray(p.value) ? p.value[1] : null
+                      const val = vv != null && Number.isFinite(Number(vv)) ? `${Math.round(Number(vv))} km/h` : "N/A"
+                      lines.push(`${p.marker || ""} ${p.seriesName}: ${val}`)
+                    }
+                    return lines.join("\n")
+                  }
+                },
+                legend: { type: "scroll", top: 8, textStyle: { color: "rgba(255,255,255,0.7)" } },
+                xAxis: axisX,
+                yAxis: {
+                  type: "value",
+                  axisLabel: { color: "rgba(255,255,255,0.55)", fontSize: 12 },
+                  splitLine: { lineStyle: { color: "rgba(255,255,255,0.08)", width: 1 } },
+                  minorTick: { show: true, splitNumber: 2, lineStyle: { color: "rgba(255,255,255,0.06)", width: 1 } },
+                  minorSplitLine: { show: true, lineStyle: { color: "rgba(255,255,255,0.04)", width: 1 } },
+                  axisLine: { show: false }
+                },
+                series: speedSeries.map((s) => Object.assign({}, s, { markLine: markSectors }))
+              }
+
+        const telemetryLapInfo = lapParts.length ? `最快圈：${lapParts.join(" / ")}` : "最快圈对比"
+        this.setData({ chartOptionTB: optionTB, chartOptionSpeed: optionSpeed, telemetryLapInfo })
+        done()
+      })
+      .catch(() => {
+        this.setData({ chartOptionTB: null, chartOptionSpeed: null, telemetryLapInfo: "" })
+        done()
+      })
   },
   loadBoxplot(opts) {
     const done = () => {

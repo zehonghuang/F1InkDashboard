@@ -72,13 +72,16 @@ Page({
       return
     }
     const sessionKey = Number(e.currentTarget.dataset.sessionKey || 0)
+    const sessionCode = e.currentTarget.dataset.key || ""
     const sessionName = e.currentTarget.dataset.sessionName || ""
     const raceName = e.currentTarget.dataset.raceName || this.data.raceName || ""
     if (!sessionKey) {
       return
     }
     wx.navigateTo({
-      url: `/pages/session-results/index?sessionKey=${sessionKey}&sessionName=${encodeURIComponent(sessionName)}&raceName=${encodeURIComponent(raceName)}`
+      url: `/pages/session-results/index?sessionKey=${sessionKey}&sessionCode=${encodeURIComponent(sessionCode)}&sessionName=${encodeURIComponent(
+        sessionName
+      )}&raceName=${encodeURIComponent(raceName)}`
     })
   }
 })
