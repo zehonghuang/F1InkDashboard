@@ -42,3 +42,9 @@
   color: rgba(255, 255, 255, 0.78);
   line-height: 44rpx;
 }
+
+.detail-rich {
+  margin-top: 18rpx;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 44rpx;
+}
