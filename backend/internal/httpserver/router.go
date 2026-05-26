@@ -87,6 +87,8 @@ func New(cfg config.Config, database *db.DB) *Server {
 	mpAuthAuth := mpAuth.Group("")
 	mpAuthAuth.Use(handlers.MpAuthRequired(gormOrNil(database)))
 	mpAuthAuth.GET("/me", handlers.MpAuthMe(gormOrNil(database)))
+	mpAuthAuth.POST("/profile", handlers.MpAuthUpdateProfile(gormOrNil(database)))
+	mpAuthAuth.POST("/avatar", handlers.MpAuthUploadAvatar(cfg.StaticDir, gormOrNil(database)))
 	mpAuthAuth.POST("/bind_device", handlers.MpAuthBindDevice(gormOrNil(database)))
 	mpAuthAuth.POST("/logout", handlers.MpAuthLogout(gormOrNil(database)))
 

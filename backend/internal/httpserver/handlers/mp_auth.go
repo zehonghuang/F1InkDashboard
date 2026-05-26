@@ -3,6 +3,7 @@ package handlers
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -53,6 +54,7 @@ func MpAuthLogin(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "error": "wechat_code2session_failed"})
 			return
 		}
+		log.Printf("mp_auth_login ok openid=%s ip=%s ua=%q", sess.OpenID, c.ClientIP(), c.Request.UserAgent())
 
 		token, err := genTokenHex64()
 		if err != nil {
@@ -163,6 +165,108 @@ func MpAuthRequired(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+type mpAuthUpdateProfileRequest struct {
+	NickName  string `json:"nick_name"`
+	AvatarURL string `json:"avatar_url"`
+}
+
+func MpAuthUpdateProfile(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userIDAny, ok := c.Get("mp_user_id")
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "error": "unauthorized"})
+			return
+		}
+		userID, ok := userIDAny.(int64)
+		if !ok || userID <= 0 {
+			c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "error": "unauthorized"})
+			return
+		}
+
+		var req mpAuthUpdateProfileRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": "bad_json"})
+			return
+		}
+		req.NickName = strings.TrimSpace(req.NickName)
+		req.AvatarURL = strings.TrimSpace(req.AvatarURL)
+
+		var nick any
+		if req.NickName != "" {
+			nick = req.NickName
+		}
+		var avatar any
+		if req.AvatarURL != "" {
+			avatar = req.AvatarURL
+		}
+
+		if nick == nil && avatar == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": "profile_empty"})
+			return
+		}
+
+		if err := db.Exec(`
+			UPDATE mp_users
+			SET
+				nick_name = COALESCE(?, nick_name),
+				avatar_url = COALESCE(?, avatar_url),
+				updated_at = UTC_TIMESTAMP(3)
+			WHERE id = ?
+		`, nick, avatar, userID).Error; err != nil {
+			LogReqError(c, "mp_auth_profile", "db_exec_failed", err)
+			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "db_exec_failed"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"ok": true})
+	}
+}
+
+func MpAuthUploadAvatar(staticDir string, db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userIDAny, ok := c.Get("mp_user_id")
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "error": "unauthorized"})
+			return
+		}
+		userID, ok := userIDAny.(int64)
+		if !ok || userID <= 0 {
+			c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "error": "unauthorized"})
+			return
+		}
+		if db == nil {
+			LogReqError(c, "mp_auth_avatar", "mysql_required", nil)
+			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			return
+		}
+
+		fh, err := c.FormFile("avatar")
+		if err != nil || fh == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": "avatar_required"})
+			return
+		}
+
+		url, mime, size, err := saveUploaded(staticDir, "mp_avatar", fh)
+		if err != nil {
+			LogReqError(c, "mp_auth_avatar", "save_uploaded_failed", err)
+			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "save_uploaded_failed"})
+			return
+		}
+
+		if err := db.Exec(`
+			UPDATE mp_users
+			SET avatar_url = ?, updated_at = UTC_TIMESTAMP(3)
+			WHERE id = ?
+		`, url, userID).Error; err != nil {
+			LogReqError(c, "mp_auth_avatar", "db_exec_failed", err)
+			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "db_exec_failed"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"ok": true, "avatar_url": url, "mime": strings.TrimSpace(mime), "bytes": size})
+	}
+}
+
 func MpAuthBindDevice(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userIDAny, ok := c.Get("mp_user_id")
@@ -229,12 +333,14 @@ func MpAuthMe(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		type userRow struct {
-			ID     int64  `gorm:"column:id"`
-			OpenID string `gorm:"column:openid"`
-			UnionID string `gorm:"column:unionid"`
+			ID        int64  `gorm:"column:id"`
+			OpenID    string `gorm:"column:openid"`
+			UnionID   string `gorm:"column:unionid"`
+			NickName  string `gorm:"column:nick_name"`
+			AvatarURL string `gorm:"column:avatar_url"`
 		}
 		var u userRow
-		if err := db.Raw(`SELECT id, openid, unionid FROM mp_users WHERE id = ? LIMIT 1`, userID).Scan(&u).Error; err != nil {
+		if err := db.Raw(`SELECT id, openid, unionid, nick_name, avatar_url FROM mp_users WHERE id = ? LIMIT 1`, userID).Scan(&u).Error; err != nil {
 			LogReqError(c, "mp_auth_me", "db_query_failed", err)
 			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "db_query_failed"})
 			return
@@ -250,9 +356,11 @@ func MpAuthMe(db *gorm.DB) gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{
 			"ok": true,
 			"user": gin.H{
-				"id":      u.ID,
-				"openid":  u.OpenID,
-				"unionid": strings.TrimSpace(u.UnionID),
+				"id":         u.ID,
+				"openid":     u.OpenID,
+				"unionid":    strings.TrimSpace(u.UnionID),
+				"nick_name":  strings.TrimSpace(u.NickName),
+				"avatar_url": strings.TrimSpace(u.AvatarURL),
 			},
 			"device_id": strings.TrimSpace(deviceID),
 		})

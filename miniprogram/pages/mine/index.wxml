@@ -6,7 +6,22 @@
 
   <view class="section">
     <view class="profile">
-      <view class="avatar">
+      <button
+        wx:if="{{isLoggedIn && canEditProfile}}"
+        class="avatar avatar-btn"
+        open-type="chooseAvatar"
+        bindchooseavatar="onChooseAvatar"
+        loading="{{syncingProfile}}"
+      >
+        <image
+          wx:if="{{profile && profile.avatarUrl}}"
+          class="avatar-img"
+          src="{{profile.avatarUrl}}"
+          mode="aspectFill"
+        />
+        <view wx:else class="avatar-placeholder">{{avatarText}}</view>
+      </button>
+      <view wx:else class="avatar" bindtap="onAvatarTap">
         <image
           wx:if="{{profile && profile.avatarUrl}}"
           class="avatar-img"
@@ -21,6 +36,14 @@
           <text wx:if="{{isLoggedIn}}">已登录</text>
           <text wx:else>游客浏览中（登录可同步设置）</text>
         </view>
+        <input
+          wx:if="{{isLoggedIn && !hasNick}}"
+          class="nickname-input"
+          type="nickname"
+          placeholder="请输入昵称"
+          value="{{nicknameDraft}}"
+          bindblur="onNicknameBlur"
+        />
       </view>
       <view class="profile-actions">
         <button
@@ -32,15 +55,22 @@
           微信登录
         </button>
         <button
-          wx:if="{{!isLoggedIn}}"
+          wx:if="{{isLoggedIn}}"
           class="btn btn-ghost"
-          bindtap="onGetProfile"
-          loading="{{loadingProfile}}"
+          bindtap="onBindDevice"
+          loading="{{bindingDevice}}"
         >
-          获取头像昵称
+          绑定设备
         </button>
-        <button wx:if="{{isLoggedIn}}" class="btn btn-ghost" bindtap="onLogout">退出登录</button>
       </view>
+    </view>
+  </view>
+
+  <view wx:if="{{isLoggedIn}}" class="section">
+    <view class="section-title">设备</view>
+    <view class="row">
+      <view class="row-key">当前设备ID</view>
+      <view class="row-val">{{deviceId || "-"}}</view>
     </view>
   </view>
 
@@ -60,5 +90,9 @@
       <view class="row-key">数据源</view>
       <view class="row-val">本地后端 / MySQL</view>
     </view>
+  </view>
+
+  <view wx:if="{{isLoggedIn}}" class="section">
+    <button class="btn btn-ghost" bindtap="onLogout">退出登录</button>
   </view>
 </view>
