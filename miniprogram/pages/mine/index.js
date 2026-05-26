@@ -26,6 +26,14 @@ Page({
   },
   onShow() {
     this.refreshAuth()
+    try {
+      const s = getAuthState()
+      if (s && s.isLoggedIn) {
+        fetchMe()
+          .then(() => this.refreshAuth())
+          .catch(() => {})
+      }
+    } catch (e) {}
     if (typeof this.getTabBar === 'function') {
       const tb = this.getTabBar()
       if (tb && typeof tb.setSelectedByRoute === 'function') {
@@ -88,7 +96,8 @@ Page({
       try {
         console.log("[mine] upload avatar failed", e2)
       } catch (err) {}
-      wx.showToast({ title: "头像上传失败", icon: "none" })
+      const msg = String((e2 && (e2.errMsg || e2.message)) || "unknown").slice(0, 40)
+      wx.showToast({ title: `头像上传失败:${msg}`, icon: "none" })
     } finally {
       this.setData({ syncingProfile: false })
     }

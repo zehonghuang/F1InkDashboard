@@ -142,7 +142,12 @@ async function uploadAvatar(tempFilePath) {
       header: { Authorization: `Bearer ${token}` },
       timeout: 30000,
       success: resolve,
-      fail: reject
+      fail: (err) => {
+        try {
+          console.log("[auth] avatar upload fail", err)
+        } catch (e) {}
+        reject(err)
+      }
     })
   })
 
@@ -174,9 +179,10 @@ async function fetchMe() {
   const r = await requestJson("/api/v1/mp/auth/me", { method: "GET", needAuth: true })
   try {
     if (r && r.user) {
-      const patch = {}
-      if (r.user.nick_name) patch.nickName = String(r.user.nick_name || "").trim()
-      if (r.user.avatar_url) patch.avatarUrl = normalizeRemoteURL(r.user.avatar_url)
+      const patch = {
+        nickName: String(r.user.nick_name || "").trim(),
+        avatarUrl: normalizeRemoteURL(r.user.avatar_url || "")
+      }
       patchProfile(patch)
     }
     if (r && r.device_id) setDeviceId(String(r.device_id || "").trim())
