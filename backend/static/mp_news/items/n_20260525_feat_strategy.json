@@ -1,0 +1,21 @@
+{
+  "id": "n_20260525_feat_strategy",
+  "layout_code": "FEATURE",
+  "type_code": "STRATEGY",
+  "pinned": false,
+  "weight": 760,
+  "tag_text": "赛道 / 轮胎",
+  "title": "本站轮胎策略前瞻：长距离衰减与进站窗口推演",
+  "summary": "结合练习赛长距离与历史数据，给出 1/2 停策略对比与关键触发条件。",
+  "cover_url": "/static/circuits/2026/raw/monaco_map.webp",
+  "published_at": "2026-05-25T21:10:00+08:00",
+  "source": {
+    "name": "Strategy Desk",
+    "url": ""
+  },
+  "content": {
+    "format_code": "PLAIN",
+    "text": "这里先做占位。后续可以加入策略图表与关键段落高亮。"
+  }
+}
+

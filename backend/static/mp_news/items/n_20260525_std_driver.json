@@ -1,0 +1,21 @@
+{
+  "id": "n_20260525_std_driver",
+  "layout_code": "STANDARD",
+  "type_code": "DRIVER",
+  "pinned": false,
+  "weight": 620,
+  "tag_text": "人物",
+  "title": "车手专访节选：如何在高温下保持轮胎温度窗口",
+  "summary": "从驾驶风格、刹车点与能量回收入手，拆解“保胎”的具体操作。",
+  "cover_url": "/static/circuits/2026/raw/suzuka_map.webp",
+  "published_at": "2026-05-25T11:35:00+08:00",
+  "source": {
+    "name": "Interview",
+    "url": ""
+  },
+  "content": {
+    "format_code": "PLAIN",
+    "text": "这里先做占位。后续可以支持分段引用、收藏与分享。"
+  }
+}
+

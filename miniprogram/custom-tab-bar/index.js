@@ -1,16 +1,17 @@
 Component({
   data: {
-    selected: 'archive',
+    visible: true,
+    selected: 'news',
     list: [
+      {
+        key: 'news',
+        pagePath: '/pages/news/index',
+        icon: 'document'
+      },
       {
         key: 'archive',
         pagePath: '/pages/archive/index',
         icon: 'barrage'
-      },
-      {
-        key: 'compare',
-        pagePath: '/pages/compare/index',
-        icon: 'dynamic'
       },
       {
         key: 'mine',
@@ -20,9 +21,12 @@ Component({
     ]
   },
   methods: {
+    setVisible(visible) {
+      this.setData({ visible: Boolean(visible) })
+    },
     setSelectedByRoute(route) {
       const matched = this.data.list.find((x) => x.pagePath === `/${route}`)
-      this.setData({ selected: matched ? matched.key : 'archive' })
+      this.setData({ selected: matched ? matched.key : 'news' })
     },
     onTapItem(e) {
       const { key } = e.currentTarget.dataset

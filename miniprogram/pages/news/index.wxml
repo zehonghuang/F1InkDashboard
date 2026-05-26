@@ -1,0 +1,57 @@
+<view class="page has-tabbar">
+  <view wx:if="{{ showWelcome && welcome }}" class="welcome" catchtap="onCloseWelcome" catchtouchmove="noop">
+    <image class="welcome-image" src="{{ welcome.coverUrl }}" mode="aspectFill" />
+    <view class="welcome-mask" />
+    <view class="welcome-tip">点击进入</view>
+  </view>
+
+  <view class="header" style="padding-top: calc({{ statusBarHeight }}px + 12rpx);">
+    <view class="title">F1 资讯</view>
+    <view class="subtitle">News • Updates • Insights</view>
+  </view>
+
+  <view wx:if="{{ loading }}" class="status">加载中...</view>
+  <view wx:if="{{ !loading && errorText }}" class="status status-error">{{ errorText }}</view>
+  <view wx:if="{{ !loading && !errorText && !banners.length && !list.length }}" class="status">暂无资讯</view>
+
+  <swiper
+    wx:if="{{ banners.length }}"
+    class="hero-swiper"
+    circular
+    autoplay
+    indicator-dots
+    indicator-color="rgba(255,255,255,0.45)"
+    indicator-active-color="#ffffff"
+  >
+    <block wx:for="{{ banners }}" wx:key="id">
+      <swiper-item>
+        <view class="hero-banner" bindtap="onTapCard" data-id="{{ item.id }}" hover-class="hero-banner-pressed" hover-stay-time="120">
+          <image class="hero-image" src="{{ item.coverUrl }}" mode="aspectFill" />
+          <view class="hero-mask" />
+          <view class="hero-content">
+            <view class="hero-title">{{ item.title }}</view>
+            <view class="hero-meta">
+              <view class="hero-tag">{{ item.tagText }}</view>
+              <view class="hero-dot">•</view>
+              <view class="hero-time">{{ item.timeText }}</view>
+            </view>
+          </view>
+        </view>
+      </swiper-item>
+    </block>
+  </swiper>
+
+  <view class="news-list">
+    <block wx:for="{{ list }}" wx:key="id">
+      <view class="news-card" bindtap="onTapCard" data-id="{{ item.id }}" hover-class="news-card-pressed" hover-stay-time="120">
+        <view class="news-title">{{ item.title }}</view>
+        <view class="news-summary">{{ item.summary }}</view>
+        <view class="news-meta">
+          <view class="news-tag">{{ item.tagText }}</view>
+          <view class="news-dot">•</view>
+          <view class="news-time">{{ item.timeText }}</view>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>

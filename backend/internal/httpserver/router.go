@@ -79,6 +79,8 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/mp/session-results", handlers.MpSessionResults(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/telemetry/controls", handlers.MpTelemetryControls(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/telemetry/sector_controls", handlers.MpTelemetrySectorControls(gormOrNil(database)))
+	s.Router.GET("/api/v1/mp/news", handlers.MpNewsList(cfg.StaticDir))
+	s.Router.GET("/api/v1/mp/news/:id", handlers.MpNewsDetail(cfg.StaticDir))
 
 	mpAuth := s.Router.Group("/api/v1/mp/auth")
 	mpAuth.POST("/login", handlers.MpAuthLogin(cfg, gormOrNil(database)))

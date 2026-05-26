@@ -1,0 +1,22 @@
+{
+  "id": "n_20260526_hero_paddock",
+  "layout_code": "HERO",
+  "hero_display_code": "BANNER",
+  "type_code": "PADDOCK",
+  "pinned": false,
+  "weight": 900,
+  "tag_text": "围场动态",
+  "title": "本周末焦点事件追踪：升级、处罚与关键发车位变动",
+  "summary": "将练习赛后信息按“升级/处罚/排位节奏”聚合，便于快速抓住关注点。",
+  "cover_url": "/static/circuits/2026/raw/monaco_map.webp",
+  "published_at": "2026-05-26T07:50:00+08:00",
+  "source": {
+    "name": "Paddock",
+    "url": ""
+  },
+  "content": {
+    "format_code": "PLAIN",
+    "text": "这里先做占位。后续可接入聚合资讯正文。"
+  }
+}
+

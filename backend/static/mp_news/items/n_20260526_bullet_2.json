@@ -1,0 +1,21 @@
+{
+  "id": "n_20260526_bullet_2",
+  "layout_code": "BULLETIN",
+  "type_code": "PADDOCK",
+  "pinned": false,
+  "weight": 520,
+  "tag_text": "快讯",
+  "title": "赛会更新：部分弯道限界点位将加强监控",
+  "summary": "快讯占位：后续可用于处罚/公告/赛会通告等短内容。",
+  "cover_url": "",
+  "published_at": "2026-05-26T08:55:00+08:00",
+  "source": {
+    "name": "Stewards",
+    "url": ""
+  },
+  "content": {
+    "format_code": "PLAIN",
+    "text": "快讯占位正文。"
+  }
+}
+

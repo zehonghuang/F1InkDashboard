@@ -1,0 +1,22 @@
+{
+  "id": "n_20260526_hero_rules",
+  "layout_code": "HERO",
+  "hero_display_code": "BANNER",
+  "type_code": "REGULATION",
+  "pinned": true,
+  "weight": 980,
+  "tag_text": "FIA / 规则",
+  "title": "2026 赛季新规要点速览：动力单元与空气动力学方向",
+  "summary": "整理动力单元、电能占比、DRS 变化等核心信息，方便快速了解新规影响。",
+  "cover_url": "/static/circuits/2026/raw/shanghai_map.webp",
+  "published_at": "2026-05-26T08:40:00+08:00",
+  "source": {
+    "name": "FIA",
+    "url": ""
+  },
+  "content": {
+    "format_code": "PLAIN",
+    "text": "这里先做占位。后续接入接口后，可以把正文以富文本（rich-text）或 WebView 阅读原文的方式展示。"
+  }
+}
+

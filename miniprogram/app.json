@@ -1,10 +1,11 @@
 {
   "pages": [
+    "pages/news/index",
+    "pages/news-detail/index",
     "pages/archive/index",
     "pages/race-sessions/index",
     "pages/session-results/index",
     "pages/driver/index",
-    "pages/compare/index",
     "pages/mine/index"
   ],
   "window": {
@@ -22,16 +23,16 @@
     "borderStyle": "black",
     "list": [
       {
-        "pagePath": "pages/archive/index",
-        "text": "归档",
+        "pagePath": "pages/news/index",
+        "text": "资讯",
         "iconPath": "assets/tabbar/archive.png",
         "selectedIconPath": "assets/tabbar/archive_selected.png"
       },
       {
-        "pagePath": "pages/compare/index",
-        "text": "对比",
-        "iconPath": "assets/tabbar/compare.png",
-        "selectedIconPath": "assets/tabbar/compare_selected.png"
+        "pagePath": "pages/archive/index",
+        "text": "归档",
+        "iconPath": "assets/tabbar/archive.png",
+        "selectedIconPath": "assets/tabbar/archive_selected.png"
       },
       {
         "pagePath": "pages/mine/index",

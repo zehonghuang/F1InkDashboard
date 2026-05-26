@@ -1,0 +1,14 @@
+<view class="page">
+  <view wx:if="{{ loading }}" class="status">加载中...</view>
+  <view wx:if="{{ !loading && errorText }}" class="status status-error">{{ errorText }}</view>
+  <view class="detail-card">
+    <view class="detail-title">{{ title }}</view>
+    <view class="detail-meta">
+      <view class="detail-tag">{{ tagText }}</view>
+      <view class="detail-dot">•</view>
+      <view class="detail-time">{{ timeText }}</view>
+    </view>
+    <view wx:if="{{ contentFormatCode === 'PLAIN' }}" class="detail-content">{{ contentText }}</view>
+    <rich-text wx:if="{{ contentFormatCode === 'RICH_TEXT_NODES' }}" class="detail-rich" nodes="{{ contentNodes }}" />
+  </view>
+</view>

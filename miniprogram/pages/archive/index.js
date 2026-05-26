@@ -3,6 +3,7 @@ Page({
     query: "",
     seasonOptions: ["2026赛季", "2025赛季", "2024赛季", "2023赛季"],
     seasonIndex: 0,
+    statusBarHeight: 0,
     races: [
       {
         id: "R07",
@@ -39,6 +40,11 @@ Page({
     ]
   },
   onLoad() {
+    try {
+      const sys = wx.getSystemInfoSync()
+      const h = Number(sys && sys.statusBarHeight) || 0
+      this.setData({ statusBarHeight: h })
+    } catch (e) {}
     this.loadArchive()
   },
   onPullDownRefresh() {
@@ -117,9 +123,6 @@ Page({
     wx.navigateTo({
       url: `/pages/race-sessions/index?season=${season}&round=${rd}&raceName=${encodeURIComponent(name || "")}`
     })
-  },
-  onGoCompare() {
-    wx.switchTab({ url: "/pages/compare/index" })
   },
   onQueryInput(e) {
     this.setData({ query: e.detail.value })

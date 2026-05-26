@@ -1,5 +1,5 @@
 <view class="page has-tabbar">
-  <view class="header">
+  <view class="header" style="padding-top: calc({{ statusBarHeight }}px + 12rpx);">
     <view class="title">T O N I C  F 1  数 据 分 析</view>
     <view class="subtitle">Telemetry • Analysis • Archive</view>
   </view>
@@ -24,12 +24,6 @@
         </race-card>
       </view>
     </block>
-  </view>
-
-  <view class="section">
-    <view class="section-title">⚖️ 全局性能对比</view>
-    <view class="section-desc">- 跨分站/多车手脚法对齐</view>
-    <button class="btn btn-primary" bindtap="onGoCompare">进入对比</button>
   </view>
 
   <view class="section">

@@ -1,0 +1,93 @@
+{
+  "id": "n_f1_antonelli_russell_wolff",
+  "layout_code": "FEATURE",
+  "type_code": "PADDOCK",
+  "pinned": false,
+  "weight": 880,
+  "tag_text": "Mercedes / 采访",
+  "title": "沃尔夫谈队内竞争：允许安东内利与拉塞尔硬碰硬，但会设底线",
+  "summary": "基于 Formula1.com 报道要点的中文改写：既鼓励公平竞争，也强调团队利益优先。",
+  "cover_url": "/static/circuits/2026/raw/miami_map.webp",
+  "published_at": "2026-05-25T18:30:00+08:00",
+  "source": {
+    "name": "Formula1.com",
+    "url": "https://www.formula1.com/en/latest/article/this-fight-is-on-wolff-sets-out-mercedes-approach-to-allowing-antonelli-and-russell-to-battle.282V0RVxx0wvyd1TOprbrc"
+  },
+  "content": {
+    "format_code": "RICH_TEXT_NODES",
+    "nodes": [
+      {
+        "name": "img",
+        "attrs": {
+          "src": "/static/circuits/2026/raw/miami_map.webp",
+          "mode": "widthFix",
+          "style": "width:100%;display:block;border-radius:16rpx;overflow:hidden;margin:0 0 12rpx 0;"
+        }
+      },
+      {
+        "name": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "这是一份基于原文关键信息的中文改写（非逐字翻译）。文章核心讨论：当车队两位车手处于争冠/争分形势时，如何在“允许竞争”和“保护团队收益”之间取得平衡。"
+          }
+        ]
+      },
+      {
+        "name": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "背景：在加拿大站周末，梅赛德斯两位车手在场上多次近距离交锋，过程中出现了较激烈的对抗与争议沟通，最终也暴露出潜在的双车退赛风险。车队方面需要复盘并明确规则。"
+          }
+        ]
+      },
+      {
+        "name": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "沃尔夫的态度大致是：竞争可以继续，甚至会更明确地允许车手争夺位置；但赛后会把某些场景拿出来复盘，说明哪些选择本可以避免，并与车手讨论如何降低风险。"
+          }
+        ]
+      },
+      {
+        "name": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "“允许竞争”的前提是车手要对风险有清晰判断：在哪些弯、哪些轮胎/能量状态下可以强攻，哪些时候要优先把车带回终点。车队不会希望在明显没有收益的情况下把双车推到高风险边缘。"
+          }
+        ]
+      },
+      {
+        "name": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "另一方面，团队层面的底线也会存在：当车队认为继续缠斗会让积分、节奏或对手压力变得不可控时，车队可能会通过无线电把对抗“收一收”，确保拿到该拿的分数。"
+          }
+        ]
+      },
+      {
+        "name": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "文章还提到车队会关注车手在高压下的无线电沟通质量：情绪化表达可以理解，但需要把注意力更多放在驾驶与决策上，避免把精力消耗在“争辩对错”。"
+          }
+        ]
+      },
+      {
+        "name": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "总结：梅赛德斯倾向于让两位车手在规则内自由竞争，同时通过复盘、风险提示与必要时的团队指令，确保赛季目标不被一次冲动的对抗打断。"
+          }
+        ]
+      }
+    ]
+  }
+}
+

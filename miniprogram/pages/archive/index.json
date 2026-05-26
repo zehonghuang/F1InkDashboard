@@ -3,6 +3,7 @@
     "race-card": "/components/race-card/index"
   },
   "navigationBarTitleText": "归档",
+  "navigationStyle": "custom",
   "enablePullDownRefresh": true,
   "backgroundTextStyle": "dark"
 }

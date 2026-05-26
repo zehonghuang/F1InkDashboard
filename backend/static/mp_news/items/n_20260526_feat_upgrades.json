@@ -1,0 +1,21 @@
+{
+  "id": "n_20260526_feat_upgrades",
+  "layout_code": "FEATURE",
+  "type_code": "TECH",
+  "pinned": false,
+  "weight": 820,
+  "tag_text": "围场动态",
+  "title": "车队升级进度跟踪：本周末主要部件更新清单",
+  "summary": "按车队梳理前翼、底板、散热与尾翼变化，并标注升级意图与风险点。",
+  "cover_url": "/static/circuits/2026/raw/miami_map.webp",
+  "published_at": "2026-05-26T06:20:00+08:00",
+  "source": {
+    "name": "Paddock",
+    "url": ""
+  },
+  "content": {
+    "format_code": "PLAIN",
+    "text": "这里先做占位。后续正文可从后端聚合并缓存。"
+  }
+}
+
