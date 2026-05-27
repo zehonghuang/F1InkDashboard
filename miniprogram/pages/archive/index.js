@@ -7,32 +7,44 @@ Page({
     races: [
       {
         id: "R07",
+        round: 7,
+        roundText: "R07",
         name: "Monaco Grand Prix",
         date: "05.24",
+        dateShort: "05.24",
         thumb: "/assets/circuits/2026/maps/monaco_map.png",
         winner: "待更新",
         fastestLap: "1:32.405"
       },
       {
         id: "R06",
+        round: 6,
+        roundText: "R06",
         name: "Miami Grand Prix",
         date: "05.03",
+        dateShort: "05.03",
         thumb: "/assets/circuits/2026/maps/miami_map.png",
         winner: "待更新",
         fastestLap: "1:29.802"
       },
       {
         id: "R05",
+        round: 5,
+        roundText: "R05",
         name: "Chinese Grand Prix",
         date: "04.19",
+        dateShort: "04.19",
         thumb: "/assets/circuits/2026/maps/shanghai_map.png",
         winner: "待更新",
         fastestLap: "1:37.521"
       },
       {
         id: "R04",
+        round: 4,
+        roundText: "R04",
         name: "Japanese Grand Prix",
         date: "04.05",
+        dateShort: "04.05",
         thumb: "/assets/circuits/2026/maps/suzuka_map.png",
         winner: "待更新",
         fastestLap: "1:33.784"
@@ -61,6 +73,19 @@ Page({
   onSeasonChange(e) {
     const idx = Number(e.detail.value || 0)
     this.setData({ seasonIndex: idx }, () => this.loadArchive())
+  },
+  formatDateShort(v) {
+    const s = String(v || "").trim()
+    if (!s) return ""
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (m) return `${m[2]}.${m[3]}`
+    const md = s.match(/^(\d{1,2})\.(\d{1,2})/)
+    if (md) {
+      const mm = String(md[1]).padStart(2, "0")
+      const dd = String(md[2]).padStart(2, "0")
+      return `${mm}.${dd}`
+    }
+    return s.slice(0, 10)
   },
   loadArchive(opts) {
     const done = () => {
@@ -93,11 +118,15 @@ Page({
           const fastestLap = (it.fastest_lap && it.fastest_lap.time) || "待更新"
           const thumb = (it.circuit && (it.circuit.map_image_url || it.circuit.map_image_url_thumb)) || ""
           const thumbFallback = (it.circuit && (it.circuit.map_image_url || it.circuit.map_image_url_thumb)) || ""
+          const date = it.date_local || it.date_utc || ""
+          const dateShort = this.formatDateShort(date)
           return {
             id: round ? `R${String(round).padStart(2, "0")}` : "",
             round,
+            roundText: round ? `R${String(round).padStart(2, "0")}` : "",
             name: it.race_name || "",
-            date: it.date_local || "",
+            date,
+            dateShort,
             thumb,
             thumbFallback,
             winner: String(winner),
