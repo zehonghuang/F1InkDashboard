@@ -1,6 +1,6 @@
 <view class="page has-tabbar">
   <view class="header" style="padding-top: calc({{ statusBarHeight }}px + 12rpx);">
-    <view class="title">T O N I C  F 1  数 据 分 析</view>
+    <view class="title">F1 数据分析</view>
     <view class="subtitle">Telemetry • Analysis • Archive</view>
   </view>
 
