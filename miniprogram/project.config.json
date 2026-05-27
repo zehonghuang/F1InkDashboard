@@ -19,7 +19,7 @@
     "es6": true,
     "postcss": false,
     "compileWorklet": false,
-    "minified": false,
+    "minified": true,
     "uglifyFileName": false,
     "uploadWithSourceMap": true,
     "enhance": true,

@@ -8,6 +8,7 @@
     "pages/driver/index",
     "pages/mine/index"
   ],
+  "lazyCodeLoading": "requiredComponents",
   "window": {
     "navigationBarTitleText": "TONIC F1 数据分析",
     "navigationBarBackgroundColor": "#15151E",
