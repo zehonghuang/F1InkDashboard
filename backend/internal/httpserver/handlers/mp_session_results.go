@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"toinc_f1_backend/internal/thirdparty"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -126,6 +128,10 @@ func MpSessionResults(db *gorm.DB) gin.HandlerFunc {
 			if d.TeamColour != nil {
 				teamColor = normalizeTeamColor(*d.TeamColour)
 			}
+			teamLogoURL := ""
+			if team != "" {
+				teamLogoURL = thirdparty.Formula1TeamLogoURL(team)
+			}
 			driverName := ""
 			if d.FullName != nil {
 				driverName = strings.TrimSpace(*d.FullName)
@@ -153,6 +159,7 @@ func MpSessionResults(db *gorm.DB) gin.HandlerFunc {
 				"position":      r.Position,
 				"team_name":     emptyToNil(team),
 				"team_color":    emptyToNil(teamColor),
+				"team_logo_url": emptyToNil(teamLogoURL),
 				"headshot_url":  emptyToNil(avatar),
 				"name_acronym":  emptyToNil(acr),
 				"lap_time":      emptyToNil(formatLapDurationSimple(sec)),

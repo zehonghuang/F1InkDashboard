@@ -76,23 +76,71 @@
 
   <view class="section">
     <view class="section-title">偏好设置</view>
-    <view class="row" bindtap="onTapItem">
+    <view class="row" bindtap="onTapItem" data-action="season">
       <view class="row-key">默认赛季</view>
-      <view class="row-val">2026</view>
+      <view class="row-val">{{prefSeason}}</view>
     </view>
     <view class="divider" />
-    <view class="row" bindtap="onTapItem">
-      <view class="row-key">默认单位</view>
-      <view class="row-val">km/h / bar</view>
+    <view class="row" bindtap="onTapItem" data-action="followDrivers">
+      <view class="row-key">关注车手</view>
+      <view class="row-val">{{followDriversText}}</view>
     </view>
     <view class="divider" />
-    <view class="row" bindtap="onTapItem">
-      <view class="row-key">数据源</view>
-      <view class="row-val">本地后端 / MySQL</view>
+    <view class="row" bindtap="onTapItem" data-action="followTeams">
+      <view class="row-key">关注车队</view>
+      <view class="row-val">{{followTeamsText}}</view>
     </view>
   </view>
 
   <view wx:if="{{isLoggedIn}}" class="section">
     <button class="btn btn-ghost" bindtap="onLogout">退出登录</button>
+  </view>
+
+  <view wx:if="{{showPicker}}" class="picker-mask" bindtap="onClosePicker"></view>
+  <view wx:if="{{showPicker}}" class="picker">
+    <view class="picker-header">
+      <view class="picker-title">{{pickerTitle}}</view>
+      <view class="picker-actions">
+        <view class="picker-btn" bindtap="onPickerCancel">取消</view>
+        <view class="picker-btn picker-btn-primary" bindtap="onPickerConfirm">确定</view>
+      </view>
+    </view>
+    <view class="picker-list">
+      <block wx:if="{{pickerMode==='drivers'}}">
+        <block wx:for="{{driverOptions}}" wx:key="driver_number">
+          <view class="card" style="{{item.cardStyle}}" bindtap="onTogglePickDriver" data-driver-number="{{item.driver_number}}">
+            <view class="card-left">
+              <image class="avatar" src="{{item.headshot_url}}" mode="aspectFit" wx:if="{{item.headshot_url}}" />
+            </view>
+            <view class="card-mid">
+              <view class="driver-row">
+                <view class="driver-no">#{{item.driver_number}}</view>
+                <view class="driver">{{item.full_name || item.driver_name || item.name_acronym || item.driver_number}}</view>
+              </view>
+              <view class="team">{{item.team_name || '-'}}</view>
+            </view>
+            <view class="card-right">
+              <view class="pick-mark">{{pickedMap[item.driver_number] ? '✓' : ''}}</view>
+            </view>
+          </view>
+        </block>
+      </block>
+
+      <block wx:if="{{pickerMode==='teams'}}">
+        <block wx:for="{{teamOptions}}" wx:key="team_key">
+          <view class="card" style="{{item.cardStyle}}" bindtap="onTogglePickTeam" data-team-key="{{item.team_key}}">
+            <view class="card-left">
+              <image class="avatar" src="{{item.team_logo_url}}" mode="aspectFit" wx:if="{{item.team_logo_url}}" />
+            </view>
+            <view class="card-mid card-mid-team">
+              <view class="team-title">{{item.team_name}}</view>
+            </view>
+            <view class="card-right">
+              <view class="pick-mark">{{pickedMap[item.team_key] ? '✓' : ''}}</view>
+            </view>
+          </view>
+        </block>
+      </block>
+    </view>
   </view>
 </view>

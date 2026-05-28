@@ -1,5 +1,11 @@
 const { getAuthState, loginWithWeChat, logout, fetchMe, bindDevice, uploadAvatar, updateNickName, setProfile } = require("../../services/authService")
 
+const STORAGE_KEYS = {
+  season: "pref_season",
+  followDrivers: "pref_follow_drivers",
+  followTeams: "pref_follow_teams"
+}
+
 Page({
   data: {
     isLoggedIn: false,
@@ -14,7 +20,19 @@ Page({
     hasNick: false,
     canEditProfile: false,
     nicknameDraft: "",
-    statusBarHeight: 0
+    statusBarHeight: 0,
+    prefSeason: 2026,
+    followDrivers: [],
+    followDriversText: "未设置",
+    followTeams: [],
+    followTeamsText: "未设置",
+    showPicker: false,
+    pickerMode: "",
+    pickerTitle: "",
+    pickedMap: {},
+    pickedSnapshot: {},
+    driverOptions: [],
+    teamOptions: []
   },
   onLoad() {
     try {
@@ -22,10 +40,12 @@ Page({
       const h = Number(sys && sys.statusBarHeight) || 0
       this.setData({ statusBarHeight: h })
     } catch (e) {}
+    this.loadPreferences()
     this.refreshAuth()
   },
   onShow() {
     this.refreshAuth()
+    this.loadPreferences()
     try {
       const s = getAuthState()
       if (s && s.isLoggedIn) {
@@ -40,6 +60,30 @@ Page({
         tb.setSelectedByRoute(this.route)
       }
     }
+  },
+  loadPreferences() {
+    let prefSeason = 2026
+    let followDrivers = []
+    let followTeams = []
+    try {
+      const s = wx.getStorageSync(STORAGE_KEYS.season)
+      const n = Number(s)
+      if (n > 0) prefSeason = n
+    } catch (e) {}
+    try {
+      const xs = wx.getStorageSync(STORAGE_KEYS.followDrivers)
+      if (Array.isArray(xs)) followDrivers = xs.map((x) => Number(x)).filter((x) => x > 0)
+    } catch (e) {}
+    try {
+      const xs = wx.getStorageSync(STORAGE_KEYS.followTeams)
+      if (Array.isArray(xs)) followTeams = xs.map((x) => String(x || "").trim()).filter(Boolean)
+    } catch (e) {}
+
+    const followDriversText = followDrivers.length ? `${followDrivers.length} 人` : "未设置"
+    const followTeamsText = followTeams.length ? `${followTeams.length} 支` : "未设置"
+    this.setData({ prefSeason, followDrivers, followDriversText, followTeams, followTeamsText }, () => {
+      this.refreshFollowTextsFromOptions()
+    })
   },
   refreshAuth() {
     const s = getAuthState()
@@ -62,8 +106,203 @@ Page({
       nicknameDraft: hasNick ? String(name || "").trim() : ""
     })
   },
-  onTapItem() {
+  onTapItem(e) {
+    const action = e && e.currentTarget && e.currentTarget.dataset ? e.currentTarget.dataset.action : ""
+    if (action === "followDrivers") {
+      this.openPicker("drivers")
+      return
+    }
+    if (action === "followTeams") {
+      this.openPicker("teams")
+      return
+    }
     wx.showToast({ title: "功能待接入", icon: "none" })
+  },
+  openPicker(mode) {
+    const m = mode === "teams" ? "teams" : "drivers"
+    const title = m === "teams" ? "关注车队" : "关注车手"
+    const pickedMap = {}
+    if (m === "drivers") {
+      for (const dn of this.data.followDrivers || []) {
+        const n = Number(dn)
+        if (n > 0) pickedMap[n] = true
+      }
+    } else {
+      for (const k of this.data.followTeams || []) {
+        const s = String(k || "").trim()
+        if (s) pickedMap[s] = true
+      }
+    }
+    this.setData(
+      {
+        showPicker: true,
+        pickerMode: m,
+        pickerTitle: title,
+        pickedMap,
+        pickedSnapshot: Object.assign({}, pickedMap)
+      },
+      () => {
+        this.ensurePickOptions()
+      }
+    )
+  },
+  onClosePicker() {
+    this.onPickerCancel()
+  },
+  onPickerCancel() {
+    this.setData({ showPicker: false, pickerMode: "", pickerTitle: "", pickedMap: {}, pickedSnapshot: {} })
+  },
+  onPickerConfirm() {
+    const mode = this.data.pickerMode
+    if (mode === "drivers") {
+      const out = Object.keys(this.data.pickedMap || {})
+        .map((k) => Number(k))
+        .filter((x) => x > 0)
+        .sort((a, b) => a - b)
+      try {
+        wx.setStorageSync(STORAGE_KEYS.followDrivers, out)
+      } catch (e) {}
+    } else if (mode === "teams") {
+      const out = Object.keys(this.data.pickedMap || {})
+        .map((k) => String(k || "").trim())
+        .filter(Boolean)
+        .sort()
+      try {
+        wx.setStorageSync(STORAGE_KEYS.followTeams, out)
+      } catch (e) {}
+    }
+    this.setData({ showPicker: false, pickerMode: "", pickerTitle: "", pickedSnapshot: {} }, () => {
+      this.loadPreferences()
+    })
+  },
+  onTogglePickDriver(e) {
+    const dn = Number((e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.driverNumber) || 0)
+    if (!dn) return
+    const m = Object.assign({}, this.data.pickedMap || {})
+    if (m[dn]) {
+      delete m[dn]
+    } else {
+      m[dn] = true
+    }
+    this.setData({ pickedMap: m })
+  },
+  onTogglePickTeam(e) {
+    const k = String((e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.teamKey) || "").trim()
+    if (!k) return
+    const m = Object.assign({}, this.data.pickedMap || {})
+    if (m[k]) {
+      delete m[k]
+    } else {
+      m[k] = true
+    }
+    this.setData({ pickedMap: m })
+  },
+  ensurePickOptions() {
+    if (this.data.driverOptions && this.data.driverOptions.length && this.data.teamOptions && this.data.teamOptions.length) {
+      return
+    }
+    const app = getApp()
+    const apiBase = (app && app.globalData && app.globalData.apiBase) || ""
+    if (!apiBase) {
+      wx.showToast({ title: "未配置后端地址", icon: "none" })
+      return
+    }
+    const season = Number(this.data.prefSeason || 2026)
+    const base = apiBase.replace(/\/+$/, "")
+    const archiveUrl = `${base}/api/v1/mp/archive?season=${season}&tz=Asia/Shanghai`
+    wx.request({
+      url: archiveUrl,
+      method: "GET",
+      success: (res) => {
+        const data = (res && res.data) || {}
+        const races = Array.isArray(data.races) ? data.races : []
+        const latest = races.find((x) => x && Number(x.openf1_race_session_key) > 0) || races[0]
+        const sk = latest ? Number(latest.openf1_race_session_key || 0) : 0
+        if (!sk) {
+          wx.showToast({ title: "暂无可用赛季数据", icon: "none" })
+          return
+        }
+        this.loadDriverOptionsBySessionKey(sk)
+      },
+      fail: (err) => {
+        try {
+          console.log({ url: archiveUrl, err })
+        } catch (e) {}
+        wx.showToast({ title: "获取赛季信息失败", icon: "none" })
+      }
+    })
+  },
+  loadDriverOptionsBySessionKey(sessionKey) {
+    const app = getApp()
+    const apiBase = (app && app.globalData && app.globalData.apiBase) || ""
+    if (!apiBase || !sessionKey) return
+    const base = apiBase.replace(/\/+$/, "")
+    const url = `${base}/api/v1/mp/session-results?session_key=${sessionKey}`
+    wx.request({
+      url,
+      method: "GET",
+      success: (res) => {
+        const data = (res && res.data) || {}
+        const items = Array.isArray(data.items) ? data.items : []
+        const driverOptions = items.map((it) => {
+          const c = (it && it.team_color) || ""
+          const cardStyle = c ? `border-left: 10rpx solid ${c}; padding-left: 16rpx;` : ""
+          return Object.assign({}, it, { cardStyle })
+        })
+        const teamOptions = this.buildTeamOptions(driverOptions)
+        this.setData({ driverOptions, teamOptions }, () => this.refreshFollowTextsFromOptions())
+      },
+      fail: (err) => {
+        try {
+          console.log({ url, err })
+        } catch (e) {}
+        wx.showToast({ title: "获取车手列表失败", icon: "none" })
+      }
+    })
+  },
+  buildTeamOptions(driverOptions) {
+    const byTeam = {}
+    for (const it of driverOptions || []) {
+      const name = String((it && it.team_name) || "").trim()
+      if (!name) continue
+      if (!byTeam[name]) {
+        byTeam[name] = {
+          team_key: name,
+          team_name: name,
+          team_color: (it && it.team_color) || "",
+          team_logo_url: (it && it.team_logo_url) || ""
+        }
+      }
+    }
+    const teams = Object.values(byTeam)
+    teams.sort((a, b) => String(a.team_name).localeCompare(String(b.team_name)))
+    return teams.map((t) => {
+      const c = t.team_color || ""
+      const cardStyle = c ? `border-left: 10rpx solid ${c}; padding-left: 16rpx;` : ""
+      return Object.assign({}, t, { cardStyle })
+    })
+  },
+  refreshFollowTextsFromOptions() {
+    const drivers = this.data.followDrivers || []
+    const teams = this.data.followTeams || []
+    const driverOptions = this.data.driverOptions || []
+    const byDriver = {}
+    for (const it of driverOptions) {
+      const dn = Number(it && it.driver_number)
+      if (!dn) continue
+      byDriver[dn] = it
+    }
+    const driverLabels = drivers
+      .map((dn) => {
+        const it = byDriver[Number(dn)]
+        if (!it) return ""
+        return String(it.name_acronym || it.full_name || it.driver_name || it.driver_number || "").trim()
+      })
+      .filter(Boolean)
+    const followDriversText = drivers.length ? (driverLabels.length ? driverLabels.join(" / ") : `${drivers.length} 人`) : "未设置"
+
+    const followTeamsText = teams.length ? teams.join(" / ") : "未设置"
+    this.setData({ followDriversText, followTeamsText })
   },
   async onAvatarTap() {
     if (!this.data.isLoggedIn) {
