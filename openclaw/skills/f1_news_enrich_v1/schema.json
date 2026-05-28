@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "layout_code": { "type": "string", "enum": ["BREAKING", "HERO", "FEATURE", "STANDARD", "BULLETIN"] },
+    "hero_display_code": { "type": "string", "enum": ["BANNER", "CARD"] },
+    "type_code": { "type": "string", "enum": ["REGULATION", "PADDOCK", "STRATEGY", "DRIVER", "TECH"] },
+    "pinned": { "type": "boolean" },
+    "weight": { "type": "integer" },
+    "tag_text": { "type": "string" },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "title": { "type": "string" },
+    "summary": { "type": "string" },
+    "cover_url": { "type": "string" },
+    "content": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "format_code": { "type": "string" },
+        "text": { "type": "string" },
+        "nodes": { "type": "array" }
+      },
+      "required": ["format_code"]
+    }
+  },
+  "required": ["layout_code", "type_code", "tag_text", "title", "summary", "content"]
+}
+

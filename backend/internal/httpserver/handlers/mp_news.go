@@ -28,6 +28,7 @@ type mpNewsItem struct {
 	Pinned          bool                  `json:"pinned"`
 	Weight          int                   `json:"weight"`
 	TagText         string                `json:"tag_text"`
+	Tags            []string              `json:"tags,omitempty"`
 	Title           string                `json:"title"`
 	Summary         string                `json:"summary"`
 	CoverURL        string                `json:"cover_url"`

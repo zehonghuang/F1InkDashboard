@@ -39,6 +39,7 @@ function mapNewsItem(item, baseUrl) {
     pinned: Boolean(it.pinned),
     weight: Number(it.weight) || 0,
     tagText: it.tag_text || "",
+    tags: Array.isArray(it.tags) ? it.tags : [],
     title: it.title || "",
     summary: it.summary || "",
     coverUrl: joinUrl(baseUrl, it.cover_url || ""),

@@ -1,0 +1,21 @@
+{
+  "source": {
+    "name": "Formula1.com",
+    "url": "https://www.formula1.com/en/latest/article/example.abcdef"
+  },
+  "article": {
+    "url": "https://www.formula1.com/en/latest/article/example.abcdef",
+    "title": "Example headline about Mercedes drivers",
+    "published_at": "2026-05-25T10:30:00Z",
+    "author": "Formula1.com Staff",
+    "image_url": "https://example.com/example.jpg",
+    "body_text": "Team principal Toto Wolff said Mercedes will allow their drivers to race but with clear limits... (truncated)"
+  },
+  "target": {
+    "tz": "Asia/Shanghai",
+    "content_format_code": "RICH_TEXT_NODES",
+    "type_codes": ["REGULATION", "PADDOCK", "STRATEGY", "DRIVER", "TECH"],
+    "layout_codes": ["BREAKING", "HERO", "FEATURE", "STANDARD", "BULLETIN"]
+  }
+}
+

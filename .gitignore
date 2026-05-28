@@ -54,7 +54,6 @@ charts/coverage/
 charts/.env.local
 charts/.env.*.local
 
-.trae/
 
 miniprogram/node_modules/
 miniprogram/miniprogram_npm/

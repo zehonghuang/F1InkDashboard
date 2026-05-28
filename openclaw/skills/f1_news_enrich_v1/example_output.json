@@ -1,0 +1,28 @@
+{
+  "layout_code": "FEATURE",
+  "type_code": "PADDOCK",
+  "pinned": false,
+  "weight": 880,
+  "tag_text": "Mercedes / 采访",
+  "tags": ["team:Mercedes", "topic:Paddock Politics", "person:Wolff", "topic:Driver Market"],
+  "title": "沃尔夫谈队内竞争：允许硬碰硬，但会设“安全底线”",
+  "summary": "沃尔夫表示梅赛德斯将继续允许两位车手争夺位置，但会通过复盘与必要的团队指令控制风险，避免一次对抗拖累赛季目标。",
+  "content": {
+    "format_code": "RICH_TEXT_NODES",
+    "nodes": [
+      {
+        "name": "p",
+        "children": [
+          { "type": "text", "text": "这是一份基于原文关键信息的中文改写（非逐字翻译），重点在于还原观点与影响。" }
+        ]
+      },
+      {
+        "name": "p",
+        "children": [
+          { "type": "text", "text": "要点：车队不会简单禁止队内竞争，但会把“能争”和“该收”的边界讲清楚，优先保证能把积分带回终点。" }
+        ]
+      }
+    ]
+  }
+}
+
