@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func MpSessionResults(db *gorm.DB) gin.HandlerFunc {
+func MpSessionResults(db *gorm.DB, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "mp_session_results", "mysql_required", nil)
@@ -113,6 +113,24 @@ func MpSessionResults(db *gorm.DB) gin.HandlerFunc {
 			return pi < pj
 		})
 
+		baseURL := inferBaseURL(c)
+		absURL := func(v string) string {
+			s := strings.TrimSpace(v)
+			if s == "" {
+				return ""
+			}
+			if strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://") {
+				return s
+			}
+			if !strings.HasPrefix(s, "/") {
+				s = "/" + s
+			}
+			if baseURL == "" {
+				return s
+			}
+			return baseURL + s
+		}
+
 		items := make([]any, 0, len(rows))
 		for _, r := range rows {
 			d := byDriver[r.DriverNumber]
@@ -128,10 +146,7 @@ func MpSessionResults(db *gorm.DB) gin.HandlerFunc {
 			if d.TeamColour != nil {
 				teamColor = normalizeTeamColor(*d.TeamColour)
 			}
-			teamLogoURL := ""
-			if team != "" {
-				teamLogoURL = thirdparty.Formula1TeamLogoURL(team)
-			}
+			teamLogoURL := absURL(thirdparty.EnsureFormula1TeamLogo(staticDir, team))
 			driverName := ""
 			if d.FullName != nil {
 				driverName = strings.TrimSpace(*d.FullName)

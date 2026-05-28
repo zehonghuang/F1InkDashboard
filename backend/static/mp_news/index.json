@@ -9,20 +9,8 @@
     "tag_text": "Breaking",
     "title": "Breaking：赛后速报",
     "summary": "欢迎页占位：后续可用于赛后热点图与一句话摘要。",
-    "cover_url": "/static/circuits/2026/raw/miami_card.webp",
+    "cover_url": "/static/news/breaking-new-01.jpg",
     "published_at": "2026-05-26T09:15:00+08:00"
-  },
-  {
-    "id": "n_f1_antonelli_russell_wolff",
-    "layout_code": "FEATURE",
-    "type_code": "PADDOCK",
-    "pinned": false,
-    "weight": 880,
-    "tag_text": "Mercedes / 采访",
-    "title": "沃尔夫谈队内竞争：允许安东内利与拉塞尔硬碰硬，但会设底线",
-    "summary": "基于 Formula1.com 报道要点的中文改写：既鼓励公平竞争，也强调团队利益优先。",
-    "cover_url": "/static/circuits/2026/raw/miami_map.webp",
-    "published_at": "2026-05-25T18:30:00+08:00"
   },
   {
     "id": "n_20260526_hero_rules",
@@ -51,64 +39,16 @@
     "published_at": "2026-05-26T07:50:00+08:00"
   },
   {
-    "id": "n_20260526_feat_upgrades",
+    "id": "n_f1_antonelli_russell_wolff",
     "layout_code": "FEATURE",
-    "type_code": "TECH",
-    "pinned": false,
-    "weight": 820,
-    "tag_text": "围场动态",
-    "title": "车队升级进度跟踪：本周末主要部件更新清单",
-    "summary": "按车队梳理前翼、底板、散热与尾翼变化，并标注升级意图与风险点。",
-    "cover_url": "/static/circuits/2026/raw/miami_map.webp",
-    "published_at": "2026-05-26T06:20:00+08:00"
-  },
-  {
-    "id": "n_20260525_feat_strategy",
-    "layout_code": "FEATURE",
-    "type_code": "STRATEGY",
-    "pinned": false,
-    "weight": 760,
-    "tag_text": "赛道 / 轮胎",
-    "title": "本站轮胎策略前瞻：长距离衰减与进站窗口推演",
-    "summary": "结合练习赛长距离与历史数据，给出 1/2 停策略对比与关键触发条件。",
-    "cover_url": "/static/circuits/2026/raw/monaco_map.webp",
-    "published_at": "2026-05-25T21:10:00+08:00"
-  },
-  {
-    "id": "n_20260525_std_driver",
-    "layout_code": "STANDARD",
-    "type_code": "DRIVER",
-    "pinned": false,
-    "weight": 620,
-    "tag_text": "人物",
-    "title": "车手专访节选：如何在高温下保持轮胎温度窗口",
-    "summary": "从驾驶风格、刹车点与能量回收入手，拆解“保胎”的具体操作。",
-    "cover_url": "/static/circuits/2026/raw/suzuka_map.webp",
-    "published_at": "2026-05-25T11:35:00+08:00"
-  },
-  {
-    "id": "n_20260526_bullet_1",
-    "layout_code": "BULLETIN",
     "type_code": "PADDOCK",
     "pinned": false,
-    "weight": 540,
-    "tag_text": "快讯",
-    "title": "练习赛出现红旗，赛会通报清理时间约 12 分钟",
-    "summary": "快讯占位：后续可用于高频小消息的行式布局。",
-    "cover_url": "",
-    "published_at": "2026-05-26T09:05:00+08:00"
-  },
-  {
-    "id": "n_20260526_bullet_2",
-    "layout_code": "BULLETIN",
-    "type_code": "PADDOCK",
-    "pinned": false,
-    "weight": 520,
-    "tag_text": "快讯",
-    "title": "赛会更新：部分弯道限界点位将加强监控",
-    "summary": "快讯占位：后续可用于处罚/公告/赛会通告等短内容。",
-    "cover_url": "",
-    "published_at": "2026-05-26T08:55:00+08:00"
+    "weight": 880,
+    "tag_text": "Mercedes / 采访",
+    "title": "沃尔夫谈队内竞争：允许安东内利与拉塞尔硬碰硬，但会设底线",
+    "summary": "基于 Formula1.com 报道要点的中文改写：既鼓励公平竞争，也强调团队利益优先。",
+    "cover_url": "/static/news/f1-wolff-antonelli-russell.webp",
+    "published_at": "2026-05-25T18:30:00+08:00"
   }
 ]
 

@@ -2,6 +2,8 @@ package thirdparty
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -15,16 +17,47 @@ var (
 	f1TeamsLogosReLogo = regexp.MustCompile(`https://media\.formula1\.com/image/upload[^"'\\s]+/common/f1/\\d{4}/([^/]+)/[^"'\\s]+logowhite\\.webp`)
 )
 
-func Formula1TeamLogoURL(teamName string) string {
+func EnsureFormula1TeamLogo(staticDir string, teamName string) string {
+	if strings.TrimSpace(staticDir) == "" {
+		return ""
+	}
 	key := normalizeTeamKey(teamName)
 	if key == "" {
 		return ""
 	}
-	m := formula1TeamLogosCached(context.Background())
-	if m == nil {
+	dst := filepath.Join(staticDir, "teams", key+".webp")
+	if fileExists(dst) {
+		return "/static/teams/" + key + ".webp"
+	}
+
+	f1TeamsLogosMu.Lock()
+	defer f1TeamsLogosMu.Unlock()
+
+	if fileExists(dst) {
+		return "/static/teams/" + key + ".webp"
+	}
+
+	if f1TeamsLogosByKey == nil || time.Since(f1TeamsLogosAt) >= 24*time.Hour {
+		m, err := fetchFormula1TeamLogos(context.Background())
+		if err == nil && len(m) > 0 {
+			f1TeamsLogosByKey = m
+			f1TeamsLogosAt = time.Now()
+		}
+	}
+	src := ""
+	if f1TeamsLogosByKey != nil {
+		src = strings.TrimSpace(f1TeamsLogosByKey[key])
+	}
+	if src == "" {
 		return ""
 	}
-	return m[key]
+	if err := DownloadFile(context.Background(), src, dst); err != nil {
+		return ""
+	}
+	if fileExists(dst) {
+		return "/static/teams/" + key + ".webp"
+	}
+	return ""
 }
 
 func formula1TeamLogosCached(ctx context.Context) map[string]string {
@@ -86,3 +119,10 @@ func normalizeTeamKey(s string) string {
 	return string(out)
 }
 
+func fileExists(p string) bool {
+	st, err := os.Stat(p)
+	if err != nil {
+		return false
+	}
+	return st.Mode().IsRegular()
+}

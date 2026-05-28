@@ -7,7 +7,7 @@
   "tag_text": "Mercedes / 采访",
   "title": "沃尔夫谈队内竞争：允许安东内利与拉塞尔硬碰硬，但会设底线",
   "summary": "基于 Formula1.com 报道要点的中文改写：既鼓励公平竞争，也强调团队利益优先。",
-  "cover_url": "/static/circuits/2026/raw/miami_map.webp",
+  "cover_url": "/static/news/f1-wolff-antonelli-russell.webp",
   "published_at": "2026-05-25T18:30:00+08:00",
   "source": {
     "name": "Formula1.com",
@@ -19,7 +19,7 @@
       {
         "name": "img",
         "attrs": {
-          "src": "/static/circuits/2026/raw/miami_map.webp",
+          "src": "/static/news/f1-wolff-antonelli-russell.webp",
           "mode": "widthFix",
           "style": "width:100%;display:block;border-radius:16rpx;overflow:hidden;margin:0 0 12rpx 0;"
         }

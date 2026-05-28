@@ -8,15 +8,33 @@
   "tag_text": "Breaking",
   "title": "Breaking：赛后速报",
   "summary": "欢迎页占位：后续可用于赛后热点图与一句话摘要。",
-  "cover_url": "/static/circuits/2026/raw/miami_card.webp",
+  "cover_url": "/static/news/breaking-new-01.jpg",
   "published_at": "2026-05-26T09:15:00+08:00",
   "source": {
     "name": "Race Control",
     "url": ""
   },
   "content": {
-    "format_code": "PLAIN",
-    "text": "Breaking 占位正文。"
+    "format_code": "RICH_TEXT_NODES",
+    "nodes": [
+      {
+        "name": "img",
+        "attrs": {
+          "src": "/static/news/breaking-new-01.jpg",
+          "mode": "widthFix",
+          "style": "width:100%;display:block;border-radius:16rpx;overflow:hidden;margin:0 0 12rpx 0;"
+        }
+      },
+      {
+        "name": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Breaking 欢迎页占位：后续可替换成真正的赛后海报与一句话摘要。"
+          }
+        ]
+      }
+    ]
   }
 }
 
