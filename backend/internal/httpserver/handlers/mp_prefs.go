@@ -1,0 +1,263 @@
+package handlers
+
+import (
+	"encoding/json"
+	"net/http"
+	"sort"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type mpPrefsUpdateRequest struct {
+	TeamName      string   `json:"team_name"`
+	TeamKeys      []string `json:"team_keys"`
+	DriverNumbers []int    `json:"driver_numbers"`
+}
+
+func MpPrefsGet(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userIDAny, ok := c.Get("mp_user_id")
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "error": "unauthorized"})
+			return
+		}
+		userID, ok := userIDAny.(int64)
+		if !ok || userID <= 0 {
+			c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "error": "unauthorized"})
+			return
+		}
+		if db == nil {
+			LogReqError(c, "mp_prefs_get", "mysql_required", nil)
+			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			return
+		}
+
+		type row struct {
+			TeamName      string `gorm:"column:preferred_team_name"`
+			TeamKeys      string `gorm:"column:preferred_team_keys"`
+			DriverNumbers string `gorm:"column:preferred_driver_numbers"`
+		}
+		var r row
+		if err := db.Raw(`
+			SELECT preferred_team_name, preferred_team_keys, preferred_driver_numbers
+			FROM mp_users
+			WHERE id = ?
+			LIMIT 1
+		`, userID).Scan(&r).Error; err != nil {
+			LogReqError(c, "mp_prefs_get", "db_query_failed", err)
+			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "db_query_failed"})
+			return
+		}
+
+		teamKeys := mpParseStringList(r.TeamKeys)
+		if len(teamKeys) == 0 && strings.TrimSpace(r.TeamName) != "" {
+			teamKeys = []string{strings.TrimSpace(r.TeamName)}
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"ok":               true,
+			"generated_at_utc": time.Now().UTC().Format(time.RFC3339Nano),
+			"prefs": gin.H{
+				"team_name":      emptyToNil(strings.TrimSpace(r.TeamName)),
+				"team_keys":      teamKeys,
+				"driver_numbers": mpParseDriverNumbers(r.DriverNumbers),
+			},
+		})
+	}
+}
+
+func MpPrefsUpdate(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userIDAny, ok := c.Get("mp_user_id")
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "error": "unauthorized"})
+			return
+		}
+		userID, ok := userIDAny.(int64)
+		if !ok || userID <= 0 {
+			c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "error": "unauthorized"})
+			return
+		}
+		if db == nil {
+			LogReqError(c, "mp_prefs_update", "mysql_required", nil)
+			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			return
+		}
+
+		var req mpPrefsUpdateRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": "bad_json"})
+			return
+		}
+
+		team := strings.TrimSpace(req.TeamName)
+		if len(team) > 64 {
+			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": "team_name_too_long"})
+			return
+		}
+
+		teamsUniq := map[string]struct{}{}
+		outTeams := make([]string, 0, len(req.TeamKeys))
+		for _, t := range req.TeamKeys {
+			v := strings.TrimSpace(t)
+			if v == "" {
+				continue
+			}
+			if len(v) > 64 {
+				continue
+			}
+			if _, ok := teamsUniq[v]; ok {
+				continue
+			}
+			teamsUniq[v] = struct{}{}
+			outTeams = append(outTeams, v)
+		}
+		sort.Strings(outTeams)
+		if len(outTeams) > 12 {
+			outTeams = outTeams[:12]
+		}
+		if len(outTeams) == 0 && team != "" {
+			outTeams = []string{team}
+		}
+
+		uniq := map[int]struct{}{}
+		outDrivers := make([]int, 0, len(req.DriverNumbers))
+		for _, n := range req.DriverNumbers {
+			if n <= 0 || n > 999 {
+				continue
+			}
+			if _, ok := uniq[n]; ok {
+				continue
+			}
+			uniq[n] = struct{}{}
+			outDrivers = append(outDrivers, n)
+		}
+		sort.Ints(outDrivers)
+		if len(outDrivers) > 12 {
+			outDrivers = outDrivers[:12]
+		}
+
+		driversJSON := "[]"
+		if b, err := json.Marshal(outDrivers); err == nil {
+			driversJSON = string(b)
+		}
+		teamsJSON := "[]"
+		if b, err := json.Marshal(outTeams); err == nil {
+			teamsJSON = string(b)
+		}
+		teamName := ""
+		if len(outTeams) > 0 {
+			teamName = outTeams[0]
+		}
+
+		if err := db.Exec(`
+			UPDATE mp_users
+			SET
+				preferred_team_name = ?,
+				preferred_team_keys = ?,
+				preferred_driver_numbers = ?,
+				updated_at = UTC_TIMESTAMP(3)
+			WHERE id = ?
+		`, teamName, teamsJSON, driversJSON, userID).Error; err != nil {
+			LogReqError(c, "mp_prefs_update", "db_exec_failed", err)
+			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "db_exec_failed"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"ok": true})
+	}
+}
+
+func mpParseDriverNumbers(raw string) []int {
+	s := strings.TrimSpace(raw)
+	if s == "" {
+		return []int{}
+	}
+	if strings.HasPrefix(s, "[") {
+		var arr []int
+		if err := json.Unmarshal([]byte(s), &arr); err == nil {
+			out := make([]int, 0, len(arr))
+			seen := map[int]struct{}{}
+			for _, n := range arr {
+				if n <= 0 || n > 999 {
+					continue
+				}
+				if _, ok := seen[n]; ok {
+					continue
+				}
+				seen[n] = struct{}{}
+				out = append(out, n)
+			}
+			sort.Ints(out)
+			return out
+		}
+	}
+
+	parts := strings.Split(s, ",")
+	out := make([]int, 0, len(parts))
+	seen := map[int]struct{}{}
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p == "" {
+			continue
+		}
+		n, err := strconv.Atoi(p)
+		if err != nil || n <= 0 || n > 999 {
+			continue
+		}
+		if _, ok := seen[n]; ok {
+			continue
+		}
+		seen[n] = struct{}{}
+		out = append(out, n)
+	}
+	sort.Ints(out)
+	return out
+}
+
+func mpParseStringList(raw string) []string {
+	s := strings.TrimSpace(raw)
+	if s == "" {
+		return []string{}
+	}
+	if strings.HasPrefix(s, "[") {
+		var arr []string
+		if err := json.Unmarshal([]byte(s), &arr); err == nil {
+			out := make([]string, 0, len(arr))
+			seen := map[string]struct{}{}
+			for _, v := range arr {
+				t := strings.TrimSpace(v)
+				if t == "" {
+					continue
+				}
+				if _, ok := seen[t]; ok {
+					continue
+				}
+				seen[t] = struct{}{}
+				out = append(out, t)
+			}
+			sort.Strings(out)
+			return out
+		}
+	}
+	parts := strings.Split(s, ",")
+	out := make([]string, 0, len(parts))
+	seen := map[string]struct{}{}
+	for _, p := range parts {
+		t := strings.TrimSpace(p)
+		if t == "" {
+			continue
+		}
+		if _, ok := seen[t]; ok {
+			continue
+		}
+		seen[t] = struct{}{}
+		out = append(out, t)
+	}
+	sort.Strings(out)
+	return out
+}

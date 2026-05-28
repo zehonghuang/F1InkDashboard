@@ -8,6 +8,7 @@
 #include "settings.h"
 #include "common/time_sync.h"
 #include "common/ota_update.h"
+#include "common/user_prefs_kv.h"
 #include "pages/f1_page_adapter_common.h"
 #include "pages/f1_page_adapter_net.h"
 #include "pages/f1_page_adapter_payloads.h"
@@ -761,6 +762,7 @@ void F1PageAdapter::OnShow() {
     active_ = true;
     ApplyViewLocked();
     UpdateBatteryUiLocked();
+    UserPrefsKVService::Instance().RequestFetch(false);
     StartFetchIfNeededLocked(false);
     RestartRefreshTimerLocked();
 }
@@ -1063,6 +1065,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
             }
             if (menu_focus_ == 2) {
                 pending_sessions_force_fetch_ = true;
+                UserPrefsKVService::Instance().RequestFetch(true);
                 StartFetchIfNeededLocked(true);
             }
             if (menu_focus_ == 3) {
@@ -1081,6 +1084,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
                 UpdateMenuI18nLocked();
                 UpdateMenuStatusLocked();
                 pending_sessions_force_fetch_ = true;
+                UserPrefsKVService::Instance().RequestFetch(true);
                 StartFetchIfNeededLocked(true);
                 if (host_ != nullptr) {
                     std::string s = I18n::Tr("ui.language_set");
@@ -1785,6 +1789,7 @@ bool F1PageAdapter::HandleEvent(const UiPageEvent& event) {
             return true;
         }
         StartFetchIfNeededLocked(fetch_fail_count_ > 0);
+        UserPrefsKVService::Instance().RequestFetch(false);
         if (view_index_ == 5) {
             StartSessionsFetchIfNeededLocked(false);
         }

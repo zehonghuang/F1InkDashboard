@@ -7,6 +7,7 @@
 #include "boards/zectrix-s3-epaper-4.2/config.h"
 #include "common/ota_update.h"
 #include "common/device_boot_report.h"
+#include "common/user_prefs_kv.h"
 
 #include <esp_log.h>
 #include <esp_timer.h>
@@ -149,6 +150,7 @@ void Application::HandleEvent(const AppEvent& e) {
             in_recovery_ = false;
             OtaUpdateService::Instance().NotifyNetworkConnected();
             DeviceBootReportService::Instance().NotifyNetworkConnected();
+            UserPrefsKVService::Instance().RequestFetch(true);
             break;
         }
         case AppEventType::NetworkDisconnected: {

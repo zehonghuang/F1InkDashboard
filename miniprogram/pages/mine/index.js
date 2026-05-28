@@ -1,4 +1,5 @@
 const { getAuthState, loginWithWeChat, logout, fetchMe, bindDevice, uploadAvatar, updateNickName, setProfile } = require("../../services/authService")
+const { fetchPrefs, updatePrefs } = require("../../services/prefsService")
 
 const STORAGE_KEYS = {
   season: "pref_season",
@@ -32,7 +33,8 @@ Page({
     pickedMap: {},
     pickedSnapshot: {},
     driverOptions: [],
-    teamOptions: []
+    teamOptions: [],
+    syncingPrefs: false
   },
   onLoad() {
     try {
@@ -51,6 +53,7 @@ Page({
       if (s && s.isLoggedIn) {
         fetchMe()
           .then(() => this.refreshAuth())
+          .then(() => this.syncPrefsFromBackend({ silent: true }))
           .catch(() => {})
       }
     } catch (e) {}
@@ -59,6 +62,30 @@ Page({
       if (tb && typeof tb.setSelectedByRoute === 'function') {
         tb.setSelectedByRoute(this.route)
       }
+    }
+  },
+  async syncPrefsFromBackend(opts) {
+    if (this.data.syncingPrefs) return
+    const s = getAuthState()
+    if (!s || !s.isLoggedIn) return
+    this.setData({ syncingPrefs: true })
+    try {
+      const r = await fetchPrefs()
+      const teamKeys = (r && r.teamKeys) || []
+      const driverNumbers = (r && r.driverNumbers) || []
+      try {
+        wx.setStorageSync(STORAGE_KEYS.followTeams, teamKeys)
+      } catch (e) {}
+      try {
+        wx.setStorageSync(STORAGE_KEYS.followDrivers, driverNumbers)
+      } catch (e) {}
+      this.loadPreferences()
+    } catch (e) {
+      if (!(opts && opts.silent)) {
+        wx.showToast({ title: "偏好同步失败", icon: "none" })
+      }
+    } finally {
+      this.setData({ syncingPrefs: false })
     }
   },
   loadPreferences() {
@@ -162,6 +189,11 @@ Page({
       try {
         wx.setStorageSync(STORAGE_KEYS.followDrivers, out)
       } catch (e) {}
+      if (this.data.isLoggedIn) {
+        updatePrefs({ teamKeys: this.data.followTeams || [], driverNumbers: out }).catch(() => {
+          wx.showToast({ title: "偏好保存失败", icon: "none" })
+        })
+      }
     } else if (mode === "teams") {
       const out = Object.keys(this.data.pickedMap || {})
         .map((k) => String(k || "").trim())
@@ -170,6 +202,11 @@ Page({
       try {
         wx.setStorageSync(STORAGE_KEYS.followTeams, out)
       } catch (e) {}
+      if (this.data.isLoggedIn) {
+        updatePrefs({ teamKeys: out, driverNumbers: this.data.followDrivers || [] }).catch(() => {
+          wx.showToast({ title: "偏好保存失败", icon: "none" })
+        })
+      }
     }
     this.setData({ showPicker: false, pickerMode: "", pickerTitle: "", pickedSnapshot: {} }, () => {
       this.loadPreferences()
@@ -370,6 +407,7 @@ Page({
       try {
         await fetchMe()
         this.refreshAuth()
+        await this.syncPrefsFromBackend({ silent: true })
       } catch (e) {}
       wx.showToast({ title: "登录成功", icon: "none" })
     } catch (e) {

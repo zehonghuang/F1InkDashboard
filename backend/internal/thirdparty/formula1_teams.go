@@ -14,7 +14,7 @@ var (
 	f1TeamsLogosMu     sync.Mutex
 	f1TeamsLogosAt     time.Time
 	f1TeamsLogosByKey  map[string]string
-	f1TeamsLogosReLogo = regexp.MustCompile(`https://media\.formula1\.com/image/upload[^"'\\s]+/common/f1/\\d{4}/([^/]+)/[^"'\\s]+logowhite\\.webp`)
+	f1TeamsLogosReLogo = regexp.MustCompile(`https://media\.formula1\.com/image/upload[^"'\s]+/common/f1/[0-9]{4}/([^/]+)/[^"'\s]*logowhite\.webp`)
 )
 
 func EnsureFormula1TeamLogo(staticDir string, teamName string) string {

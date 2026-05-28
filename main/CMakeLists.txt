@@ -40,6 +40,7 @@ set(SOURCES
     "common/time_sync.cc"
     "common/ota_update.cc"
     "common/device_boot_report.cc"
+    "common/user_prefs_kv.cc"
     "boards/common/board.cc"
     "boards/common/button.cc"
     "boards/common/i2c_bus_lock.cc"
