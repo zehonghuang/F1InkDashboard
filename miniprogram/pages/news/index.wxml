@@ -43,7 +43,13 @@
 
   <view class="news-list">
     <block wx:for="{{ list }}" wx:key="id">
-      <view class="news-card" bindtap="onTapCard" data-id="{{ item.id }}" hover-class="news-card-pressed" hover-stay-time="120">
+      <view
+        class="news-card {{ item._prefPromoted ? 'news-card-promoted' : '' }}"
+        bindtap="onTapCard"
+        data-id="{{ item.id }}"
+        hover-class="news-card-pressed"
+        hover-stay-time="120"
+      >
         <view class="news-title">{{ item.title }}</view>
         <view class="news-summary">{{ item.summary }}</view>
         <view class="news-meta">
