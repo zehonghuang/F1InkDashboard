@@ -4,7 +4,8 @@ const { fetchPrefs, updatePrefs } = require("../../services/prefsService")
 const STORAGE_KEYS = {
   season: "pref_season",
   followDrivers: "pref_follow_drivers",
-  followTeams: "pref_follow_teams"
+  followTeams: "pref_follow_teams",
+  prefsInited: "pref_prefs_inited"
 }
 
 Page({
@@ -53,7 +54,7 @@ Page({
       if (s && s.isLoggedIn) {
         fetchMe()
           .then(() => this.refreshAuth())
-          .then(() => this.syncPrefsFromBackend({ silent: true }))
+          .then(() => this.ensurePrefsCached({ silent: true }))
           .catch(() => {})
       }
     } catch (e) {}
@@ -79,6 +80,9 @@ Page({
       try {
         wx.setStorageSync(STORAGE_KEYS.followDrivers, driverNumbers)
       } catch (e) {}
+      try {
+        wx.setStorageSync(STORAGE_KEYS.prefsInited, "1")
+      } catch (e) {}
       this.loadPreferences()
     } catch (e) {
       if (!(opts && opts.silent)) {
@@ -87,6 +91,25 @@ Page({
     } finally {
       this.setData({ syncingPrefs: false })
     }
+  },
+  ensurePrefsCached(opts) {
+    const s = getAuthState()
+    if (!s || !s.isLoggedIn) return
+    try {
+      const inited = wx.getStorageSync(STORAGE_KEYS.prefsInited) === "1"
+      if (inited) return
+    } catch (e) {}
+    try {
+      const info = wx.getStorageInfoSync()
+      const keys = (info && info.keys) || []
+      if (keys.includes(STORAGE_KEYS.followDrivers) || keys.includes(STORAGE_KEYS.followTeams)) {
+        try {
+          wx.setStorageSync(STORAGE_KEYS.prefsInited, "1")
+        } catch (e) {}
+        return
+      }
+    } catch (e) {}
+    Promise.resolve(this.syncPrefsFromBackend(opts)).catch(() => {})
   },
   loadPreferences() {
     let prefSeason = 2026
@@ -111,6 +134,12 @@ Page({
     this.setData({ prefSeason, followDrivers, followDriversText, followTeams, followTeamsText }, () => {
       this.refreshFollowTextsFromOptions()
     })
+    try {
+      const app = getApp()
+      if (app && app.globalData) {
+        app.globalData.prefs = { season: prefSeason, followDrivers, followTeams }
+      }
+    } catch (e) {}
   },
   refreshAuth() {
     const s = getAuthState()
@@ -189,6 +218,9 @@ Page({
       try {
         wx.setStorageSync(STORAGE_KEYS.followDrivers, out)
       } catch (e) {}
+      try {
+        wx.setStorageSync(STORAGE_KEYS.prefsInited, "1")
+      } catch (e) {}
       if (this.data.isLoggedIn) {
         updatePrefs({ teamKeys: this.data.followTeams || [], driverNumbers: out }).catch(() => {
           wx.showToast({ title: "偏好保存失败", icon: "none" })
@@ -201,6 +233,9 @@ Page({
         .sort()
       try {
         wx.setStorageSync(STORAGE_KEYS.followTeams, out)
+      } catch (e) {}
+      try {
+        wx.setStorageSync(STORAGE_KEYS.prefsInited, "1")
       } catch (e) {}
       if (this.data.isLoggedIn) {
         updatePrefs({ teamKeys: out, driverNumbers: this.data.followDrivers || [] }).catch(() => {
