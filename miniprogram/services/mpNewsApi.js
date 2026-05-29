@@ -1,7 +1,23 @@
+const { getMockNewsList, getMockNewsById } = require("./newsService")
+
 function getApiBase() {
   const app = getApp()
   const apiBase = (app && app.globalData && app.globalData.apiBase) || ""
   return String(apiBase || "").replace(/\/+$/, "")
+}
+
+function shouldUseMock() {
+  try {
+    const app = getApp()
+    const ds = app && app.globalData && app.globalData.newsDataSource
+    if (ds === "mock") return true
+    if (ds === "backend") return false
+  } catch (e) {}
+  try {
+    return String(wx.getStorageSync("news_data_source") || "") === "mock"
+  } catch (e) {
+    return false
+  }
 }
 
 function joinUrl(base, path) {
@@ -80,6 +96,13 @@ function requestJson({ url, method }) {
 }
 
 async function fetchNewsList({ page, pageSize, tz }) {
+  if (shouldUseMock()) {
+    const p = Number(page) > 0 ? Number(page) : 1
+    const ps = Number(pageSize) > 0 ? Number(pageSize) : 20
+    const items = getMockNewsList()
+    const sliced = items.slice((p - 1) * ps, (p - 1) * ps + ps)
+    return { page: p, pageSize: ps, total: items.length, items: sliced }
+  }
   const apiBase = getApiBase()
   if (!apiBase) throw new Error("missing_api_base")
   const p = Number(page) > 0 ? Number(page) : 1
@@ -99,6 +122,13 @@ async function fetchNewsList({ page, pageSize, tz }) {
 }
 
 async function fetchNewsDetail({ id, tz }) {
+  if (shouldUseMock()) {
+    const nid = String(id || "").trim()
+    if (!nid) throw new Error("missing_id")
+    const item = getMockNewsById(nid)
+    if (!item) throw new Error("not_found")
+    return item
+  }
   const apiBase = getApiBase()
   if (!apiBase) throw new Error("missing_api_base")
   const nid = String(id || "").trim()

@@ -137,6 +137,13 @@
   border-color: rgba(255, 255, 255, 0.22);
 }
 
+.pref-move-overlay {
+  position: fixed;
+  z-index: 9998;
+  pointer-events: none;
+  will-change: transform;
+}
+
 .news-card-pressed {
   border-radius: 16rpx;
   overflow: hidden;

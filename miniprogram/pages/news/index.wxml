@@ -41,10 +41,12 @@
     </block>
   </swiper>
 
-  <view class="news-list">
+  <view class="news-list" style="{{ listTransformStyle }}">
     <block wx:for="{{ list }}" wx:key="id">
       <view
+        id="news-card-{{ item.id }}"
         class="news-card {{ item._prefPromoted ? 'news-card-promoted' : '' }}"
+        style="{{ item._prefMoveHidden ? 'opacity:0;' : '' }}"
         bindtap="onTapCard"
         data-id="{{ item.id }}"
         hover-class="news-card-pressed"
@@ -59,5 +61,17 @@
         </view>
       </view>
     </block>
+  </view>
+
+  <view wx:if="{{ prefMoveOverlay && prefMoveOverlay.show && prefMoveOverlay.item }}" class="pref-move-overlay" style="{{ prefMoveOverlay.style }}">
+    <view class="news-card news-card-promoted">
+      <view class="news-title">{{ prefMoveOverlay.item.title }}</view>
+      <view class="news-summary">{{ prefMoveOverlay.item.summary }}</view>
+      <view class="news-meta">
+        <view class="news-tag">{{ prefMoveOverlay.item.tagText }}</view>
+        <view class="news-dot">•</view>
+        <view class="news-time">{{ prefMoveOverlay.item.timeText }}</view>
+      </view>
+    </view>
   </view>
 </view>
