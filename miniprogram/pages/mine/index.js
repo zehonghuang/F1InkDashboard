@@ -5,8 +5,8 @@ const STORAGE_KEYS = {
   season: "pref_season",
   followDrivers: "pref_follow_drivers",
   followTeams: "pref_follow_teams",
-  followDriverColors: "pref_follow_driver_colors",
-  followTeamColors: "pref_follow_team_colors",
+  followDriversDict: "pref_follow_drivers_dict",
+  followTeamsDict: "pref_follow_teams_dict",
   prefsInited: "pref_prefs_inited"
 }
 
@@ -76,8 +76,8 @@ Page({
       const r = await fetchPrefs()
       const teamKeys = (r && r.teamKeys) || []
       const driverNumbers = (r && r.driverNumbers) || []
-      const teamColors = (r && r.teamColors) || {}
-      const driverColors = (r && r.driverColors) || {}
+      const teams = (r && r.teams) || {}
+      const drivers = (r && r.drivers) || {}
       try {
         wx.setStorageSync(STORAGE_KEYS.followTeams, teamKeys)
       } catch (e) {}
@@ -85,10 +85,10 @@ Page({
         wx.setStorageSync(STORAGE_KEYS.followDrivers, driverNumbers)
       } catch (e) {}
       try {
-        wx.setStorageSync(STORAGE_KEYS.followTeamColors, teamColors)
+        wx.setStorageSync(STORAGE_KEYS.followTeamsDict, teams)
       } catch (e) {}
       try {
-        wx.setStorageSync(STORAGE_KEYS.followDriverColors, driverColors)
+        wx.setStorageSync(STORAGE_KEYS.followDriversDict, drivers)
       } catch (e) {}
       try {
         wx.setStorageSync(STORAGE_KEYS.prefsInited, "1")
@@ -125,8 +125,8 @@ Page({
     let prefSeason = 2026
     let followDrivers = []
     let followTeams = []
-    let followTeamColors = {}
-    let followDriverColors = {}
+    let followTeamsDict = {}
+    let followDriversDict = {}
     try {
       const s = wx.getStorageSync(STORAGE_KEYS.season)
       const n = Number(s)
@@ -141,12 +141,12 @@ Page({
       if (Array.isArray(xs)) followTeams = xs.map((x) => String(x || "").trim()).filter(Boolean)
     } catch (e) {}
     try {
-      const m = wx.getStorageSync(STORAGE_KEYS.followTeamColors)
-      if (m && typeof m === "object") followTeamColors = m
+      const m = wx.getStorageSync(STORAGE_KEYS.followTeamsDict)
+      if (m && typeof m === "object") followTeamsDict = m
     } catch (e) {}
     try {
-      const m = wx.getStorageSync(STORAGE_KEYS.followDriverColors)
-      if (m && typeof m === "object") followDriverColors = m
+      const m = wx.getStorageSync(STORAGE_KEYS.followDriversDict)
+      if (m && typeof m === "object") followDriversDict = m
     } catch (e) {}
 
     const followDriversText = followDrivers.length ? `${followDrivers.length} 人` : "未设置"
@@ -160,7 +160,7 @@ Page({
     try {
       const app = getApp()
       if (app && app.globalData) {
-        app.globalData.prefs = { season: prefSeason, followDrivers, followTeams, followTeamColors, followDriverColors }
+        app.globalData.prefs = { season: prefSeason, followDrivers, followTeams, followTeamsDict, followDriversDict }
       }
     } catch (e) {}
   },

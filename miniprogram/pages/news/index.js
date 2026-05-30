@@ -4,8 +4,8 @@ const { fetchNewsList } = require("../../services/mpNewsApi")
 const WELCOME_KEY = "news_welcome_shown_v1"
 const PREF_TEAMS_KEY = "pref_follow_teams"
 const PREF_DRIVERS_KEY = "pref_follow_drivers"
-const PREF_TEAM_COLORS_KEY = "pref_follow_team_colors"
-const PREF_DRIVER_COLORS_KEY = "pref_follow_driver_colors"
+const PREF_TEAMS_DICT_KEY = "pref_follow_teams_dict"
+const PREF_DRIVERS_DICT_KEY = "pref_follow_drivers_dict"
 const PREFS_INITED_KEY = "pref_prefs_inited"
 
 function normalizeText(v) {
@@ -17,8 +17,8 @@ function normalizeText(v) {
 function getLocalPrefs() {
   let followTeams = []
   let followDrivers = []
-  let followTeamColors = {}
-  let followDriverColors = {}
+  let followTeamsDict = {}
+  let followDriversDict = {}
 
   try {
     const app = getApp()
@@ -26,8 +26,8 @@ function getLocalPrefs() {
     if (gp) {
       followTeams = Array.isArray(gp.followTeams) ? gp.followTeams : []
       followDrivers = Array.isArray(gp.followDrivers) ? gp.followDrivers : []
-      followTeamColors = gp.followTeamColors && typeof gp.followTeamColors === "object" ? gp.followTeamColors : {}
-      followDriverColors = gp.followDriverColors && typeof gp.followDriverColors === "object" ? gp.followDriverColors : {}
+      followTeamsDict = gp.followTeamsDict && typeof gp.followTeamsDict === "object" ? gp.followTeamsDict : {}
+      followDriversDict = gp.followDriversDict && typeof gp.followDriversDict === "object" ? gp.followDriversDict : {}
     }
   } catch (e) {}
 
@@ -49,21 +49,21 @@ function getLocalPrefs() {
     } catch (e) {}
   }
 
-  if (!Object.keys(followTeamColors).length) {
+  if (!Object.keys(followTeamsDict).length) {
     try {
-      const m = wx.getStorageSync(PREF_TEAM_COLORS_KEY)
-      if (m && typeof m === "object") followTeamColors = m
+      const m = wx.getStorageSync(PREF_TEAMS_DICT_KEY)
+      if (m && typeof m === "object") followTeamsDict = m
     } catch (e) {}
   }
 
-  if (!Object.keys(followDriverColors).length) {
+  if (!Object.keys(followDriversDict).length) {
     try {
-      const m = wx.getStorageSync(PREF_DRIVER_COLORS_KEY)
-      if (m && typeof m === "object") followDriverColors = m
+      const m = wx.getStorageSync(PREF_DRIVERS_DICT_KEY)
+      if (m && typeof m === "object") followDriversDict = m
     } catch (e) {}
   }
 
-  return { followTeams, followDrivers, followTeamColors, followDriverColors }
+  return { followTeams, followDrivers, followTeamsDict, followDriversDict }
 }
 
 function getPrefHitInfo(item, prefs) {
@@ -90,15 +90,17 @@ function getPrefHitInfo(item, prefs) {
 }
 
 function resolvePrefHitColor(info, prefs) {
-  const tcs = prefs && prefs.followTeamColors && typeof prefs.followTeamColors === "object" ? prefs.followTeamColors : {}
-  const dcs = prefs && prefs.followDriverColors && typeof prefs.followDriverColors === "object" ? prefs.followDriverColors : {}
+  const teams = prefs && prefs.followTeamsDict && typeof prefs.followTeamsDict === "object" ? prefs.followTeamsDict : {}
+  const drivers = prefs && prefs.followDriversDict && typeof prefs.followDriversDict === "object" ? prefs.followDriversDict : {}
   if (info && info.teamKey) {
-    const c = tcs[info.teamKey]
-    if (typeof c === "string" && c.trim()) return c.trim()
+    const it = teams[info.teamKey]
+    const c = it && typeof it.color === "string" ? it.color : ""
+    if (c && c.trim()) return c.trim()
   }
   if (info && info.driverNumber) {
-    const c = dcs[String(info.driverNumber)]
-    if (typeof c === "string" && c.trim()) return c.trim()
+    const it = drivers[String(info.driverNumber)]
+    const c = it && typeof it.color === "string" ? it.color : ""
+    if (c && c.trim()) return c.trim()
   }
   return "#2EE8D8"
 }

@@ -22,6 +22,8 @@ type mpPrefsUpdateRequest struct {
 
 func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		v := strings.TrimSpace(c.Query("v"))
+
 		userIDAny, ok := c.Get("mp_user_id")
 		if !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "error": "unauthorized"})
@@ -62,6 +64,8 @@ func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 		driverNumbers := mpParseDriverNumbers(r.DriverNumbers)
 
 		teamColors := map[string]string{}
+		teamInfos := make([]gin.H, 0, len(teamKeys))
+		teamsV2 := gin.H{}
 		if tdCache != nil {
 			for _, k := range teamKeys {
 				if ti, ok := tdCache.GetTeam(k); ok {
@@ -69,10 +73,22 @@ func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 					if color != "" {
 						teamColors[k] = color
 					}
+					teamInfos = append(teamInfos, gin.H{
+						"team_key":      ti.TeamName,
+						"team_name":     emptyToNil(strings.TrimSpace(ti.TeamName)),
+						"team_color":    emptyToNil(color),
+						"team_logo_url": emptyToNil(strings.TrimSpace(ti.TeamLogoURL)),
+					})
+					teamsV2[k] = gin.H{
+						"color":    emptyToNil(color),
+						"logo_url": emptyToNil(strings.TrimSpace(ti.TeamLogoURL)),
+					}
 				}
 			}
 		}
 		driverColors := map[string]string{}
+		driverInfos := make([]gin.H, 0, len(driverNumbers))
+		driversV2 := gin.H{}
 		if tdCache != nil {
 			for _, n := range driverNumbers {
 				if di, ok := tdCache.GetDriver(n); ok {
@@ -80,8 +96,46 @@ func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 					if color != "" {
 						driverColors[strconv.Itoa(n)] = color
 					}
+					driverInfos = append(driverInfos, gin.H{
+						"driver_number":  di.DriverNumber,
+						"full_name":      emptyToNil(strings.TrimSpace(di.FullName)),
+						"broadcast_name": emptyToNil(strings.TrimSpace(di.BroadcastName)),
+						"name_acronym":   emptyToNil(strings.TrimSpace(di.NameAcronym)),
+						"headshot_url":   emptyToNil(strings.TrimSpace(di.HeadshotURL)),
+						"team_name":      emptyToNil(strings.TrimSpace(di.TeamName)),
+						"team_color":     emptyToNil(color),
+					})
+
+					name := strings.TrimSpace(di.FullName)
+					if name == "" {
+						name = strings.TrimSpace(di.BroadcastName)
+					}
+					if name == "" {
+						name = strings.TrimSpace(di.NameAcronym)
+					}
+					driversV2[strconv.Itoa(di.DriverNumber)] = gin.H{
+						"name":         emptyToNil(name),
+						"acr":          emptyToNil(strings.TrimSpace(di.NameAcronym)),
+						"headshot_url": emptyToNil(strings.TrimSpace(di.HeadshotURL)),
+						"team_key":     emptyToNil(strings.TrimSpace(di.TeamName)),
+						"color":        emptyToNil(color),
+					}
 				}
 			}
+		}
+
+		if v != "1" {
+			c.JSON(http.StatusOK, gin.H{
+				"ok":               true,
+				"generated_at_utc": time.Now().UTC().Format(time.RFC3339Nano),
+				"prefs": gin.H{
+					"team_keys":      teamKeys,
+					"driver_numbers": driverNumbers,
+					"teams":          teamsV2,
+					"drivers":        driversV2,
+				},
+			})
+			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
@@ -93,6 +147,8 @@ func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 				"driver_numbers": driverNumbers,
 				"team_colors":    teamColors,
 				"driver_colors":  driverColors,
+				"team_infos":     teamInfos,
+				"driver_infos":   driverInfos,
 			},
 		})
 	}
@@ -100,6 +156,8 @@ func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 
 func MpPrefsUpdate(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		v := strings.TrimSpace(c.Query("v"))
+
 		userIDAny, ok := c.Get("mp_user_id")
 		if !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "error": "unauthorized"})
@@ -197,6 +255,8 @@ func MpPrefsUpdate(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFun
 		}
 
 		teamColors := map[string]string{}
+		teamInfos := make([]gin.H, 0, len(outTeams))
+		teamsV2 := gin.H{}
 		if tdCache != nil {
 			for _, k := range outTeams {
 				if ti, ok := tdCache.GetTeam(k); ok {
@@ -204,10 +264,22 @@ func MpPrefsUpdate(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFun
 					if color != "" {
 						teamColors[k] = color
 					}
+					teamInfos = append(teamInfos, gin.H{
+						"team_key":      ti.TeamName,
+						"team_name":     emptyToNil(strings.TrimSpace(ti.TeamName)),
+						"team_color":    emptyToNil(color),
+						"team_logo_url": emptyToNil(strings.TrimSpace(ti.TeamLogoURL)),
+					})
+					teamsV2[k] = gin.H{
+						"color":    emptyToNil(color),
+						"logo_url": emptyToNil(strings.TrimSpace(ti.TeamLogoURL)),
+					}
 				}
 			}
 		}
 		driverColors := map[string]string{}
+		driverInfos := make([]gin.H, 0, len(outDrivers))
+		driversV2 := gin.H{}
 		if tdCache != nil {
 			for _, n := range outDrivers {
 				if di, ok := tdCache.GetDriver(n); ok {
@@ -215,8 +287,45 @@ func MpPrefsUpdate(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFun
 					if color != "" {
 						driverColors[strconv.Itoa(n)] = color
 					}
+					driverInfos = append(driverInfos, gin.H{
+						"driver_number":  di.DriverNumber,
+						"full_name":      emptyToNil(strings.TrimSpace(di.FullName)),
+						"broadcast_name": emptyToNil(strings.TrimSpace(di.BroadcastName)),
+						"name_acronym":   emptyToNil(strings.TrimSpace(di.NameAcronym)),
+						"headshot_url":   emptyToNil(strings.TrimSpace(di.HeadshotURL)),
+						"team_name":      emptyToNil(strings.TrimSpace(di.TeamName)),
+						"team_color":     emptyToNil(color),
+					})
+
+					name := strings.TrimSpace(di.FullName)
+					if name == "" {
+						name = strings.TrimSpace(di.BroadcastName)
+					}
+					if name == "" {
+						name = strings.TrimSpace(di.NameAcronym)
+					}
+					driversV2[strconv.Itoa(di.DriverNumber)] = gin.H{
+						"name":         emptyToNil(name),
+						"acr":          emptyToNil(strings.TrimSpace(di.NameAcronym)),
+						"headshot_url": emptyToNil(strings.TrimSpace(di.HeadshotURL)),
+						"team_key":     emptyToNil(strings.TrimSpace(di.TeamName)),
+						"color":        emptyToNil(color),
+					}
 				}
 			}
+		}
+
+		if v != "1" {
+			c.JSON(http.StatusOK, gin.H{
+				"ok": true,
+				"prefs": gin.H{
+					"team_keys":      outTeams,
+					"driver_numbers": outDrivers,
+					"teams":          teamsV2,
+					"drivers":        driversV2,
+				},
+			})
+			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
@@ -227,6 +336,8 @@ func MpPrefsUpdate(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFun
 				"driver_numbers": outDrivers,
 				"team_colors":    teamColors,
 				"driver_colors":  driverColors,
+				"team_infos":     teamInfos,
+				"driver_infos":   driverInfos,
 			},
 		})
 	}

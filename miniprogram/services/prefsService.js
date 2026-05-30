@@ -31,15 +31,15 @@ function normalizeDriverNumbers(v) {
 }
 
 async function fetchPrefs() {
-  const r = await requestJson("/api/v1/mp/auth/prefs", { method: "GET", needAuth: true })
+  const r = await requestJson("/api/v1/mp/auth/prefs?v=2", { method: "GET", needAuth: true })
   const prefs = (r && r.prefs) || {}
-  const teamColors = prefs.team_colors && typeof prefs.team_colors === "object" ? prefs.team_colors : {}
-  const driverColors = prefs.driver_colors && typeof prefs.driver_colors === "object" ? prefs.driver_colors : {}
+  const teams = prefs.teams && typeof prefs.teams === "object" ? prefs.teams : {}
+  const drivers = prefs.drivers && typeof prefs.drivers === "object" ? prefs.drivers : {}
   return {
-    teamKeys: normalizeTeamKeys(prefs.team_keys || (prefs.team_name ? [prefs.team_name] : [])),
+    teamKeys: normalizeTeamKeys(prefs.team_keys || []),
     driverNumbers: normalizeDriverNumbers(prefs.driver_numbers || []),
-    teamColors,
-    driverColors
+    teams,
+    drivers
   }
 }
 
@@ -48,7 +48,7 @@ async function updatePrefs({ teamKeys, driverNumbers }) {
     team_keys: normalizeTeamKeys(teamKeys || []),
     driver_numbers: normalizeDriverNumbers(driverNumbers || [])
   }
-  const r = await requestJson("/api/v1/mp/auth/prefs", { method: "PUT", needAuth: true, data: payload })
+  const r = await requestJson("/api/v1/mp/auth/prefs?v=2", { method: "PUT", needAuth: true, data: payload })
   return r
 }
 
