@@ -4,7 +4,7 @@
     v-else-if="pageKey === 'compare-throttle'"
     metric="throttle"
     page="compare-throttle"
-    title="油门比对比"
+    title="油门对比"
     :initState="initState"
     :shareMode="shareMode"
   />
@@ -12,7 +12,7 @@
     v-else-if="pageKey === 'compare-brake'"
     metric="brake"
     page="compare-brake"
-    title="刹车比对比"
+    title="刹车对比"
     :initState="initState"
     :shareMode="shareMode"
   />

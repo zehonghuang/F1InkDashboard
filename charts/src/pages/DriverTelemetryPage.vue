@@ -4,10 +4,10 @@
       <div class="session-title-main">{{ titleMain }}</div>
       <div class="session-title-sub">{{ titleSub }}</div>
     </div>
-    <div class="card-title">Driver Telemetry</div>
+    <div class="card-title">单车手遥测</div>
     <div v-if="!shareMode" class="controls">
       <div class="control">
-        <div class="label">Driver</div>
+        <div class="label">车手</div>
         <Select v-model="driverNumber" filterable>
           <Option v-for="d in drivers" :key="d.driver_number" :value="d.driver_number">{{ d.name_acronym || d.driver_number }}</Option>
         </Select>
@@ -17,7 +17,7 @@
         <InputNumber v-model="sessionKey" :min="0" style="width: 100%" placeholder="留空=latest" />
       </div>
       <div class="control">
-        <div class="label">Lap</div>
+        <div class="label">圈次</div>
         <Select v-model="lapNumber" filterable>
           <Option v-for="ln in lapOptions" :key="ln" :value="ln">L{{ ln }}</Option>
         </Select>
@@ -66,7 +66,7 @@ const loading = ref(false);
 const status = ref("");
 
 const { copy } = useShareLink();
-const { titleMain, titleSub } = useSessionMeta(sessionKey, { pageTitle: "Driver Telemetry" });
+const { titleMain, titleSub } = useSessionMeta(sessionKey, { pageTitle: "单车手遥测" });
 
 const driverColor = computed(() => {
   const dn = parseIntOrNull(driverNumber.value);

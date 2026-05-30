@@ -4,14 +4,14 @@
       <div class="session-title-main">{{ titleMain }}</div>
       <div class="session-title-sub">{{ titleSub }}</div>
     </div>
-    <div class="card-title">Boxplot</div>
+    <div class="card-title">箱线图</div>
     <div v-if="!shareMode" class="controls">
       <div class="control">
         <div class="label">Session Key</div>
         <InputNumber v-model="sessionKey" :min="1" style="width: 100%" placeholder="必填" />
       </div>
       <div class="control control-wide">
-        <div class="label">Drivers</div>
+        <div class="label">车手</div>
         <Select v-model="driverNumbers" multiple filterable>
           <Option v-for="d in drivers" :key="d.driver_number" :value="d.driver_number">{{ d.name_acronym || d.driver_number }}</Option>
         </Select>
@@ -63,7 +63,7 @@ const loading = ref(false);
 const status = ref("");
 
 const { copy } = useShareLink();
-const { titleMain, titleSub } = useSessionMeta(sessionKey, { pageTitle: "Boxplot" });
+const { titleMain, titleSub } = useSessionMeta(sessionKey, { pageTitle: "箱线图" });
 
 const load = async () => {
   loading.value = true;

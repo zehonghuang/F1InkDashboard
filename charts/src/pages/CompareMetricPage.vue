@@ -11,7 +11,7 @@
         <InputNumber v-model="sessionKey" :min="1" style="width: 100%" placeholder="必填" />
       </div>
       <div class="control control-wide">
-        <div class="label">Drivers</div>
+        <div class="label">车手</div>
         <Select v-model="driverNumbers" multiple filterable>
           <Option v-for="d in drivers" :key="d.driver_number" :value="d.driver_number">{{ d.name_acronym || d.driver_number }}</Option>
         </Select>

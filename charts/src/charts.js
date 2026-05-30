@@ -110,12 +110,12 @@ export function renderLapTimeChart(container, labels, laps, { driverColor } = {}
     ...baseOption(),
     tooltip: axisPointerTooltip(),
     xAxis: { type: "category", data: labels || [], axisTick: { alignWithLabel: true } },
-    yAxis: { type: "value", name: "s", scale: true },
+    yAxis: { type: "value", name: "圈速", scale: true, axisLabel: { formatter: (v) => formatLapClock(Number(v), 1) } },
     series: [
-      lineSeries({ name: "Lap", data: dataLap, color: c0 }),
-      lineSeries({ name: "S1", data: s1, color: c1, dashed: true }),
-      lineSeries({ name: "S2", data: s2, color: c2, dashed: true }),
-      lineSeries({ name: "S3", data: s3, color: c3, dashed: true })
+      lineSeries({ name: "圈速", data: dataLap, color: c0 }),
+      lineSeries({ name: "一段", data: s1, color: c1, dashed: true }),
+      lineSeries({ name: "二段", data: s2, color: c2, dashed: true }),
+      lineSeries({ name: "三段", data: s3, color: c3, dashed: true })
     ]
   });
   return inst;
@@ -136,9 +136,9 @@ export function renderSpeedChart(container, labels, laps, { driverColor } = {}) 
     xAxis: { type: "category", data: labels || [], axisTick: { alignWithLabel: true } },
     yAxis: { type: "value", name: "km/h", scale: true },
     series: [
-      lineSeries({ name: "ST", data: st, color: c0 }),
-      lineSeries({ name: "I1", data: i1, color: c1, dashed: true }),
-      lineSeries({ name: "I2", data: i2, color: c2, dashed: true })
+      lineSeries({ name: "直线(ST)", data: st, color: c0 }),
+      lineSeries({ name: "区间1(I1)", data: i1, color: c1, dashed: true }),
+      lineSeries({ name: "区间2(I2)", data: i2, color: c2, dashed: true })
     ]
   });
   return inst;
@@ -155,7 +155,7 @@ export function renderLapTraceChart(container, points, { driverColor } = {}) {
     ...baseOption(),
     tooltip: {
       ...axisPointerTooltip(),
-      valueFormatter: (v) => (v == null || !Number.isFinite(Number(v)) ? "N/A" : `${Number(v).toFixed(0)}%`)
+      valueFormatter: (v) => (v == null || !Number.isFinite(Number(v)) ? "无数据" : `${Number(v).toFixed(0)}%`)
     },
     xAxis: {
       type: "value",
@@ -164,8 +164,8 @@ export function renderLapTraceChart(container, points, { driverColor } = {}) {
     },
     yAxis: { type: "value", min: 0, max: 100, name: "%" },
     series: [
-      lineSeries({ name: "Throttle", data: th, color: c0 }),
-      lineSeries({ name: "Brake", data: br, color: c1, dashed: true })
+      lineSeries({ name: "油门", data: th, color: c0 }),
+      lineSeries({ name: "刹车", data: br, color: c1, dashed: true })
     ]
   });
   return inst;
@@ -253,9 +253,9 @@ export function renderLapControlsSeriesChart(container, payload, { driverColor }
         for (const it of items) {
           const name = it?.seriesName || "";
           const y = it?.value?.[1];
-          if (y == null || !Number.isFinite(Number(y))) lines.push(`${name}: N/A`);
-          else if (name === "Speed") lines.push(`${name}: ${Number(y).toFixed(0)} km/h`);
-          else lines.push(`${name}: ${Number(y).toFixed(0)}%`);
+          if (y == null || !Number.isFinite(Number(y))) lines.push(`${name}：无数据`);
+          else if (name === "速度") lines.push(`${name}：${Number(y).toFixed(0)} km/h`);
+          else lines.push(`${name}：${Number(y).toFixed(0)}%`);
         }
         return lines.join("<br/>");
       }
@@ -280,7 +280,7 @@ export function renderLapControlsSeriesChart(container, payload, { driverColor }
     ],
     series: [
       {
-        ...lineSeries({ name: "Speed", data: speed, color: c0, yAxisIndex: 0 }),
+        ...lineSeries({ name: "速度", data: speed, color: c0, yAxisIndex: 0 }),
         markLine: {
           symbol: "none",
           lineStyle: { color: "rgba(255,255,255,0.22)", width: 1 },
@@ -288,8 +288,8 @@ export function renderLapControlsSeriesChart(container, payload, { driverColor }
           data: [{ xAxis: 1 }, { xAxis: 2 }]
         }
       },
-      lineSeries({ name: "Throttle", data: th, color: c1, dashed: true, yAxisIndex: 1 }),
-      lineSeries({ name: "Brake", data: br, color: c2, dashed: true, yAxisIndex: 1 })
+      lineSeries({ name: "油门", data: th, color: c1, dashed: true, yAxisIndex: 1 }),
+      lineSeries({ name: "刹车", data: br, color: c2, dashed: true, yAxisIndex: 1 })
     ]
   });
   return inst;
@@ -303,11 +303,11 @@ export function renderLapTimeBoxplotChart(container, labels, items) {
       const wh0 = Number(it?.whisker_high);
       const min0 = Number(it?.min);
       const max0 = Number(it?.max);
-      const wl = Number.isFinite(wl0) ? wl0 : min0;
-      const wh = Number.isFinite(wh0) ? wh0 : max0;
       const q1 = Number(it?.q1);
       const med = Number(it?.median);
       const q3 = Number(it?.q3);
+      const wl = Number.isFinite(wl0) ? wl0 : min0;
+      const wh = Number.isFinite(wh0) ? wh0 : max0;
       if (![wl, q1, med, q3, wh].every((v) => Number.isFinite(v))) return null;
       const border = normalizeHexColor(it?.team_colour) || "#111111";
       return {
@@ -329,7 +329,11 @@ export function renderLapTimeBoxplotChart(container, labels, items) {
       textStyle: { color: "#fff" },
       formatter: (p) => {
         const raw = p?.data?.raw || {};
-        const v = Array.isArray(p?.value) ? p.value : [];
+        const v0 = Array.isArray(p?.value) ? p.value : [];
+        const hasCatIndexPrefix =
+          v0.length >= 6 && Number.isFinite(Number(v0[0])) && Number.isInteger(Number(v0[0])) && Number(v0[0]) >= 0 && Number(v0[0]) < 10000;
+        const off = hasCatIndexPrefix ? 1 : 0;
+        const v = off ? v0.slice(off) : v0;
         const label = p?.name ?? "";
         const wl = v?.[0];
         const q1 = v?.[1];
@@ -338,16 +342,23 @@ export function renderLapTimeBoxplotChart(container, labels, items) {
         const wh = v?.[4];
         const n = raw?.sample_count;
         if ([wl, q1, med, q3, wh].every((x) => Number.isFinite(Number(x)))) {
-          return `${label}<br/>n=${n} wl=${Number(wl).toFixed(3)} q1=${Number(q1).toFixed(3)} med=${Number(med).toFixed(
-            3
-          )} q3=${Number(q3).toFixed(3)} wh=${Number(wh).toFixed(3)}`;
+          const lines = [
+            String(label),
+            `样本数：${Number.isFinite(Number(n)) ? n : "-"}`,
+            `下须：${formatLapClock(Number(wl), 3)}`,
+            `Q1：${formatLapClock(Number(q1), 3)}`,
+            `中位数：${formatLapClock(Number(med), 3)}`,
+            `Q3：${formatLapClock(Number(q3), 3)}`,
+            `上须：${formatLapClock(Number(wh), 3)}`
+          ];
+          return lines.join("<br/>");
         }
         return String(label);
       }
     },
     xAxis: { type: "category", data: labels || [], axisLabel: { interval: 0 } },
-    yAxis: { type: "value", name: "s", scale: true },
-    series: [{ type: "boxplot", name: "Lap Time", data }]
+    yAxis: { type: "value", name: "圈速", scale: true, axisLabel: { formatter: (v) => formatLapClock(Number(v), 1) } },
+    series: [{ type: "boxplot", name: "圈速箱线图", data }]
   });
   return inst;
 }
@@ -375,11 +386,11 @@ export function renderSectorCompareChart(container, { series, metric }) {
           const name = it?.seriesName || "";
           const y = it?.value?.[1];
           if (y == null || !Number.isFinite(Number(y))) {
-            lines.push(`${name}: N/A`);
+            lines.push(`${name}：无数据`);
             continue;
           }
-          if (isPct) lines.push(`${name}: ${Math.round(Number(y))}%`);
-          else lines.push(`${name}: ${Math.round(Number(y))} km/h`);
+          if (isPct) lines.push(`${name}：${Math.round(Number(y))}%`);
+          else lines.push(`${name}：${Math.round(Number(y))} km/h`);
         }
         return lines.join("<br/>");
       }

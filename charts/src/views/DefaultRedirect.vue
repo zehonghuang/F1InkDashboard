@@ -1,7 +1,7 @@
 <template>
   <div class="page">
     <div class="header">
-      <div class="title">Telemetry Charts</div>
+      <div class="title">F1 图表</div>
     </div>
     <div class="container">
       <Card class="card">

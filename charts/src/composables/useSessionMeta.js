@@ -41,11 +41,9 @@ export function useSessionMeta(sessionKeyRef, { pageTitle } = {}) {
 
   const titleSub = computed(() => {
     const sess = meta.value?.session_name_cn || meta.value?.session_name_en || "";
-    if (sess && pageTitle) return `${sess} · ${pageTitle}`;
     if (sess) return sess;
     return pageTitle || "";
   });
 
   return { meta, loading, error, titleMain, titleSub, reload: load };
 }
-
