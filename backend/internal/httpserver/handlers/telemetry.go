@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"toinc_f1_backend/internal/f1db"
+	"toinc_f1_backend/internal/model"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -15,23 +16,23 @@ import (
 // @Description 需要 MySQL（TOINC_F1_MYSQL_ENABLED=1）。
 // @Tags Telemetry
 // @Produce json
-// @Success 200 {object} GenericObject
-// @Failure 502 {object} ErrorResponse
-// @Failure 503 {object} ErrorResponse
+// @Success 200 {object} model.GenericObject
+// @Failure 502 {object} model.ErrorResponse
+// @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/telemetry/laps/available [get]
 func TelemetryLapsAvailable(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "telemetry_laps_available", "mysql_required", nil)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mysql_required"})
 			return
 		}
 		items, err := f1db.TelemetryLapsAvailable(db)
 		if err != nil {
-			c.JSON(502, gin.H{"ok": false, "error": "query_failed"})
+			c.JSON(502, model.ErrorResponse{Ok: false, Error: "query_failed"})
 			return
 		}
-		c.JSON(200, gin.H{"ok": true, "items": items})
+		c.JSON(200, model.GenericObject{"ok": true, "items": items})
 	}
 }
 
@@ -40,21 +41,21 @@ func TelemetryLapsAvailable(db *gorm.DB) gin.HandlerFunc {
 // @Produce json
 // @Param driver_number query int true "车手号码"
 // @Param session_key query int false "OpenF1 session_key"
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 502 {object} ErrorResponse
-// @Failure 503 {object} ErrorResponse
+// @Success 200 {object} model.GenericObject
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 502 {object} model.ErrorResponse
+// @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/telemetry/laps [get]
 func TelemetryLaps(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "telemetry_laps", "mysql_required", nil)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mysql_required"})
 			return
 		}
 		dn, err := strconv.Atoi(strings.TrimSpace(c.Query("driver_number")))
 		if err != nil || dn < 1 {
-			c.JSON(400, gin.H{"ok": false, "error": "bad_driver_number"})
+			c.JSON(400, model.ErrorResponse{Ok: false, Error: "bad_driver_number"})
 			return
 		}
 		var sk *int
@@ -65,10 +66,10 @@ func TelemetryLaps(db *gorm.DB) gin.HandlerFunc {
 		}
 		sk2, laps, err := f1db.TelemetryLaps(db, dn, sk)
 		if err != nil {
-			c.JSON(502, gin.H{"ok": false, "error": "query_failed"})
+			c.JSON(502, model.ErrorResponse{Ok: false, Error: "query_failed"})
 			return
 		}
-		c.JSON(200, gin.H{"ok": true, "driver_number": dn, "session_key": sk2, "laps": laps})
+		c.JSON(200, model.GenericObject{"ok": true, "driver_number": dn, "session_key": sk2, "laps": laps})
 	}
 }
 
@@ -77,21 +78,21 @@ func TelemetryLaps(db *gorm.DB) gin.HandlerFunc {
 // @Produce json
 // @Param driver_number query int true "车手号码"
 // @Param session_key query int false "OpenF1 session_key"
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 502 {object} ErrorResponse
-// @Failure 503 {object} ErrorResponse
+// @Success 200 {object} model.GenericObject
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 502 {object} model.ErrorResponse
+// @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/telemetry/lap_controls [get]
 func TelemetryLapControls(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "telemetry_lap_controls", "mysql_required", nil)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mysql_required"})
 			return
 		}
 		dn, err := strconv.Atoi(strings.TrimSpace(c.Query("driver_number")))
 		if err != nil || dn < 1 {
-			c.JSON(400, gin.H{"ok": false, "error": "bad_driver_number"})
+			c.JSON(400, model.ErrorResponse{Ok: false, Error: "bad_driver_number"})
 			return
 		}
 		var sk *int
@@ -102,10 +103,10 @@ func TelemetryLapControls(db *gorm.DB) gin.HandlerFunc {
 		}
 		sk2, items, err := f1db.TelemetryLapControls(db, dn, sk)
 		if err != nil {
-			c.JSON(502, gin.H{"ok": false, "error": "query_failed"})
+			c.JSON(502, model.ErrorResponse{Ok: false, Error: "query_failed"})
 			return
 		}
-		c.JSON(200, gin.H{"ok": true, "driver_number": dn, "session_key": sk2, "items": items})
+		c.JSON(200, model.GenericObject{"ok": true, "driver_number": dn, "session_key": sk2, "items": items})
 	}
 }
 
@@ -116,26 +117,26 @@ func TelemetryLapControls(db *gorm.DB) gin.HandlerFunc {
 // @Param lap_number query int true "圈号"
 // @Param session_key query int false "OpenF1 session_key"
 // @Param max_points query int false "最大采样点数（50-5000）" default(600)
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 502 {object} ErrorResponse
-// @Failure 503 {object} ErrorResponse
+// @Success 200 {object} model.GenericObject
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 502 {object} model.ErrorResponse
+// @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/telemetry/lap_trace [get]
 func TelemetryLapTrace(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "telemetry_lap_trace", "mysql_required", nil)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mysql_required"})
 			return
 		}
 		dn, err := strconv.Atoi(strings.TrimSpace(c.Query("driver_number")))
 		if err != nil || dn < 1 {
-			c.JSON(400, gin.H{"ok": false, "error": "bad_driver_number"})
+			c.JSON(400, model.ErrorResponse{Ok: false, Error: "bad_driver_number"})
 			return
 		}
 		ln, err := strconv.Atoi(strings.TrimSpace(c.Query("lap_number")))
 		if err != nil || ln < 1 {
-			c.JSON(400, gin.H{"ok": false, "error": "bad_lap_number"})
+			c.JSON(400, model.ErrorResponse{Ok: false, Error: "bad_lap_number"})
 			return
 		}
 		var sk *int
@@ -153,14 +154,14 @@ func TelemetryLapTrace(db *gorm.DB) gin.HandlerFunc {
 		}
 		sk2, start, dur, points, err := f1db.TelemetryLapTrace(db, dn, sk, ln, maxPoints)
 		if err != nil {
-			c.JSON(502, gin.H{"ok": false, "error": "query_failed"})
+			c.JSON(502, model.ErrorResponse{Ok: false, Error: "query_failed"})
 			return
 		}
 		var startISO any = nil
 		if start != nil {
 			startISO = start.UTC()
 		}
-		c.JSON(200, gin.H{
+		c.JSON(200, model.GenericObject{
 			"ok":             true,
 			"driver_number":  dn,
 			"session_key":    sk2,
@@ -178,21 +179,21 @@ func TelemetryLapTrace(db *gorm.DB) gin.HandlerFunc {
 // @Param driver_number query int true "车手号码"
 // @Param session_key query int false "OpenF1 session_key"
 // @Param max_points query int false "最大采样点数（50-5000）" default(240)
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 502 {object} ErrorResponse
-// @Failure 503 {object} ErrorResponse
+// @Success 200 {object} model.GenericObject
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 502 {object} model.ErrorResponse
+// @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/telemetry/fastest_lap [get]
 func TelemetryFastestLap(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "telemetry_fastest_lap", "mysql_required", nil)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mysql_required"})
 			return
 		}
 		dn, err := strconv.Atoi(strings.TrimSpace(c.Query("driver_number")))
 		if err != nil || dn < 1 {
-			c.JSON(400, gin.H{"ok": false, "error": "bad_driver_number"})
+			c.JSON(400, model.ErrorResponse{Ok: false, Error: "bad_driver_number"})
 			return
 		}
 		var sk *int
@@ -210,10 +211,10 @@ func TelemetryFastestLap(db *gorm.DB) gin.HandlerFunc {
 		}
 		res, err := f1db.TelemetryFastestLap(db, dn, sk, maxPoints)
 		if err != nil {
-			c.JSON(502, gin.H{"ok": false, "error": "query_failed"})
+			c.JSON(502, model.ErrorResponse{Ok: false, Error: "query_failed"})
 			return
 		}
-		out := gin.H{
+		out := model.GenericObject{
 			"ok":                 true,
 			"found":              res.Found,
 			"driver_number":      res.DriverNumber,
@@ -242,26 +243,26 @@ func TelemetryFastestLap(db *gorm.DB) gin.HandlerFunc {
 // @Param lap_number query int true "圈号"
 // @Param session_key query int false "OpenF1 session_key"
 // @Param max_points query int false "最大采样点（0 表示默认策略，最大 20000）" default(0)
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 502 {object} ErrorResponse
-// @Failure 503 {object} ErrorResponse
+// @Success 200 {object} model.GenericObject
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 502 {object} model.ErrorResponse
+// @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/telemetry/lap_controls_series [get]
 func TelemetryLapControlsSeries(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "telemetry_lap_controls_series", "mysql_required", nil)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mysql_required"})
 			return
 		}
 		dn, err := strconv.Atoi(strings.TrimSpace(c.Query("driver_number")))
 		if err != nil || dn < 1 {
-			c.JSON(400, gin.H{"ok": false, "error": "bad_driver_number"})
+			c.JSON(400, model.ErrorResponse{Ok: false, Error: "bad_driver_number"})
 			return
 		}
 		ln, err := strconv.Atoi(strings.TrimSpace(c.Query("lap_number")))
 		if err != nil || ln < 1 {
-			c.JSON(400, gin.H{"ok": false, "error": "bad_lap_number"})
+			c.JSON(400, model.ErrorResponse{Ok: false, Error: "bad_lap_number"})
 			return
 		}
 		var sk *int
@@ -280,11 +281,11 @@ func TelemetryLapControlsSeries(db *gorm.DB) gin.HandlerFunc {
 
 		res, err := f1db.TelemetryLapControlsSeries(db, dn, sk, ln, maxPoints)
 		if err != nil {
-			c.JSON(502, gin.H{"ok": false, "error": "query_failed"})
+			c.JSON(502, model.ErrorResponse{Ok: false, Error: "query_failed"})
 			return
 		}
 		found := res.DateStartUTC != nil && res.PointsCount > 0
-		c.JSON(200, gin.H{
+		c.JSON(200, model.GenericObject{
 			"ok":            true,
 			"found":         found,
 			"driver_number": res.DriverNumber,

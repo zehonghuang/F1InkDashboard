@@ -1,10 +1,5 @@
 const { getMockNewsList, getMockNewsById } = require("./newsService")
-
-function getApiBase() {
-  const app = getApp()
-  const apiBase = (app && app.globalData && app.globalData.apiBase) || ""
-  return String(apiBase || "").replace(/\/+$/, "")
-}
+const { requestJson, getApiBase } = require("./request")
 
 function shouldUseMock() {
   try {
@@ -77,24 +72,6 @@ function mapNewsItem(item, baseUrl) {
   }
 }
 
-function requestJson({ url, method }) {
-  return new Promise((resolve, reject) => {
-    wx.request({
-      url,
-      method: method || "GET",
-      success: (res) => {
-        const status = Number(res && res.statusCode)
-        if (status < 200 || status >= 300) {
-          reject(new Error(`http_${status || 0}`))
-          return
-        }
-        resolve((res && res.data) || {})
-      },
-      fail: reject
-    })
-  })
-}
-
 async function fetchNewsList({ page, pageSize, tz }) {
   if (shouldUseMock()) {
     const p = Number(page) > 0 ? Number(page) : 1
@@ -108,8 +85,10 @@ async function fetchNewsList({ page, pageSize, tz }) {
   const p = Number(page) > 0 ? Number(page) : 1
   const ps = Number(pageSize) > 0 ? Number(pageSize) : 20
   const tzName = tz || "Asia/Shanghai"
-  const url = `${apiBase}/api/v1/mp/news?page=${p}&page_size=${ps}&tz=${encodeURIComponent(tzName)}`
-  const data = await requestJson({ url, method: "GET" })
+  const data = await requestJson(
+    `/api/v1/mp/news?page=${p}&page_size=${ps}&tz=${encodeURIComponent(tzName)}`,
+    { method: "GET", needAuth: false }
+  )
   if (!data || data.ok !== true) throw new Error((data && data.error) || "bad_response")
   const baseUrl = data.base_url ? joinUrl(apiBase, data.base_url) : apiBase
   const items = Array.isArray(data.items) ? data.items : []
@@ -134,8 +113,10 @@ async function fetchNewsDetail({ id, tz }) {
   const nid = String(id || "").trim()
   if (!nid) throw new Error("missing_id")
   const tzName = tz || "Asia/Shanghai"
-  const url = `${apiBase}/api/v1/mp/news/${encodeURIComponent(nid)}?tz=${encodeURIComponent(tzName)}`
-  const data = await requestJson({ url, method: "GET" })
+  const data = await requestJson(`/api/v1/mp/news/${encodeURIComponent(nid)}?tz=${encodeURIComponent(tzName)}`, {
+    method: "GET",
+    needAuth: false
+  })
   if (!data || data.ok !== true) throw new Error((data && data.error) || "bad_response")
   const baseUrl = data.base_url ? joinUrl(apiBase, data.base_url) : apiBase
   return mapNewsItem(data.item || null, baseUrl)

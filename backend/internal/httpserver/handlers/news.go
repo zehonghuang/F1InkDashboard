@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"toinc_f1_backend/internal/config"
+	"toinc_f1_backend/internal/model"
 	"toinc_f1_backend/internal/ws"
 
 	"github.com/gin-gonic/gin"
@@ -20,14 +21,14 @@ import (
 // @Description 返回新闻 WebSocket 的启用开关与在线人数。
 // @Tags News
 // @Produce json
-// @Success 200 {object} GenericObject
+// @Success 200 {object} model.NewsWsStatusResponse
 // @Router /api/v1/news/ws/status [get]
 func NewsWsStatus(cfg config.Config, hub *ws.Hub) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"enabled": cfg.NewsWsEnabled,
-			"running": cfg.NewsWsEnabled,
-			"clients": gin.H{"ws": hub.Count()},
+		c.JSON(200, model.NewsWsStatusResponse{
+			Enabled: cfg.NewsWsEnabled,
+			Running: cfg.NewsWsEnabled,
+			Clients: model.NewsWsClients{Ws: hub.Count()},
 		})
 	}
 }
@@ -68,10 +69,12 @@ func WsNews(cfg config.Config, hub *ws.Hub) gin.HandlerFunc {
 
 // @Summary 注入 Breaking 新闻（multipart）
 // @Description |
-//   通过 multipart/form-data 注入并广播到新闻 WS（topic 固定为 v1/breaking）。
 //
-//   鉴权：
-//   - 若服务端配置 NEWS_INGEST_TOKEN 非空，则必须传 query token 且匹配。
+//	通过 multipart/form-data 注入并广播到新闻 WS（topic 固定为 v1/breaking）。
+//
+//	鉴权：
+//	- 若服务端配置 NEWS_INGEST_TOKEN 非空，则必须传 query token 且匹配。
+//
 // @Tags News
 // @Accept mpfd
 // @Produce json
@@ -79,9 +82,9 @@ func WsNews(cfg config.Config, hub *ws.Hub) gin.HandlerFunc {
 // @Param token query string false "鉴权 token（当 NEWS_INGEST_TOKEN 非空时必填）"
 // @Param title formData string true "新闻标题"
 // @Param image formData file false "可选图片文件"
-// @Success 200 {object} OkResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
+// @Success 200 {object} model.OkResponse
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 401 {object} model.ErrorResponse
 // @Router /api/v1/news/ws/ingest [post]
 func NewsWsIngest(cfg config.Config, hub *ws.Hub, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -90,7 +93,7 @@ func NewsWsIngest(cfg config.Config, hub *ws.Hub, staticDir string) gin.HandlerF
 		}
 		title := strings.TrimSpace(c.PostForm("title"))
 		if title == "" {
-			c.JSON(400, gin.H{"ok": false, "error": "missing_title"})
+			c.JSON(400, model.ErrorResponse{Ok: false, Error: "missing_title"})
 			return
 		}
 
@@ -116,16 +119,18 @@ func NewsWsIngest(cfg config.Config, hub *ws.Hub, staticDir string) gin.HandlerF
 		}
 
 		_ = hub.BroadcastJSON(msg)
-		c.JSON(200, gin.H{"ok": true})
+		c.JSON(200, model.OkResponse{Ok: true})
 	}
 }
 
 // @Summary 注入 Meme 新闻（multipart）
 // @Description |
-//   通过 multipart/form-data 注入并广播到新闻 WS（topic 固定为 v1/meme）。
 //
-//   鉴权：
-//   - 若服务端配置 NEWS_INGEST_TOKEN 非空，则必须传 query token 且匹配。
+//	通过 multipart/form-data 注入并广播到新闻 WS（topic 固定为 v1/meme）。
+//
+//	鉴权：
+//	- 若服务端配置 NEWS_INGEST_TOKEN 非空，则必须传 query token 且匹配。
+//
 // @Tags News
 // @Accept mpfd
 // @Produce json
@@ -134,9 +139,9 @@ func NewsWsIngest(cfg config.Config, hub *ws.Hub, staticDir string) gin.HandlerF
 // @Param title formData string true "标题"
 // @Param image formData file false "可选图片文件"
 // @Param audio formData file false "可选音频文件"
-// @Success 200 {object} OkResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
+// @Success 200 {object} model.OkResponse
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 401 {object} model.ErrorResponse
 // @Router /api/v1/news/meme/ws/ingest [post]
 func NewsMemeWsIngest(cfg config.Config, hub *ws.Hub, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -145,7 +150,7 @@ func NewsMemeWsIngest(cfg config.Config, hub *ws.Hub, staticDir string) gin.Hand
 		}
 		title := strings.TrimSpace(c.PostForm("title"))
 		if title == "" {
-			c.JSON(400, gin.H{"ok": false, "error": "missing_title"})
+			c.JSON(400, model.ErrorResponse{Ok: false, Error: "missing_title"})
 			return
 		}
 
@@ -181,28 +186,30 @@ func NewsMemeWsIngest(cfg config.Config, hub *ws.Hub, staticDir string) gin.Hand
 		}
 
 		_ = hub.BroadcastJSON(msg)
-		c.JSON(200, gin.H{"ok": true})
+		c.JSON(200, model.OkResponse{Ok: true})
 	}
 }
 
 // @Summary 注入新闻（JSON）
 // @Description |
-//   直接注入 JSON 并广播到新闻 WS。
 //
-//   - 未传 topic 时默认 v1/breaking
-//   - 当 topic=v1/meme 时，服务端会把 payload.image / payload.audio 规范化为资产对象
+//	直接注入 JSON 并广播到新闻 WS。
 //
-//   鉴权：
-//   - 若服务端配置 NEWS_INGEST_TOKEN 非空，则必须传 query token 且匹配。
+//	- 未传 topic 时默认 v1/breaking
+//	- 当 topic=v1/meme 时，服务端会把 payload.image / payload.audio 规范化为资产对象
+//
+//	鉴权：
+//	- 若服务端配置 NEWS_INGEST_TOKEN 非空，则必须传 query token 且匹配。
+//
 // @Tags News
 // @Accept json
 // @Produce json
 // @Security TokenQuery
 // @Param token query string false "鉴权 token（当 NEWS_INGEST_TOKEN 非空时必填）"
-// @Param body body NewsIngestJSONBody true "注入内容"
-// @Success 200 {object} OkResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
+// @Param body body model.NewsIngestJSONBody true "注入内容"
+// @Success 200 {object} model.OkResponse
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 401 {object} model.ErrorResponse
 // @Router /api/v1/news/ingest [post]
 func NewsIngestJSON(cfg config.Config, hub *ws.Hub, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -211,7 +218,7 @@ func NewsIngestJSON(cfg config.Config, hub *ws.Hub, staticDir string) gin.Handle
 		}
 		var body map[string]any
 		if err := c.ShouldBindJSON(&body); err != nil {
-			c.JSON(400, gin.H{"ok": false, "error": "bad_json"})
+			c.JSON(400, model.ErrorResponse{Ok: false, Error: "bad_json"})
 			return
 		}
 
@@ -241,7 +248,7 @@ func NewsIngestJSON(cfg config.Config, hub *ws.Hub, staticDir string) gin.Handle
 			"received_at_utc": nowUTCISO8601(),
 		}
 		_ = hub.BroadcastJSON(msg)
-		c.JSON(200, gin.H{"ok": true})
+		c.JSON(200, model.OkResponse{Ok: true})
 	}
 }
 
@@ -252,7 +259,7 @@ func checkToken(c *gin.Context, expected string) bool {
 	}
 	token := strings.TrimSpace(c.Query("token"))
 	if token == "" || token != expected {
-		c.JSON(401, gin.H{"ok": false, "error": "unauthorized"})
+		c.JSON(401, model.ErrorResponse{Ok: false, Error: "unauthorized"})
 		return false
 	}
 	return true

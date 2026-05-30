@@ -16,6 +16,7 @@ import (
 	"toinc_f1_backend/internal/config"
 	"toinc_f1_backend/internal/f1db"
 	"toinc_f1_backend/internal/f1logic"
+	"toinc_f1_backend/internal/model"
 	"toinc_f1_backend/internal/thirdparty"
 
 	"github.com/gin-gonic/gin"
@@ -30,9 +31,9 @@ import (
 // @Param season query int false "赛季年份" default(2026)
 // @Param include_circuit query bool false "是否包含赛道信息" default(true)
 // @Param refresh_circuit query bool false "是否强制刷新赛道缓存" default(false)
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 200 {object} model.GenericObject
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 500 {object} model.ErrorResponse
 // @Router /api/v1/pages [get]
 func Pages(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -52,9 +53,9 @@ func Pages(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir string
 // @Param season query int false "赛季年份" default(2026)
 // @Param include_circuit query bool false "是否包含赛道信息" default(true)
 // @Param refresh_circuit query bool false "是否强制刷新赛道缓存" default(false)
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 200 {object} model.GenericObject
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 500 {object} model.ErrorResponse
 // @Router /api/v1/pages/race-day [get]
 func PagesRaceDay(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -64,7 +65,7 @@ func PagesRaceDay(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir
 			return
 		}
 		raceDay := out["race_day"]
-		c.JSON(200, gin.H{
+		c.JSON(200, model.GenericObject{
 			"generated_at_utc": out["generated_at_utc"],
 			"tz":               out["tz"],
 			"race_day":         raceDay,
@@ -79,9 +80,9 @@ func PagesRaceDay(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir
 // @Param season query int false "赛季年份" default(2026)
 // @Param include_circuit query bool false "是否包含赛道信息" default(true)
 // @Param refresh_circuit query bool false "是否强制刷新赛道缓存" default(false)
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 200 {object} model.GenericObject
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 500 {object} model.ErrorResponse
 // @Router /api/v1/pages/off-week [get]
 func PagesOffWeek(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -91,7 +92,7 @@ func PagesOffWeek(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir
 			return
 		}
 		offWeek := out["off_week"]
-		c.JSON(200, gin.H{
+		c.JSON(200, model.GenericObject{
 			"generated_at_utc": out["generated_at_utc"],
 			"tz":               out["tz"],
 			"off_week":         offWeek,
@@ -107,9 +108,9 @@ func PagesOffWeek(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir
 // @Param season query int false "赛季年份" default(2026)
 // @Param include_circuit query bool false "是否包含赛道信息" default(true)
 // @Param refresh_circuit query bool false "是否强制刷新赛道缓存" default(false)
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 200 {object} model.GenericObject
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 500 {object} model.ErrorResponse
 // @Router /api/v1/ui/pages [get]
 func UiPages(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -132,9 +133,9 @@ func UiPages(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir stri
 // @Param season query int false "赛季年份" default(2026)
 // @Param include_circuit query bool false "是否包含赛道信息" default(true)
 // @Param refresh_circuit query bool false "是否强制刷新赛道缓存" default(false)
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 200 {object} model.GenericObject
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 500 {object} model.ErrorResponse
 // @Router /api/v1/ui/pages/race-day [get]
 func UiPagesRaceDay(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -147,7 +148,7 @@ func UiPagesRaceDay(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticD
 		lang := strings.TrimSpace(c.GetString("language"))
 		ui := f1logic.BuildUiPagesPayload(pages, season, lang)
 		pg, _ := ui["pages"].(map[string]any)
-		c.JSON(200, gin.H{
+		c.JSON(200, model.GenericObject{
 			"generated_at_utc": ui["generated_at_utc"],
 			"tz":               ui["tz"],
 			"format":           ui["format"],
@@ -163,9 +164,9 @@ func UiPagesRaceDay(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticD
 // @Param season query int false "赛季年份" default(2026)
 // @Param include_circuit query bool false "是否包含赛道信息" default(true)
 // @Param refresh_circuit query bool false "是否强制刷新赛道缓存" default(false)
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Success 200 {object} model.GenericObject
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 500 {object} model.ErrorResponse
 // @Router /api/v1/ui/pages/off-week [get]
 func UiPagesOffWeek(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -178,7 +179,7 @@ func UiPagesOffWeek(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticD
 		lang := strings.TrimSpace(c.GetString("language"))
 		ui := f1logic.BuildUiPagesPayload(pages, season, lang)
 		pg, _ := ui["pages"].(map[string]any)
-		c.JSON(200, gin.H{
+		c.JSON(200, model.GenericObject{
 			"generated_at_utc": ui["generated_at_utc"],
 			"tz":               ui["tz"],
 			"format":           ui["format"],

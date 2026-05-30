@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"toinc_f1_backend/internal/model"
 	"toinc_f1_backend/internal/teamdrivercache"
 
 	"github.com/gin-gonic/gin"
@@ -19,21 +20,21 @@ import (
 // @Tags MiniProgram
 // @Produce json
 // @Param session_key query int true "OpenF1 session_key"
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 503 {object} ErrorResponse
+// @Success 200 {object} model.MpSessionResultsResponse
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/mp/session-results [get]
 func MpSessionResults(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "mp_session_results", "mysql_required", nil)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mysql_required"})
 			return
 		}
 
 		sessionKey := toIntQuery(c, "session_key", 0)
 		if sessionKey <= 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": "session_key_required"})
+			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: "session_key_required"})
 			return
 		}
 
@@ -48,11 +49,15 @@ func MpSessionResults(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.Handler
 			WHERE session_key = ?
 		`, sessionKey).Scan(&rows).Error; err != nil {
 			LogReqError(c, "mp_session_results", "results_unavailable", err)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "results_unavailable"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "results_unavailable"})
 			return
 		}
 		if len(rows) == 0 {
-			c.JSON(200, gin.H{"ok": true, "session_key": sessionKey, "items": []any{}})
+			c.JSON(200, model.MpSessionResultsResponse{
+				Ok:         true,
+				SessionKey: sessionKey,
+				Items:      []model.MpSessionResultItem{},
+			})
 			return
 		}
 
@@ -120,7 +125,7 @@ func MpSessionResults(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.Handler
 			return baseURL + s
 		}
 
-		items := make([]any, 0, len(rows))
+		items := make([]model.MpSessionResultItem, 0, len(rows))
 		for _, r := range rows {
 			team := ""
 			avatar := ""
@@ -164,31 +169,31 @@ func MpSessionResults(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.Handler
 			}
 			sec := bestLapByDriver[r.DriverNumber]
 
-			items = append(items, gin.H{
-				"driver_number": r.DriverNumber,
-				"driver_name":   emptyToNil(driverName),
-				"full_name":     emptyToNil(fullName),
-				"position":      r.Position,
-				"team_name":     emptyToNil(team),
-				"team_color":    emptyToNil(teamColor),
-				"team_logo_url": emptyToNil(teamLogoURL),
-				"headshot_url":  emptyToNil(avatar),
-				"name_acronym":  emptyToNil(acr),
-				"lap_time":      emptyToNil(formatLapDurationSimple(sec)),
-				"lap_seconds": func() any {
-					if !(sec > 0) {
-						return nil
-					}
-					return math.Round(sec*1000) / 1000
-				}(),
+			var lapSeconds *float64
+			if sec > 0 {
+				v := math.Round(sec*1000) / 1000
+				lapSeconds = &v
+			}
+			items = append(items, model.MpSessionResultItem{
+				DriverNumber: r.DriverNumber,
+				DriverName:   emptyToNil(driverName),
+				FullName:     emptyToNil(fullName),
+				Position:     r.Position,
+				TeamName:     emptyToNil(team),
+				TeamColor:    emptyToNil(teamColor),
+				TeamLogoURL:  emptyToNil(teamLogoURL),
+				HeadshotURL:  emptyToNil(avatar),
+				NameAcronym:  emptyToNil(acr),
+				LapTime:      emptyToNil(formatLapDurationSimple(sec)),
+				LapSeconds:   lapSeconds,
 			})
 		}
 
-		c.JSON(200, gin.H{
-			"ok":               true,
-			"generated_at_utc": time.Now().UTC().Format(time.RFC3339Nano),
-			"session_key":      sessionKey,
-			"items":            items,
+		c.JSON(200, model.MpSessionResultsResponse{
+			Ok:             true,
+			GeneratedAtUTC: time.Now().UTC().Format(time.RFC3339Nano),
+			SessionKey:     sessionKey,
+			Items:          items,
 		})
 	}
 }

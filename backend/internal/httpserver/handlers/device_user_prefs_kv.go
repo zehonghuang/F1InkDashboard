@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"toinc_f1_backend/internal/model"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -14,22 +16,22 @@ import (
 // @Tags Device
 // @Produce json
 // @Param device_id path string true "设备 ID"
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 503 {object} ErrorResponse
+// @Success 200 {object} model.DeviceUserPrefsKVResponse
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 404 {object} model.ErrorResponse
+// @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/device/{device_id}/user_prefs_kv [get]
 func DeviceUserPrefsKV(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "device_user_prefs_kv", "mysql_required", nil)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mysql_required"})
 			return
 		}
 
 		deviceID := strings.TrimSpace(c.Param("device_id"))
 		if deviceID == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": "device_id_required"})
+			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: "device_id_required"})
 			return
 		}
 
@@ -56,12 +58,12 @@ func DeviceUserPrefsKV(db *gorm.DB) gin.HandlerFunc {
 			LIMIT 1
 		`, deviceID).Scan(&r).Error; err != nil {
 			LogReqError(c, "device_user_prefs_kv", "db_query_failed", err)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "db_query_failed"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "db_query_failed"})
 			return
 		}
 
 		if r.ID <= 0 {
-			c.JSON(http.StatusNotFound, gin.H{"ok": false, "error": "device_not_bound"})
+			c.JSON(http.StatusNotFound, model.ErrorResponse{Ok: false, Error: "device_not_bound"})
 			return
 		}
 
@@ -70,16 +72,32 @@ func DeviceUserPrefsKV(db *gorm.DB) gin.HandlerFunc {
 			teamKeys = []string{strings.TrimSpace(r.TeamName)}
 		}
 
-		c.JSON(http.StatusOK, gin.H{
-			"ok":               true,
-			"generated_at_utc": time.Now().UTC().Format(time.RFC3339Nano),
-			"device_id":        deviceID,
-			"kv": gin.H{
-				"nick":    emptyToNil(r.NickName),
-				"avatar":  emptyToNil(r.AvatarURL),
-				"team":    emptyToNil(r.TeamName),
-				"teams":   teamKeys,
-				"drivers": mpParseDriverNumbers(r.DriverNumbers),
+		nick := strings.TrimSpace(r.NickName)
+		var nickPtr *string
+		if nick != "" {
+			nickPtr = &nick
+		}
+		avatar := strings.TrimSpace(r.AvatarURL)
+		var avatarPtr *string
+		if avatar != "" {
+			avatarPtr = &avatar
+		}
+		team := strings.TrimSpace(r.TeamName)
+		var teamPtr *string
+		if team != "" {
+			teamPtr = &team
+		}
+
+		c.JSON(http.StatusOK, model.DeviceUserPrefsKVResponse{
+			Ok:             true,
+			GeneratedAtUTC: time.Now().UTC().Format(time.RFC3339Nano),
+			DeviceID:       deviceID,
+			KV: model.DeviceUserPrefsKV{
+				Nick:    nickPtr,
+				Avatar:  avatarPtr,
+				Team:    teamPtr,
+				Teams:   teamKeys,
+				Drivers: mpParseDriverNumbers(r.DriverNumbers),
 			},
 		})
 	}

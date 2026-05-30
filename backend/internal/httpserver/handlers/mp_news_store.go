@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"toinc_f1_backend/internal/model"
 )
 
 var errMpNewsNotFound = errors.New("mp_news_not_found")
@@ -41,20 +43,20 @@ func mpNewsSafeID(id string) bool {
 	return true
 }
 
-func mpNewsLoadIndex(staticDir string, now time.Time) ([]mpNewsItem, error) {
+func mpNewsLoadIndex(staticDir string, now time.Time) ([]model.MpNewsItem, error) {
 	staticDir = strings.TrimSpace(staticDir)
 	if staticDir == "" {
-		return []mpNewsItem{}, nil
+		return []model.MpNewsItem{}, nil
 	}
 	p := mpNewsIndexPath(staticDir)
 	b, err := os.ReadFile(p)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return []mpNewsItem{}, nil
+			return []model.MpNewsItem{}, nil
 		}
 		return nil, err
 	}
-	var items []mpNewsItem
+	var items []model.MpNewsItem
 	if err := json.Unmarshal(b, &items); err != nil {
 		return nil, err
 	}
@@ -72,7 +74,7 @@ func mpNewsLoadIndex(staticDir string, now time.Time) ([]mpNewsItem, error) {
 	return items, nil
 }
 
-func mpNewsLoadItem(staticDir, id string, now time.Time) (*mpNewsItem, error) {
+func mpNewsLoadItem(staticDir, id string, now time.Time) (*model.MpNewsItem, error) {
 	staticDir = strings.TrimSpace(staticDir)
 	id = strings.TrimSpace(id)
 	if staticDir == "" || id == "" {
@@ -89,11 +91,10 @@ func mpNewsLoadItem(staticDir, id string, now time.Time) (*mpNewsItem, error) {
 		}
 		return nil, err
 	}
-	var it mpNewsItem
+	var it model.MpNewsItem
 	if err := json.Unmarshal(b, &it); err != nil {
 		return nil, err
 	}
 	it.TimeText = mpRelativeTime(it.PublishedAt, now)
 	return &it, nil
 }
-

@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"toinc_f1_backend/internal/model"
 
 	"github.com/gin-gonic/gin"
 )
@@ -37,28 +38,29 @@ func ChartsDriverLatestPng(staticDir string) gin.HandlerFunc {
 // @Description |
 //   - 若图表不存在返回 {ok:true, found:false}
 //   - 若存在则返回静态 JSON 文件的内容（结构透传）
+//
 // @Tags Charts
 // @Produce json
 // @Param driver_number path int true "车手号码"
-// @Success 200 {object} GenericObject
+// @Success 200 {object} model.GenericObject
 // @Router /api/v1/charts/driver/{driver_number}/latest.json [get]
 func ChartsDriverLatestJSON(staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		dn, _ := strconv.Atoi(c.Param("driver_number"))
 		p, ok := pickLatestChart(staticDir, dn)
 		if !ok {
-			c.JSON(200, gin.H{"ok": true, "found": false})
+			c.JSON(200, model.GenericObject{"ok": true, "found": false})
 			return
 		}
 		sidecar := strings.TrimSuffix(p, filepath.Ext(p)) + ".json"
 		b, err := os.ReadFile(sidecar)
 		if err != nil {
-			c.JSON(200, gin.H{"ok": true, "found": false})
+			c.JSON(200, model.GenericObject{"ok": true, "found": false})
 			return
 		}
 		var v any
 		if err := json.Unmarshal(b, &v); err != nil {
-			c.JSON(200, gin.H{"ok": true, "found": false})
+			c.JSON(200, model.GenericObject{"ok": true, "found": false})
 			return
 		}
 		c.JSON(200, v)

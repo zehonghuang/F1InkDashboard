@@ -1,4 +1,4 @@
-package handlers
+package model
 
 type MpNewsLayoutCode string
 
@@ -26,4 +26,3 @@ const (
 	MpNewsTypeCodeDriver     MpNewsTypeCode = "DRIVER"
 	MpNewsTypeCodeTech       MpNewsTypeCode = "TECH"
 )
-

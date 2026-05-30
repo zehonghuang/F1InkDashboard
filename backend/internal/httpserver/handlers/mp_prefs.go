@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"toinc_f1_backend/internal/model"
 	"toinc_f1_backend/internal/teamdrivercache"
 
 	"github.com/gin-gonic/gin"
@@ -26,9 +27,9 @@ type mpPrefsUpdateRequest struct {
 // @Produce json
 // @Security BearerAuth
 // @Param v query string false "返回格式版本（用于兼容旧版小程序）"
-// @Success 200 {object} GenericObject
-// @Failure 401 {object} ErrorResponse
-// @Failure 503 {object} ErrorResponse
+// @Success 200 {object} model.MpPrefsGetResponseV2
+// @Failure 401 {object} model.ErrorResponse
+// @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/mp/auth/prefs [get]
 func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -36,17 +37,17 @@ func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 
 		userIDAny, ok := c.Get("mp_user_id")
 		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "error": "unauthorized"})
+			c.JSON(http.StatusUnauthorized, model.ErrorResponse{Ok: false, Error: "unauthorized"})
 			return
 		}
 		userID, ok := userIDAny.(int64)
 		if !ok || userID <= 0 {
-			c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "error": "unauthorized"})
+			c.JSON(http.StatusUnauthorized, model.ErrorResponse{Ok: false, Error: "unauthorized"})
 			return
 		}
 		if db == nil {
 			LogReqError(c, "mp_prefs_get", "mysql_required", nil)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mysql_required"})
 			return
 		}
 
@@ -63,7 +64,7 @@ func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 			LIMIT 1
 		`, userID).Scan(&r).Error; err != nil {
 			LogReqError(c, "mp_prefs_get", "db_query_failed", err)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "db_query_failed"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "db_query_failed"})
 			return
 		}
 
@@ -74,8 +75,8 @@ func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 		driverNumbers := mpParseDriverNumbers(r.DriverNumbers)
 
 		teamColors := map[string]string{}
-		teamInfos := make([]gin.H, 0, len(teamKeys))
-		teamsV2 := gin.H{}
+		teamInfos := make([]model.MpPrefsTeamInfo, 0, len(teamKeys))
+		teamsV2 := map[string]model.MpPrefsTeamV2Item{}
 		if tdCache != nil {
 			for _, k := range teamKeys {
 				if ti, ok := tdCache.GetTeam(k); ok {
@@ -83,22 +84,22 @@ func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 					if color != "" {
 						teamColors[k] = color
 					}
-					teamInfos = append(teamInfos, gin.H{
-						"team_key":      ti.TeamName,
-						"team_name":     emptyToNil(strings.TrimSpace(ti.TeamName)),
-						"team_color":    emptyToNil(color),
-						"team_logo_url": emptyToNil(strings.TrimSpace(ti.TeamLogoURL)),
+					teamInfos = append(teamInfos, model.MpPrefsTeamInfo{
+						TeamKey:     ti.TeamName,
+						TeamName:    emptyToNil(strings.TrimSpace(ti.TeamName)),
+						TeamColor:   emptyToNil(color),
+						TeamLogoURL: emptyToNil(strings.TrimSpace(ti.TeamLogoURL)),
 					})
-					teamsV2[k] = gin.H{
-						"color":    emptyToNil(color),
-						"logo_url": emptyToNil(strings.TrimSpace(ti.TeamLogoURL)),
+					teamsV2[k] = model.MpPrefsTeamV2Item{
+						Color:   emptyToNil(color),
+						LogoURL: emptyToNil(strings.TrimSpace(ti.TeamLogoURL)),
 					}
 				}
 			}
 		}
 		driverColors := map[string]string{}
-		driverInfos := make([]gin.H, 0, len(driverNumbers))
-		driversV2 := gin.H{}
+		driverInfos := make([]model.MpPrefsDriverInfo, 0, len(driverNumbers))
+		driversV2 := map[string]model.MpPrefsDriverV2Item{}
 		if tdCache != nil {
 			for _, n := range driverNumbers {
 				if di, ok := tdCache.GetDriver(n); ok {
@@ -106,14 +107,14 @@ func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 					if color != "" {
 						driverColors[strconv.Itoa(n)] = color
 					}
-					driverInfos = append(driverInfos, gin.H{
-						"driver_number":  di.DriverNumber,
-						"full_name":      emptyToNil(strings.TrimSpace(di.FullName)),
-						"broadcast_name": emptyToNil(strings.TrimSpace(di.BroadcastName)),
-						"name_acronym":   emptyToNil(strings.TrimSpace(di.NameAcronym)),
-						"headshot_url":   emptyToNil(strings.TrimSpace(di.HeadshotURL)),
-						"team_name":      emptyToNil(strings.TrimSpace(di.TeamName)),
-						"team_color":     emptyToNil(color),
+					driverInfos = append(driverInfos, model.MpPrefsDriverInfo{
+						DriverNumber:  di.DriverNumber,
+						FullName:      emptyToNil(strings.TrimSpace(di.FullName)),
+						BroadcastName: emptyToNil(strings.TrimSpace(di.BroadcastName)),
+						NameAcronym:   emptyToNil(strings.TrimSpace(di.NameAcronym)),
+						HeadshotURL:   emptyToNil(strings.TrimSpace(di.HeadshotURL)),
+						TeamName:      emptyToNil(strings.TrimSpace(di.TeamName)),
+						TeamColor:     emptyToNil(color),
 					})
 
 					name := strings.TrimSpace(di.FullName)
@@ -123,42 +124,42 @@ func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 					if name == "" {
 						name = strings.TrimSpace(di.NameAcronym)
 					}
-					driversV2[strconv.Itoa(di.DriverNumber)] = gin.H{
-						"name":         emptyToNil(name),
-						"acr":          emptyToNil(strings.TrimSpace(di.NameAcronym)),
-						"headshot_url": emptyToNil(strings.TrimSpace(di.HeadshotURL)),
-						"team_key":     emptyToNil(strings.TrimSpace(di.TeamName)),
-						"color":        emptyToNil(color),
+					driversV2[strconv.Itoa(di.DriverNumber)] = model.MpPrefsDriverV2Item{
+						Name:        emptyToNil(name),
+						ACR:         emptyToNil(strings.TrimSpace(di.NameAcronym)),
+						HeadshotURL: emptyToNil(strings.TrimSpace(di.HeadshotURL)),
+						TeamKey:     emptyToNil(strings.TrimSpace(di.TeamName)),
+						Color:       emptyToNil(color),
 					}
 				}
 			}
 		}
 
 		if v != "1" {
-			c.JSON(http.StatusOK, gin.H{
-				"ok":               true,
-				"generated_at_utc": time.Now().UTC().Format(time.RFC3339Nano),
-				"prefs": gin.H{
-					"team_keys":      teamKeys,
-					"driver_numbers": driverNumbers,
-					"teams":          teamsV2,
-					"drivers":        driversV2,
+			c.JSON(http.StatusOK, model.MpPrefsGetResponseV2{
+				Ok:             true,
+				GeneratedAtUTC: time.Now().UTC().Format(time.RFC3339Nano),
+				Prefs: model.MpPrefsV2Prefs{
+					TeamKeys:      teamKeys,
+					DriverNumbers: driverNumbers,
+					Teams:         teamsV2,
+					Drivers:       driversV2,
 				},
 			})
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{
-			"ok":               true,
-			"generated_at_utc": time.Now().UTC().Format(time.RFC3339Nano),
-			"prefs": gin.H{
-				"team_name":      emptyToNil(strings.TrimSpace(r.TeamName)),
-				"team_keys":      teamKeys,
-				"driver_numbers": driverNumbers,
-				"team_colors":    teamColors,
-				"driver_colors":  driverColors,
-				"team_infos":     teamInfos,
-				"driver_infos":   driverInfos,
+		c.JSON(http.StatusOK, model.MpPrefsGetResponseV1{
+			Ok:             true,
+			GeneratedAtUTC: time.Now().UTC().Format(time.RFC3339Nano),
+			Prefs: model.MpPrefsV1Prefs{
+				TeamName:      emptyToNil(strings.TrimSpace(r.TeamName)),
+				TeamKeys:      teamKeys,
+				DriverNumbers: driverNumbers,
+				TeamColors:    teamColors,
+				DriverColors:  driverColors,
+				TeamInfos:     teamInfos,
+				DriverInfos:   driverInfos,
 			},
 		})
 	}
@@ -172,10 +173,10 @@ func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 // @Security BearerAuth
 // @Param v query string false "返回格式版本（用于兼容旧版小程序）"
 // @Param body body mpPrefsUpdateRequest true "更新内容"
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 503 {object} ErrorResponse
+// @Success 200 {object} model.MpPrefsUpdateResponseV2
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 401 {object} model.ErrorResponse
+// @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/mp/auth/prefs [put]
 func MpPrefsUpdate(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -183,29 +184,29 @@ func MpPrefsUpdate(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFun
 
 		userIDAny, ok := c.Get("mp_user_id")
 		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "error": "unauthorized"})
+			c.JSON(http.StatusUnauthorized, model.ErrorResponse{Ok: false, Error: "unauthorized"})
 			return
 		}
 		userID, ok := userIDAny.(int64)
 		if !ok || userID <= 0 {
-			c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "error": "unauthorized"})
+			c.JSON(http.StatusUnauthorized, model.ErrorResponse{Ok: false, Error: "unauthorized"})
 			return
 		}
 		if db == nil {
 			LogReqError(c, "mp_prefs_update", "mysql_required", nil)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mysql_required"})
 			return
 		}
 
 		var req mpPrefsUpdateRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": "bad_json"})
+			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: "bad_json"})
 			return
 		}
 
 		team := strings.TrimSpace(req.TeamName)
 		if len(team) > 64 {
-			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": "team_name_too_long"})
+			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: "team_name_too_long"})
 			return
 		}
 
@@ -273,13 +274,13 @@ func MpPrefsUpdate(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFun
 			WHERE id = ?
 		`, teamName, teamsJSON, driversJSON, userID).Error; err != nil {
 			LogReqError(c, "mp_prefs_update", "db_exec_failed", err)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "db_exec_failed"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "db_exec_failed"})
 			return
 		}
 
 		teamColors := map[string]string{}
-		teamInfos := make([]gin.H, 0, len(outTeams))
-		teamsV2 := gin.H{}
+		teamInfos := make([]model.MpPrefsTeamInfo, 0, len(outTeams))
+		teamsV2 := map[string]model.MpPrefsTeamV2Item{}
 		if tdCache != nil {
 			for _, k := range outTeams {
 				if ti, ok := tdCache.GetTeam(k); ok {
@@ -287,22 +288,22 @@ func MpPrefsUpdate(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFun
 					if color != "" {
 						teamColors[k] = color
 					}
-					teamInfos = append(teamInfos, gin.H{
-						"team_key":      ti.TeamName,
-						"team_name":     emptyToNil(strings.TrimSpace(ti.TeamName)),
-						"team_color":    emptyToNil(color),
-						"team_logo_url": emptyToNil(strings.TrimSpace(ti.TeamLogoURL)),
+					teamInfos = append(teamInfos, model.MpPrefsTeamInfo{
+						TeamKey:     ti.TeamName,
+						TeamName:    emptyToNil(strings.TrimSpace(ti.TeamName)),
+						TeamColor:   emptyToNil(color),
+						TeamLogoURL: emptyToNil(strings.TrimSpace(ti.TeamLogoURL)),
 					})
-					teamsV2[k] = gin.H{
-						"color":    emptyToNil(color),
-						"logo_url": emptyToNil(strings.TrimSpace(ti.TeamLogoURL)),
+					teamsV2[k] = model.MpPrefsTeamV2Item{
+						Color:   emptyToNil(color),
+						LogoURL: emptyToNil(strings.TrimSpace(ti.TeamLogoURL)),
 					}
 				}
 			}
 		}
 		driverColors := map[string]string{}
-		driverInfos := make([]gin.H, 0, len(outDrivers))
-		driversV2 := gin.H{}
+		driverInfos := make([]model.MpPrefsDriverInfo, 0, len(outDrivers))
+		driversV2 := map[string]model.MpPrefsDriverV2Item{}
 		if tdCache != nil {
 			for _, n := range outDrivers {
 				if di, ok := tdCache.GetDriver(n); ok {
@@ -310,14 +311,14 @@ func MpPrefsUpdate(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFun
 					if color != "" {
 						driverColors[strconv.Itoa(n)] = color
 					}
-					driverInfos = append(driverInfos, gin.H{
-						"driver_number":  di.DriverNumber,
-						"full_name":      emptyToNil(strings.TrimSpace(di.FullName)),
-						"broadcast_name": emptyToNil(strings.TrimSpace(di.BroadcastName)),
-						"name_acronym":   emptyToNil(strings.TrimSpace(di.NameAcronym)),
-						"headshot_url":   emptyToNil(strings.TrimSpace(di.HeadshotURL)),
-						"team_name":      emptyToNil(strings.TrimSpace(di.TeamName)),
-						"team_color":     emptyToNil(color),
+					driverInfos = append(driverInfos, model.MpPrefsDriverInfo{
+						DriverNumber:  di.DriverNumber,
+						FullName:      emptyToNil(strings.TrimSpace(di.FullName)),
+						BroadcastName: emptyToNil(strings.TrimSpace(di.BroadcastName)),
+						NameAcronym:   emptyToNil(strings.TrimSpace(di.NameAcronym)),
+						HeadshotURL:   emptyToNil(strings.TrimSpace(di.HeadshotURL)),
+						TeamName:      emptyToNil(strings.TrimSpace(di.TeamName)),
+						TeamColor:     emptyToNil(color),
 					})
 
 					name := strings.TrimSpace(di.FullName)
@@ -327,40 +328,40 @@ func MpPrefsUpdate(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFun
 					if name == "" {
 						name = strings.TrimSpace(di.NameAcronym)
 					}
-					driversV2[strconv.Itoa(di.DriverNumber)] = gin.H{
-						"name":         emptyToNil(name),
-						"acr":          emptyToNil(strings.TrimSpace(di.NameAcronym)),
-						"headshot_url": emptyToNil(strings.TrimSpace(di.HeadshotURL)),
-						"team_key":     emptyToNil(strings.TrimSpace(di.TeamName)),
-						"color":        emptyToNil(color),
+					driversV2[strconv.Itoa(di.DriverNumber)] = model.MpPrefsDriverV2Item{
+						Name:        emptyToNil(name),
+						ACR:         emptyToNil(strings.TrimSpace(di.NameAcronym)),
+						HeadshotURL: emptyToNil(strings.TrimSpace(di.HeadshotURL)),
+						TeamKey:     emptyToNil(strings.TrimSpace(di.TeamName)),
+						Color:       emptyToNil(color),
 					}
 				}
 			}
 		}
 
 		if v != "1" {
-			c.JSON(http.StatusOK, gin.H{
-				"ok": true,
-				"prefs": gin.H{
-					"team_keys":      outTeams,
-					"driver_numbers": outDrivers,
-					"teams":          teamsV2,
-					"drivers":        driversV2,
+			c.JSON(http.StatusOK, model.MpPrefsUpdateResponseV2{
+				Ok: true,
+				Prefs: model.MpPrefsV2Prefs{
+					TeamKeys:      outTeams,
+					DriverNumbers: outDrivers,
+					Teams:         teamsV2,
+					Drivers:       driversV2,
 				},
 			})
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{
-			"ok": true,
-			"prefs": gin.H{
-				"team_name":      emptyToNil(teamName),
-				"team_keys":      outTeams,
-				"driver_numbers": outDrivers,
-				"team_colors":    teamColors,
-				"driver_colors":  driverColors,
-				"team_infos":     teamInfos,
-				"driver_infos":   driverInfos,
+		c.JSON(http.StatusOK, model.MpPrefsUpdateResponseV1{
+			Ok: true,
+			Prefs: model.MpPrefsV1Prefs{
+				TeamName:      emptyToNil(teamName),
+				TeamKeys:      outTeams,
+				DriverNumbers: outDrivers,
+				TeamColors:    teamColors,
+				DriverColors:  driverColors,
+				TeamInfos:     teamInfos,
+				DriverInfos:   driverInfos,
 			},
 		})
 	}

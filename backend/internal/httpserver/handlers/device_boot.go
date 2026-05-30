@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strings"
 
+	"toinc_f1_backend/internal/model"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -23,21 +25,21 @@ type deviceBootRequest struct {
 // @Accept json
 // @Produce json
 // @Param body body deviceBootRequest true "设备启动信息"
-// @Success 200 {object} OkResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 503 {object} ErrorResponse
+// @Success 200 {object} model.OkResponse
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/device/boot [post]
 func DeviceBoot(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "device_boot", "mysql_required", nil)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mysql_required"})
 			return
 		}
 
 		var req deviceBootRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": "bad_json"})
+			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: "bad_json"})
 			return
 		}
 
@@ -49,7 +51,7 @@ func DeviceBoot(db *gorm.DB) gin.HandlerFunc {
 		req.FwUserAgent = strings.TrimSpace(req.FwUserAgent)
 
 		if req.DeviceID == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": "device_id_required"})
+			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: "device_id_required"})
 			return
 		}
 
@@ -94,10 +96,10 @@ func DeviceBoot(db *gorm.DB) gin.HandlerFunc {
 				last_seen_at = UTC_TIMESTAMP(3)
 		`, req.DeviceID, deviceUUID, deviceKey, mac, boardType, fwUserAgent).Error; err != nil {
 			LogReqError(c, "device_boot", "db_exec_failed", err)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "db_exec_failed"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "db_exec_failed"})
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"ok": true})
+		c.JSON(http.StatusOK, model.OkResponse{Ok: true})
 	}
 }

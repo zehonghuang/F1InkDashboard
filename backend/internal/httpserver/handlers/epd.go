@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"toinc_f1_backend/internal/model"
+
 	xdraw "golang.org/x/image/draw"
 
 	"github.com/gin-gonic/gin"
@@ -33,8 +35,8 @@ type epdFrame struct {
 // @Param h query int false "目标高度像素（1-1200）" default(1)
 // @Param dither query string false "抖动开关：传 1/true 开启"
 // @Success 200 {file} file
-// @Failure 400 {object} ErrorResponse
-// @Failure 502 {object} ErrorResponse
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 502 {object} model.ErrorResponse
 // @Router /api/v1/epd/frame.bin [get]
 func EpdFrameBin() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -55,8 +57,8 @@ func EpdFrameBin() gin.HandlerFunc {
 // @Param h query int false "目标高度像素（1-1200）" default(1)
 // @Param dither query string false "抖动开关：传 1/true 开启"
 // @Success 200 {file} file
-// @Failure 400 {object} ErrorResponse
-// @Failure 502 {object} ErrorResponse
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 502 {object} model.ErrorResponse
 // @Router /api/v1/epd/frame.png [get]
 func EpdFramePng() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -71,7 +73,7 @@ func EpdFramePng() gin.HandlerFunc {
 func buildEpdFrameFromQuery(c *gin.Context) (epdFrame, bool) {
 	pngURL := strings.TrimSpace(c.Query("png_url"))
 	if pngURL == "" {
-		c.JSON(400, gin.H{"ok": false, "error": "missing_png_url"})
+		c.JSON(400, model.ErrorResponse{Ok: false, Error: "missing_png_url"})
 		return epdFrame{}, false
 	}
 	w := parseIntClamp(c.Query("w"), 1, 1200, 1)
@@ -81,7 +83,7 @@ func buildEpdFrameFromQuery(c *gin.Context) (epdFrame, bool) {
 
 	frame, err := buildEpdFrame(pngURL, w, h, useDither)
 	if err != nil {
-		c.JSON(502, gin.H{"ok": false, "error": "fetch_or_decode_failed"})
+		c.JSON(502, model.ErrorResponse{Ok: false, Error: "fetch_or_decode_failed"})
 		return epdFrame{}, false
 	}
 	return frame, true

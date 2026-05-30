@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"toinc_f1_backend/internal/f1db"
+	"toinc_f1_backend/internal/model"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -20,16 +21,16 @@ import (
 // @Param tz query string false "IANA 时区名称" default(Asia/Shanghai)
 // @Param season query int false "赛季年份" default(2026)
 // @Param round query int true "分站 round（1 开始）"
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 503 {object} ErrorResponse
+// @Success 200 {object} model.MpRaceSessionsResponse
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 404 {object} model.ErrorResponse
+// @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/mp/race-sessions [get]
 func MpRaceSessions(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "mp_race_sessions", "mysql_required", nil)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mysql_required"})
 			return
 		}
 
@@ -45,7 +46,7 @@ func MpRaceSessions(db *gorm.DB) gin.HandlerFunc {
 		season := toIntQuery(c, "season", 2026)
 		round := toIntQuery(c, "round", 0)
 		if round <= 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": "round_required"})
+			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: "round_required"})
 			return
 		}
 
@@ -53,7 +54,7 @@ func MpRaceSessions(db *gorm.DB) gin.HandlerFunc {
 		scheduleJSON, err := f1db.OpenF1ScheduleJSON(db, season, lang)
 		if err != nil {
 			LogReqError(c, "mp_race_sessions", "schedule_unavailable", err)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "schedule_unavailable"})
 			return
 		}
 		races := extractScheduleRaces(scheduleJSON)
@@ -67,7 +68,7 @@ func MpRaceSessions(db *gorm.DB) gin.HandlerFunc {
 			break
 		}
 		if race == nil {
-			c.JSON(http.StatusNotFound, gin.H{"ok": false, "error": "race_not_found"})
+			c.JSON(http.StatusNotFound, model.ErrorResponse{Ok: false, Error: "race_not_found"})
 			return
 		}
 
@@ -92,7 +93,7 @@ func MpRaceSessions(db *gorm.DB) gin.HandlerFunc {
 		type tmpItem struct {
 			Dt   time.Time
 			Done bool
-			Obj  any
+			Obj  model.MpRaceSessionItem
 		}
 		tmp := make([]tmpItem, 0, len(specs))
 		for _, sp := range specs {
@@ -109,21 +110,25 @@ func MpRaceSessions(db *gorm.DB) gin.HandlerFunc {
 			}
 			disabled := status != "done"
 
-			tmp = append(tmp, tmpItem{Dt: dtUTC, Done: status == "done", Obj: gin.H{
-				"key":         sp.Key,
-				"name_cn":     sp.NameCN,
-				"name_en":     sp.NameEN,
-				"start_utc":   dtUTC.Format(time.RFC3339Nano),
-				"start_local": dtUTC.In(loc).Format("01.02 15:04"),
-				"status":      status,
-				"disabled":    disabled,
-				"openf1_session_key": func() any {
-					if sk <= 0 {
-						return nil
-					}
-					return sk
-				}(),
-			}})
+			var skOut *int
+			if sk > 0 {
+				x := sk
+				skOut = &x
+			}
+			tmp = append(tmp, tmpItem{
+				Dt:   dtUTC,
+				Done: status == "done",
+				Obj: model.MpRaceSessionItem{
+					Key:              sp.Key,
+					NameCN:           sp.NameCN,
+					NameEN:           sp.NameEN,
+					StartUTC:         dtUTC.Format(time.RFC3339Nano),
+					StartLocal:       dtUTC.In(loc).Format("01.02 15:04"),
+					Status:           status,
+					Disabled:         disabled,
+					OpenF1SessionKey: skOut,
+				},
+			})
 		}
 
 		upcoming := make([]tmpItem, 0, len(tmp))
@@ -141,7 +146,7 @@ func MpRaceSessions(db *gorm.DB) gin.HandlerFunc {
 		sort.SliceStable(doneItems, func(i, j int) bool {
 			return doneItems[i].Dt.After(doneItems[j].Dt)
 		})
-		out := make([]any, 0, len(tmp))
+		out := make([]model.MpRaceSessionItem, 0, len(tmp))
 		for _, it := range upcoming {
 			out = append(out, it.Obj)
 		}
@@ -149,14 +154,14 @@ func MpRaceSessions(db *gorm.DB) gin.HandlerFunc {
 			out = append(out, it.Obj)
 		}
 
-		c.JSON(200, gin.H{
-			"ok":               true,
-			"generated_at_utc": time.Now().UTC().Format(time.RFC3339Nano),
-			"season":           season,
-			"round":            round,
-			"race_name":        strings.TrimSpace(fmt.Sprintf("%v", race["raceName"])),
-			"tz":               tzName,
-			"sessions":         out,
+		c.JSON(200, model.MpRaceSessionsResponse{
+			Ok:             true,
+			GeneratedAtUTC: time.Now().UTC().Format(time.RFC3339Nano),
+			Season:         season,
+			Round:          round,
+			RaceName:       strings.TrimSpace(fmt.Sprintf("%v", race["raceName"])),
+			TZ:             tzName,
+			Sessions:       out,
 		})
 	}
 }

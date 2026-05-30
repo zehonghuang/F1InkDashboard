@@ -38,7 +38,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     }
                 }
@@ -104,19 +104,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.OkResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.OkResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -145,25 +145,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.DeviceUserPrefsKVResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -218,13 +218,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -279,13 +279,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -346,19 +346,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -413,19 +413,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -488,19 +488,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -536,13 +536,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpArchiveResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -578,25 +578,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpAuthUploadAvatarResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -635,25 +635,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpAuthBindDeviceResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -687,25 +687,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.MpAuthLoginResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpAuthLoginResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -729,13 +729,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.OkResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.OkResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -759,19 +759,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpAuthMeResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -804,19 +804,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpPrefsGetResponseV2"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -859,25 +859,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpPrefsUpdateResponseV2"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -916,25 +916,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.OkResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.OkResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -977,13 +977,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsListResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -1019,25 +1019,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsDetailResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -1080,25 +1080,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpRaceSessionsResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -1127,19 +1127,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpSessionResultsResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -1195,19 +1195,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpTelemetryControlsResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -1263,19 +1263,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpTelemetrySectorControlsResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -1312,7 +1312,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.NewsIngestJSONBody"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.NewsIngestJSONBody"
                         }
                     }
                 ],
@@ -1320,19 +1320,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.OkResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.OkResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -1387,19 +1387,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.OkResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.OkResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -1448,19 +1448,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.OkResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.OkResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -1480,7 +1480,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.NewsWsStatusResponse"
                         }
                     }
                 }
@@ -1517,7 +1517,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     }
                 ],
@@ -1525,19 +1525,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.OkResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.OkResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -1557,7 +1557,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.OpenF1StatusResponse"
                         }
                     }
                 }
@@ -1607,19 +1607,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -1668,19 +1668,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -1729,19 +1729,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -1778,7 +1778,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.WechatPayJSAPIPrepayRequest"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.WechatPayJSAPIPrepayRequest"
                         }
                     }
                 ],
@@ -1786,25 +1786,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.WechatPayJSAPIPrepayResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -1858,7 +1858,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     }
                 ],
@@ -1866,25 +1866,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.WechatPayNotifyResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.WechatPayNotifyResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.WechatPayNotifyResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.WechatPayNotifyResponse"
                         }
                     }
                 }
@@ -1924,25 +1924,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.WechatPayQueryOrderResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -1983,25 +1983,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -2035,25 +2035,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -2101,25 +2101,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -2168,25 +2168,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -2234,25 +2234,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -2286,25 +2286,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -2324,19 +2324,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -2386,19 +2386,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -2447,19 +2447,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -2508,19 +2508,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.GenericObject"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -2549,13 +2549,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.WsBroadcastResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.WsBroadcastResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -2582,13 +2582,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.WsBroadcastResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.WsBroadcastResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
                         }
                     }
                 }
@@ -2608,7 +2608,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.WsStatusResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.WsStatusResponse"
                         }
                     }
                 }
@@ -2628,7 +2628,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_httpserver_handlers.OkResponse"
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.OkResponse"
                         }
                     }
                 }
@@ -2699,114 +2699,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "internal_httpserver_handlers.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                },
-                "ok": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "internal_httpserver_handlers.GenericObject": {
-            "type": "object",
-            "additionalProperties": {}
-        },
-        "internal_httpserver_handlers.MpAuthLoginResponse": {
-            "type": "object",
-            "properties": {
-                "expiresAt": {
-                    "type": "string"
-                },
-                "ok": {
-                    "type": "boolean"
-                },
-                "token": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/internal_httpserver_handlers.MpAuthUser"
-                }
-            }
-        },
-        "internal_httpserver_handlers.MpAuthUser": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "openid": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_httpserver_handlers.NewsIngestJSONBody": {
-            "type": "object",
-            "properties": {
-                "payload": {
-                    "type": "object",
-                    "additionalProperties": {}
-                },
-                "topic": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_httpserver_handlers.OkResponse": {
-            "type": "object",
-            "properties": {
-                "ok": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "internal_httpserver_handlers.WechatPayJSAPIPrepayRequest": {
-            "type": "object",
-            "properties": {
-                "attach": {
-                    "type": "string"
-                },
-                "currency": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "openid": {
-                    "type": "string"
-                },
-                "out_trade_no": {
-                    "type": "string"
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
-        },
-        "internal_httpserver_handlers.WsBroadcastResponse": {
-            "type": "object",
-            "properties": {
-                "ok": {
-                    "type": "boolean"
-                },
-                "sent": {
-                    "type": "integer"
-                }
-            }
-        },
-        "internal_httpserver_handlers.WsStatusResponse": {
-            "type": "object",
-            "properties": {
-                "clients": {
-                    "type": "integer"
-                },
-                "ok": {
-                    "type": "boolean"
-                }
-            }
-        },
         "internal_httpserver_handlers.deviceBootRequest": {
             "type": "object",
             "properties": {
@@ -2874,6 +2766,936 @@ const docTemplate = `{
                 },
                 "team_name": {
                     "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.DeviceUserPrefsKV": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "drivers": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "nick": {
+                    "type": "string"
+                },
+                "team": {
+                    "type": "string"
+                },
+                "teams": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.DeviceUserPrefsKVResponse": {
+            "type": "object",
+            "properties": {
+                "device_id": {
+                    "type": "string"
+                },
+                "generated_at_utc": {
+                    "type": "string"
+                },
+                "kv": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.DeviceUserPrefsKV"
+                },
+                "ok": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.GenericObject": {
+            "type": "object",
+            "additionalProperties": {}
+        },
+        "toinc_f1_backend_internal_model.MpArchiveCircuit": {
+            "type": "object",
+            "properties": {
+                "circuit_id": {
+                    "type": "string"
+                },
+                "circuit_name": {
+                    "type": "string"
+                },
+                "map_image_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpArchiveFastestLap": {
+            "type": "object",
+            "properties": {
+                "driver_number": {
+                    "type": "integer"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "name_acronym": {
+                    "type": "string"
+                },
+                "seconds": {
+                    "type": "number"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpArchivePerson": {
+            "type": "object",
+            "properties": {
+                "driver_number": {
+                    "type": "integer"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "name_acronym": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpArchiveRaceItem": {
+            "type": "object",
+            "properties": {
+                "circuit": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.MpArchiveCircuit"
+                },
+                "date_iso": {
+                    "type": "string"
+                },
+                "date_local": {
+                    "type": "string"
+                },
+                "fastest_lap": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.MpArchiveFastestLap"
+                },
+                "openf1_race_session_key": {
+                    "type": "integer"
+                },
+                "race_name": {
+                    "type": "string"
+                },
+                "round": {
+                    "type": "integer"
+                },
+                "season": {
+                    "type": "integer"
+                },
+                "winner": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.MpArchivePerson"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpArchiveResponse": {
+            "type": "object",
+            "properties": {
+                "base_url": {
+                    "type": "string"
+                },
+                "generated_at_utc": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "races": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/toinc_f1_backend_internal_model.MpArchiveRaceItem"
+                    }
+                },
+                "season": {
+                    "type": "integer"
+                },
+                "tz": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpAuthBindDeviceResponse": {
+            "type": "object",
+            "properties": {
+                "device_id": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpAuthLoginResponse": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.MpAuthUser"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpAuthMeResponse": {
+            "type": "object",
+            "properties": {
+                "device_id": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "user": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.MpAuthMeUser"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpAuthMeUser": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "nick_name": {
+                    "type": "string"
+                },
+                "openid": {
+                    "type": "string"
+                },
+                "unionid": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpAuthUploadAvatarResponse": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "bytes": {
+                    "type": "integer"
+                },
+                "mime": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpAuthUser": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "openid": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpNewsContent": {
+            "type": "object",
+            "properties": {
+                "format_code": {
+                    "type": "string"
+                },
+                "nodes": {
+                    "type": "array",
+                    "items": {}
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpNewsDetailResponse": {
+            "type": "object",
+            "properties": {
+                "base_url": {
+                    "type": "string"
+                },
+                "generated_at_utc": {
+                    "type": "string"
+                },
+                "item": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsItem"
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "tz": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpNewsHeroDisplayCode": {
+            "type": "string",
+            "enum": [
+                "BANNER",
+                "CARD"
+            ],
+            "x-enum-varnames": [
+                "MpNewsHeroDisplayCodeBanner",
+                "MpNewsHeroDisplayCodeCard"
+            ]
+        },
+        "toinc_f1_backend_internal_model.MpNewsItem": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsContent"
+                },
+                "cover_url": {
+                    "type": "string"
+                },
+                "hero_display_code": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsHeroDisplayCode"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "layout_code": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsLayoutCode"
+                },
+                "pinned": {
+                    "type": "boolean"
+                },
+                "published_at": {
+                    "type": "string"
+                },
+                "source": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsSource"
+                },
+                "summary": {
+                    "type": "string"
+                },
+                "tag_text": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "time_text": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type_code": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsTypeCode"
+                },
+                "weight": {
+                    "type": "integer"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpNewsLayoutCode": {
+            "type": "string",
+            "enum": [
+                "BREAKING",
+                "HERO",
+                "FEATURE",
+                "STANDARD",
+                "BULLETIN"
+            ],
+            "x-enum-varnames": [
+                "MpNewsLayoutCodeBreaking",
+                "MpNewsLayoutCodeHero",
+                "MpNewsLayoutCodeFeature",
+                "MpNewsLayoutCodeStandard",
+                "MpNewsLayoutCodeBulletin"
+            ]
+        },
+        "toinc_f1_backend_internal_model.MpNewsListResponse": {
+            "type": "object",
+            "properties": {
+                "base_url": {
+                    "type": "string"
+                },
+                "generated_at_utc": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsItem"
+                    }
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "tz": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpNewsSource": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpNewsTypeCode": {
+            "type": "string",
+            "enum": [
+                "REGULATION",
+                "PADDOCK",
+                "STRATEGY",
+                "DRIVER",
+                "TECH"
+            ],
+            "x-enum-varnames": [
+                "MpNewsTypeCodeRegulation",
+                "MpNewsTypeCodePaddock",
+                "MpNewsTypeCodeStrategy",
+                "MpNewsTypeCodeDriver",
+                "MpNewsTypeCodeTech"
+            ]
+        },
+        "toinc_f1_backend_internal_model.MpPrefsDriverV2Item": {
+            "type": "object",
+            "properties": {
+                "acr": {
+                    "type": "string"
+                },
+                "color": {
+                    "type": "string"
+                },
+                "headshot_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "team_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpPrefsGetResponseV2": {
+            "type": "object",
+            "properties": {
+                "generated_at_utc": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "prefs": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.MpPrefsV2Prefs"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpPrefsTeamV2Item": {
+            "type": "object",
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "logo_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpPrefsUpdateResponseV2": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean"
+                },
+                "prefs": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.MpPrefsV2Prefs"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpPrefsV2Prefs": {
+            "type": "object",
+            "properties": {
+                "driver_numbers": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "drivers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/toinc_f1_backend_internal_model.MpPrefsDriverV2Item"
+                    }
+                },
+                "team_keys": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "teams": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/toinc_f1_backend_internal_model.MpPrefsTeamV2Item"
+                    }
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpRaceSessionItem": {
+            "type": "object",
+            "properties": {
+                "disabled": {
+                    "type": "boolean"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "name_cn": {
+                    "type": "string"
+                },
+                "name_en": {
+                    "type": "string"
+                },
+                "openf1_session_key": {
+                    "type": "integer"
+                },
+                "start_local": {
+                    "type": "string"
+                },
+                "start_utc": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpRaceSessionsResponse": {
+            "type": "object",
+            "properties": {
+                "generated_at_utc": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "race_name": {
+                    "type": "string"
+                },
+                "round": {
+                    "type": "integer"
+                },
+                "season": {
+                    "type": "integer"
+                },
+                "sessions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/toinc_f1_backend_internal_model.MpRaceSessionItem"
+                    }
+                },
+                "tz": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpSessionResultItem": {
+            "type": "object",
+            "properties": {
+                "driver_name": {
+                    "type": "string"
+                },
+                "driver_number": {
+                    "type": "integer"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "headshot_url": {
+                    "type": "string"
+                },
+                "lap_seconds": {
+                    "type": "number"
+                },
+                "lap_time": {
+                    "type": "string"
+                },
+                "name_acronym": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "team_color": {
+                    "type": "string"
+                },
+                "team_logo_url": {
+                    "type": "string"
+                },
+                "team_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpSessionResultsResponse": {
+            "type": "object",
+            "properties": {
+                "generated_at_utc": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/toinc_f1_backend_internal_model.MpSessionResultItem"
+                    }
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "session_key": {
+                    "type": "integer"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpTelemetryControlsPoint": {
+            "type": "object",
+            "properties": {
+                "brake": {
+                    "type": "integer"
+                },
+                "t": {
+                    "type": "number"
+                },
+                "throttle": {
+                    "type": "integer"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpTelemetryControlsResponse": {
+            "type": "object",
+            "properties": {
+                "driver_number": {
+                    "type": "integer"
+                },
+                "generated_at_utc": {
+                    "type": "string"
+                },
+                "lap_end_utc": {
+                    "type": "string"
+                },
+                "lap_mode": {
+                    "type": "string"
+                },
+                "lap_number": {
+                    "type": "integer"
+                },
+                "lap_start_utc": {
+                    "type": "string"
+                },
+                "lap_time": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "points": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/toinc_f1_backend_internal_model.MpTelemetryControlsPoint"
+                    }
+                },
+                "session_key": {
+                    "type": "integer"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpTelemetrySectorControlsPoint": {
+            "type": "object",
+            "properties": {
+                "brake": {
+                    "type": "number"
+                },
+                "sector": {
+                    "type": "integer"
+                },
+                "speed": {
+                    "type": "number"
+                },
+                "t_ms": {
+                    "type": "integer"
+                },
+                "throttle": {
+                    "type": "number"
+                },
+                "x": {
+                    "type": "number"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpTelemetrySectorControlsResponse": {
+            "type": "object",
+            "properties": {
+                "brake": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "driver_number": {
+                    "type": "integer"
+                },
+                "generated_at_utc": {
+                    "type": "string"
+                },
+                "lap_mode": {
+                    "type": "string"
+                },
+                "lap_number": {
+                    "type": "integer"
+                },
+                "lap_time": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "points": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/toinc_f1_backend_internal_model.MpTelemetrySectorControlsPoint"
+                    }
+                },
+                "points_count": {
+                    "type": "integer"
+                },
+                "s1_end_i": {
+                    "type": "integer"
+                },
+                "s2_end_i": {
+                    "type": "integer"
+                },
+                "session_key": {
+                    "type": "integer"
+                },
+                "speed": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "throttle": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "x": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "x_labels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "x_max": {
+                    "type": "integer"
+                },
+                "x_min": {
+                    "type": "integer"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.NewsIngestJSONBody": {
+            "type": "object",
+            "properties": {
+                "payload": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "topic": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.NewsWsClients": {
+            "type": "object",
+            "properties": {
+                "ws": {
+                    "type": "integer"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.NewsWsStatusResponse": {
+            "type": "object",
+            "properties": {
+                "clients": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.NewsWsClients"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "running": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.OkResponse": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.OpenF1Clients": {
+            "type": "object",
+            "properties": {
+                "ws_fw": {
+                    "type": "integer"
+                },
+                "ws_raw": {
+                    "type": "integer"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.OpenF1StatusResponse": {
+            "type": "object",
+            "properties": {
+                "clients": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.OpenF1Clients"
+                },
+                "connected": {
+                    "type": "boolean"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "mode": {
+                    "type": "string"
+                },
+                "running": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.WechatPayJSAPIPrepayRequest": {
+            "type": "object",
+            "properties": {
+                "attach": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "openid": {
+                    "type": "string"
+                },
+                "out_trade_no": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.WechatPayJSAPIPrepayResponse": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean"
+                },
+                "params": {}
+            }
+        },
+        "toinc_f1_backend_internal_model.WechatPayNotifyResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.WechatPayQueryOrderResponse": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean"
+                },
+                "order": {}
+            }
+        },
+        "toinc_f1_backend_internal_model.WsBroadcastResponse": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean"
+                },
+                "sent": {
+                    "type": "integer"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.WsStatusResponse": {
+            "type": "object",
+            "properties": {
+                "clients": {
+                    "type": "integer"
+                },
+                "ok": {
+                    "type": "boolean"
                 }
             }
         }

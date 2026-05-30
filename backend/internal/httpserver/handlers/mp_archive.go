@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"toinc_f1_backend/internal/f1db"
+	"toinc_f1_backend/internal/model"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -23,14 +24,14 @@ import (
 // @Produce json
 // @Param tz query string false "IANA 时区名称" default(Asia/Shanghai)
 // @Param season query int false "赛季年份" default(2026)
-// @Success 200 {object} GenericObject
-// @Failure 503 {object} ErrorResponse
+// @Success 200 {object} model.MpArchiveResponse
+// @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/mp/archive [get]
 func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "mp_archive", "mysql_required", nil)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mysql_required"})
 			return
 		}
 
@@ -49,14 +50,14 @@ func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 		scheduleJSON, err := f1db.OpenF1ScheduleJSON(db, season, lang)
 		if err != nil {
 			LogReqError(c, "mp_archive", "schedule_unavailable", err)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "schedule_unavailable"})
 			return
 		}
 
 		races := extractScheduleRaces(scheduleJSON)
 		if races == nil {
 			LogReqError(c, "mp_archive", "schedule_unavailable", nil)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "schedule_unavailable"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "schedule_unavailable"})
 			return
 		}
 
@@ -248,7 +249,7 @@ func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 
 		type tmpItem struct {
 			Dt  time.Time
-			Obj any
+			Obj model.MpArchiveRaceItem
 		}
 		tmp := make([]tmpItem, 0, len(races))
 		for _, r := range races {
@@ -318,49 +319,49 @@ func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 			fastKey := fmt.Sprintf("%d:%d", sk, fast.DriverNumber)
 			fastInfo := drvByKey[fastKey]
 
-			tmp = append(tmp, tmpItem{Dt: startUTC, Obj: gin.H{
-				"season":     season,
-				"round":      round,
-				"race_name":  raceName,
-				"date_iso":   dateISO,
-				"date_local": dateLocal,
-				"openf1_race_session_key": func() any {
-					if sk <= 0 {
-						return nil
-					}
-					return sk
-				}(),
-				"circuit": gin.H{
-					"circuit_id":    circuitID,
-					"circuit_name":  circuitName,
-					"map_image_url": emptyToNil(mapURL),
+			var skOut *int
+			if sk > 0 {
+				x := sk
+				skOut = &x
+			}
+			var winDNOut *int
+			if winDN > 0 {
+				x := winDN
+				winDNOut = &x
+			}
+			var fastDNOut *int
+			if fast.DriverNumber > 0 {
+				x := fast.DriverNumber
+				fastDNOut = &x
+			}
+			var fastSecondsOut *float64
+			if fast.Seconds > 0 {
+				x := math.Round(fast.Seconds*1000) / 1000
+				fastSecondsOut = &x
+			}
+			tmp = append(tmp, tmpItem{Dt: startUTC, Obj: model.MpArchiveRaceItem{
+				Season:               season,
+				Round:                round,
+				RaceName:             raceName,
+				DateISO:              dateISO,
+				DateLocal:            dateLocal,
+				OpenF1RaceSessionKey: skOut,
+				Circuit: model.MpArchiveCircuit{
+					CircuitID:   circuitID,
+					CircuitName: circuitName,
+					MapImageURL: emptyToNil(mapURL),
 				},
-				"winner": gin.H{
-					"driver_number": func() any {
-						if winDN <= 0 {
-							return nil
-						}
-						return winDN
-					}(),
-					"full_name":    emptyToNil(winInfo.FullName),
-					"name_acronym": emptyToNil(winInfo.NameAcronym),
+				Winner: model.MpArchivePerson{
+					DriverNumber: winDNOut,
+					FullName:     emptyToNil(winInfo.FullName),
+					NameAcronym:  emptyToNil(winInfo.NameAcronym),
 				},
-				"fastest_lap": gin.H{
-					"driver_number": func() any {
-						if fast.DriverNumber <= 0 {
-							return nil
-						}
-						return fast.DriverNumber
-					}(),
-					"full_name":    emptyToNil(fastInfo.FullName),
-					"name_acronym": emptyToNil(fastInfo.NameAcronym),
-					"time":         emptyToNil(formatLapDuration(fast.Seconds)),
-					"seconds": func() any {
-						if !(fast.Seconds > 0) {
-							return nil
-						}
-						return math.Round(fast.Seconds*1000) / 1000
-					}(),
+				FastestLap: model.MpArchiveFastestLap{
+					DriverNumber: fastDNOut,
+					FullName:     emptyToNil(fastInfo.FullName),
+					NameAcronym:  emptyToNil(fastInfo.NameAcronym),
+					Time:         emptyToNil(formatLapDuration(fast.Seconds)),
+					Seconds:      fastSecondsOut,
 				},
 			}})
 		}
@@ -368,18 +369,18 @@ func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 		sort.Slice(tmp, func(i, j int) bool {
 			return tmp[i].Dt.After(tmp[j].Dt)
 		})
-		out := make([]any, 0, len(tmp))
+		out := make([]model.MpArchiveRaceItem, 0, len(tmp))
 		for _, it := range tmp {
 			out = append(out, it.Obj)
 		}
 
-		c.JSON(200, gin.H{
-			"ok":               true,
-			"generated_at_utc": time.Now().UTC().Format(time.RFC3339Nano),
-			"season":           season,
-			"tz":               tzName,
-			"base_url":         baseURL,
-			"races":            out,
+		c.JSON(200, model.MpArchiveResponse{
+			Ok:             true,
+			GeneratedAtUTC: time.Now().UTC().Format(time.RFC3339Nano),
+			Season:         season,
+			TZ:             tzName,
+			BaseURL:        baseURL,
+			Races:          out,
 		})
 	}
 }
@@ -567,12 +568,12 @@ func inferBaseURL(c *gin.Context) string {
 	return proto + "://" + host
 }
 
-func emptyToNil(s string) any {
+func emptyToNil(s string) *string {
 	s = strings.TrimSpace(s)
 	if s == "" {
 		return nil
 	}
-	return s
+	return &s
 }
 
 func uniqIntsLocal(in []int) []int {

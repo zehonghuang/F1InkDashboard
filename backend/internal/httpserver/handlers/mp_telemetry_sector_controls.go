@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"toinc_f1_backend/internal/f1db"
+	"toinc_f1_backend/internal/model"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -22,21 +23,21 @@ import (
 // @Param max_points query int false "最大采样点（0 表示默认策略，最大 20000）" default(0)
 // @Param lap query string false "选择圈：fastest/all 等" default(fastest)
 // @Param lap_number query int false "指定圈号"
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 503 {object} ErrorResponse
+// @Success 200 {object} model.MpTelemetrySectorControlsResponse
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/mp/telemetry/sector_controls [get]
 func MpTelemetrySectorControls(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "mp_telemetry_sector_controls", "mysql_required", nil)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mysql_required"})
 			return
 		}
 		sessionKey := toIntQuery(c, "session_key", 0)
 		driverNumber := toIntQuery(c, "driver_number", 0)
 		if sessionKey <= 0 || driverNumber <= 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": "session_key_and_driver_number_required"})
+			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: "session_key_and_driver_number_required"})
 			return
 		}
 
@@ -85,18 +86,19 @@ func MpTelemetrySectorControls(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		if chosenLapNumber <= 0 {
-			c.JSON(200, gin.H{
-				"ok":               true,
-				"generated_at_utc": time.Now().UTC().Format(time.RFC3339Nano),
-				"session_key":      sessionKey,
-				"driver_number":    driverNumber,
-				"lap_mode":         lapMode,
-				"lap_number":       nil,
-				"lap_time":         nil,
-				"x":                []string{"S1", "S2", "S3"},
-				"throttle":         []any{nil, nil, nil},
-				"brake":            []any{nil, nil, nil},
-				"speed":            []any{nil, nil, nil},
+			nil3 := []*float64{nil, nil, nil}
+			c.JSON(200, model.MpTelemetrySectorControlsResponse{
+				Ok:             true,
+				GeneratedAtUTC: time.Now().UTC().Format(time.RFC3339Nano),
+				SessionKey:     sessionKey,
+				DriverNumber:   driverNumber,
+				LapMode:        lapMode,
+				LapNumber:      nil,
+				LapTime:        nil,
+				X:              []string{"S1", "S2", "S3"},
+				Throttle:       nil3,
+				Brake:          nil3,
+				Speed:          nil3,
 			})
 			return
 		}
@@ -104,7 +106,7 @@ func MpTelemetrySectorControls(db *gorm.DB) gin.HandlerFunc {
 		sk := sessionKey
 		series, err := f1db.TelemetryLapControlsSeries(db, driverNumber, &sk, chosenLapNumber, maxPoints)
 		if err != nil {
-			c.JSON(502, gin.H{"ok": false, "error": "query_failed"})
+			c.JSON(502, model.ErrorResponse{Ok: false, Error: "query_failed"})
 			return
 		}
 
@@ -124,23 +126,27 @@ func MpTelemetrySectorControls(db *gorm.DB) gin.HandlerFunc {
 
 		points := p.Points
 		if len(points) == 0 {
-			c.JSON(200, gin.H{
-				"ok":               true,
-				"generated_at_utc": time.Now().UTC().Format(time.RFC3339Nano),
-				"session_key":      sessionKey,
-				"driver_number":    driverNumber,
-				"lap_mode":         lapMode,
-				"lap_number":       chosenLapNumber,
-				"lap_time": func() any {
-					if lapDurationSec > 0 {
-						return formatLapDurationSimple(lapDurationSec)
-					}
-					return nil
-				}(),
-				"x":        []string{"S1", "S2", "S3"},
-				"throttle": []any{nil, nil, nil},
-				"brake":    []any{nil, nil, nil},
-				"speed":    []any{nil, nil, nil},
+			nil3 := []*float64{nil, nil, nil}
+			lapNumberOut := chosenLapNumber
+			var lapTimeOut *string
+			if lapDurationSec > 0 {
+				s := formatLapDurationSimple(lapDurationSec)
+				if s != "" {
+					lapTimeOut = &s
+				}
+			}
+			c.JSON(200, model.MpTelemetrySectorControlsResponse{
+				Ok:             true,
+				GeneratedAtUTC: time.Now().UTC().Format(time.RFC3339Nano),
+				SessionKey:     sessionKey,
+				DriverNumber:   driverNumber,
+				LapMode:        lapMode,
+				LapNumber:      &lapNumberOut,
+				LapTime:        lapTimeOut,
+				X:              []string{"S1", "S2", "S3"},
+				Throttle:       nil3,
+				Brake:          nil3,
+				Speed:          nil3,
 			})
 			return
 		}
@@ -254,7 +260,7 @@ func MpTelemetrySectorControls(db *gorm.DB) gin.HandlerFunc {
 			}
 		}
 
-		numOrNil := func(v any) any {
+		numOrNil := func(v any) *float64 {
 			if v == nil {
 				return nil
 			}
@@ -262,10 +268,11 @@ func MpTelemetrySectorControls(db *gorm.DB) gin.HandlerFunc {
 			if !ok || math.IsNaN(f) {
 				return nil
 			}
-			return f
+			x := f
+			return &x
 		}
 
-		outPoints := make([]any, 0, len(points))
+		outPoints := make([]model.MpTelemetrySectorControlsPoint, 0, len(points))
 		for idx, pt := range points {
 			tms, ok := getTms(pt)
 			if !ok {
@@ -289,9 +296,9 @@ func MpTelemetrySectorControls(db *gorm.DB) gin.HandlerFunc {
 			x := float64(si) + progress
 			x = math.Round(x*10000) / 10000
 
-			var speed any = nil
-			var throttle any = nil
-			var brake any = nil
+			var speed *float64 = nil
+			var throttle *float64 = nil
+			var brake *float64 = nil
 			if len(pt) > 1 {
 				speed = numOrNil(pt[1])
 			}
@@ -302,36 +309,44 @@ func MpTelemetrySectorControls(db *gorm.DB) gin.HandlerFunc {
 				brake = numOrNil(pt[3])
 			}
 
-			outPoints = append(outPoints, gin.H{
-				"x":        x,
-				"sector":   sector,
-				"t_ms":     int(math.Round(tms)),
-				"speed":    speed,
-				"throttle": throttle,
-				"brake":    brake,
+			outPoints = append(outPoints, model.MpTelemetrySectorControlsPoint{
+				X:        x,
+				Sector:   sector,
+				TMs:      int(math.Round(tms)),
+				Speed:    speed,
+				Throttle: throttle,
+				Brake:    brake,
 			})
 		}
 
-		c.JSON(200, gin.H{
-			"ok":               true,
-			"generated_at_utc": time.Now().UTC().Format(time.RFC3339Nano),
-			"session_key":      sessionKey,
-			"driver_number":    driverNumber,
-			"lap_mode":         lapMode,
-			"lap_number":       chosenLapNumber,
-			"lap_time": func() any {
-				if lapDurationSec > 0 {
-					return formatLapDurationSimple(lapDurationSec)
-				}
-				return nil
-			}(),
-			"x_labels":     []string{"S1", "S2", "S3"},
-			"x_min":        0,
-			"x_max":        3,
-			"s1_end_i":     i1,
-			"s2_end_i":     i2,
-			"points_count": len(outPoints),
-			"points":       outPoints,
+		lapNumberOut := chosenLapNumber
+		var lapTimeOut *string
+		if lapDurationSec > 0 {
+			s := formatLapDurationSimple(lapDurationSec)
+			if s != "" {
+				lapTimeOut = &s
+			}
+		}
+		xMin := 0
+		xMax := 3
+		s1Out := i1
+		s2Out := i2
+		pc := len(outPoints)
+		c.JSON(200, model.MpTelemetrySectorControlsResponse{
+			Ok:             true,
+			GeneratedAtUTC: time.Now().UTC().Format(time.RFC3339Nano),
+			SessionKey:     sessionKey,
+			DriverNumber:   driverNumber,
+			LapMode:        lapMode,
+			LapNumber:      &lapNumberOut,
+			LapTime:        lapTimeOut,
+			XLabels:        []string{"S1", "S2", "S3"},
+			XMin:           &xMin,
+			XMax:           &xMax,
+			S1EndI:         &s1Out,
+			S2EndI:         &s2Out,
+			PointsCount:    &pc,
+			Points:         outPoints,
 		})
 	}
 }

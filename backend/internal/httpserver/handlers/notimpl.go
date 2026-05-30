@@ -1,10 +1,14 @@
 package handlers
 
-import "github.com/gin-gonic/gin"
+import (
+	"toinc_f1_backend/internal/model"
+
+	"github.com/gin-gonic/gin"
+)
 
 func RegisterCompatPlaceholders(r *gin.Engine) {
 	notImpl := func(c *gin.Context) {
-		c.JSON(501, gin.H{"ok": false, "error": "not_implemented"})
+		c.JSON(501, model.ErrorResponse{Ok: false, Error: "not_implemented"})
 	}
 
 	r.GET("/api/v1/news/breaking", notImpl)

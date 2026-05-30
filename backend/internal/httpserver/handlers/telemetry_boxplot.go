@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"toinc_f1_backend/internal/model"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -34,29 +36,29 @@ type boxplotStats struct {
 // @Param driver_numbers query string true "车手号码 CSV，例如 1,16,44"
 // @Param include_pit_out query int false "1 表示包含 pit out 圈" default(0)
 // @Param exclude_flags query int false "1 表示排除标记圈；0 表示不排除" default(1)
-// @Success 200 {object} GenericObject
-// @Failure 400 {object} ErrorResponse
-// @Failure 502 {object} ErrorResponse
-// @Failure 503 {object} ErrorResponse
+// @Success 200 {object} model.GenericObject
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 502 {object} model.ErrorResponse
+// @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/telemetry/lap_time_boxplot [get]
 func TelemetryLapTimeBoxplot(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "telemetry_lap_time_boxplot", "mysql_required", nil)
-			c.JSON(http.StatusServiceUnavailable, gin.H{"ok": false, "error": "mysql_required"})
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mysql_required"})
 			return
 		}
 
 		skS := strings.TrimSpace(c.Query("session_key"))
 		sk, err := strconv.Atoi(skS)
 		if err != nil || sk < 1 {
-			c.JSON(400, gin.H{"ok": false, "error": "bad_session_key"})
+			c.JSON(400, model.ErrorResponse{Ok: false, Error: "bad_session_key"})
 			return
 		}
 
 		driverNums, ok := parseCSVInts(strings.TrimSpace(c.Query("driver_numbers")))
 		if !ok || len(driverNums) == 0 {
-			c.JSON(400, gin.H{"ok": false, "error": "bad_driver_numbers"})
+			c.JSON(400, model.ErrorResponse{Ok: false, Error: "bad_driver_numbers"})
 			return
 		}
 		driverNums = uniqIntsLocal(driverNums)
@@ -145,11 +147,11 @@ func TelemetryLapTimeBoxplot(db *gorm.DB) gin.HandlerFunc {
 				}
 				q2 += " ORDER BY l.driver_number ASC, l.lap_duration ASC"
 				if err2 := db.Raw(q2, args...).Scan(&laps).Error; err2 != nil {
-					c.JSON(502, gin.H{"ok": false, "error": "query_failed"})
+					c.JSON(502, model.ErrorResponse{Ok: false, Error: "query_failed"})
 					return
 				}
 			} else {
-				c.JSON(502, gin.H{"ok": false, "error": "query_failed"})
+				c.JSON(502, model.ErrorResponse{Ok: false, Error: "query_failed"})
 				return
 			}
 		}
@@ -214,7 +216,7 @@ func TelemetryLapTimeBoxplot(db *gorm.DB) gin.HandlerFunc {
 			})
 		}
 
-		c.JSON(200, gin.H{
+		c.JSON(200, model.GenericObject{
 			"ok":          true,
 			"session_key": sk,
 			"metric":      "lap_duration",

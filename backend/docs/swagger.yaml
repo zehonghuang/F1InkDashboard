@@ -1,75 +1,5 @@
 basePath: /
 definitions:
-  internal_httpserver_handlers.ErrorResponse:
-    properties:
-      error:
-        type: string
-      ok:
-        type: boolean
-    type: object
-  internal_httpserver_handlers.GenericObject:
-    additionalProperties: {}
-    type: object
-  internal_httpserver_handlers.MpAuthLoginResponse:
-    properties:
-      expiresAt:
-        type: string
-      ok:
-        type: boolean
-      token:
-        type: string
-      user:
-        $ref: '#/definitions/internal_httpserver_handlers.MpAuthUser'
-    type: object
-  internal_httpserver_handlers.MpAuthUser:
-    properties:
-      id:
-        type: integer
-      openid:
-        type: string
-    type: object
-  internal_httpserver_handlers.NewsIngestJSONBody:
-    properties:
-      payload:
-        additionalProperties: {}
-        type: object
-      topic:
-        type: string
-    type: object
-  internal_httpserver_handlers.OkResponse:
-    properties:
-      ok:
-        type: boolean
-    type: object
-  internal_httpserver_handlers.WechatPayJSAPIPrepayRequest:
-    properties:
-      attach:
-        type: string
-      currency:
-        type: string
-      description:
-        type: string
-      openid:
-        type: string
-      out_trade_no:
-        type: string
-      total:
-        type: integer
-    type: object
-  internal_httpserver_handlers.WsBroadcastResponse:
-    properties:
-      ok:
-        type: boolean
-      sent:
-        type: integer
-    type: object
-  internal_httpserver_handlers.WsStatusResponse:
-    properties:
-      clients:
-        type: integer
-      ok:
-        type: boolean
-    type: object
   internal_httpserver_handlers.deviceBootRequest:
     properties:
       board_type:
@@ -115,6 +45,619 @@ definitions:
       team_name:
         type: string
     type: object
+  toinc_f1_backend_internal_model.DeviceUserPrefsKV:
+    properties:
+      avatar:
+        type: string
+      drivers:
+        items:
+          type: integer
+        type: array
+      nick:
+        type: string
+      team:
+        type: string
+      teams:
+        items:
+          type: string
+        type: array
+    type: object
+  toinc_f1_backend_internal_model.DeviceUserPrefsKVResponse:
+    properties:
+      device_id:
+        type: string
+      generated_at_utc:
+        type: string
+      kv:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.DeviceUserPrefsKV'
+      ok:
+        type: boolean
+    type: object
+  toinc_f1_backend_internal_model.ErrorResponse:
+    properties:
+      error:
+        type: string
+      ok:
+        type: boolean
+    type: object
+  toinc_f1_backend_internal_model.GenericObject:
+    additionalProperties: {}
+    type: object
+  toinc_f1_backend_internal_model.MpArchiveCircuit:
+    properties:
+      circuit_id:
+        type: string
+      circuit_name:
+        type: string
+      map_image_url:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpArchiveFastestLap:
+    properties:
+      driver_number:
+        type: integer
+      full_name:
+        type: string
+      name_acronym:
+        type: string
+      seconds:
+        type: number
+      time:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpArchivePerson:
+    properties:
+      driver_number:
+        type: integer
+      full_name:
+        type: string
+      name_acronym:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpArchiveRaceItem:
+    properties:
+      circuit:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.MpArchiveCircuit'
+      date_iso:
+        type: string
+      date_local:
+        type: string
+      fastest_lap:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.MpArchiveFastestLap'
+      openf1_race_session_key:
+        type: integer
+      race_name:
+        type: string
+      round:
+        type: integer
+      season:
+        type: integer
+      winner:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.MpArchivePerson'
+    type: object
+  toinc_f1_backend_internal_model.MpArchiveResponse:
+    properties:
+      base_url:
+        type: string
+      generated_at_utc:
+        type: string
+      ok:
+        type: boolean
+      races:
+        items:
+          $ref: '#/definitions/toinc_f1_backend_internal_model.MpArchiveRaceItem'
+        type: array
+      season:
+        type: integer
+      tz:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpAuthBindDeviceResponse:
+    properties:
+      device_id:
+        type: string
+      ok:
+        type: boolean
+    type: object
+  toinc_f1_backend_internal_model.MpAuthLoginResponse:
+    properties:
+      expiresAt:
+        type: string
+      ok:
+        type: boolean
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.MpAuthUser'
+    type: object
+  toinc_f1_backend_internal_model.MpAuthMeResponse:
+    properties:
+      device_id:
+        type: string
+      ok:
+        type: boolean
+      user:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.MpAuthMeUser'
+    type: object
+  toinc_f1_backend_internal_model.MpAuthMeUser:
+    properties:
+      avatar_url:
+        type: string
+      id:
+        type: integer
+      nick_name:
+        type: string
+      openid:
+        type: string
+      unionid:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpAuthUploadAvatarResponse:
+    properties:
+      avatar_url:
+        type: string
+      bytes:
+        type: integer
+      mime:
+        type: string
+      ok:
+        type: boolean
+    type: object
+  toinc_f1_backend_internal_model.MpAuthUser:
+    properties:
+      id:
+        type: integer
+      openid:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpNewsContent:
+    properties:
+      format_code:
+        type: string
+      nodes:
+        items: {}
+        type: array
+      text:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpNewsDetailResponse:
+    properties:
+      base_url:
+        type: string
+      generated_at_utc:
+        type: string
+      item:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsItem'
+      ok:
+        type: boolean
+      tz:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpNewsHeroDisplayCode:
+    enum:
+    - BANNER
+    - CARD
+    type: string
+    x-enum-varnames:
+    - MpNewsHeroDisplayCodeBanner
+    - MpNewsHeroDisplayCodeCard
+  toinc_f1_backend_internal_model.MpNewsItem:
+    properties:
+      content:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsContent'
+      cover_url:
+        type: string
+      hero_display_code:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsHeroDisplayCode'
+      id:
+        type: string
+      layout_code:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsLayoutCode'
+      pinned:
+        type: boolean
+      published_at:
+        type: string
+      source:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsSource'
+      summary:
+        type: string
+      tag_text:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      time_text:
+        type: string
+      title:
+        type: string
+      type_code:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsTypeCode'
+      weight:
+        type: integer
+    type: object
+  toinc_f1_backend_internal_model.MpNewsLayoutCode:
+    enum:
+    - BREAKING
+    - HERO
+    - FEATURE
+    - STANDARD
+    - BULLETIN
+    type: string
+    x-enum-varnames:
+    - MpNewsLayoutCodeBreaking
+    - MpNewsLayoutCodeHero
+    - MpNewsLayoutCodeFeature
+    - MpNewsLayoutCodeStandard
+    - MpNewsLayoutCodeBulletin
+  toinc_f1_backend_internal_model.MpNewsListResponse:
+    properties:
+      base_url:
+        type: string
+      generated_at_utc:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsItem'
+        type: array
+      ok:
+        type: boolean
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      tz:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpNewsSource:
+    properties:
+      name:
+        type: string
+      url:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpNewsTypeCode:
+    enum:
+    - REGULATION
+    - PADDOCK
+    - STRATEGY
+    - DRIVER
+    - TECH
+    type: string
+    x-enum-varnames:
+    - MpNewsTypeCodeRegulation
+    - MpNewsTypeCodePaddock
+    - MpNewsTypeCodeStrategy
+    - MpNewsTypeCodeDriver
+    - MpNewsTypeCodeTech
+  toinc_f1_backend_internal_model.MpPrefsDriverV2Item:
+    properties:
+      acr:
+        type: string
+      color:
+        type: string
+      headshot_url:
+        type: string
+      name:
+        type: string
+      team_key:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpPrefsGetResponseV2:
+    properties:
+      generated_at_utc:
+        type: string
+      ok:
+        type: boolean
+      prefs:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.MpPrefsV2Prefs'
+    type: object
+  toinc_f1_backend_internal_model.MpPrefsTeamV2Item:
+    properties:
+      color:
+        type: string
+      logo_url:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpPrefsUpdateResponseV2:
+    properties:
+      ok:
+        type: boolean
+      prefs:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.MpPrefsV2Prefs'
+    type: object
+  toinc_f1_backend_internal_model.MpPrefsV2Prefs:
+    properties:
+      driver_numbers:
+        items:
+          type: integer
+        type: array
+      drivers:
+        additionalProperties:
+          $ref: '#/definitions/toinc_f1_backend_internal_model.MpPrefsDriverV2Item'
+        type: object
+      team_keys:
+        items:
+          type: string
+        type: array
+      teams:
+        additionalProperties:
+          $ref: '#/definitions/toinc_f1_backend_internal_model.MpPrefsTeamV2Item'
+        type: object
+    type: object
+  toinc_f1_backend_internal_model.MpRaceSessionItem:
+    properties:
+      disabled:
+        type: boolean
+      key:
+        type: string
+      name_cn:
+        type: string
+      name_en:
+        type: string
+      openf1_session_key:
+        type: integer
+      start_local:
+        type: string
+      start_utc:
+        type: string
+      status:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpRaceSessionsResponse:
+    properties:
+      generated_at_utc:
+        type: string
+      ok:
+        type: boolean
+      race_name:
+        type: string
+      round:
+        type: integer
+      season:
+        type: integer
+      sessions:
+        items:
+          $ref: '#/definitions/toinc_f1_backend_internal_model.MpRaceSessionItem'
+        type: array
+      tz:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpSessionResultItem:
+    properties:
+      driver_name:
+        type: string
+      driver_number:
+        type: integer
+      full_name:
+        type: string
+      headshot_url:
+        type: string
+      lap_seconds:
+        type: number
+      lap_time:
+        type: string
+      name_acronym:
+        type: string
+      position:
+        type: integer
+      team_color:
+        type: string
+      team_logo_url:
+        type: string
+      team_name:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpSessionResultsResponse:
+    properties:
+      generated_at_utc:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/toinc_f1_backend_internal_model.MpSessionResultItem'
+        type: array
+      ok:
+        type: boolean
+      session_key:
+        type: integer
+    type: object
+  toinc_f1_backend_internal_model.MpTelemetryControlsPoint:
+    properties:
+      brake:
+        type: integer
+      t:
+        type: number
+      throttle:
+        type: integer
+    type: object
+  toinc_f1_backend_internal_model.MpTelemetryControlsResponse:
+    properties:
+      driver_number:
+        type: integer
+      generated_at_utc:
+        type: string
+      lap_end_utc:
+        type: string
+      lap_mode:
+        type: string
+      lap_number:
+        type: integer
+      lap_start_utc:
+        type: string
+      lap_time:
+        type: string
+      ok:
+        type: boolean
+      points:
+        items:
+          $ref: '#/definitions/toinc_f1_backend_internal_model.MpTelemetryControlsPoint'
+        type: array
+      session_key:
+        type: integer
+    type: object
+  toinc_f1_backend_internal_model.MpTelemetrySectorControlsPoint:
+    properties:
+      brake:
+        type: number
+      sector:
+        type: integer
+      speed:
+        type: number
+      t_ms:
+        type: integer
+      throttle:
+        type: number
+      x:
+        type: number
+    type: object
+  toinc_f1_backend_internal_model.MpTelemetrySectorControlsResponse:
+    properties:
+      brake:
+        items:
+          type: number
+        type: array
+      driver_number:
+        type: integer
+      generated_at_utc:
+        type: string
+      lap_mode:
+        type: string
+      lap_number:
+        type: integer
+      lap_time:
+        type: string
+      ok:
+        type: boolean
+      points:
+        items:
+          $ref: '#/definitions/toinc_f1_backend_internal_model.MpTelemetrySectorControlsPoint'
+        type: array
+      points_count:
+        type: integer
+      s1_end_i:
+        type: integer
+      s2_end_i:
+        type: integer
+      session_key:
+        type: integer
+      speed:
+        items:
+          type: number
+        type: array
+      throttle:
+        items:
+          type: number
+        type: array
+      x:
+        items:
+          type: string
+        type: array
+      x_labels:
+        items:
+          type: string
+        type: array
+      x_max:
+        type: integer
+      x_min:
+        type: integer
+    type: object
+  toinc_f1_backend_internal_model.NewsIngestJSONBody:
+    properties:
+      payload:
+        additionalProperties: {}
+        type: object
+      topic:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.NewsWsClients:
+    properties:
+      ws:
+        type: integer
+    type: object
+  toinc_f1_backend_internal_model.NewsWsStatusResponse:
+    properties:
+      clients:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.NewsWsClients'
+      enabled:
+        type: boolean
+      running:
+        type: boolean
+    type: object
+  toinc_f1_backend_internal_model.OkResponse:
+    properties:
+      ok:
+        type: boolean
+    type: object
+  toinc_f1_backend_internal_model.OpenF1Clients:
+    properties:
+      ws_fw:
+        type: integer
+      ws_raw:
+        type: integer
+    type: object
+  toinc_f1_backend_internal_model.OpenF1StatusResponse:
+    properties:
+      clients:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.OpenF1Clients'
+      connected:
+        type: boolean
+      enabled:
+        type: boolean
+      mode:
+        type: string
+      running:
+        type: boolean
+    type: object
+  toinc_f1_backend_internal_model.WechatPayJSAPIPrepayRequest:
+    properties:
+      attach:
+        type: string
+      currency:
+        type: string
+      description:
+        type: string
+      openid:
+        type: string
+      out_trade_no:
+        type: string
+      total:
+        type: integer
+    type: object
+  toinc_f1_backend_internal_model.WechatPayJSAPIPrepayResponse:
+    properties:
+      ok:
+        type: boolean
+      params: {}
+    type: object
+  toinc_f1_backend_internal_model.WechatPayNotifyResponse:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.WechatPayQueryOrderResponse:
+    properties:
+      ok:
+        type: boolean
+      order: {}
+    type: object
+  toinc_f1_backend_internal_model.WsBroadcastResponse:
+    properties:
+      ok:
+        type: boolean
+      sent:
+        type: integer
+    type: object
+  toinc_f1_backend_internal_model.WsStatusResponse:
+    properties:
+      clients:
+        type: integer
+      ok:
+        type: boolean
+    type: object
 info:
   contact: {}
   description: 后端基于 Gin 的 HTTP API 文档（swaggo/swag 自动生成）。
@@ -136,7 +679,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
       summary: 获取车手最新图表 JSON
       tags:
       - Charts
@@ -176,19 +719,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.DeviceUserPrefsKVResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 获取设备绑定用户偏好 KV
       tags:
       - Device
@@ -210,15 +753,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.OkResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.OkResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 设备启动上报
       tags:
       - Device
@@ -255,11 +798,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 生成电子纸 bin 帧
       tags:
       - EPD
@@ -296,11 +839,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 生成电子纸预览 PNG
       tags:
       - EPD
@@ -341,15 +884,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 查询 session 列表
       tags:
       - Sessions
@@ -392,15 +935,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 按路径获取 session 文件
       tags:
       - Sessions
@@ -437,15 +980,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 当前 session（显式 current）
       tags:
       - Sessions
@@ -469,11 +1012,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.MpArchiveResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 历史赛历归档
       tags:
       - MiniProgram
@@ -493,19 +1036,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.MpAuthUploadAvatarResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       security:
       - BearerAuth: []
       summary: 上传用户头像
@@ -529,19 +1072,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.MpAuthBindDeviceResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       security:
       - BearerAuth: []
       summary: 绑定设备
@@ -565,19 +1108,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.MpAuthLoginResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.MpAuthLoginResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 小程序登录
       tags:
       - MiniProgramAuth
@@ -589,11 +1132,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.OkResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.OkResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       security:
       - BearerAuth: []
       summary: 登出
@@ -607,15 +1150,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.MpAuthMeResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       security:
       - BearerAuth: []
       summary: 获取当前用户信息
@@ -635,15 +1178,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.MpPrefsGetResponseV2'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       security:
       - BearerAuth: []
       summary: 获取用户偏好
@@ -670,19 +1213,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.MpPrefsUpdateResponseV2'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       security:
       - BearerAuth: []
       summary: 更新用户偏好
@@ -706,19 +1249,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.OkResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.OkResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       security:
       - BearerAuth: []
       summary: 更新用户资料
@@ -749,11 +1292,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsListResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 小程序新闻列表
       tags:
       - MiniProgram
@@ -777,19 +1320,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsDetailResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 小程序新闻详情
       tags:
       - MiniProgram
@@ -818,19 +1361,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.MpRaceSessionsResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 分站 Session 列表
       tags:
       - MiniProgram
@@ -849,15 +1392,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.MpSessionResultsResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: Session 成绩
       tags:
       - MiniProgram
@@ -895,15 +1438,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.MpTelemetryControlsResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 油门/刹车控制曲线
       tags:
       - MiniProgram
@@ -941,15 +1484,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.MpTelemetrySectorControlsResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 分段油门/刹车曲线（带 sector 归属）
       tags:
       - MiniProgram
@@ -968,22 +1511,22 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/internal_httpserver_handlers.NewsIngestJSONBody'
+          $ref: '#/definitions/toinc_f1_backend_internal_model.NewsIngestJSONBody'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.OkResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.OkResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       security:
       - TokenQuery: []
       summary: 注入新闻（JSON）
@@ -1018,15 +1561,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.OkResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.OkResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       security:
       - TokenQuery: []
       summary: 注入 Meme 新闻（multipart）
@@ -1057,15 +1600,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.OkResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.OkResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       security:
       - TokenQuery: []
       summary: 注入 Breaking 新闻（multipart）
@@ -1080,7 +1623,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.NewsWsStatusResponse'
       summary: 新闻 WS 状态
       tags:
       - News
@@ -1099,22 +1642,22 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+          $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.OkResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.OkResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       security:
       - TokenQuery: []
       summary: OpenF1 注入（JSON）
@@ -1129,7 +1672,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.OpenF1StatusResponse'
       summary: OpenF1 WS 状态
       tags:
       - OpenF1
@@ -1163,15 +1706,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 获取 Pages（设备使用）
       tags:
       - Pages
@@ -1204,15 +1747,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 获取 Off Week Pages
       tags:
       - Pages
@@ -1245,15 +1788,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 获取 Race Day Pages
       tags:
       - Pages
@@ -1272,26 +1815,26 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/internal_httpserver_handlers.WechatPayJSAPIPrepayRequest'
+          $ref: '#/definitions/toinc_f1_backend_internal_model.WechatPayJSAPIPrepayRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.WechatPayJSAPIPrepayResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       security:
       - TokenQuery: []
       summary: JSAPI 预下单
@@ -1328,26 +1871,26 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+          $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.WechatPayNotifyResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.WechatPayNotifyResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.WechatPayNotifyResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.WechatPayNotifyResponse'
       summary: 支付回调通知
       tags:
       - WechatPay
@@ -1370,19 +1913,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.WechatPayQueryOrderResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       security:
       - TokenQuery: []
       summary: 查询订单
@@ -1411,19 +1954,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 最快圈轨迹
       tags:
       - Telemetry
@@ -1445,19 +1988,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 圈控制数据（简版）
       tags:
       - Telemetry
@@ -1489,19 +2032,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 指定圈号的控制曲线
       tags:
       - Telemetry
@@ -1534,19 +2077,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 圈速箱线图
       tags:
       - Telemetry
@@ -1578,19 +2121,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 指定圈的轨迹
       tags:
       - Telemetry
@@ -1612,19 +2155,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 查询圈数据
       tags:
       - Telemetry
@@ -1637,15 +2180,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 可用圈列表
       tags:
       - Telemetry
@@ -1679,15 +2222,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 获取 UI Pages（小程序/前端展示）
       tags:
       - Pages
@@ -1720,15 +2263,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 获取 UI Off Week Pages
       tags:
       - Pages
@@ -1761,15 +2304,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.GenericObject'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 获取 UI Race Day Pages
       tags:
       - Pages
@@ -1788,11 +2331,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.WsBroadcastResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.WsBroadcastResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 广播消息到所有 WebSocket 客户端
       tags:
       - WebSocket
@@ -1810,11 +2353,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.WsBroadcastResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.WsBroadcastResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
       summary: 广播消息到所有 WebSocket 客户端
       tags:
       - WebSocket
@@ -1827,7 +2370,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.WsStatusResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.WsStatusResponse'
       summary: WebSocket 在线状态
       tags:
       - WebSocket
@@ -1840,7 +2383,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_httpserver_handlers.OkResponse'
+            $ref: '#/definitions/toinc_f1_backend_internal_model.OkResponse'
       summary: 健康检查
       tags:
       - Health
