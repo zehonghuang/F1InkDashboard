@@ -215,7 +215,20 @@ definitions:
       format_code:
         type: string
       nodes:
-        items: {}
+        items:
+          $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsRichTextNode'
+        type: array
+      text:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpNewsContentSwagger:
+    properties:
+      format_code:
+        example: RICH_TEXT_NODES
+        type: string
+      nodes:
+        items:
+          $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsRichTextNodeAny'
         type: array
       text:
         type: string
@@ -241,6 +254,63 @@ definitions:
     x-enum-varnames:
     - MpNewsHeroDisplayCodeBanner
     - MpNewsHeroDisplayCodeCard
+  toinc_f1_backend_internal_model.MpNewsIngestRequestSwagger:
+    properties:
+      content:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsContentSwagger'
+      cover_url:
+        example: /static/news/f1-wolff-antonelli-russell.webp
+        type: string
+      hero_display_code:
+        allOf:
+        - $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsHeroDisplayCode'
+        example: BANNER
+      id:
+        example: n_f1_antonelli_russell_wolff
+        type: string
+      layout_code:
+        allOf:
+        - $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsLayoutCode'
+        example: FEATURE
+      pinned:
+        example: false
+        type: boolean
+      published_at:
+        example: "2026-05-25T18:30:00+08:00"
+        type: string
+      source:
+        $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsSource'
+      summary:
+        example: 基于 Formula1.com 报道要点的中文改写
+        type: string
+      tag_text:
+        example: Mercedes / 采访
+        type: string
+      tags:
+        example:
+        - mercedes
+        - "44"
+        items:
+          type: string
+        type: array
+      title:
+        example: 沃尔夫谈队内竞争：允许安东内利与拉塞尔硬碰硬，但会设底线
+        type: string
+      type_code:
+        allOf:
+        - $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsTypeCode'
+        example: PADDOCK
+      weight:
+        example: 880
+        type: integer
+    type: object
+  toinc_f1_backend_internal_model.MpNewsIngestResponse:
+    properties:
+      id:
+        type: string
+      ok:
+        type: boolean
+    type: object
   toinc_f1_backend_internal_model.MpNewsItem:
     properties:
       content:
@@ -256,6 +326,7 @@ definitions:
       pinned:
         type: boolean
       published_at:
+        example: "2026-05-25T18:30:00+08:00"
         type: string
       source:
         $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsSource'
@@ -309,6 +380,41 @@ definitions:
       total:
         type: integer
       tz:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpNewsRichTextNode:
+    properties:
+      attrs:
+        additionalProperties: {}
+        type: object
+      children:
+        items:
+          $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsRichTextNode'
+        type: array
+      name:
+        type: string
+      text:
+        type: string
+      type:
+        type: string
+    type: object
+  toinc_f1_backend_internal_model.MpNewsRichTextNodeAny:
+    properties:
+      attrs:
+        additionalProperties:
+          type: string
+        type: object
+      children:
+        items: {}
+        type: array
+      name:
+        example: p
+        type: string
+      text:
+        example: 段落文本
+        type: string
+      type:
+        example: text
         type: string
     type: object
   toinc_f1_backend_internal_model.MpNewsSource:
@@ -1336,6 +1442,52 @@ paths:
       summary: 小程序新闻详情
       tags:
       - MiniProgram
+  /api/v1/mp/news/ingest:
+    post:
+      consumes:
+      - application/json
+      description: OpenClaw/爬虫写入 mp_news_articles 与 mp_news_article_tags。
+      parameters:
+      - description: 鉴权 token（当 NEWS_INGEST_TOKEN 非空时必填）
+        in: query
+        name: token
+        type: string
+      - description: 文章对象（published_at 为 RFC3339/RFC3339Nano，示例：2026-05-25T18:30:00+08:00
+          或 2026-05-25T10:30:00Z；content.nodes 为小程序 rich-text nodes 结构：元素节点 {name,attrs,children}，文本节点
+          {type:\
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsIngestRequestSwagger'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/toinc_f1_backend_internal_model.MpNewsIngestResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/toinc_f1_backend_internal_model.ErrorResponse'
+      security:
+      - TokenQuery: []
+      summary: 小程序资讯入库（Upsert）
+      tags:
+      - MpNewsAdmin
   /api/v1/mp/race-sessions:
     get:
       description: 返回该分站 FP/Q/RACE 等 sessions 列表与 openf1_session_key。

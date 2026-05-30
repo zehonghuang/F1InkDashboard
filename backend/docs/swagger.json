@@ -986,6 +986,75 @@
                 }
             }
         },
+        "/api/v1/mp/news/ingest": {
+            "post": {
+                "security": [
+                    {
+                        "TokenQuery": []
+                    }
+                ],
+                "description": "OpenClaw/爬虫写入 mp_news_articles 与 mp_news_article_tags。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MpNewsAdmin"
+                ],
+                "summary": "小程序资讯入库（Upsert）",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "鉴权 token（当 NEWS_INGEST_TOKEN 非空时必填）",
+                        "name": "token",
+                        "in": "query"
+                    },
+                    {
+                        "description": "文章对象（published_at 为 RFC3339/RFC3339Nano，示例：2026-05-25T18:30:00+08:00 或 2026-05-25T10:30:00Z；content.nodes 为小程序 rich-text nodes 结构：元素节点 {name,attrs,children}，文本节点 {type:\\",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsIngestRequestSwagger"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsIngestResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/mp/news/{id}": {
             "get": {
                 "description": "返回指定 id 的新闻详情（包含 content）。",
@@ -3028,7 +3097,27 @@
                 },
                 "nodes": {
                     "type": "array",
-                    "items": {}
+                    "items": {
+                        "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsRichTextNode"
+                    }
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpNewsContentSwagger": {
+            "type": "object",
+            "properties": {
+                "format_code": {
+                    "type": "string",
+                    "example": "RICH_TEXT_NODES"
+                },
+                "nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsRichTextNodeAny"
+                    }
                 },
                 "text": {
                     "type": "string"
@@ -3066,6 +3155,94 @@
                 "MpNewsHeroDisplayCodeCard"
             ]
         },
+        "toinc_f1_backend_internal_model.MpNewsIngestRequestSwagger": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsContentSwagger"
+                },
+                "cover_url": {
+                    "type": "string",
+                    "example": "/static/news/f1-wolff-antonelli-russell.webp"
+                },
+                "hero_display_code": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsHeroDisplayCode"
+                        }
+                    ],
+                    "example": "BANNER"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "n_f1_antonelli_russell_wolff"
+                },
+                "layout_code": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsLayoutCode"
+                        }
+                    ],
+                    "example": "FEATURE"
+                },
+                "pinned": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "published_at": {
+                    "type": "string",
+                    "example": "2026-05-25T18:30:00+08:00"
+                },
+                "source": {
+                    "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsSource"
+                },
+                "summary": {
+                    "type": "string",
+                    "example": "基于 Formula1.com 报道要点的中文改写"
+                },
+                "tag_text": {
+                    "type": "string",
+                    "example": "Mercedes / 采访"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "mercedes",
+                        "44"
+                    ]
+                },
+                "title": {
+                    "type": "string",
+                    "example": "沃尔夫谈队内竞争：允许安东内利与拉塞尔硬碰硬，但会设底线"
+                },
+                "type_code": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsTypeCode"
+                        }
+                    ],
+                    "example": "PADDOCK"
+                },
+                "weight": {
+                    "type": "integer",
+                    "example": 880
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpNewsIngestResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
+                }
+            }
+        },
         "toinc_f1_backend_internal_model.MpNewsItem": {
             "type": "object",
             "properties": {
@@ -3088,7 +3265,8 @@
                     "type": "boolean"
                 },
                 "published_at": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2026-05-25T18:30:00+08:00"
                 },
                 "source": {
                     "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsSource"
@@ -3165,6 +3343,57 @@
                 },
                 "tz": {
                     "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpNewsRichTextNode": {
+            "type": "object",
+            "properties": {
+                "attrs": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/toinc_f1_backend_internal_model.MpNewsRichTextNode"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "toinc_f1_backend_internal_model.MpNewsRichTextNodeAny": {
+            "type": "object",
+            "properties": {
+                "attrs": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "children": {
+                    "type": "array",
+                    "items": {}
+                },
+                "name": {
+                    "type": "string",
+                    "example": "p"
+                },
+                "text": {
+                    "type": "string",
+                    "example": "段落文本"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "text"
                 }
             }
         },
