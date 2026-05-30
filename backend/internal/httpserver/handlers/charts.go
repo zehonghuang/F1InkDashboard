@@ -13,6 +13,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary 获取车手最新图表 PNG
+// @Description 从静态目录中选择最新的图表 PNG（优先 fastest_lap_*）。
+// @Tags Charts
+// @Produce png
+// @Param driver_number path int true "车手号码"
+// @Success 200 {file} file
+// @Failure 404
+// @Router /api/v1/charts/driver/{driver_number}/latest.png [get]
 func ChartsDriverLatestPng(staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		dn, _ := strconv.Atoi(c.Param("driver_number"))
@@ -25,6 +33,15 @@ func ChartsDriverLatestPng(staticDir string) gin.HandlerFunc {
 	}
 }
 
+// @Summary 获取车手最新图表 JSON
+// @Description |
+//   - 若图表不存在返回 {ok:true, found:false}
+//   - 若存在则返回静态 JSON 文件的内容（结构透传）
+// @Tags Charts
+// @Produce json
+// @Param driver_number path int true "车手号码"
+// @Success 200 {object} GenericObject
+// @Router /api/v1/charts/driver/{driver_number}/latest.json [get]
 func ChartsDriverLatestJSON(staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		dn, _ := strconv.Atoi(c.Param("driver_number"))

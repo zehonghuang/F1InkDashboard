@@ -24,6 +24,18 @@ type epdFrame struct {
 	preview []byte
 }
 
+// @Summary 生成电子纸 bin 帧
+// @Description 从 png_url 拉取图片，按给定宽高缩放并生成 1bpp 黑白 bin 数据。
+// @Tags EPD
+// @Produce octet-stream
+// @Param png_url query string true "源 PNG 图片 URL（服务端会拉取该资源）"
+// @Param w query int false "目标宽度像素（1-1200）" default(1)
+// @Param h query int false "目标高度像素（1-1200）" default(1)
+// @Param dither query string false "抖动开关：传 1/true 开启"
+// @Success 200 {file} file
+// @Failure 400 {object} ErrorResponse
+// @Failure 502 {object} ErrorResponse
+// @Router /api/v1/epd/frame.bin [get]
 func EpdFrameBin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		frame, ok := buildEpdFrameFromQuery(c)
@@ -34,6 +46,18 @@ func EpdFrameBin() gin.HandlerFunc {
 	}
 }
 
+// @Summary 生成电子纸预览 PNG
+// @Description 与 frame.bin 相同逻辑，但返回 PNG 预览图（便于调试显示效果）。
+// @Tags EPD
+// @Produce png
+// @Param png_url query string true "源 PNG 图片 URL（服务端会拉取该资源）"
+// @Param w query int false "目标宽度像素（1-1200）" default(1)
+// @Param h query int false "目标高度像素（1-1200）" default(1)
+// @Param dither query string false "抖动开关：传 1/true 开启"
+// @Success 200 {file} file
+// @Failure 400 {object} ErrorResponse
+// @Failure 502 {object} ErrorResponse
+// @Router /api/v1/epd/frame.png [get]
 func EpdFramePng() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		frame, ok := buildEpdFrameFromQuery(c)

@@ -16,6 +16,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// @Summary 新闻 WS 状态
+// @Description 返回新闻 WebSocket 的启用开关与在线人数。
+// @Tags News
+// @Produce json
+// @Success 200 {object} GenericObject
+// @Router /api/v1/news/ws/status [get]
 func NewsWsStatus(cfg config.Config, hub *ws.Hub) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -26,6 +32,10 @@ func NewsWsStatus(cfg config.Config, hub *ws.Hub) gin.HandlerFunc {
 	}
 }
 
+// @Summary 新闻 WebSocket
+// @Description 新闻推送 WebSocket。服务端会根据 topic 推送消息（如 v1/breaking、v1/meme）。
+// @Tags News
+// @Router /ws/news [get]
 func WsNews(cfg config.Config, hub *ws.Hub) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
@@ -56,6 +66,23 @@ func WsNews(cfg config.Config, hub *ws.Hub) gin.HandlerFunc {
 	}
 }
 
+// @Summary 注入 Breaking 新闻（multipart）
+// @Description |
+//   通过 multipart/form-data 注入并广播到新闻 WS（topic 固定为 v1/breaking）。
+//
+//   鉴权：
+//   - 若服务端配置 NEWS_INGEST_TOKEN 非空，则必须传 query token 且匹配。
+// @Tags News
+// @Accept mpfd
+// @Produce json
+// @Security TokenQuery
+// @Param token query string false "鉴权 token（当 NEWS_INGEST_TOKEN 非空时必填）"
+// @Param title formData string true "新闻标题"
+// @Param image formData file false "可选图片文件"
+// @Success 200 {object} OkResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Router /api/v1/news/ws/ingest [post]
 func NewsWsIngest(cfg config.Config, hub *ws.Hub, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !checkToken(c, cfg.NewsIngestToken) {
@@ -93,6 +120,24 @@ func NewsWsIngest(cfg config.Config, hub *ws.Hub, staticDir string) gin.HandlerF
 	}
 }
 
+// @Summary 注入 Meme 新闻（multipart）
+// @Description |
+//   通过 multipart/form-data 注入并广播到新闻 WS（topic 固定为 v1/meme）。
+//
+//   鉴权：
+//   - 若服务端配置 NEWS_INGEST_TOKEN 非空，则必须传 query token 且匹配。
+// @Tags News
+// @Accept mpfd
+// @Produce json
+// @Security TokenQuery
+// @Param token query string false "鉴权 token（当 NEWS_INGEST_TOKEN 非空时必填）"
+// @Param title formData string true "标题"
+// @Param image formData file false "可选图片文件"
+// @Param audio formData file false "可选音频文件"
+// @Success 200 {object} OkResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Router /api/v1/news/meme/ws/ingest [post]
 func NewsMemeWsIngest(cfg config.Config, hub *ws.Hub, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !checkToken(c, cfg.NewsIngestToken) {
@@ -140,6 +185,25 @@ func NewsMemeWsIngest(cfg config.Config, hub *ws.Hub, staticDir string) gin.Hand
 	}
 }
 
+// @Summary 注入新闻（JSON）
+// @Description |
+//   直接注入 JSON 并广播到新闻 WS。
+//
+//   - 未传 topic 时默认 v1/breaking
+//   - 当 topic=v1/meme 时，服务端会把 payload.image / payload.audio 规范化为资产对象
+//
+//   鉴权：
+//   - 若服务端配置 NEWS_INGEST_TOKEN 非空，则必须传 query token 且匹配。
+// @Tags News
+// @Accept json
+// @Produce json
+// @Security TokenQuery
+// @Param token query string false "鉴权 token（当 NEWS_INGEST_TOKEN 非空时必填）"
+// @Param body body NewsIngestJSONBody true "注入内容"
+// @Success 200 {object} OkResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Router /api/v1/news/ingest [post]
 func NewsIngestJSON(cfg config.Config, hub *ws.Hub, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !checkToken(c, cfg.NewsIngestToken) {

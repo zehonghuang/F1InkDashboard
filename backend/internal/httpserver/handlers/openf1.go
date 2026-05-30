@@ -10,6 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary OpenF1 WS 状态
+// @Description 返回 OpenF1 WebSocket 的启用开关、mode 与在线人数。
+// @Tags OpenF1
+// @Produce json
+// @Success 200 {object} GenericObject
+// @Router /api/v1/openf1/status [get]
 func OpenF1Status(cfg config.Config, hub *ws.Hub) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -25,6 +31,11 @@ func OpenF1Status(cfg config.Config, hub *ws.Hub) gin.HandlerFunc {
 	}
 }
 
+// @Summary OpenF1 WebSocket
+// @Description OpenF1 推送 WebSocket（根据 mode 可能推 mock 或真实数据）。
+// @Tags OpenF1
+// @Router /ws/openf1 [get]
+// @Router /ws/openf1/raw [get]
 func WsOpenF1(cfg config.Config, hub *ws.Hub) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
@@ -59,6 +70,22 @@ func WsOpenF1(cfg config.Config, hub *ws.Hub) gin.HandlerFunc {
 	}
 }
 
+// @Summary OpenF1 注入（JSON）
+// @Description |
+//   用 HTTP JSON 直接注入 OpenF1 消息。服务端会包装 received_at_utc、source 等字段后广播。
+//
+//   鉴权：
+//   - 当 OPENF1_INGEST_TOKEN 非空时必须传 query token 并匹配；为空则允许匿名注入（仅建议用于内网/调试）。
+// @Tags OpenF1
+// @Accept json
+// @Produce json
+// @Security TokenQuery
+// @Param token query string false "鉴权 token（当 OPENF1_INGEST_TOKEN 非空时必填）"
+// @Param body body GenericObject true "任意 JSON"
+// @Success 200 {object} OkResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Router /api/v1/openf1/ingest [post]
 func OpenF1Ingest(cfg config.Config, hub *ws.Hub) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !checkToken(c, cfg.OpenF1IngestToken) {
@@ -75,6 +102,16 @@ func OpenF1Ingest(cfg config.Config, hub *ws.Hub) gin.HandlerFunc {
 	}
 }
 
+// @Summary OpenF1 WebSocket 注入
+// @Description |
+//   通过 WebSocket 文本帧注入 OpenF1 消息。
+//
+//   鉴权：
+//   - 当 OPENF1_INGEST_TOKEN 非空时必须传 query token 并匹配；为空则允许匿名注入（仅建议用于内网/调试）。
+// @Tags OpenF1
+// @Security TokenQuery
+// @Param token query string false "鉴权 token（当 OPENF1_INGEST_TOKEN 非空时必填）"
+// @Router /ws/openf1/ingest [get]
 func OpenF1IngestWS(cfg config.Config, hub *ws.Hub) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if cfg.OpenF1IngestToken != "" {

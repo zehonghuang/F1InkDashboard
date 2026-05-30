@@ -9,7 +9,11 @@ import (
 	"toinc_f1_backend/internal/teamdrivercache"
 	"toinc_f1_backend/internal/ws"
 
+	_ "toinc_f1_backend/docs"
+
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
 )
 
@@ -46,6 +50,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 
 	s.Router.Static("/static", cfg.StaticDir)
 	s.Router.Static("/update", cfg.UpdateDir)
+	s.Router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	s.Router.GET("/api/v1/epd/frame.bin", handlers.EpdFrameBin())
 	s.Router.GET("/api/v1/epd/frame.png", handlers.EpdFramePng())

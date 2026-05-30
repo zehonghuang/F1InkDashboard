@@ -14,6 +14,15 @@ import (
 	"gorm.io/gorm"
 )
 
+// @Summary Session 成绩
+// @Description 返回该 session 排名 + 最快圈等（会拼装车手/车队信息）。
+// @Tags MiniProgram
+// @Produce json
+// @Param session_key query int true "OpenF1 session_key"
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/mp/session-results [get]
 func MpSessionResults(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {

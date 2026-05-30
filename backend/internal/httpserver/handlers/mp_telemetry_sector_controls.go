@@ -13,6 +13,19 @@ import (
 	"gorm.io/gorm"
 )
 
+// @Summary 分段油门/刹车曲线（带 sector 归属）
+// @Description 返回 points[{x, sector, t_ms, speed, throttle, brake}]。
+// @Tags MiniProgram
+// @Produce json
+// @Param session_key query int true "OpenF1 session_key"
+// @Param driver_number query int true "车手号码"
+// @Param max_points query int false "最大采样点（0 表示默认策略，最大 20000）" default(0)
+// @Param lap query string false "选择圈：fastest/all 等" default(fastest)
+// @Param lap_number query int false "指定圈号"
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/mp/telemetry/sector_controls [get]
 func MpTelemetrySectorControls(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {

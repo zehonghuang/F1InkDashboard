@@ -9,6 +9,16 @@ import (
 	"gorm.io/gorm"
 )
 
+// @Summary 获取设备绑定用户偏好 KV
+// @Description 返回该 device_id 绑定用户的偏好（nick/avatar/team/teams/drivers）。
+// @Tags Device
+// @Produce json
+// @Param device_id path string true "设备 ID"
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/device/{device_id}/user_prefs_kv [get]
 func DeviceUserPrefsKV(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {

@@ -17,6 +17,15 @@ import (
 	"gorm.io/gorm"
 )
 
+// @Summary 历史赛历归档
+// @Description 返回历史比赛列表（包含 winner/fastest_lap/circuit map url 等）。
+// @Tags MiniProgram
+// @Produce json
+// @Param tz query string false "IANA 时区名称" default(Asia/Shanghai)
+// @Param season query int false "赛季年份" default(2026)
+// @Success 200 {object} GenericObject
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/mp/archive [get]
 func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {

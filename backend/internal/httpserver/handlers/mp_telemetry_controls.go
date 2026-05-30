@@ -10,6 +10,19 @@ import (
 	"gorm.io/gorm"
 )
 
+// @Summary 油门/刹车控制曲线
+// @Description 返回 points[{t, throttle, brake}]。
+// @Tags MiniProgram
+// @Produce json
+// @Param session_key query int true "OpenF1 session_key"
+// @Param driver_number query int true "车手号码"
+// @Param n query int false "采样点数（最大 900）" default(320)
+// @Param lap query string false "选择圈：fastest/all 等" default(fastest)
+// @Param lap_number query int false "指定圈号"
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/mp/telemetry/controls [get]
 func MpTelemetryControls(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {

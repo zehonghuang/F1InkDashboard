@@ -1,0 +1,1904 @@
+basePath: /
+definitions:
+  internal_httpserver_handlers.ErrorResponse:
+    properties:
+      error:
+        type: string
+      ok:
+        type: boolean
+    type: object
+  internal_httpserver_handlers.GenericObject:
+    additionalProperties: {}
+    type: object
+  internal_httpserver_handlers.MpAuthLoginResponse:
+    properties:
+      expiresAt:
+        type: string
+      ok:
+        type: boolean
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/internal_httpserver_handlers.MpAuthUser'
+    type: object
+  internal_httpserver_handlers.MpAuthUser:
+    properties:
+      id:
+        type: integer
+      openid:
+        type: string
+    type: object
+  internal_httpserver_handlers.NewsIngestJSONBody:
+    properties:
+      payload:
+        additionalProperties: {}
+        type: object
+      topic:
+        type: string
+    type: object
+  internal_httpserver_handlers.OkResponse:
+    properties:
+      ok:
+        type: boolean
+    type: object
+  internal_httpserver_handlers.WechatPayJSAPIPrepayRequest:
+    properties:
+      attach:
+        type: string
+      currency:
+        type: string
+      description:
+        type: string
+      openid:
+        type: string
+      out_trade_no:
+        type: string
+      total:
+        type: integer
+    type: object
+  internal_httpserver_handlers.WsBroadcastResponse:
+    properties:
+      ok:
+        type: boolean
+      sent:
+        type: integer
+    type: object
+  internal_httpserver_handlers.WsStatusResponse:
+    properties:
+      clients:
+        type: integer
+      ok:
+        type: boolean
+    type: object
+  internal_httpserver_handlers.deviceBootRequest:
+    properties:
+      board_type:
+        type: string
+      device_id:
+        type: string
+      device_key:
+        type: string
+      device_uuid:
+        type: string
+      fw_user_agent:
+        type: string
+      mac:
+        type: string
+    type: object
+  internal_httpserver_handlers.mpAuthBindDeviceRequest:
+    properties:
+      device_id:
+        type: string
+    type: object
+  internal_httpserver_handlers.mpAuthLoginRequest:
+    properties:
+      code:
+        type: string
+    type: object
+  internal_httpserver_handlers.mpAuthUpdateProfileRequest:
+    properties:
+      avatar_url:
+        type: string
+      nick_name:
+        type: string
+    type: object
+  internal_httpserver_handlers.mpPrefsUpdateRequest:
+    properties:
+      driver_numbers:
+        items:
+          type: integer
+        type: array
+      team_keys:
+        items:
+          type: string
+        type: array
+      team_name:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: 后端基于 Gin 的 HTTP API 文档（swaggo/swag 自动生成）。
+  title: F1InkDashboard Backend API
+  version: 1.0.0
+paths:
+  /api/v1/charts/driver/{driver_number}/latest.json:
+    get:
+      description: '|'
+      parameters:
+      - description: 车手号码
+        in: path
+        name: driver_number
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+      summary: 获取车手最新图表 JSON
+      tags:
+      - Charts
+  /api/v1/charts/driver/{driver_number}/latest.png:
+    get:
+      description: 从静态目录中选择最新的图表 PNG（优先 fastest_lap_*）。
+      parameters:
+      - description: 车手号码
+        in: path
+        name: driver_number
+        required: true
+        type: integer
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "404":
+          description: Not Found
+      summary: 获取车手最新图表 PNG
+      tags:
+      - Charts
+  /api/v1/device/{device_id}/user_prefs_kv:
+    get:
+      description: 返回该 device_id 绑定用户的偏好（nick/avatar/team/teams/drivers）。
+      parameters:
+      - description: 设备 ID
+        in: path
+        name: device_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 获取设备绑定用户偏好 KV
+      tags:
+      - Device
+  /api/v1/device/boot:
+    post:
+      consumes:
+      - application/json
+      description: 设备开机后上报自身信息，用于记录 boot report，并作为后续绑定校验依据。
+      parameters:
+      - description: 设备启动信息
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_httpserver_handlers.deviceBootRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.OkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 设备启动上报
+      tags:
+      - Device
+  /api/v1/epd/frame.bin:
+    get:
+      description: 从 png_url 拉取图片，按给定宽高缩放并生成 1bpp 黑白 bin 数据。
+      parameters:
+      - description: 源 PNG 图片 URL（服务端会拉取该资源）
+        in: query
+        name: png_url
+        required: true
+        type: string
+      - default: 1
+        description: 目标宽度像素（1-1200）
+        in: query
+        name: w
+        type: integer
+      - default: 1
+        description: 目标高度像素（1-1200）
+        in: query
+        name: h
+        type: integer
+      - description: 抖动开关：传 1/true 开启
+        in: query
+        name: dither
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 生成电子纸 bin 帧
+      tags:
+      - EPD
+  /api/v1/epd/frame.png:
+    get:
+      description: 与 frame.bin 相同逻辑，但返回 PNG 预览图（便于调试显示效果）。
+      parameters:
+      - description: 源 PNG 图片 URL（服务端会拉取该资源）
+        in: query
+        name: png_url
+        required: true
+        type: string
+      - default: 1
+        description: 目标宽度像素（1-1200）
+        in: query
+        name: w
+        type: integer
+      - default: 1
+        description: 目标高度像素（1-1200）
+        in: query
+        name: h
+        type: integer
+      - description: 抖动开关：传 1/true 开启
+        in: query
+        name: dither
+        type: string
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 生成电子纸预览 PNG
+      tags:
+      - EPD
+  /api/v1/f1/sessions:
+    get:
+      parameters:
+      - default: Asia/Shanghai
+        description: IANA 时区名称
+        in: query
+        name: tz
+        type: string
+      - default: 2026
+        description: 赛季年份
+        in: query
+        name: season
+        type: integer
+      - description: 分站 round（1-30）
+        in: query
+        name: round
+        type: integer
+      - default: auto
+        description: session 名称过滤；auto 表示按当前时间选择
+        in: query
+        name: session
+        type: string
+      - description: 排位分段（1-3）
+        in: query
+        name: q
+        type: integer
+      - default: 13
+        description: 返回数量限制（1-30）
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 查询 session 列表
+      tags:
+      - Sessions
+  /api/v1/f1/sessions/{season}/{round}/{session_name}:
+    get:
+      description: 读取静态 session 文件（session_name 会自动去掉 .json 后缀）。
+      parameters:
+      - description: 赛季年份
+        in: path
+        name: season
+        required: true
+        type: integer
+      - description: 分站 round（1-30）
+        in: path
+        name: round
+        required: true
+        type: integer
+      - description: session 名称（可带 .json）
+        in: path
+        name: session_name
+        required: true
+        type: string
+      - default: Asia/Shanghai
+        description: IANA 时区名称
+        in: query
+        name: tz
+        type: string
+      - description: 排位分段（1-3）
+        in: query
+        name: q
+        type: integer
+      - default: 13
+        description: 返回数量限制（1-30）
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 按路径获取 session 文件
+      tags:
+      - Sessions
+  /api/v1/f1/sessions/current:
+    get:
+      description: 固定 session=auto，语义等价于 /api/v1/f1/sessions?session=auto。
+      parameters:
+      - default: Asia/Shanghai
+        description: IANA 时区名称
+        in: query
+        name: tz
+        type: string
+      - default: 2026
+        description: 赛季年份
+        in: query
+        name: season
+        type: integer
+      - description: 分站 round（1-30）
+        in: query
+        name: round
+        type: integer
+      - description: 排位分段（1-3）
+        in: query
+        name: q
+        type: integer
+      - default: 13
+        description: 返回数量限制（1-30）
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 当前 session（显式 current）
+      tags:
+      - Sessions
+  /api/v1/mp/archive:
+    get:
+      description: 返回历史比赛列表（包含 winner/fastest_lap/circuit map url 等）。
+      parameters:
+      - default: Asia/Shanghai
+        description: IANA 时区名称
+        in: query
+        name: tz
+        type: string
+      - default: 2026
+        description: 赛季年份
+        in: query
+        name: season
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 历史赛历归档
+      tags:
+      - MiniProgram
+  /api/v1/mp/auth/avatar:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: 头像图片文件
+        in: formData
+        name: avatar
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 上传用户头像
+      tags:
+      - MiniProgramAuth
+  /api/v1/mp/auth/bind_device:
+    post:
+      consumes:
+      - application/json
+      description: 绑定前要求设备已调用 /api/v1/device/boot 上报（后端会校验 boot report 存在）。
+      parameters:
+      - description: 绑定请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_httpserver_handlers.mpAuthBindDeviceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 绑定设备
+      tags:
+      - MiniProgramAuth
+  /api/v1/mp/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 使用 wx.login 获取的 code 换取 openid 并返回后端 token。
+      parameters:
+      - description: 登录请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_httpserver_handlers.mpAuthLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.MpAuthLoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 小程序登录
+      tags:
+      - MiniProgramAuth
+  /api/v1/mp/auth/logout:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.OkResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 登出
+      tags:
+      - MiniProgramAuth
+  /api/v1/mp/auth/me:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取当前用户信息
+      tags:
+      - MiniProgramAuth
+  /api/v1/mp/auth/prefs:
+    get:
+      description: 返回当前登录用户的偏好（车队/车手关注列表）及附加展示信息。
+      parameters:
+      - description: 返回格式版本（用于兼容旧版小程序）
+        in: query
+        name: v
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取用户偏好
+      tags:
+      - MiniProgramAuth
+    put:
+      consumes:
+      - application/json
+      description: team_keys/driver_numbers 会去重、排序，并最多保留 12 个。
+      parameters:
+      - description: 返回格式版本（用于兼容旧版小程序）
+        in: query
+        name: v
+        type: string
+      - description: 更新内容
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_httpserver_handlers.mpPrefsUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新用户偏好
+      tags:
+      - MiniProgramAuth
+  /api/v1/mp/auth/profile:
+    post:
+      consumes:
+      - application/json
+      description: nick_name/avatar_url 至少传一个非空。
+      parameters:
+      - description: 更新内容
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_httpserver_handlers.mpAuthUpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.OkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新用户资料
+      tags:
+      - MiniProgramAuth
+  /api/v1/mp/news:
+    get:
+      description: 分页返回新闻条目列表（不包含 content）。
+      parameters:
+      - default: Asia/Shanghai
+        description: IANA 时区名称
+        in: query
+        name: tz
+        type: string
+      - default: 1
+        description: 页码，从 1 开始
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量（最大 50）
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 小程序新闻列表
+      tags:
+      - MiniProgram
+  /api/v1/mp/news/{id}:
+    get:
+      description: 返回指定 id 的新闻详情（包含 content）。
+      parameters:
+      - description: 新闻 ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: Asia/Shanghai
+        description: IANA 时区名称
+        in: query
+        name: tz
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 小程序新闻详情
+      tags:
+      - MiniProgram
+  /api/v1/mp/race-sessions:
+    get:
+      description: 返回该分站 FP/Q/RACE 等 sessions 列表与 openf1_session_key。
+      parameters:
+      - default: Asia/Shanghai
+        description: IANA 时区名称
+        in: query
+        name: tz
+        type: string
+      - default: 2026
+        description: 赛季年份
+        in: query
+        name: season
+        type: integer
+      - description: 分站 round（1 开始）
+        in: query
+        name: round
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 分站 Session 列表
+      tags:
+      - MiniProgram
+  /api/v1/mp/session-results:
+    get:
+      description: 返回该 session 排名 + 最快圈等（会拼装车手/车队信息）。
+      parameters:
+      - description: OpenF1 session_key
+        in: query
+        name: session_key
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: Session 成绩
+      tags:
+      - MiniProgram
+  /api/v1/mp/telemetry/controls:
+    get:
+      description: 返回 points[{t, throttle, brake}]。
+      parameters:
+      - description: OpenF1 session_key
+        in: query
+        name: session_key
+        required: true
+        type: integer
+      - description: 车手号码
+        in: query
+        name: driver_number
+        required: true
+        type: integer
+      - default: 320
+        description: 采样点数（最大 900）
+        in: query
+        name: "n"
+        type: integer
+      - default: fastest
+        description: 选择圈：fastest/all 等
+        in: query
+        name: lap
+        type: string
+      - description: 指定圈号
+        in: query
+        name: lap_number
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 油门/刹车控制曲线
+      tags:
+      - MiniProgram
+  /api/v1/mp/telemetry/sector_controls:
+    get:
+      description: 返回 points[{x, sector, t_ms, speed, throttle, brake}]。
+      parameters:
+      - description: OpenF1 session_key
+        in: query
+        name: session_key
+        required: true
+        type: integer
+      - description: 车手号码
+        in: query
+        name: driver_number
+        required: true
+        type: integer
+      - default: 0
+        description: 最大采样点（0 表示默认策略，最大 20000）
+        in: query
+        name: max_points
+        type: integer
+      - default: fastest
+        description: 选择圈：fastest/all 等
+        in: query
+        name: lap
+        type: string
+      - description: 指定圈号
+        in: query
+        name: lap_number
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 分段油门/刹车曲线（带 sector 归属）
+      tags:
+      - MiniProgram
+  /api/v1/news/ingest:
+    post:
+      consumes:
+      - application/json
+      description: '|'
+      parameters:
+      - description: 鉴权 token（当 NEWS_INGEST_TOKEN 非空时必填）
+        in: query
+        name: token
+        type: string
+      - description: 注入内容
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_httpserver_handlers.NewsIngestJSONBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.OkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      security:
+      - TokenQuery: []
+      summary: 注入新闻（JSON）
+      tags:
+      - News
+  /api/v1/news/meme/ws/ingest:
+    post:
+      consumes:
+      - multipart/form-data
+      description: '|'
+      parameters:
+      - description: 鉴权 token（当 NEWS_INGEST_TOKEN 非空时必填）
+        in: query
+        name: token
+        type: string
+      - description: 标题
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: 可选图片文件
+        in: formData
+        name: image
+        type: file
+      - description: 可选音频文件
+        in: formData
+        name: audio
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.OkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      security:
+      - TokenQuery: []
+      summary: 注入 Meme 新闻（multipart）
+      tags:
+      - News
+  /api/v1/news/ws/ingest:
+    post:
+      consumes:
+      - multipart/form-data
+      description: '|'
+      parameters:
+      - description: 鉴权 token（当 NEWS_INGEST_TOKEN 非空时必填）
+        in: query
+        name: token
+        type: string
+      - description: 新闻标题
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: 可选图片文件
+        in: formData
+        name: image
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.OkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      security:
+      - TokenQuery: []
+      summary: 注入 Breaking 新闻（multipart）
+      tags:
+      - News
+  /api/v1/news/ws/status:
+    get:
+      description: 返回新闻 WebSocket 的启用开关与在线人数。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+      summary: 新闻 WS 状态
+      tags:
+      - News
+  /api/v1/openf1/ingest:
+    post:
+      consumes:
+      - application/json
+      description: '|'
+      parameters:
+      - description: 鉴权 token（当 OPENF1_INGEST_TOKEN 非空时必填）
+        in: query
+        name: token
+        type: string
+      - description: 任意 JSON
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.OkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      security:
+      - TokenQuery: []
+      summary: OpenF1 注入（JSON）
+      tags:
+      - OpenF1
+  /api/v1/openf1/status:
+    get:
+      description: 返回 OpenF1 WebSocket 的启用开关、mode 与在线人数。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+      summary: OpenF1 WS 状态
+      tags:
+      - OpenF1
+  /api/v1/pages:
+    get:
+      description: 聚合设备页面数据（race_day/off_week 等），并带 generated_at_utc 与 tz。
+      parameters:
+      - default: Asia/Shanghai
+        description: IANA 时区名称
+        in: query
+        name: tz
+        type: string
+      - default: 2026
+        description: 赛季年份
+        in: query
+        name: season
+        type: integer
+      - default: true
+        description: 是否包含赛道信息
+        in: query
+        name: include_circuit
+        type: boolean
+      - default: false
+        description: 是否强制刷新赛道缓存
+        in: query
+        name: refresh_circuit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 获取 Pages（设备使用）
+      tags:
+      - Pages
+  /api/v1/pages/off-week:
+    get:
+      parameters:
+      - default: Asia/Shanghai
+        description: IANA 时区名称
+        in: query
+        name: tz
+        type: string
+      - default: 2026
+        description: 赛季年份
+        in: query
+        name: season
+        type: integer
+      - default: true
+        description: 是否包含赛道信息
+        in: query
+        name: include_circuit
+        type: boolean
+      - default: false
+        description: 是否强制刷新赛道缓存
+        in: query
+        name: refresh_circuit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 获取 Off Week Pages
+      tags:
+      - Pages
+  /api/v1/pages/race-day:
+    get:
+      parameters:
+      - default: Asia/Shanghai
+        description: IANA 时区名称
+        in: query
+        name: tz
+        type: string
+      - default: 2026
+        description: 赛季年份
+        in: query
+        name: season
+        type: integer
+      - default: true
+        description: 是否包含赛道信息
+        in: query
+        name: include_circuit
+        type: boolean
+      - default: false
+        description: 是否强制刷新赛道缓存
+        in: query
+        name: refresh_circuit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 获取 Race Day Pages
+      tags:
+      - Pages
+  /api/v1/pay/wechat/jsapi/prepay:
+    post:
+      consumes:
+      - application/json
+      description: '|'
+      parameters:
+      - description: 鉴权 token（通常与 WECHATPAY_API_TOKEN 一致）
+        in: query
+        name: token
+        type: string
+      - description: 预下单请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_httpserver_handlers.WechatPayJSAPIPrepayRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      security:
+      - TokenQuery: []
+      summary: JSAPI 预下单
+      tags:
+      - WechatPay
+  /api/v1/pay/wechat/notify:
+    post:
+      consumes:
+      - application/json
+      description: 微信支付回调入口，要求包含 Wechatpay-* 签名头；服务端验签并解密后处理。
+      parameters:
+      - description: 平台证书序列号
+        in: header
+        name: Wechatpay-Serial
+        required: true
+        type: string
+      - description: 签名值
+        in: header
+        name: Wechatpay-Signature
+        required: true
+        type: string
+      - description: 时间戳
+        in: header
+        name: Wechatpay-Timestamp
+        required: true
+        type: string
+      - description: 随机串
+        in: header
+        name: Wechatpay-Nonce
+        required: true
+        type: string
+      - description: 回调报文
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+      summary: 支付回调通知
+      tags:
+      - WechatPay
+  /api/v1/pay/wechat/order/{out_trade_no}:
+    get:
+      description: '|'
+      parameters:
+      - description: 鉴权 token（通常与 WECHATPAY_API_TOKEN 一致）
+        in: query
+        name: token
+        type: string
+      - description: 商户订单号
+        in: path
+        name: out_trade_no
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      security:
+      - TokenQuery: []
+      summary: 查询订单
+      tags:
+      - WechatPay
+  /api/v1/telemetry/fastest_lap:
+    get:
+      parameters:
+      - description: 车手号码
+        in: query
+        name: driver_number
+        required: true
+        type: integer
+      - description: OpenF1 session_key
+        in: query
+        name: session_key
+        type: integer
+      - default: 240
+        description: 最大采样点数（50-5000）
+        in: query
+        name: max_points
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 最快圈轨迹
+      tags:
+      - Telemetry
+  /api/v1/telemetry/lap_controls:
+    get:
+      parameters:
+      - description: 车手号码
+        in: query
+        name: driver_number
+        required: true
+        type: integer
+      - description: OpenF1 session_key
+        in: query
+        name: session_key
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 圈控制数据（简版）
+      tags:
+      - Telemetry
+  /api/v1/telemetry/lap_controls_series:
+    get:
+      parameters:
+      - description: 车手号码
+        in: query
+        name: driver_number
+        required: true
+        type: integer
+      - description: 圈号
+        in: query
+        name: lap_number
+        required: true
+        type: integer
+      - description: OpenF1 session_key
+        in: query
+        name: session_key
+        type: integer
+      - default: 0
+        description: 最大采样点（0 表示默认策略，最大 20000）
+        in: query
+        name: max_points
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 指定圈号的控制曲线
+      tags:
+      - Telemetry
+  /api/v1/telemetry/lap_time_boxplot:
+    get:
+      parameters:
+      - description: OpenF1 session_key
+        in: query
+        name: session_key
+        required: true
+        type: integer
+      - description: 车手号码 CSV，例如 1,16,44
+        in: query
+        name: driver_numbers
+        required: true
+        type: string
+      - default: 0
+        description: 1 表示包含 pit out 圈
+        in: query
+        name: include_pit_out
+        type: integer
+      - default: 1
+        description: 1 表示排除标记圈；0 表示不排除
+        in: query
+        name: exclude_flags
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 圈速箱线图
+      tags:
+      - Telemetry
+  /api/v1/telemetry/lap_trace:
+    get:
+      parameters:
+      - description: 车手号码
+        in: query
+        name: driver_number
+        required: true
+        type: integer
+      - description: 圈号
+        in: query
+        name: lap_number
+        required: true
+        type: integer
+      - description: OpenF1 session_key
+        in: query
+        name: session_key
+        type: integer
+      - default: 600
+        description: 最大采样点数（50-5000）
+        in: query
+        name: max_points
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 指定圈的轨迹
+      tags:
+      - Telemetry
+  /api/v1/telemetry/laps:
+    get:
+      parameters:
+      - description: 车手号码
+        in: query
+        name: driver_number
+        required: true
+        type: integer
+      - description: OpenF1 session_key
+        in: query
+        name: session_key
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 查询圈数据
+      tags:
+      - Telemetry
+  /api/v1/telemetry/laps/available:
+    get:
+      description: 需要 MySQL（TOINC_F1_MYSQL_ENABLED=1）。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 可用圈列表
+      tags:
+      - Telemetry
+  /api/v1/ui/pages:
+    get:
+      description: UI 版本会根据中间件 language（默认 en-US）做部分格式化。
+      parameters:
+      - default: Asia/Shanghai
+        description: IANA 时区名称
+        in: query
+        name: tz
+        type: string
+      - default: 2026
+        description: 赛季年份
+        in: query
+        name: season
+        type: integer
+      - default: true
+        description: 是否包含赛道信息
+        in: query
+        name: include_circuit
+        type: boolean
+      - default: false
+        description: 是否强制刷新赛道缓存
+        in: query
+        name: refresh_circuit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 获取 UI Pages（小程序/前端展示）
+      tags:
+      - Pages
+  /api/v1/ui/pages/off-week:
+    get:
+      parameters:
+      - default: Asia/Shanghai
+        description: IANA 时区名称
+        in: query
+        name: tz
+        type: string
+      - default: 2026
+        description: 赛季年份
+        in: query
+        name: season
+        type: integer
+      - default: true
+        description: 是否包含赛道信息
+        in: query
+        name: include_circuit
+        type: boolean
+      - default: false
+        description: 是否强制刷新赛道缓存
+        in: query
+        name: refresh_circuit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 获取 UI Off Week Pages
+      tags:
+      - Pages
+  /api/v1/ui/pages/race-day:
+    get:
+      parameters:
+      - default: Asia/Shanghai
+        description: IANA 时区名称
+        in: query
+        name: tz
+        type: string
+      - default: 2026
+        description: 赛季年份
+        in: query
+        name: season
+        type: integer
+      - default: true
+        description: 是否包含赛道信息
+        in: query
+        name: include_circuit
+        type: boolean
+      - default: false
+        description: 是否强制刷新赛道缓存
+        in: query
+        name: refresh_circuit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.GenericObject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 获取 UI Race Day Pages
+      tags:
+      - Pages
+  /api/v1/ws/broadcast:
+    get:
+      description: text 长度必须为 1-512 字符。
+      parameters:
+      - description: 要广播的文本内容（1-512 字符）
+        in: query
+        name: text
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.WsBroadcastResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 广播消息到所有 WebSocket 客户端
+      tags:
+      - WebSocket
+    post:
+      description: text 长度必须为 1-512 字符。
+      parameters:
+      - description: 要广播的文本内容（1-512 字符）
+        in: query
+        name: text
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.WsBroadcastResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.ErrorResponse'
+      summary: 广播消息到所有 WebSocket 客户端
+      tags:
+      - WebSocket
+  /api/v1/ws/status:
+    get:
+      description: 返回当前 hub 的在线客户端数量。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.WsStatusResponse'
+      summary: WebSocket 在线状态
+      tags:
+      - WebSocket
+  /health:
+    get:
+      description: 服务存活探针。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_httpserver_handlers.OkResponse'
+      summary: 健康检查
+      tags:
+      - Health
+  /ws:
+    get:
+      description: WebSocket 连接：收到文本帧后原样回写。
+      responses: {}
+      summary: WebSocket Echo
+      tags:
+      - WebSocket
+  /ws/news:
+    get:
+      description: 新闻推送 WebSocket。服务端会根据 topic 推送消息（如 v1/breaking、v1/meme）。
+      responses: {}
+      summary: 新闻 WebSocket
+      tags:
+      - News
+  /ws/openf1:
+    get:
+      description: OpenF1 推送 WebSocket（根据 mode 可能推 mock 或真实数据）。
+      responses: {}
+      summary: OpenF1 WebSocket
+      tags:
+      - OpenF1
+  /ws/openf1/ingest:
+    get:
+      description: '|'
+      parameters:
+      - description: 鉴权 token（当 OPENF1_INGEST_TOKEN 非空时必填）
+        in: query
+        name: token
+        type: string
+      responses: {}
+      security:
+      - TokenQuery: []
+      summary: OpenF1 WebSocket 注入
+      tags:
+      - OpenF1
+  /ws/openf1/raw:
+    get:
+      description: OpenF1 推送 WebSocket（根据 mode 可能推 mock 或真实数据）。
+      responses: {}
+      summary: OpenF1 WebSocket
+      tags:
+      - OpenF1
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: 'Authorization: Bearer <token>'
+    in: header
+    name: Authorization
+    type: apiKey
+  TokenQuery:
+    description: 简单鉴权 token（NEWS_INGEST_TOKEN / OPENF1_INGEST_TOKEN / WECHATPAY_API_TOKEN
+      等）
+    in: query
+    name: token
+    type: apiKey
+swagger: "2.0"

@@ -38,6 +38,16 @@ type mpNewsItem struct {
 	Content         *mpNewsContent        `json:"content,omitempty"`
 }
 
+// @Summary 小程序新闻列表
+// @Description 分页返回新闻条目列表（不包含 content）。
+// @Tags MiniProgram
+// @Produce json
+// @Param tz query string false "IANA 时区名称" default(Asia/Shanghai)
+// @Param page query int false "页码，从 1 开始" default(1)
+// @Param page_size query int false "每页数量（最大 50）" default(20)
+// @Success 200 {object} GenericObject
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/mp/news [get]
 func MpNewsList(staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tzName := strings.TrimSpace(c.Query("tz"))
@@ -101,6 +111,17 @@ func MpNewsList(staticDir string) gin.HandlerFunc {
 	}
 }
 
+// @Summary 小程序新闻详情
+// @Description 返回指定 id 的新闻详情（包含 content）。
+// @Tags MiniProgram
+// @Produce json
+// @Param id path string true "新闻 ID"
+// @Param tz query string false "IANA 时区名称" default(Asia/Shanghai)
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/mp/news/{id} [get]
 func MpNewsDetail(staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := strings.TrimSpace(c.Param("id"))

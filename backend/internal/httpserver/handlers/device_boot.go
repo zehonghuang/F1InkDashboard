@@ -17,6 +17,16 @@ type deviceBootRequest struct {
 	FwUserAgent string `json:"fw_user_agent"`
 }
 
+// @Summary 设备启动上报
+// @Description 设备开机后上报自身信息，用于记录 boot report，并作为后续绑定校验依据。
+// @Tags Device
+// @Accept json
+// @Produce json
+// @Param body body deviceBootRequest true "设备启动信息"
+// @Success 200 {object} OkResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/device/boot [post]
 func DeviceBoot(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {

@@ -1,0 +1,2892 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "后端基于 Gin 的 HTTP API 文档（swaggo/swag 自动生成）。",
+        "title": "F1InkDashboard Backend API",
+        "contact": {},
+        "version": "1.0.0"
+    },
+    "basePath": "/",
+    "paths": {
+        "/api/v1/charts/driver/{driver_number}/latest.json": {
+            "get": {
+                "description": "|",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Charts"
+                ],
+                "summary": "获取车手最新图表 JSON",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "车手号码",
+                        "name": "driver_number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/charts/driver/{driver_number}/latest.png": {
+            "get": {
+                "description": "从静态目录中选择最新的图表 PNG（优先 fastest_lap_*）。",
+                "produces": [
+                    "image/png"
+                ],
+                "tags": [
+                    "Charts"
+                ],
+                "summary": "获取车手最新图表 PNG",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "车手号码",
+                        "name": "driver_number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/api/v1/device/boot": {
+            "post": {
+                "description": "设备开机后上报自身信息，用于记录 boot report，并作为后续绑定校验依据。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Device"
+                ],
+                "summary": "设备启动上报",
+                "parameters": [
+                    {
+                        "description": "设备启动信息",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.deviceBootRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.OkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/device/{device_id}/user_prefs_kv": {
+            "get": {
+                "description": "返回该 device_id 绑定用户的偏好（nick/avatar/team/teams/drivers）。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Device"
+                ],
+                "summary": "获取设备绑定用户偏好 KV",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "设备 ID",
+                        "name": "device_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/epd/frame.bin": {
+            "get": {
+                "description": "从 png_url 拉取图片，按给定宽高缩放并生成 1bpp 黑白 bin 数据。",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "EPD"
+                ],
+                "summary": "生成电子纸 bin 帧",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "源 PNG 图片 URL（服务端会拉取该资源）",
+                        "name": "png_url",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "目标宽度像素（1-1200）",
+                        "name": "w",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "目标高度像素（1-1200）",
+                        "name": "h",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "抖动开关：传 1/true 开启",
+                        "name": "dither",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/epd/frame.png": {
+            "get": {
+                "description": "与 frame.bin 相同逻辑，但返回 PNG 预览图（便于调试显示效果）。",
+                "produces": [
+                    "image/png"
+                ],
+                "tags": [
+                    "EPD"
+                ],
+                "summary": "生成电子纸预览 PNG",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "源 PNG 图片 URL（服务端会拉取该资源）",
+                        "name": "png_url",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "目标宽度像素（1-1200）",
+                        "name": "w",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "目标高度像素（1-1200）",
+                        "name": "h",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "抖动开关：传 1/true 开启",
+                        "name": "dither",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/f1/sessions": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sessions"
+                ],
+                "summary": "查询 session 列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Asia/Shanghai",
+                        "description": "IANA 时区名称",
+                        "name": "tz",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 2026,
+                        "description": "赛季年份",
+                        "name": "season",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "分站 round（1-30）",
+                        "name": "round",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "auto",
+                        "description": "session 名称过滤；auto 表示按当前时间选择",
+                        "name": "session",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "排位分段（1-3）",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 13,
+                        "description": "返回数量限制（1-30）",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/f1/sessions/current": {
+            "get": {
+                "description": "固定 session=auto，语义等价于 /api/v1/f1/sessions?session=auto。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sessions"
+                ],
+                "summary": "当前 session（显式 current）",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Asia/Shanghai",
+                        "description": "IANA 时区名称",
+                        "name": "tz",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 2026,
+                        "description": "赛季年份",
+                        "name": "season",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "分站 round（1-30）",
+                        "name": "round",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "排位分段（1-3）",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 13,
+                        "description": "返回数量限制（1-30）",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/f1/sessions/{season}/{round}/{session_name}": {
+            "get": {
+                "description": "读取静态 session 文件（session_name 会自动去掉 .json 后缀）。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sessions"
+                ],
+                "summary": "按路径获取 session 文件",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "赛季年份",
+                        "name": "season",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "分站 round（1-30）",
+                        "name": "round",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "session 名称（可带 .json）",
+                        "name": "session_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "Asia/Shanghai",
+                        "description": "IANA 时区名称",
+                        "name": "tz",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "排位分段（1-3）",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 13,
+                        "description": "返回数量限制（1-30）",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mp/archive": {
+            "get": {
+                "description": "返回历史比赛列表（包含 winner/fastest_lap/circuit map url 等）。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MiniProgram"
+                ],
+                "summary": "历史赛历归档",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Asia/Shanghai",
+                        "description": "IANA 时区名称",
+                        "name": "tz",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 2026,
+                        "description": "赛季年份",
+                        "name": "season",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mp/auth/avatar": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MiniProgramAuth"
+                ],
+                "summary": "上传用户头像",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "头像图片文件",
+                        "name": "avatar",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mp/auth/bind_device": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "绑定前要求设备已调用 /api/v1/device/boot 上报（后端会校验 boot report 存在）。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MiniProgramAuth"
+                ],
+                "summary": "绑定设备",
+                "parameters": [
+                    {
+                        "description": "绑定请求",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.mpAuthBindDeviceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mp/auth/login": {
+            "post": {
+                "description": "使用 wx.login 获取的 code 换取 openid 并返回后端 token。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MiniProgramAuth"
+                ],
+                "summary": "小程序登录",
+                "parameters": [
+                    {
+                        "description": "登录请求",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.mpAuthLoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.MpAuthLoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mp/auth/logout": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MiniProgramAuth"
+                ],
+                "summary": "登出",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.OkResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mp/auth/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MiniProgramAuth"
+                ],
+                "summary": "获取当前用户信息",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mp/auth/prefs": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "返回当前登录用户的偏好（车队/车手关注列表）及附加展示信息。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MiniProgramAuth"
+                ],
+                "summary": "获取用户偏好",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "返回格式版本（用于兼容旧版小程序）",
+                        "name": "v",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "team_keys/driver_numbers 会去重、排序，并最多保留 12 个。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MiniProgramAuth"
+                ],
+                "summary": "更新用户偏好",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "返回格式版本（用于兼容旧版小程序）",
+                        "name": "v",
+                        "in": "query"
+                    },
+                    {
+                        "description": "更新内容",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.mpPrefsUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mp/auth/profile": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "nick_name/avatar_url 至少传一个非空。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MiniProgramAuth"
+                ],
+                "summary": "更新用户资料",
+                "parameters": [
+                    {
+                        "description": "更新内容",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.mpAuthUpdateProfileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.OkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mp/news": {
+            "get": {
+                "description": "分页返回新闻条目列表（不包含 content）。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MiniProgram"
+                ],
+                "summary": "小程序新闻列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Asia/Shanghai",
+                        "description": "IANA 时区名称",
+                        "name": "tz",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码，从 1 开始",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "每页数量（最大 50）",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mp/news/{id}": {
+            "get": {
+                "description": "返回指定 id 的新闻详情（包含 content）。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MiniProgram"
+                ],
+                "summary": "小程序新闻详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "新闻 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "Asia/Shanghai",
+                        "description": "IANA 时区名称",
+                        "name": "tz",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mp/race-sessions": {
+            "get": {
+                "description": "返回该分站 FP/Q/RACE 等 sessions 列表与 openf1_session_key。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MiniProgram"
+                ],
+                "summary": "分站 Session 列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Asia/Shanghai",
+                        "description": "IANA 时区名称",
+                        "name": "tz",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 2026,
+                        "description": "赛季年份",
+                        "name": "season",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "分站 round（1 开始）",
+                        "name": "round",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mp/session-results": {
+            "get": {
+                "description": "返回该 session 排名 + 最快圈等（会拼装车手/车队信息）。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MiniProgram"
+                ],
+                "summary": "Session 成绩",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "OpenF1 session_key",
+                        "name": "session_key",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mp/telemetry/controls": {
+            "get": {
+                "description": "返回 points[{t, throttle, brake}]。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MiniProgram"
+                ],
+                "summary": "油门/刹车控制曲线",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "OpenF1 session_key",
+                        "name": "session_key",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "车手号码",
+                        "name": "driver_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 320,
+                        "description": "采样点数（最大 900）",
+                        "name": "n",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "fastest",
+                        "description": "选择圈：fastest/all 等",
+                        "name": "lap",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "指定圈号",
+                        "name": "lap_number",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/mp/telemetry/sector_controls": {
+            "get": {
+                "description": "返回 points[{x, sector, t_ms, speed, throttle, brake}]。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MiniProgram"
+                ],
+                "summary": "分段油门/刹车曲线（带 sector 归属）",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "OpenF1 session_key",
+                        "name": "session_key",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "车手号码",
+                        "name": "driver_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "最大采样点（0 表示默认策略，最大 20000）",
+                        "name": "max_points",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "fastest",
+                        "description": "选择圈：fastest/all 等",
+                        "name": "lap",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "指定圈号",
+                        "name": "lap_number",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/news/ingest": {
+            "post": {
+                "security": [
+                    {
+                        "TokenQuery": []
+                    }
+                ],
+                "description": "|",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "注入新闻（JSON）",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "鉴权 token（当 NEWS_INGEST_TOKEN 非空时必填）",
+                        "name": "token",
+                        "in": "query"
+                    },
+                    {
+                        "description": "注入内容",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.NewsIngestJSONBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.OkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/news/meme/ws/ingest": {
+            "post": {
+                "security": [
+                    {
+                        "TokenQuery": []
+                    }
+                ],
+                "description": "|",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "注入 Meme 新闻（multipart）",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "鉴权 token（当 NEWS_INGEST_TOKEN 非空时必填）",
+                        "name": "token",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "标题",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "可选图片文件",
+                        "name": "image",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "可选音频文件",
+                        "name": "audio",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.OkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/news/ws/ingest": {
+            "post": {
+                "security": [
+                    {
+                        "TokenQuery": []
+                    }
+                ],
+                "description": "|",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "注入 Breaking 新闻（multipart）",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "鉴权 token（当 NEWS_INGEST_TOKEN 非空时必填）",
+                        "name": "token",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "新闻标题",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "可选图片文件",
+                        "name": "image",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.OkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/news/ws/status": {
+            "get": {
+                "description": "返回新闻 WebSocket 的启用开关与在线人数。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "News"
+                ],
+                "summary": "新闻 WS 状态",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/openf1/ingest": {
+            "post": {
+                "security": [
+                    {
+                        "TokenQuery": []
+                    }
+                ],
+                "description": "|",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OpenF1"
+                ],
+                "summary": "OpenF1 注入（JSON）",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "鉴权 token（当 OPENF1_INGEST_TOKEN 非空时必填）",
+                        "name": "token",
+                        "in": "query"
+                    },
+                    {
+                        "description": "任意 JSON",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.OkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/openf1/status": {
+            "get": {
+                "description": "返回 OpenF1 WebSocket 的启用开关、mode 与在线人数。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OpenF1"
+                ],
+                "summary": "OpenF1 WS 状态",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pages": {
+            "get": {
+                "description": "聚合设备页面数据（race_day/off_week 等），并带 generated_at_utc 与 tz。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "获取 Pages（设备使用）",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Asia/Shanghai",
+                        "description": "IANA 时区名称",
+                        "name": "tz",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 2026,
+                        "description": "赛季年份",
+                        "name": "season",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "是否包含赛道信息",
+                        "name": "include_circuit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "是否强制刷新赛道缓存",
+                        "name": "refresh_circuit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pages/off-week": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "获取 Off Week Pages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Asia/Shanghai",
+                        "description": "IANA 时区名称",
+                        "name": "tz",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 2026,
+                        "description": "赛季年份",
+                        "name": "season",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "是否包含赛道信息",
+                        "name": "include_circuit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "是否强制刷新赛道缓存",
+                        "name": "refresh_circuit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pages/race-day": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "获取 Race Day Pages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Asia/Shanghai",
+                        "description": "IANA 时区名称",
+                        "name": "tz",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 2026,
+                        "description": "赛季年份",
+                        "name": "season",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "是否包含赛道信息",
+                        "name": "include_circuit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "是否强制刷新赛道缓存",
+                        "name": "refresh_circuit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pay/wechat/jsapi/prepay": {
+            "post": {
+                "security": [
+                    {
+                        "TokenQuery": []
+                    }
+                ],
+                "description": "|",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WechatPay"
+                ],
+                "summary": "JSAPI 预下单",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "鉴权 token（通常与 WECHATPAY_API_TOKEN 一致）",
+                        "name": "token",
+                        "in": "query"
+                    },
+                    {
+                        "description": "预下单请求",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.WechatPayJSAPIPrepayRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pay/wechat/notify": {
+            "post": {
+                "description": "微信支付回调入口，要求包含 Wechatpay-* 签名头；服务端验签并解密后处理。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WechatPay"
+                ],
+                "summary": "支付回调通知",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "平台证书序列号",
+                        "name": "Wechatpay-Serial",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "签名值",
+                        "name": "Wechatpay-Signature",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "时间戳",
+                        "name": "Wechatpay-Timestamp",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "随机串",
+                        "name": "Wechatpay-Nonce",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "回调报文",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pay/wechat/order/{out_trade_no}": {
+            "get": {
+                "security": [
+                    {
+                        "TokenQuery": []
+                    }
+                ],
+                "description": "|",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WechatPay"
+                ],
+                "summary": "查询订单",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "鉴权 token（通常与 WECHATPAY_API_TOKEN 一致）",
+                        "name": "token",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "商户订单号",
+                        "name": "out_trade_no",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/telemetry/fastest_lap": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Telemetry"
+                ],
+                "summary": "最快圈轨迹",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "车手号码",
+                        "name": "driver_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "OpenF1 session_key",
+                        "name": "session_key",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 240,
+                        "description": "最大采样点数（50-5000）",
+                        "name": "max_points",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/telemetry/lap_controls": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Telemetry"
+                ],
+                "summary": "圈控制数据（简版）",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "车手号码",
+                        "name": "driver_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "OpenF1 session_key",
+                        "name": "session_key",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/telemetry/lap_controls_series": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Telemetry"
+                ],
+                "summary": "指定圈号的控制曲线",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "车手号码",
+                        "name": "driver_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "圈号",
+                        "name": "lap_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "OpenF1 session_key",
+                        "name": "session_key",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "最大采样点（0 表示默认策略，最大 20000）",
+                        "name": "max_points",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/telemetry/lap_time_boxplot": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Telemetry"
+                ],
+                "summary": "圈速箱线图",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "OpenF1 session_key",
+                        "name": "session_key",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "车手号码 CSV，例如 1,16,44",
+                        "name": "driver_numbers",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "1 表示包含 pit out 圈",
+                        "name": "include_pit_out",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "1 表示排除标记圈；0 表示不排除",
+                        "name": "exclude_flags",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/telemetry/lap_trace": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Telemetry"
+                ],
+                "summary": "指定圈的轨迹",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "车手号码",
+                        "name": "driver_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "圈号",
+                        "name": "lap_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "OpenF1 session_key",
+                        "name": "session_key",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 600,
+                        "description": "最大采样点数（50-5000）",
+                        "name": "max_points",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/telemetry/laps": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Telemetry"
+                ],
+                "summary": "查询圈数据",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "车手号码",
+                        "name": "driver_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "OpenF1 session_key",
+                        "name": "session_key",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/telemetry/laps/available": {
+            "get": {
+                "description": "需要 MySQL（TOINC_F1_MYSQL_ENABLED=1）。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Telemetry"
+                ],
+                "summary": "可用圈列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ui/pages": {
+            "get": {
+                "description": "UI 版本会根据中间件 language（默认 en-US）做部分格式化。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "获取 UI Pages（小程序/前端展示）",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Asia/Shanghai",
+                        "description": "IANA 时区名称",
+                        "name": "tz",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 2026,
+                        "description": "赛季年份",
+                        "name": "season",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "是否包含赛道信息",
+                        "name": "include_circuit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "是否强制刷新赛道缓存",
+                        "name": "refresh_circuit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ui/pages/off-week": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "获取 UI Off Week Pages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Asia/Shanghai",
+                        "description": "IANA 时区名称",
+                        "name": "tz",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 2026,
+                        "description": "赛季年份",
+                        "name": "season",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "是否包含赛道信息",
+                        "name": "include_circuit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "是否强制刷新赛道缓存",
+                        "name": "refresh_circuit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ui/pages/race-day": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "获取 UI Race Day Pages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Asia/Shanghai",
+                        "description": "IANA 时区名称",
+                        "name": "tz",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 2026,
+                        "description": "赛季年份",
+                        "name": "season",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "是否包含赛道信息",
+                        "name": "include_circuit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "是否强制刷新赛道缓存",
+                        "name": "refresh_circuit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.GenericObject"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ws/broadcast": {
+            "get": {
+                "description": "text 长度必须为 1-512 字符。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebSocket"
+                ],
+                "summary": "广播消息到所有 WebSocket 客户端",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "要广播的文本内容（1-512 字符）",
+                        "name": "text",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.WsBroadcastResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "text 长度必须为 1-512 字符。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebSocket"
+                ],
+                "summary": "广播消息到所有 WebSocket 客户端",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "要广播的文本内容（1-512 字符）",
+                        "name": "text",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.WsBroadcastResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ws/status": {
+            "get": {
+                "description": "返回当前 hub 的在线客户端数量。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebSocket"
+                ],
+                "summary": "WebSocket 在线状态",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.WsStatusResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "服务存活探针。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Health"
+                ],
+                "summary": "健康检查",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_httpserver_handlers.OkResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/ws": {
+            "get": {
+                "description": "WebSocket 连接：收到文本帧后原样回写。",
+                "tags": [
+                    "WebSocket"
+                ],
+                "summary": "WebSocket Echo",
+                "responses": {}
+            }
+        },
+        "/ws/news": {
+            "get": {
+                "description": "新闻推送 WebSocket。服务端会根据 topic 推送消息（如 v1/breaking、v1/meme）。",
+                "tags": [
+                    "News"
+                ],
+                "summary": "新闻 WebSocket",
+                "responses": {}
+            }
+        },
+        "/ws/openf1": {
+            "get": {
+                "description": "OpenF1 推送 WebSocket（根据 mode 可能推 mock 或真实数据）。",
+                "tags": [
+                    "OpenF1"
+                ],
+                "summary": "OpenF1 WebSocket",
+                "responses": {}
+            }
+        },
+        "/ws/openf1/ingest": {
+            "get": {
+                "security": [
+                    {
+                        "TokenQuery": []
+                    }
+                ],
+                "description": "|",
+                "tags": [
+                    "OpenF1"
+                ],
+                "summary": "OpenF1 WebSocket 注入",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "鉴权 token（当 OPENF1_INGEST_TOKEN 非空时必填）",
+                        "name": "token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/ws/openf1/raw": {
+            "get": {
+                "description": "OpenF1 推送 WebSocket（根据 mode 可能推 mock 或真实数据）。",
+                "tags": [
+                    "OpenF1"
+                ],
+                "summary": "OpenF1 WebSocket",
+                "responses": {}
+            }
+        }
+    },
+    "definitions": {
+        "internal_httpserver_handlers.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_httpserver_handlers.GenericObject": {
+            "type": "object",
+            "additionalProperties": {}
+        },
+        "internal_httpserver_handlers.MpAuthLoginResponse": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_httpserver_handlers.MpAuthUser"
+                }
+            }
+        },
+        "internal_httpserver_handlers.MpAuthUser": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "openid": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_httpserver_handlers.NewsIngestJSONBody": {
+            "type": "object",
+            "properties": {
+                "payload": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "topic": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_httpserver_handlers.OkResponse": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_httpserver_handlers.WechatPayJSAPIPrepayRequest": {
+            "type": "object",
+            "properties": {
+                "attach": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "openid": {
+                    "type": "string"
+                },
+                "out_trade_no": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_httpserver_handlers.WsBroadcastResponse": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean"
+                },
+                "sent": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_httpserver_handlers.WsStatusResponse": {
+            "type": "object",
+            "properties": {
+                "clients": {
+                    "type": "integer"
+                },
+                "ok": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_httpserver_handlers.deviceBootRequest": {
+            "type": "object",
+            "properties": {
+                "board_type": {
+                    "type": "string"
+                },
+                "device_id": {
+                    "type": "string"
+                },
+                "device_key": {
+                    "type": "string"
+                },
+                "device_uuid": {
+                    "type": "string"
+                },
+                "fw_user_agent": {
+                    "type": "string"
+                },
+                "mac": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_httpserver_handlers.mpAuthBindDeviceRequest": {
+            "type": "object",
+            "properties": {
+                "device_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_httpserver_handlers.mpAuthLoginRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_httpserver_handlers.mpAuthUpdateProfileRequest": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "nick_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_httpserver_handlers.mpPrefsUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "driver_numbers": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "team_keys": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "team_name": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Authorization: Bearer \u003ctoken\u003e",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        },
+        "TokenQuery": {
+            "description": "简单鉴权 token（NEWS_INGEST_TOKEN / OPENF1_INGEST_TOKEN / WECHATPAY_API_TOKEN 等）",
+            "type": "apiKey",
+            "name": "token",
+            "in": "query"
+        }
+    }
+}

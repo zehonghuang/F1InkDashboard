@@ -22,6 +22,18 @@ import (
 	"gorm.io/gorm"
 )
 
+// @Summary 获取 Pages（设备使用）
+// @Description 聚合设备页面数据（race_day/off_week 等），并带 generated_at_utc 与 tz。
+// @Tags Pages
+// @Produce json
+// @Param tz query string false "IANA 时区名称" default(Asia/Shanghai)
+// @Param season query int false "赛季年份" default(2026)
+// @Param include_circuit query bool false "是否包含赛道信息" default(true)
+// @Param refresh_circuit query bool false "是否强制刷新赛道缓存" default(false)
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/pages [get]
 func Pages(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		out, code := buildPagesResponse(c.Request.Context(), cfg, db, cch, staticDir, c)
@@ -33,6 +45,17 @@ func Pages(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir string
 	}
 }
 
+// @Summary 获取 Race Day Pages
+// @Tags Pages
+// @Produce json
+// @Param tz query string false "IANA 时区名称" default(Asia/Shanghai)
+// @Param season query int false "赛季年份" default(2026)
+// @Param include_circuit query bool false "是否包含赛道信息" default(true)
+// @Param refresh_circuit query bool false "是否强制刷新赛道缓存" default(false)
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/pages/race-day [get]
 func PagesRaceDay(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		out, code := buildPagesResponse(c.Request.Context(), cfg, db, cch, staticDir, c)
@@ -49,6 +72,17 @@ func PagesRaceDay(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir
 	}
 }
 
+// @Summary 获取 Off Week Pages
+// @Tags Pages
+// @Produce json
+// @Param tz query string false "IANA 时区名称" default(Asia/Shanghai)
+// @Param season query int false "赛季年份" default(2026)
+// @Param include_circuit query bool false "是否包含赛道信息" default(true)
+// @Param refresh_circuit query bool false "是否强制刷新赛道缓存" default(false)
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/pages/off-week [get]
 func PagesOffWeek(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		out, code := buildPagesResponse(c.Request.Context(), cfg, db, cch, staticDir, c)
@@ -65,6 +99,18 @@ func PagesOffWeek(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir
 	}
 }
 
+// @Summary 获取 UI Pages（小程序/前端展示）
+// @Description UI 版本会根据中间件 language（默认 en-US）做部分格式化。
+// @Tags Pages
+// @Produce json
+// @Param tz query string false "IANA 时区名称" default(Asia/Shanghai)
+// @Param season query int false "赛季年份" default(2026)
+// @Param include_circuit query bool false "是否包含赛道信息" default(true)
+// @Param refresh_circuit query bool false "是否强制刷新赛道缓存" default(false)
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/ui/pages [get]
 func UiPages(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		pages, code := buildPagesResponse(c.Request.Context(), cfg, db, cch, staticDir, c)
@@ -79,6 +125,17 @@ func UiPages(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir stri
 	}
 }
 
+// @Summary 获取 UI Race Day Pages
+// @Tags Pages
+// @Produce json
+// @Param tz query string false "IANA 时区名称" default(Asia/Shanghai)
+// @Param season query int false "赛季年份" default(2026)
+// @Param include_circuit query bool false "是否包含赛道信息" default(true)
+// @Param refresh_circuit query bool false "是否强制刷新赛道缓存" default(false)
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/ui/pages/race-day [get]
 func UiPagesRaceDay(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		pages, code := buildPagesResponse(c.Request.Context(), cfg, db, cch, staticDir, c)
@@ -99,6 +156,17 @@ func UiPagesRaceDay(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticD
 	}
 }
 
+// @Summary 获取 UI Off Week Pages
+// @Tags Pages
+// @Produce json
+// @Param tz query string false "IANA 时区名称" default(Asia/Shanghai)
+// @Param season query int false "赛季年份" default(2026)
+// @Param include_circuit query bool false "是否包含赛道信息" default(true)
+// @Param refresh_circuit query bool false "是否强制刷新赛道缓存" default(false)
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/ui/pages/off-week [get]
 func UiPagesOffWeek(cfg config.Config, db *gorm.DB, cch *cache.TTLCache, staticDir string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		pages, code := buildPagesResponse(c.Request.Context(), cfg, db, cch, staticDir, c)

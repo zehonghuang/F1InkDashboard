@@ -24,6 +24,23 @@ go run ./cmd/server
 - `BACKEND_LOG_REQUESTS`（默认 `1`）
 - `BACKEND_LOG_OUTGOING_HTTP`（默认 `1`）
 
+## API 文档（Swagger UI）
+
+后端已接入 swagger-ui（swaggo/swag 自动生成），启动后访问：
+
+- Swagger UI：`http://127.0.0.1:8008/swagger/index.html`
+- OpenAPI JSON：`http://127.0.0.1:8008/swagger/doc.json`
+
+### 本地生成/更新文档
+
+当你新增/修改接口或参数后，需要重新生成 `backend/docs`：
+
+```bash
+cd backend
+go install github.com/swaggo/swag/cmd/swag@v1.16.4
+swag init --parseDependency --parseInternal -g cmd/server/swagger.go -o docs
+```
+
 ## 微信支付（V3）
 
 后端提供独立的微信支付接口（JSAPI 预支付 / 回调 / 查单）。
@@ -48,6 +65,8 @@ API：
 - `POST /api/v1/pay/wechat/notify`：微信支付回调通知（验签 + 解密）
 
 ## API
+
+完整接口说明/参数解释以 Swagger 文档为准：`/swagger/index.html`。
 
 - `GET /health`
 - `GET /api/v1/ws/status`：当前 WS 连接数

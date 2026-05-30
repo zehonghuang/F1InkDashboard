@@ -11,6 +11,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// @Summary 可用圈列表
+// @Description 需要 MySQL（TOINC_F1_MYSQL_ENABLED=1）。
+// @Tags Telemetry
+// @Produce json
+// @Success 200 {object} GenericObject
+// @Failure 502 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/telemetry/laps/available [get]
 func TelemetryLapsAvailable(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
@@ -27,6 +35,16 @@ func TelemetryLapsAvailable(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// @Summary 查询圈数据
+// @Tags Telemetry
+// @Produce json
+// @Param driver_number query int true "车手号码"
+// @Param session_key query int false "OpenF1 session_key"
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 502 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/telemetry/laps [get]
 func TelemetryLaps(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
@@ -54,6 +72,16 @@ func TelemetryLaps(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// @Summary 圈控制数据（简版）
+// @Tags Telemetry
+// @Produce json
+// @Param driver_number query int true "车手号码"
+// @Param session_key query int false "OpenF1 session_key"
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 502 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/telemetry/lap_controls [get]
 func TelemetryLapControls(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
@@ -81,6 +109,18 @@ func TelemetryLapControls(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// @Summary 指定圈的轨迹
+// @Tags Telemetry
+// @Produce json
+// @Param driver_number query int true "车手号码"
+// @Param lap_number query int true "圈号"
+// @Param session_key query int false "OpenF1 session_key"
+// @Param max_points query int false "最大采样点数（50-5000）" default(600)
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 502 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/telemetry/lap_trace [get]
 func TelemetryLapTrace(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
@@ -132,6 +172,17 @@ func TelemetryLapTrace(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// @Summary 最快圈轨迹
+// @Tags Telemetry
+// @Produce json
+// @Param driver_number query int true "车手号码"
+// @Param session_key query int false "OpenF1 session_key"
+// @Param max_points query int false "最大采样点数（50-5000）" default(240)
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 502 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/telemetry/fastest_lap [get]
 func TelemetryFastestLap(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
@@ -184,6 +235,18 @@ func TelemetryFastestLap(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// @Summary 指定圈号的控制曲线
+// @Tags Telemetry
+// @Produce json
+// @Param driver_number query int true "车手号码"
+// @Param lap_number query int true "圈号"
+// @Param session_key query int false "OpenF1 session_key"
+// @Param max_points query int false "最大采样点（0 表示默认策略，最大 20000）" default(0)
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 502 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/telemetry/lap_controls_series [get]
 func TelemetryLapControlsSeries(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {

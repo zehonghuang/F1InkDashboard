@@ -15,6 +15,19 @@ import (
 	"gorm.io/gorm"
 )
 
+// @Summary 查询 session 列表
+// @Tags Sessions
+// @Produce json
+// @Param tz query string false "IANA 时区名称" default(Asia/Shanghai)
+// @Param season query int false "赛季年份" default(2026)
+// @Param round query int false "分站 round（1-30）"
+// @Param session query string false "session 名称过滤；auto 表示按当前时间选择" default(auto)
+// @Param q query int false "排位分段（1-3）"
+// @Param limit query int false "返回数量限制（1-30）" default(13)
+// @Success 200 {object} GenericObject
+// @Failure 502 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/f1/sessions [get]
 func F1Sessions(cfg config.Config, db *gorm.DB, cch *cache.TTLCache) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
@@ -91,6 +104,19 @@ func F1SessionsCurrent(cfg config.Config, db *gorm.DB, cch *cache.TTLCache) gin.
 	}
 }
 
+// @Summary 当前 session（显式 current）
+// @Description 固定 session=auto，语义等价于 /api/v1/f1/sessions?session=auto。
+// @Tags Sessions
+// @Produce json
+// @Param tz query string false "IANA 时区名称" default(Asia/Shanghai)
+// @Param season query int false "赛季年份" default(2026)
+// @Param round query int false "分站 round（1-30）"
+// @Param q query int false "排位分段（1-3）"
+// @Param limit query int false "返回数量限制（1-30）" default(13)
+// @Success 200 {object} GenericObject
+// @Failure 502 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/f1/sessions/current [get]
 func F1SessionsCurrentExplicit(cfg config.Config, db *gorm.DB, cch *cache.TTLCache) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
@@ -156,6 +182,20 @@ func F1SessionsCurrentExplicit(cfg config.Config, db *gorm.DB, cch *cache.TTLCac
 	}
 }
 
+// @Summary 按路径获取 session 文件
+// @Description 读取静态 session 文件（session_name 会自动去掉 .json 后缀）。
+// @Tags Sessions
+// @Produce json
+// @Param season path int true "赛季年份"
+// @Param round path int true "分站 round（1-30）"
+// @Param session_name path string true "session 名称（可带 .json）"
+// @Param tz query string false "IANA 时区名称" default(Asia/Shanghai)
+// @Param q query int false "排位分段（1-3）"
+// @Param limit query int false "返回数量限制（1-30）" default(13)
+// @Success 200 {object} GenericObject
+// @Failure 502 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/f1/sessions/{season}/{round}/{session_name} [get]
 func F1SessionsByPath(cfg config.Config, db *gorm.DB, cch *cache.TTLCache) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {

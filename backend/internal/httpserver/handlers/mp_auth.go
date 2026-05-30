@@ -19,6 +19,17 @@ type mpAuthLoginRequest struct {
 	Code string `json:"code"`
 }
 
+// @Summary 小程序登录
+// @Description 使用 wx.login 获取的 code 换取 openid 并返回后端 token。
+// @Tags MiniProgramAuth
+// @Accept json
+// @Produce json
+// @Param body body mpAuthLoginRequest true "登录请求"
+// @Success 200 {object} MpAuthLoginResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/mp/auth/login [post]
 func MpAuthLogin(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
@@ -170,6 +181,18 @@ type mpAuthUpdateProfileRequest struct {
 	AvatarURL string `json:"avatar_url"`
 }
 
+// @Summary 更新用户资料
+// @Description nick_name/avatar_url 至少传一个非空。
+// @Tags MiniProgramAuth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param body body mpAuthUpdateProfileRequest true "更新内容"
+// @Success 200 {object} OkResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/mp/auth/profile [post]
 func MpAuthUpdateProfile(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userIDAny, ok := c.Get("mp_user_id")
@@ -222,6 +245,17 @@ func MpAuthUpdateProfile(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// @Summary 上传用户头像
+// @Tags MiniProgramAuth
+// @Accept mpfd
+// @Produce json
+// @Security BearerAuth
+// @Param avatar formData file true "头像图片文件"
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/mp/auth/avatar [post]
 func MpAuthUploadAvatar(staticDir string, db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userIDAny, ok := c.Get("mp_user_id")
@@ -267,6 +301,18 @@ func MpAuthUploadAvatar(staticDir string, db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// @Summary 绑定设备
+// @Description 绑定前要求设备已调用 /api/v1/device/boot 上报（后端会校验 boot report 存在）。
+// @Tags MiniProgramAuth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param body body mpAuthBindDeviceRequest true "绑定请求"
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/mp/auth/bind_device [post]
 func MpAuthBindDevice(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userIDAny, ok := c.Get("mp_user_id")
@@ -319,6 +365,14 @@ func MpAuthBindDevice(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// @Summary 获取当前用户信息
+// @Tags MiniProgramAuth
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} GenericObject
+// @Failure 401 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/mp/auth/me [get]
 func MpAuthMe(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userIDAny, ok := c.Get("mp_user_id")
@@ -367,6 +421,13 @@ func MpAuthMe(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// @Summary 登出
+// @Tags MiniProgramAuth
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} OkResponse
+// @Failure 401 {object} ErrorResponse
+// @Router /api/v1/mp/auth/logout [post]
 func MpAuthLogout(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenAny, ok := c.Get("mp_token")

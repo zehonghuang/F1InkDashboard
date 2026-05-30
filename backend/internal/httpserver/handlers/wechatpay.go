@@ -11,6 +11,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary JSAPI 预下单
+// @Description |
+//   服务端透传并发起微信支付 JSAPI 下单流程。
+//
+//   鉴权：
+//   - 使用 query token（通常与 WECHATPAY_API_TOKEN 配置一致）。
+// @Tags WechatPay
+// @Accept json
+// @Produce json
+// @Security TokenQuery
+// @Param token query string false "鉴权 token（通常与 WECHATPAY_API_TOKEN 一致）"
+// @Param body body WechatPayJSAPIPrepayRequest true "预下单请求"
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/pay/wechat/jsapi/prepay [post]
 func WechatPayJSAPIPrepay(cfg config.Config) gin.HandlerFunc {
 	client, initErr := wechatpay.NewClient(cfg.WechatPay)
 
@@ -23,14 +40,7 @@ func WechatPayJSAPIPrepay(cfg config.Config) gin.HandlerFunc {
 			return
 		}
 
-		var in struct {
-			Description string `json:"description"`
-			OutTradeNo  string `json:"out_trade_no"`
-			Total       int64  `json:"total"`
-			Currency    string `json:"currency"`
-			OpenID      string `json:"openid"`
-			Attach      string `json:"attach"`
-		}
+		var in WechatPayJSAPIPrepayRequest
 		if err := c.ShouldBindJSON(&in); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": "bad_json"})
 			return
@@ -53,6 +63,20 @@ func WechatPayJSAPIPrepay(cfg config.Config) gin.HandlerFunc {
 	}
 }
 
+// @Summary 查询订单
+// @Description |
+//   鉴权：
+//   - 使用 query token（通常与 WECHATPAY_API_TOKEN 配置一致）。
+// @Tags WechatPay
+// @Produce json
+// @Security TokenQuery
+// @Param token query string false "鉴权 token（通常与 WECHATPAY_API_TOKEN 一致）"
+// @Param out_trade_no path string true "商户订单号"
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/pay/wechat/order/{out_trade_no} [get]
 func WechatPayQueryOrder(cfg config.Config) gin.HandlerFunc {
 	client, initErr := wechatpay.NewClient(cfg.WechatPay)
 
@@ -75,6 +99,21 @@ func WechatPayQueryOrder(cfg config.Config) gin.HandlerFunc {
 	}
 }
 
+// @Summary 支付回调通知
+// @Description 微信支付回调入口，要求包含 Wechatpay-* 签名头；服务端验签并解密后处理。
+// @Tags WechatPay
+// @Accept json
+// @Produce json
+// @Param Wechatpay-Serial header string true "平台证书序列号"
+// @Param Wechatpay-Signature header string true "签名值"
+// @Param Wechatpay-Timestamp header string true "时间戳"
+// @Param Wechatpay-Nonce header string true "随机串"
+// @Param body body GenericObject true "回调报文"
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} GenericObject
+// @Failure 401 {object} GenericObject
+// @Failure 503 {object} GenericObject
+// @Router /api/v1/pay/wechat/notify [post]
 func WechatPayNotify(cfg config.Config) gin.HandlerFunc {
 	client, initErr := wechatpay.NewClient(cfg.WechatPay)
 

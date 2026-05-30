@@ -20,6 +20,16 @@ type mpPrefsUpdateRequest struct {
 	DriverNumbers []int    `json:"driver_numbers"`
 }
 
+// @Summary 获取用户偏好
+// @Description 返回当前登录用户的偏好（车队/车手关注列表）及附加展示信息。
+// @Tags MiniProgramAuth
+// @Produce json
+// @Security BearerAuth
+// @Param v query string false "返回格式版本（用于兼容旧版小程序）"
+// @Success 200 {object} GenericObject
+// @Failure 401 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/mp/auth/prefs [get]
 func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		v := strings.TrimSpace(c.Query("v"))
@@ -154,6 +164,19 @@ func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 	}
 }
 
+// @Summary 更新用户偏好
+// @Description team_keys/driver_numbers 会去重、排序，并最多保留 12 个。
+// @Tags MiniProgramAuth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param v query string false "返回格式版本（用于兼容旧版小程序）"
+// @Param body body mpPrefsUpdateRequest true "更新内容"
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/mp/auth/prefs [put]
 func MpPrefsUpdate(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		v := strings.TrimSpace(c.Query("v"))

@@ -9,6 +9,10 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// @Summary WebSocket Echo
+// @Description WebSocket 连接：收到文本帧后原样回写。
+// @Tags WebSocket
+// @Router /ws [get]
 func WsEcho(hub *ws.Hub) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)

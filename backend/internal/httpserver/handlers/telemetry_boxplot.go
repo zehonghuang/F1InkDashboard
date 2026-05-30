@@ -27,6 +27,18 @@ type boxplotStats struct {
 	Outliers     []float64 `json:"outliers"`
 }
 
+// @Summary 圈速箱线图
+// @Tags Telemetry
+// @Produce json
+// @Param session_key query int true "OpenF1 session_key"
+// @Param driver_numbers query string true "车手号码 CSV，例如 1,16,44"
+// @Param include_pit_out query int false "1 表示包含 pit out 圈" default(0)
+// @Param exclude_flags query int false "1 表示排除标记圈；0 表示不排除" default(1)
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 502 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/telemetry/lap_time_boxplot [get]
 func TelemetryLapTimeBoxplot(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {

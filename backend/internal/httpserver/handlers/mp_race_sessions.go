@@ -13,6 +13,18 @@ import (
 	"gorm.io/gorm"
 )
 
+// @Summary 分站 Session 列表
+// @Description 返回该分站 FP/Q/RACE 等 sessions 列表与 openf1_session_key。
+// @Tags MiniProgram
+// @Produce json
+// @Param tz query string false "IANA 时区名称" default(Asia/Shanghai)
+// @Param season query int false "赛季年份" default(2026)
+// @Param round query int true "分站 round（1 开始）"
+// @Success 200 {object} GenericObject
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 503 {object} ErrorResponse
+// @Router /api/v1/mp/race-sessions [get]
 func MpRaceSessions(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
