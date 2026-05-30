@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
-	"toinc_f1_backend/internal/thirdparty"
+	"toinc_f1_backend/internal/teamdrivercache"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-func MpSessionResults(db *gorm.DB, staticDir string) gin.HandlerFunc {
+func MpSessionResults(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "mp_session_results", "mysql_required", nil)
@@ -55,26 +55,6 @@ func MpSessionResults(db *gorm.DB, staticDir string) gin.HandlerFunc {
 			driverNums = append(driverNums, r.DriverNumber)
 		}
 		driverNums = uniqIntsLocal(driverNums)
-
-		type drvRow struct {
-			DriverNumber int     `gorm:"column:driver_number"`
-			FullName     *string `gorm:"column:full_name"`
-			BroadcastName *string `gorm:"column:broadcast_name"`
-			HeadshotURL  *string `gorm:"column:headshot_url"`
-			TeamName     *string `gorm:"column:team_name"`
-			TeamColour   *string `gorm:"column:team_colour"`
-			NameAcronym  *string `gorm:"column:name_acronym"`
-		}
-		var drv []drvRow
-		_ = db.Raw(`
-			SELECT driver_number, full_name, broadcast_name, headshot_url, team_name, team_colour, name_acronym
-			FROM openf1_drivers
-			WHERE session_key = ? AND driver_number IN (?)
-		`, sessionKey, driverNums).Scan(&drv).Error
-		byDriver := map[int]drvRow{}
-		for _, d := range drv {
-			byDriver[d.DriverNumber] = d
-		}
 
 		type lapRow struct {
 			DriverNumber int     `gorm:"column:driver_number"`
@@ -133,32 +113,40 @@ func MpSessionResults(db *gorm.DB, staticDir string) gin.HandlerFunc {
 
 		items := make([]any, 0, len(rows))
 		for _, r := range rows {
-			d := byDriver[r.DriverNumber]
 			team := ""
-			if d.TeamName != nil {
-				team = strings.TrimSpace(*d.TeamName)
-			}
 			avatar := ""
-			if d.HeadshotURL != nil {
-				avatar = strings.TrimSpace(*d.HeadshotURL)
-			}
 			teamColor := ""
-			if d.TeamColour != nil {
-				teamColor = normalizeTeamColor(*d.TeamColour)
-			}
-			teamLogoURL := absURL(thirdparty.EnsureFormula1TeamLogo(staticDir, team))
 			driverName := ""
-			if d.FullName != nil {
-				driverName = strings.TrimSpace(*d.FullName)
-			}
-			fullName := driverName
-			if driverName == "" && d.BroadcastName != nil {
-				driverName = strings.TrimSpace(*d.BroadcastName)
-			}
+			fullName := ""
 			acr := ""
-			if d.NameAcronym != nil {
-				acr = strings.TrimSpace(*d.NameAcronym)
+			teamLogoURL := ""
+
+			if tdCache != nil {
+				if di, ok := tdCache.GetDriver(r.DriverNumber); ok {
+					team = strings.TrimSpace(di.TeamName)
+					avatar = strings.TrimSpace(di.HeadshotURL)
+					teamColor = strings.TrimSpace(di.TeamColor)
+					fullName = strings.TrimSpace(di.FullName)
+					acr = strings.TrimSpace(di.NameAcronym)
+					driverName = fullName
+					if driverName == "" {
+						driverName = strings.TrimSpace(di.BroadcastName)
+					}
+					if driverName == "" {
+						driverName = acr
+					}
+				}
+				if team != "" {
+					if ti, ok := tdCache.GetTeam(team); ok {
+						if teamColor == "" {
+							teamColor = strings.TrimSpace(ti.TeamColor)
+						}
+						teamLogoURL = strings.TrimSpace(ti.TeamLogoURL)
+					}
+				}
 			}
+			teamLogoURL = absURL(teamLogoURL)
+
 			if driverName == "" {
 				driverName = acr
 			}

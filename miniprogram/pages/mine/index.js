@@ -5,6 +5,8 @@ const STORAGE_KEYS = {
   season: "pref_season",
   followDrivers: "pref_follow_drivers",
   followTeams: "pref_follow_teams",
+  followDriverColors: "pref_follow_driver_colors",
+  followTeamColors: "pref_follow_team_colors",
   prefsInited: "pref_prefs_inited"
 }
 
@@ -74,11 +76,19 @@ Page({
       const r = await fetchPrefs()
       const teamKeys = (r && r.teamKeys) || []
       const driverNumbers = (r && r.driverNumbers) || []
+      const teamColors = (r && r.teamColors) || {}
+      const driverColors = (r && r.driverColors) || {}
       try {
         wx.setStorageSync(STORAGE_KEYS.followTeams, teamKeys)
       } catch (e) {}
       try {
         wx.setStorageSync(STORAGE_KEYS.followDrivers, driverNumbers)
+      } catch (e) {}
+      try {
+        wx.setStorageSync(STORAGE_KEYS.followTeamColors, teamColors)
+      } catch (e) {}
+      try {
+        wx.setStorageSync(STORAGE_KEYS.followDriverColors, driverColors)
       } catch (e) {}
       try {
         wx.setStorageSync(STORAGE_KEYS.prefsInited, "1")
@@ -115,6 +125,8 @@ Page({
     let prefSeason = 2026
     let followDrivers = []
     let followTeams = []
+    let followTeamColors = {}
+    let followDriverColors = {}
     try {
       const s = wx.getStorageSync(STORAGE_KEYS.season)
       const n = Number(s)
@@ -128,6 +140,14 @@ Page({
       const xs = wx.getStorageSync(STORAGE_KEYS.followTeams)
       if (Array.isArray(xs)) followTeams = xs.map((x) => String(x || "").trim()).filter(Boolean)
     } catch (e) {}
+    try {
+      const m = wx.getStorageSync(STORAGE_KEYS.followTeamColors)
+      if (m && typeof m === "object") followTeamColors = m
+    } catch (e) {}
+    try {
+      const m = wx.getStorageSync(STORAGE_KEYS.followDriverColors)
+      if (m && typeof m === "object") followDriverColors = m
+    } catch (e) {}
 
     const followDriversText = followDrivers.length ? `${followDrivers.length} 人` : "未设置"
     const followTeamsText = followTeams.length ? `${followTeams.length} 支` : "未设置"
@@ -140,7 +160,7 @@ Page({
     try {
       const app = getApp()
       if (app && app.globalData) {
-        app.globalData.prefs = { season: prefSeason, followDrivers, followTeams }
+        app.globalData.prefs = { season: prefSeason, followDrivers, followTeams, followTeamColors, followDriverColors }
       }
     } catch (e) {}
   },

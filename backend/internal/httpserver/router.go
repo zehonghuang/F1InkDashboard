@@ -6,6 +6,7 @@ import (
 	"toinc_f1_backend/internal/db"
 	"toinc_f1_backend/internal/httpserver/handlers"
 	"toinc_f1_backend/internal/openf1scheduler"
+	"toinc_f1_backend/internal/teamdrivercache"
 	"toinc_f1_backend/internal/ws"
 
 	"github.com/gin-gonic/gin"
@@ -17,6 +18,7 @@ type Server struct {
 	DB        *db.DB
 	Config    config.Config
 	Cache     *cache.TTLCache
+	TeamCache *teamdrivercache.Manager
 	EchoHub   *ws.Hub
 	NewsHub   *ws.Hub
 	OpenF1Hub *ws.Hub
@@ -28,10 +30,12 @@ func New(cfg config.Config, database *db.DB) *Server {
 		DB:        database,
 		Config:    cfg,
 		Cache:     cache.New(),
+		TeamCache: teamdrivercache.New(gormOrNil(database), cfg.StaticDir),
 		EchoHub:   ws.NewHub(),
 		NewsHub:   ws.NewHub(),
 		OpenF1Hub: ws.NewHub(),
 	}
+	s.TeamCache.Start()
 
 	s.Router.Use(gin.Recovery())
 	_ = s.Router.SetTrustedProxies(cfg.TrustedProxies)
@@ -77,7 +81,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 
 	s.Router.GET("/api/v1/mp/archive", handlers.MpArchive(gormOrNil(database), cfg.StaticDir))
 	s.Router.GET("/api/v1/mp/race-sessions", handlers.MpRaceSessions(gormOrNil(database)))
-	s.Router.GET("/api/v1/mp/session-results", handlers.MpSessionResults(gormOrNil(database), cfg.StaticDir))
+	s.Router.GET("/api/v1/mp/session-results", handlers.MpSessionResults(gormOrNil(database), s.TeamCache))
 	s.Router.GET("/api/v1/mp/telemetry/controls", handlers.MpTelemetryControls(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/telemetry/sector_controls", handlers.MpTelemetrySectorControls(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/news", handlers.MpNewsList(cfg.StaticDir))
@@ -91,8 +95,8 @@ func New(cfg config.Config, database *db.DB) *Server {
 	mpAuthAuth.POST("/profile", handlers.MpAuthUpdateProfile(gormOrNil(database)))
 	mpAuthAuth.POST("/avatar", handlers.MpAuthUploadAvatar(cfg.StaticDir, gormOrNil(database)))
 	mpAuthAuth.POST("/bind_device", handlers.MpAuthBindDevice(gormOrNil(database)))
-	mpAuthAuth.GET("/prefs", handlers.MpPrefsGet(gormOrNil(database)))
-	mpAuthAuth.PUT("/prefs", handlers.MpPrefsUpdate(gormOrNil(database)))
+	mpAuthAuth.GET("/prefs", handlers.MpPrefsGet(gormOrNil(database), s.TeamCache))
+	mpAuthAuth.PUT("/prefs", handlers.MpPrefsUpdate(gormOrNil(database), s.TeamCache))
 	mpAuthAuth.POST("/logout", handlers.MpAuthLogout(gormOrNil(database)))
 
 	s.Router.POST("/api/v1/pay/wechat/jsapi/prepay", handlers.WechatPayJSAPIPrepay(cfg))

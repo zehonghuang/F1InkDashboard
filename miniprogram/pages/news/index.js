@@ -4,6 +4,8 @@ const { fetchNewsList } = require("../../services/mpNewsApi")
 const WELCOME_KEY = "news_welcome_shown_v1"
 const PREF_TEAMS_KEY = "pref_follow_teams"
 const PREF_DRIVERS_KEY = "pref_follow_drivers"
+const PREF_TEAM_COLORS_KEY = "pref_follow_team_colors"
+const PREF_DRIVER_COLORS_KEY = "pref_follow_driver_colors"
 const PREFS_INITED_KEY = "pref_prefs_inited"
 
 function normalizeText(v) {
@@ -15,6 +17,8 @@ function normalizeText(v) {
 function getLocalPrefs() {
   let followTeams = []
   let followDrivers = []
+  let followTeamColors = {}
+  let followDriverColors = {}
 
   try {
     const app = getApp()
@@ -22,6 +26,8 @@ function getLocalPrefs() {
     if (gp) {
       followTeams = Array.isArray(gp.followTeams) ? gp.followTeams : []
       followDrivers = Array.isArray(gp.followDrivers) ? gp.followDrivers : []
+      followTeamColors = gp.followTeamColors && typeof gp.followTeamColors === "object" ? gp.followTeamColors : {}
+      followDriverColors = gp.followDriverColors && typeof gp.followDriverColors === "object" ? gp.followDriverColors : {}
     }
   } catch (e) {}
 
@@ -43,34 +49,58 @@ function getLocalPrefs() {
     } catch (e) {}
   }
 
-  return { followTeams, followDrivers }
+  if (!Object.keys(followTeamColors).length) {
+    try {
+      const m = wx.getStorageSync(PREF_TEAM_COLORS_KEY)
+      if (m && typeof m === "object") followTeamColors = m
+    } catch (e) {}
+  }
+
+  if (!Object.keys(followDriverColors).length) {
+    try {
+      const m = wx.getStorageSync(PREF_DRIVER_COLORS_KEY)
+      if (m && typeof m === "object") followDriverColors = m
+    } catch (e) {}
+  }
+
+  return { followTeams, followDrivers, followTeamColors, followDriverColors }
 }
 
-function isHitPrefs(item, prefs) {
+function getPrefHitInfo(item, prefs) {
   const teams = Array.isArray(prefs && prefs.followTeams) ? prefs.followTeams : []
   const drivers = Array.isArray(prefs && prefs.followDrivers) ? prefs.followDrivers : []
-  if (!teams.length && !drivers.length) return false
+  if (!teams.length && !drivers.length) return { hit: false, teamKey: "", driverNumber: 0 }
 
   const tags = Array.isArray(item && item.tags) ? item.tags.map((x) => normalizeText(x)) : []
   const hay = normalizeText(`${(item && item.tagText) || ""} ${(item && item.title) || ""} ${(item && item.summary) || ""}`)
 
-  const hitTeam = teams.some((t) => {
+  for (const t of teams) {
     const key = normalizeText(t)
-    if (!key) return false
-    if (tags.includes(key)) return true
-    if (hay.includes(key)) return true
-    return false
-  })
-  if (hitTeam) return true
+    if (!key) continue
+    if (tags.includes(key) || hay.includes(key)) return { hit: true, teamKey: String(t).trim(), driverNumber: 0 }
+  }
 
-  const hitDriver = drivers.some((n) => {
+  for (const n of drivers) {
     const key = normalizeText(String(n))
-    if (!key) return false
-    if (tags.includes(key)) return true
-    if (hay.includes(key)) return true
-    return false
-  })
-  return hitDriver
+    if (!key) continue
+    if (tags.includes(key) || hay.includes(key)) return { hit: true, teamKey: "", driverNumber: Number(n) || 0 }
+  }
+
+  return { hit: false, teamKey: "", driverNumber: 0 }
+}
+
+function resolvePrefHitColor(info, prefs) {
+  const tcs = prefs && prefs.followTeamColors && typeof prefs.followTeamColors === "object" ? prefs.followTeamColors : {}
+  const dcs = prefs && prefs.followDriverColors && typeof prefs.followDriverColors === "object" ? prefs.followDriverColors : {}
+  if (info && info.teamKey) {
+    const c = tcs[info.teamKey]
+    if (typeof c === "string" && c.trim()) return c.trim()
+  }
+  if (info && info.driverNumber) {
+    const c = dcs[String(info.driverNumber)]
+    if (typeof c === "string" && c.trim()) return c.trim()
+  }
+  return "#2EE8D8"
 }
 
 function promoteNewHitItems({ prevList, nextList, prefs }) {
@@ -93,7 +123,7 @@ function promoteNewHitItems({ prevList, nextList, prefs }) {
   const promoted = []
   const otherNew = []
   for (const it of newItems) {
-    if (isHitPrefs(it, prefs)) promoted.push(it)
+    if (getPrefHitInfo(it, prefs).hit) promoted.push(it)
     else otherNew.push(it)
   }
 
@@ -130,7 +160,7 @@ function buildPrefPromotePlan({ prevList, nextList, prefs }) {
   const promoted = []
   const otherNew = []
   for (const it of newItems) {
-    if (isHitPrefs(it, prefs)) promoted.push(it)
+    if (getPrefHitInfo(it, prefs).hit) promoted.push(it)
     else otherNew.push(it)
   }
 
@@ -146,15 +176,23 @@ function buildPrefPromotePlan({ prevList, nextList, prefs }) {
 
   const finalList = [...promoted, ...otherNew, ...existingInPrevOrder].map((x) => {
     if (!x || !x.id) return x
-    if (!promotedIds.includes(x.id)) return x
-    return { ...x, _prefPromoted: true }
+    const info = getPrefHitInfo(x, prefs)
+    const hit = Boolean(info && info.hit)
+    const withHit = hit ? { ...x, _prefHit: true, _prefHitColor: resolvePrefHitColor(info, prefs) } : { ...x, _prefHit: false, _prefHitColor: "" }
+    if (!promotedIds.includes(x.id)) return withHit
+    return { ...withHit, _prefPromoted: true }
   })
 
   if (!moveId) {
     return { moveId: "", initialList: finalList, finalList, promotedIds }
   }
 
-  const initialList = [...otherNew, ...existingInPrevOrder]
+  const initialList = [...otherNew, ...existingInPrevOrder].map((x) => {
+    if (!x || !x.id) return x
+    const info = getPrefHitInfo(x, prefs)
+    if (!info || !info.hit) return { ...x, _prefHit: false, _prefHitColor: "" }
+    return { ...x, _prefHit: true, _prefHitColor: resolvePrefHitColor(info, prefs) }
+  })
 
   return { moveId, initialList, finalList, promotedIds }
 }
@@ -345,6 +383,14 @@ Page({
             pendingMoveId = plan.moveId
             pendingFinalList = plan.moveId ? plan.finalList : null
             nextList = plan.initialList
+          } else {
+            const prefs = getLocalPrefs()
+            nextList = (nextList || []).map((x) => {
+              if (!x || !x.id) return x
+              const info = getPrefHitInfo(x, prefs)
+              if (!info || !info.hit) return { ...x, _prefHit: false, _prefHitColor: "" }
+              return { ...x, _prefHit: true, _prefHitColor: resolvePrefHitColor(info, prefs) }
+            })
           }
 
           let showWelcome = false
@@ -402,8 +448,15 @@ Page({
           seen.add(it.id)
           merged.push(it)
         }
+        const prefs = getLocalPrefs()
+        const decorated = merged.map((x) => {
+          if (!x || !x.id) return x
+          const info = getPrefHitInfo(x, prefs)
+          if (!info || !info.hit) return { ...x, _prefHit: false, _prefHitColor: "" }
+          return { ...x, _prefHit: true, _prefHitColor: resolvePrefHitColor(info, prefs) }
+        })
         const hasMore = (Number(res.page || 1) * Number(res.pageSize || this.data.pageSize || 20)) < Number(res.total || 0)
-        this.setData({ list: merged, page: Number(res.page || 1), hasMore }, done)
+        this.setData({ list: decorated, page: Number(res.page || 1), hasMore }, done)
       })
       .catch(() => {
         this.setData({ errorText: "加载失败，请下拉重试" }, () => done())

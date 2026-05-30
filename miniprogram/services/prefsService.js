@@ -33,9 +33,13 @@ function normalizeDriverNumbers(v) {
 async function fetchPrefs() {
   const r = await requestJson("/api/v1/mp/auth/prefs", { method: "GET", needAuth: true })
   const prefs = (r && r.prefs) || {}
+  const teamColors = prefs.team_colors && typeof prefs.team_colors === "object" ? prefs.team_colors : {}
+  const driverColors = prefs.driver_colors && typeof prefs.driver_colors === "object" ? prefs.driver_colors : {}
   return {
     teamKeys: normalizeTeamKeys(prefs.team_keys || (prefs.team_name ? [prefs.team_name] : [])),
-    driverNumbers: normalizeDriverNumbers(prefs.driver_numbers || [])
+    driverNumbers: normalizeDriverNumbers(prefs.driver_numbers || []),
+    teamColors,
+    driverColors
   }
 }
 
@@ -52,4 +56,3 @@ module.exports = {
   fetchPrefs,
   updatePrefs
 }
-

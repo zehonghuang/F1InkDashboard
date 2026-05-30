@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"toinc_f1_backend/internal/teamdrivercache"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -18,7 +20,7 @@ type mpPrefsUpdateRequest struct {
 	DriverNumbers []int    `json:"driver_numbers"`
 }
 
-func MpPrefsGet(db *gorm.DB) gin.HandlerFunc {
+func MpPrefsGet(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userIDAny, ok := c.Get("mp_user_id")
 		if !ok {
@@ -57,6 +59,30 @@ func MpPrefsGet(db *gorm.DB) gin.HandlerFunc {
 		if len(teamKeys) == 0 && strings.TrimSpace(r.TeamName) != "" {
 			teamKeys = []string{strings.TrimSpace(r.TeamName)}
 		}
+		driverNumbers := mpParseDriverNumbers(r.DriverNumbers)
+
+		teamColors := map[string]string{}
+		if tdCache != nil {
+			for _, k := range teamKeys {
+				if ti, ok := tdCache.GetTeam(k); ok {
+					color := strings.TrimSpace(ti.TeamColor)
+					if color != "" {
+						teamColors[k] = color
+					}
+				}
+			}
+		}
+		driverColors := map[string]string{}
+		if tdCache != nil {
+			for _, n := range driverNumbers {
+				if di, ok := tdCache.GetDriver(n); ok {
+					color := strings.TrimSpace(di.TeamColor)
+					if color != "" {
+						driverColors[strconv.Itoa(n)] = color
+					}
+				}
+			}
+		}
 
 		c.JSON(http.StatusOK, gin.H{
 			"ok":               true,
@@ -64,13 +90,15 @@ func MpPrefsGet(db *gorm.DB) gin.HandlerFunc {
 			"prefs": gin.H{
 				"team_name":      emptyToNil(strings.TrimSpace(r.TeamName)),
 				"team_keys":      teamKeys,
-				"driver_numbers": mpParseDriverNumbers(r.DriverNumbers),
+				"driver_numbers": driverNumbers,
+				"team_colors":    teamColors,
+				"driver_colors":  driverColors,
 			},
 		})
 	}
 }
 
-func MpPrefsUpdate(db *gorm.DB) gin.HandlerFunc {
+func MpPrefsUpdate(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userIDAny, ok := c.Get("mp_user_id")
 		if !ok {
@@ -168,7 +196,39 @@ func MpPrefsUpdate(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"ok": true})
+		teamColors := map[string]string{}
+		if tdCache != nil {
+			for _, k := range outTeams {
+				if ti, ok := tdCache.GetTeam(k); ok {
+					color := strings.TrimSpace(ti.TeamColor)
+					if color != "" {
+						teamColors[k] = color
+					}
+				}
+			}
+		}
+		driverColors := map[string]string{}
+		if tdCache != nil {
+			for _, n := range outDrivers {
+				if di, ok := tdCache.GetDriver(n); ok {
+					color := strings.TrimSpace(di.TeamColor)
+					if color != "" {
+						driverColors[strconv.Itoa(n)] = color
+					}
+				}
+			}
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"ok": true,
+			"prefs": gin.H{
+				"team_name":      emptyToNil(teamName),
+				"team_keys":      outTeams,
+				"driver_numbers": outDrivers,
+				"team_colors":    teamColors,
+				"driver_colors":  driverColors,
+			},
+		})
 	}
 }
 

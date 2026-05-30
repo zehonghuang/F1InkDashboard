@@ -59,13 +59,14 @@
         <block wx:for="{{ list }}" wx:key="id">
           <view
             id="news-card-{{ item.id }}"
-            class="news-card {{ item._prefPromoted ? 'news-card-promoted' : '' }}"
+            class="news-card {{ item._prefPromoted ? 'news-card-promoted' : '' }} {{ item._prefHit ? 'news-card-hit' : '' }}"
             style="{{ item._prefMoveHidden ? 'opacity:0;' : '' }}"
             bindtap="onTapCard"
             data-id="{{ item.id }}"
             hover-class="news-card-pressed"
             hover-stay-time="120"
           >
+            <view wx:if="{{ item._prefHit }}" class="news-hit-bar" style="background: {{ item._prefHitColor || '#2EE8D8' }};" />
             <view class="news-title">{{ item.title }}</view>
             <view class="news-summary">{{ item.summary }}</view>
             <view class="news-meta">
@@ -80,7 +81,8 @@
   </scroll-view>
 
   <view wx:if="{{ prefMoveOverlay && prefMoveOverlay.show && prefMoveOverlay.item }}" id="pref-move-overlay" class="pref-move-overlay" style="{{ prefMoveOverlay.style }}">
-    <view class="news-card news-card-promoted">
+    <view class="news-card news-card-promoted news-card-hit">
+      <view class="news-hit-bar" style="background: {{ prefMoveOverlay.item._prefHitColor || '#2EE8D8' }};" />
       <view class="news-title">{{ prefMoveOverlay.item.title }}</view>
       <view class="news-summary">{{ prefMoveOverlay.item.summary }}</view>
       <view class="news-meta">

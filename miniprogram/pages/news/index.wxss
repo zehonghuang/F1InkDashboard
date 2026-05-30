@@ -147,14 +147,13 @@
   border-color: rgba(255, 255, 255, 0.22);
 }
 
-.news-card-promoted::before {
-  content: "";
+.news-hit-bar {
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
   width: 10rpx;
-  background: linear-gradient(180deg, rgba(46, 232, 216, 1) 0%, rgba(46, 232, 216, 0.55) 100%);
+  opacity: 0.95;
   border-top-left-radius: 16rpx;
   border-bottom-left-radius: 16rpx;
 }
