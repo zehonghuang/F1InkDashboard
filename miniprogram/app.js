@@ -22,6 +22,7 @@ App({
   },
   globalData: {
     apiBase: "",
-    formula1Loaded: false
+    formula1Loaded: false,
+    newsDataSource: "mock"
   }
 })

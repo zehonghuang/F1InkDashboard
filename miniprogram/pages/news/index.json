@@ -1,5 +1,6 @@
 {
   "navigationBarTitleText": "资讯",
   "navigationStyle": "custom",
-  "enablePullDownRefresh": true
+  "renderer": "skyline",
+  "componentFramework": "glass-easel"
 }

@@ -5,6 +5,8 @@ const STORAGE_KEYS = {
   season: "pref_season",
   followDrivers: "pref_follow_drivers",
   followTeams: "pref_follow_teams",
+  followDriversDict: "pref_follow_drivers_dict",
+  followTeamsDict: "pref_follow_teams_dict",
   prefsInited: "pref_prefs_inited"
 }
 
@@ -74,11 +76,19 @@ Page({
       const r = await fetchPrefs()
       const teamKeys = (r && r.teamKeys) || []
       const driverNumbers = (r && r.driverNumbers) || []
+      const teams = (r && r.teams) || {}
+      const drivers = (r && r.drivers) || {}
       try {
         wx.setStorageSync(STORAGE_KEYS.followTeams, teamKeys)
       } catch (e) {}
       try {
         wx.setStorageSync(STORAGE_KEYS.followDrivers, driverNumbers)
+      } catch (e) {}
+      try {
+        wx.setStorageSync(STORAGE_KEYS.followTeamsDict, teams)
+      } catch (e) {}
+      try {
+        wx.setStorageSync(STORAGE_KEYS.followDriversDict, drivers)
       } catch (e) {}
       try {
         wx.setStorageSync(STORAGE_KEYS.prefsInited, "1")
@@ -115,6 +125,8 @@ Page({
     let prefSeason = 2026
     let followDrivers = []
     let followTeams = []
+    let followTeamsDict = {}
+    let followDriversDict = {}
     try {
       const s = wx.getStorageSync(STORAGE_KEYS.season)
       const n = Number(s)
@@ -128,16 +140,27 @@ Page({
       const xs = wx.getStorageSync(STORAGE_KEYS.followTeams)
       if (Array.isArray(xs)) followTeams = xs.map((x) => String(x || "").trim()).filter(Boolean)
     } catch (e) {}
+    try {
+      const m = wx.getStorageSync(STORAGE_KEYS.followTeamsDict)
+      if (m && typeof m === "object") followTeamsDict = m
+    } catch (e) {}
+    try {
+      const m = wx.getStorageSync(STORAGE_KEYS.followDriversDict)
+      if (m && typeof m === "object") followDriversDict = m
+    } catch (e) {}
 
     const followDriversText = followDrivers.length ? `${followDrivers.length} 人` : "未设置"
     const followTeamsText = followTeams.length ? `${followTeams.length} 支` : "未设置"
     this.setData({ prefSeason, followDrivers, followDriversText, followTeams, followTeamsText }, () => {
       this.refreshFollowTextsFromOptions()
+      if ((this.data.followDrivers || []).length) {
+        this.ensurePickOptions({ silent: true })
+      }
     })
     try {
       const app = getApp()
       if (app && app.globalData) {
-        app.globalData.prefs = { season: prefSeason, followDrivers, followTeams }
+        app.globalData.prefs = { season: prefSeason, followDrivers, followTeams, followTeamsDict, followDriversDict }
       }
     } catch (e) {}
   },
@@ -269,14 +292,16 @@ Page({
     }
     this.setData({ pickedMap: m })
   },
-  ensurePickOptions() {
+  ensurePickOptions(opts) {
     if (this.data.driverOptions && this.data.driverOptions.length && this.data.teamOptions && this.data.teamOptions.length) {
       return
     }
     const app = getApp()
     const apiBase = (app && app.globalData && app.globalData.apiBase) || ""
     if (!apiBase) {
-      wx.showToast({ title: "未配置后端地址", icon: "none" })
+      if (!(opts && opts.silent)) {
+        wx.showToast({ title: "未配置后端地址", icon: "none" })
+      }
       return
     }
     const season = Number(this.data.prefSeason || 2026)
@@ -291,7 +316,9 @@ Page({
         const latest = races.find((x) => x && Number(x.openf1_race_session_key) > 0) || races[0]
         const sk = latest ? Number(latest.openf1_race_session_key || 0) : 0
         if (!sk) {
-          wx.showToast({ title: "暂无可用赛季数据", icon: "none" })
+          if (!(opts && opts.silent)) {
+            wx.showToast({ title: "暂无可用赛季数据", icon: "none" })
+          }
           return
         }
         this.loadDriverOptionsBySessionKey(sk)
@@ -300,7 +327,9 @@ Page({
         try {
           console.log({ url: archiveUrl, err })
         } catch (e) {}
-        wx.showToast({ title: "获取赛季信息失败", icon: "none" })
+        if (!(opts && opts.silent)) {
+          wx.showToast({ title: "获取赛季信息失败", icon: "none" })
+        }
       }
     })
   },
@@ -364,14 +393,14 @@ Page({
       if (!dn) continue
       byDriver[dn] = it
     }
-    const driverLabels = drivers
-      .map((dn) => {
-        const it = byDriver[Number(dn)]
-        if (!it) return ""
-        return String(it.name_acronym || it.full_name || it.driver_name || it.driver_number || "").trim()
-      })
-      .filter(Boolean)
-    const followDriversText = drivers.length ? (driverLabels.length ? driverLabels.join(" / ") : `${drivers.length} 人`) : "未设置"
+    const driverLabels = drivers.map((dn) => {
+      const n = Number(dn)
+      if (!n) return ""
+      const it = byDriver[n]
+      if (!it) return `#${n}`
+      return String(it.name_acronym || it.full_name || it.driver_name || it.driver_number || "").trim() || `#${n}`
+    }).filter(Boolean)
+    const followDriversText = drivers.length ? (driverLabels.length ? driverLabels.join(" / ") : "未设置") : "未设置"
 
     const followTeamsText = teams.length ? teams.join(" / ") : "未设置"
     this.setData({ followDriversText, followTeamsText })
