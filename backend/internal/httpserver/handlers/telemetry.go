@@ -7,6 +7,7 @@ import (
 
 	"toinc_f1_backend/internal/f1db"
 	"toinc_f1_backend/internal/model"
+	"toinc_f1_backend/internal/teamdrivercache"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -20,7 +21,7 @@ import (
 // @Failure 502 {object} model.ErrorResponse
 // @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/telemetry/laps/available [get]
-func TelemetryLapsAvailable(db *gorm.DB) gin.HandlerFunc {
+func TelemetryLapsAvailable(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "telemetry_laps_available", "mysql_required", nil)
@@ -31,6 +32,22 @@ func TelemetryLapsAvailable(db *gorm.DB) gin.HandlerFunc {
 		if err != nil {
 			c.JSON(502, model.ErrorResponse{Ok: false, Error: "query_failed"})
 			return
+		}
+		if tdCache != nil {
+			for i := range items {
+				di, ok := tdCache.GetDriver(items[i].DriverNumber)
+				if !ok {
+					continue
+				}
+				if items[i].NameAcronym == nil && strings.TrimSpace(di.NameAcronym) != "" {
+					v := strings.TrimSpace(di.NameAcronym)
+					items[i].NameAcronym = &v
+				}
+				if items[i].TeamColour == nil && strings.TrimSpace(di.TeamColor) != "" {
+					v := strings.TrimSpace(di.TeamColor)
+					items[i].TeamColour = &v
+				}
+			}
 		}
 		c.JSON(200, model.GenericObject{"ok": true, "items": items})
 	}

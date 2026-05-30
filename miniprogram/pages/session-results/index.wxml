@@ -10,7 +10,7 @@
     </block>
   </view>
 
-  <view class="list" hidden="{{activeTabKey!=='rank'}}">
+  <view wx:if="{{activeTabKey==='rank'}}" class="list">
     <block wx:for="{{items}}" wx:key="driver_number">
       <view class="card" style="{{item.cardStyle}}" bindtap="onDriverTap" data-driver-number="{{item.driver_number}}" data-driver-name="{{item.full_name || item.driver_name || ''}}">
         <view class="card-left">
@@ -31,14 +31,14 @@
     </block>
   </view>
 
-  <view class="boxplot" hidden="{{activeTabKey!=='boxplot'}}">
+  <view wx:if="{{activeTabKey==='boxplot'}}" class="boxplot">
     <view class="boxplot-bar">
       <view class="boxplot-selected">{{selectedDriverText}}</view>
       <view class="boxplot-btn" bindtap="onOpenPicker">选择车手</view>
     </view>
     <view class="boxplot-chart">
       <ec-canvas
-        hidden="{{showPicker}}"
+        wx:if="{{!showPicker}}"
         canvasId="boxplot_chart"
         heightRpx="{{boxplotHeightRpx}}"
         option="{{chartOptionBoxplot}}"
@@ -46,17 +46,19 @@
     </view>
   </view>
 
-  <view
-    class="telemetry"
-    hidden="{{!(activeTabKey==='throttle'||activeTabKey==='brake'||activeTabKey==='speed')}}"
-  >
+  <view wx:if="{{activeTabKey==='throttle' || activeTabKey==='brake' || activeTabKey==='speed'}}" class="telemetry">
     <view class="telemetry-bar">
       <view class="telemetry-selected">{{telemetrySelectedText}}</view>
-      <view class="telemetry-lap">{{telemetryLapInfo}}</view>
       <view class="telemetry-btn" bindtap="onOpenTelemetryPicker">选择车手</view>
     </view>
+    <view class="telemetry-hint">{{telemetryLapInfo}}</view>
     <view class="telemetry-chart">
-      <ec-canvas hidden="{{showPicker}}" canvasId="telemetry_chart" heightRpx="{{telemetryHeightRpx}}" option="{{chartOptionTelemetry}}" />
+      <ec-canvas
+        wx:if="{{!showPicker}}"
+        canvasId="telemetry_chart"
+        heightRpx="{{telemetryHeightRpx}}"
+        option="{{chartOptionTelemetry}}"
+      />
     </view>
   </view>
 

@@ -1,63 +1,40 @@
-import {
-  Chart,
-  LineController,
-  LineElement,
-  PointElement,
-  LinearScale,
-  CategoryScale,
-  Tooltip,
-  Legend,
-  Filler
-} from "chart.js";
+import * as echarts from "echarts";
 
-Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler);
-
-export function destroyIfAny(ref) {
-  if (ref.current) {
-    ref.current.destroy();
-    ref.current = null;
-  }
+function normalizeHexColor(s) {
+  if (!s) return null;
+  const t = String(s).trim();
+  if (!t) return null;
+  if (/^#[0-9a-fA-F]{6}$/.test(t)) return t.toUpperCase();
+  if (/^[0-9a-fA-F]{6}$/.test(t)) return `#${t}`.toUpperCase();
+  return null;
 }
 
-function baseOptions({ title }) {
+function hexToRgba(hex, alpha) {
+  const h = normalizeHexColor(hex);
+  if (!h) return null;
+  const r = parseInt(h.slice(1, 3), 16);
+  const g = parseInt(h.slice(3, 5), 16);
+  const b = parseInt(h.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function initChart(dom) {
+  const chart = echarts.init(dom, "dark");
+  const onResize = () => chart.resize();
+  window.addEventListener("resize", onResize);
   return {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: { mode: "index", intersect: false },
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        enabled: true,
-        backgroundColor: "rgba(0,0,0,0.85)",
-        titleColor: "#fff",
-        bodyColor: "#fff"
-      }
-    },
-    scales: {
-      x: {
-        grid: { color: "#e6e6e6" },
-        ticks: { color: "#111" }
-      },
-      y: {
-        grid: { color: "#e6e6e6" },
-        ticks: { color: "#111" }
-      }
+    setOption: (opt) => chart.setOption(opt, { notMerge: true, lazyUpdate: false }),
+    dispose: () => {
+      window.removeEventListener("resize", onResize);
+      chart.dispose();
     }
   };
 }
 
-function ds({ label, data, color, dash, pointStyle }) {
-  return {
-    label,
-    data,
-    borderColor: color,
-    backgroundColor: "rgba(0,0,0,0)",
-    borderWidth: 2,
-    borderDash: dash || [],
-    pointRadius: pointStyle === "dot" ? 2 : 0,
-    pointHoverRadius: 3,
-    tension: 0.25
-  };
+export function destroyIfAny(ref) {
+  if (!ref?.current) return;
+  ref.current.dispose();
+  ref.current = null;
 }
 
 function formatLapClock(seconds, fracDigits = 2) {
@@ -73,141 +50,131 @@ function formatLapClock(seconds, fracDigits = 2) {
   return `${sign}${m}:${sec2}.${fracStr}`;
 }
 
-function sectorLinesPlugin(lines) {
-  const safe = (Array.isArray(lines) ? lines : []).filter((x) => x && Number.isFinite(x.x));
+function lineSeries({ name, data, color, dashed, yAxisIndex, encodeExtra }) {
   return {
-    id: "sectorLines",
-    afterDraw(chart) {
-      if (!safe.length) return;
-      const xScale = chart.scales?.x;
-      if (!xScale) return;
-      const { ctx, chartArea } = chart;
-      ctx.save();
-      ctx.strokeStyle = "rgba(30,30,30,0.35)";
-      ctx.fillStyle = "rgba(30,30,30,0.55)";
-      ctx.lineWidth = 1;
-      for (const ln of safe) {
-        const px = xScale.getPixelForValue(ln.x);
-        if (!Number.isFinite(px)) continue;
-        ctx.beginPath();
-        ctx.moveTo(px, chartArea.top);
-        ctx.lineTo(px, chartArea.bottom);
-        ctx.stroke();
-        if (ln.label) {
-          ctx.font = "12px sans-serif";
-          ctx.fillText(String(ln.label), px + 4, chartArea.top + 14);
-        }
-      }
-      ctx.restore();
+    type: "line",
+    name,
+    data,
+    showSymbol: false,
+    connectNulls: false,
+    emphasis: { focus: "series" },
+    lineStyle: { width: 2, color, type: dashed ? "dashed" : "solid" },
+    itemStyle: { color },
+    yAxisIndex: yAxisIndex ?? 0,
+    encode: encodeExtra || undefined
+  };
+}
+
+function axisPointerTooltip() {
+  return {
+    trigger: "axis",
+    axisPointer: { type: "cross" },
+    backgroundColor: "rgba(0,0,0,0.85)",
+    borderWidth: 0,
+    textStyle: { color: "#fff" }
+  };
+}
+
+function baseOption() {
+  return {
+    backgroundColor: "transparent",
+    textStyle: { color: "rgba(255,255,255,0.85)" },
+    grid: { left: 56, right: 22, top: 34, bottom: 46 },
+    legend: { top: 0, left: 0, textStyle: { color: "rgba(255,255,255,0.7)" } },
+    xAxis: {
+      axisLine: { lineStyle: { color: "rgba(255,255,255,0.28)" } },
+      axisLabel: { color: "rgba(255,255,255,0.72)" },
+      splitLine: { lineStyle: { color: "rgba(255,255,255,0.08)" } }
+    },
+    yAxis: {
+      axisLine: { lineStyle: { color: "rgba(255,255,255,0.28)" } },
+      axisLabel: { color: "rgba(255,255,255,0.72)" },
+      splitLine: { lineStyle: { color: "rgba(255,255,255,0.08)" } },
+      nameTextStyle: { color: "rgba(255,255,255,0.6)" }
     }
   };
 }
 
-export function renderLapTimeChart(canvas, labels, laps) {
-  const dataLap = laps.map((x) => x.lap_duration ?? null);
-  const s1 = laps.map((x) => x.duration_sector_1 ?? null);
-  const s2 = laps.map((x) => x.duration_sector_2 ?? null);
-  const s3 = laps.map((x) => x.duration_sector_3 ?? null);
+export function renderLapTimeChart(container, labels, laps, { driverColor } = {}) {
+  const c0 = normalizeHexColor(driverColor) || "#ffffff";
+  const c1 = hexToRgba(c0, 0.72) || "rgba(255,255,255,0.72)";
+  const c2 = hexToRgba(c0, 0.55) || "rgba(255,255,255,0.55)";
+  const c3 = hexToRgba(c0, 0.62) || "rgba(255,255,255,0.62)";
+  const dataLap = (laps || []).map((x) => (x?.lap_duration ?? null));
+  const s1 = (laps || []).map((x) => (x?.duration_sector_1 ?? null));
+  const s2 = (laps || []).map((x) => (x?.duration_sector_2 ?? null));
+  const s3 = (laps || []).map((x) => (x?.duration_sector_3 ?? null));
 
-  return new Chart(canvas, {
-    type: "line",
-    data: {
-      labels,
-      datasets: [
-        ds({ label: "Lap", data: dataLap, color: "#111111" }),
-        ds({ label: "S1", data: s1, color: "#444444", dash: [8, 5] }),
-        ds({ label: "S2", data: s2, color: "#777777", dash: [2, 4], pointStyle: "dot" }),
-        ds({ label: "S3", data: s3, color: "#555555", dash: [10, 4, 2, 4] })
-      ]
-    },
-    options: baseOptions({ title: "Lap Times" })
+  const inst = initChart(container);
+  inst.setOption({
+    ...baseOption(),
+    tooltip: axisPointerTooltip(),
+    xAxis: { type: "category", data: labels || [], axisTick: { alignWithLabel: true } },
+    yAxis: { type: "value", name: "s", scale: true },
+    series: [
+      lineSeries({ name: "Lap", data: dataLap, color: c0 }),
+      lineSeries({ name: "S1", data: s1, color: c1, dashed: true }),
+      lineSeries({ name: "S2", data: s2, color: c2, dashed: true }),
+      lineSeries({ name: "S3", data: s3, color: c3, dashed: true })
+    ]
   });
+  return inst;
 }
 
-export function renderSpeedChart(canvas, labels, laps) {
-  const st = laps.map((x) => x.st_speed ?? null);
-  const i1 = laps.map((x) => x.i1_speed ?? null);
-  const i2 = laps.map((x) => x.i2_speed ?? null);
+export function renderSpeedChart(container, labels, laps, { driverColor } = {}) {
+  const c0 = normalizeHexColor(driverColor) || "#ffffff";
+  const c1 = hexToRgba(c0, 0.72) || "rgba(255,255,255,0.72)";
+  const c2 = hexToRgba(c0, 0.55) || "rgba(255,255,255,0.55)";
+  const st = (laps || []).map((x) => (x?.st_speed ?? null));
+  const i1 = (laps || []).map((x) => (x?.i1_speed ?? null));
+  const i2 = (laps || []).map((x) => (x?.i2_speed ?? null));
 
-  return new Chart(canvas, {
-    type: "line",
-    data: {
-      labels,
-      datasets: [
-        ds({ label: "ST", data: st, color: "#111111" }),
-        ds({ label: "I1", data: i1, color: "#444444", dash: [8, 5] }),
-        ds({ label: "I2", data: i2, color: "#777777", dash: [2, 4], pointStyle: "dot" })
-      ]
-    },
-    options: baseOptions({ title: "Speeds" })
+  const inst = initChart(container);
+  inst.setOption({
+    ...baseOption(),
+    tooltip: axisPointerTooltip(),
+    xAxis: { type: "category", data: labels || [], axisTick: { alignWithLabel: true } },
+    yAxis: { type: "value", name: "km/h", scale: true },
+    series: [
+      lineSeries({ name: "ST", data: st, color: c0 }),
+      lineSeries({ name: "I1", data: i1, color: c1, dashed: true }),
+      lineSeries({ name: "I2", data: i2, color: c2, dashed: true })
+    ]
   });
+  return inst;
 }
 
-export function renderControlsChart(canvas, labels, items) {
-  const th = items.map((x) => x.throttle_avg ?? null);
-  const br = items.map((x) => x.brake_avg ?? null);
+export function renderLapTraceChart(container, points, { driverColor } = {}) {
+  const c0 = normalizeHexColor(driverColor) || "#ffffff";
+  const c1 = hexToRgba(c0, 0.72) || "rgba(255,255,255,0.72)";
+  const th = (points || []).map((p) => [p?.t_s ?? null, p?.throttle ?? null]);
+  const br = (points || []).map((p) => [p?.t_s ?? null, p?.brake ?? null]);
 
-  const opt = baseOptions({ title: "Controls" });
-  opt.scales.y.min = 0;
-  opt.scales.y.max = 100;
-
-  return new Chart(canvas, {
-    type: "line",
-    data: {
-      labels,
-      datasets: [
-        ds({ label: "Throttle", data: th, color: "#111111" }),
-        ds({ label: "Brake", data: br, color: "#444444", dash: [8, 5] })
-      ]
+  const inst = initChart(container);
+  inst.setOption({
+    ...baseOption(),
+    tooltip: {
+      ...axisPointerTooltip(),
+      valueFormatter: (v) => (v == null || !Number.isFinite(Number(v)) ? "N/A" : `${Number(v).toFixed(0)}%`)
     },
-    options: opt
+    xAxis: {
+      type: "value",
+      name: "t",
+      axisLabel: { formatter: (v) => formatLapClock(Number(v), 2) }
+    },
+    yAxis: { type: "value", min: 0, max: 100, name: "%" },
+    series: [
+      lineSeries({ name: "Throttle", data: th, color: c0 }),
+      lineSeries({ name: "Brake", data: br, color: c1, dashed: true })
+    ]
   });
+  return inst;
 }
 
-export function renderLapTraceChart(canvas, points) {
-  const th = points.map((p) => ({ x: p.t_s, y: p.throttle ?? null }));
-  const br = points.map((p) => ({ x: p.t_s, y: p.brake ?? null }));
-
-  const opt = baseOptions({ title: "Lap Trace" });
-  opt.scales.x = {
-    type: "linear",
-    title: { display: true, text: "t (s)", color: "#111" },
-    grid: { color: "#e6e6e6" },
-    ticks: {
-      color: "#111",
-      callback: (v) => formatLapClock(Number(v), 2),
-      maxTicksLimit: 10
-    }
-  };
-  opt.scales.y.min = 0;
-  opt.scales.y.max = 100;
-  opt.plugins.tooltip.callbacks = {
-    title: (items) => {
-      const it = items?.[0];
-      const x = it?.parsed?.x;
-      return x == null ? "" : formatLapClock(Number(x), 2);
-    },
-    label: (ctx) => {
-      const y = ctx?.parsed?.y;
-      const name = ctx?.dataset?.label || "";
-      if (y == null || !Number.isFinite(y)) return `${name}: N/A`;
-      return `${name}: ${Number(y).toFixed(0)}%`;
-    }
-  };
-
-  return new Chart(canvas, {
-    type: "line",
-    data: {
-      datasets: [
-        ds({ label: "Throttle", data: th, color: "#111111" }),
-        ds({ label: "Brake", data: br, color: "#444444", dash: [8, 5] })
-      ]
-    },
-    options: opt
-  });
-}
-
-export function renderLapControlsSeriesChart(canvas, payload) {
+export function renderLapControlsSeriesChart(container, payload, { driverColor } = {}) {
+  const c0 = normalizeHexColor(driverColor) || "#ffffff";
+  const c1 = hexToRgba(c0, 0.72) || "rgba(255,255,255,0.72)";
+  const c2 = hexToRgba(c0, 0.55) || "rgba(255,255,255,0.55)";
   const points = payload?.points || [];
   const n = points.length;
 
@@ -219,9 +186,8 @@ export function renderLapControlsSeriesChart(canvas, payload) {
     if (idx == null) return null;
     const p = points[idx];
     if (!p) return null;
-    const t = p?.[0];
-    const x = Number(t);
-    return Number.isFinite(x) ? x : null;
+    const t = Number(p?.[0]);
+    return Number.isFinite(t) ? t : null;
   };
 
   let t1 = Number.isFinite(s1ms) ? s1ms : null;
@@ -237,11 +203,6 @@ export function renderLapControlsSeriesChart(canvas, payload) {
     t2 = tAt(Math.floor((n * 2) / 3)) ?? t1 + 1;
     t3 = tAt(n - 1) ?? t2 + 1;
   }
-
-  const lines = [
-    { x: 1, label: "S1" },
-    { x: 2, label: "S2" }
-  ];
 
   const toNormX = (tMs) => {
     if (tMs == null || !Number.isFinite(tMs)) return null;
@@ -267,234 +228,126 @@ export function renderLapControlsSeriesChart(canvas, payload) {
   const th = [];
   const br = [];
   for (const p of points) {
-    const tMs = p?.[0];
-    const x = toNormX(Number(tMs));
+    const tMs = Number(p?.[0]);
+    const x = toNormX(tMs);
     if (x == null) continue;
-    speed.push({ x, y: p?.[1] ?? null, t_s: Number(tMs) / 1000.0 });
-    th.push({ x, y: p?.[2] ?? null, t_s: Number(tMs) / 1000.0 });
-    br.push({ x, y: p?.[3] ?? null, t_s: Number(tMs) / 1000.0 });
+    const ts = tMs / 1000.0;
+    speed.push([x, p?.[1] ?? null, ts]);
+    th.push([x, p?.[2] ?? null, ts]);
+    br.push([x, p?.[3] ?? null, ts]);
   }
 
-  const opt = baseOptions({ title: "Sectors (X=3 Sectors)" });
-  opt.scales = {
-    x: {
-      type: "linear",
+  const inst = initChart(container);
+  inst.setOption({
+    ...baseOption(),
+    grid: { left: 60, right: 60, top: 34, bottom: 46 },
+    tooltip: {
+      ...axisPointerTooltip(),
+      formatter: (params) => {
+        const items = Array.isArray(params) ? params : [params];
+        const first = items[0];
+        const ts = first?.value?.[2];
+        const head = ts == null || !Number.isFinite(Number(ts)) ? "" : formatLapClock(Number(ts), 2);
+        const lines = [];
+        if (head) lines.push(head);
+        for (const it of items) {
+          const name = it?.seriesName || "";
+          const y = it?.value?.[1];
+          if (y == null || !Number.isFinite(Number(y))) lines.push(`${name}: N/A`);
+          else if (name === "Speed") lines.push(`${name}: ${Number(y).toFixed(0)} km/h`);
+          else lines.push(`${name}: ${Number(y).toFixed(0)}%`);
+        }
+        return lines.join("<br/>");
+      }
+    },
+    xAxis: {
+      type: "value",
       min: 0,
       max: 3,
-      grid: { color: "#e6e6e6" },
-      ticks: {
-        color: "#111",
-        callback: (v) => {
+      axisLabel: {
+        formatter: (v) => {
           const x = Number(v);
           if (Math.abs(x - 0.5) < 0.001) return "S1";
           if (Math.abs(x - 1.5) < 0.001) return "S2";
           if (Math.abs(x - 2.5) < 0.001) return "S3";
           return "";
-        },
-        maxTicksLimit: 7
+        }
       }
     },
-    ySpeed: {
-      position: "left",
-      grid: { color: "#e6e6e6" },
-      ticks: { color: "#111" },
-      title: { display: true, text: "Speed (km/h)", color: "#111" }
-    },
-    yCtrl: {
-      position: "right",
-      min: 0,
-      max: 100,
-      grid: { drawOnChartArea: false },
-      ticks: { color: "#111" },
-      title: { display: true, text: "Controls (%)", color: "#111" }
-    }
-  };
-  opt.plugins.tooltip.callbacks = {
-    title: (items) => {
-      const it = items?.[0];
-      const raw = it?.raw;
-      const ts = raw?.t_s;
-      if (ts == null || !Number.isFinite(ts)) return "";
-      return formatLapClock(Number(ts), 2);
-    },
-    label: (ctx) => {
-      const y = ctx?.parsed?.y;
-      const name = ctx?.dataset?.label || "";
-      if (y == null || !Number.isFinite(y)) return `${name}: N/A`;
-      if (name === "Speed") return `${name}: ${Number(y).toFixed(0)} km/h`;
-      return `${name}: ${Number(y).toFixed(0)}%`;
-    }
-  };
-
-  return new Chart(canvas, {
-    type: "line",
-    data: {
-      datasets: [
-        { ...ds({ label: "Speed", data: speed, color: "#111111" }), yAxisID: "ySpeed" },
-        { ...ds({ label: "Throttle", data: th, color: "#444444", dash: [8, 5] }), yAxisID: "yCtrl" },
-        { ...ds({ label: "Brake", data: br, color: "#777777", dash: [2, 4], pointStyle: "dot" }), yAxisID: "yCtrl" }
-      ]
-    },
-    options: opt,
-    plugins: [sectorLinesPlugin(lines)]
+    yAxis: [
+      { type: "value", name: "km/h", scale: true },
+      { type: "value", name: "%", min: 0, max: 100, scale: true }
+    ],
+    series: [
+      {
+        ...lineSeries({ name: "Speed", data: speed, color: c0, yAxisIndex: 0 }),
+        markLine: {
+          symbol: "none",
+          lineStyle: { color: "rgba(255,255,255,0.22)", width: 1 },
+          label: { show: false },
+          data: [{ xAxis: 1 }, { xAxis: 2 }]
+        }
+      },
+      lineSeries({ name: "Throttle", data: th, color: c1, dashed: true, yAxisIndex: 1 }),
+      lineSeries({ name: "Brake", data: br, color: c2, dashed: true, yAxisIndex: 1 })
+    ]
   });
+  return inst;
 }
 
-function normalizeHexColor(s) {
-  if (!s) return null;
-  const t = String(s).trim();
-  if (!t) return null;
-  if (/^#[0-9a-fA-F]{6}$/.test(t)) return t.toUpperCase();
-  if (/^[0-9a-fA-F]{6}$/.test(t)) return `#${t}`.toUpperCase();
-  return null;
-}
+export function renderLapTimeBoxplotChart(container, labels, items) {
+  const safeItems = Array.isArray(items) ? items : [];
+  const data = safeItems
+    .map((it) => {
+      const wl0 = Number(it?.whisker_low);
+      const wh0 = Number(it?.whisker_high);
+      const min0 = Number(it?.min);
+      const max0 = Number(it?.max);
+      const wl = Number.isFinite(wl0) ? wl0 : min0;
+      const wh = Number.isFinite(wh0) ? wh0 : max0;
+      const q1 = Number(it?.q1);
+      const med = Number(it?.median);
+      const q3 = Number(it?.q3);
+      if (![wl, q1, med, q3, wh].every((v) => Number.isFinite(v))) return null;
+      const border = normalizeHexColor(it?.team_colour) || "#111111";
+      return {
+        value: [wl, q1, med, q3, wh],
+        itemStyle: { borderColor: border, color: "rgba(17,17,17,0.08)" },
+        raw: it
+      };
+    })
+    .filter(Boolean);
 
-function boxplotPlugin() {
-  return {
-    id: "boxplot",
-    afterDatasetsDraw(chart) {
-      const ds0 = chart.data?.datasets?.[0];
-      const items = Array.isArray(ds0?.data) ? ds0.data : [];
-      if (!items.length) return;
-      const xScale = chart.scales?.x;
-      const yScale = chart.scales?.y;
-      if (!xScale || !yScale) return;
-      const { ctx } = chart;
-      const boxW = Math.max(10, Math.min(28, (xScale.width / Math.max(2, items.length)) * 0.6));
-
-      ctx.save();
-      ctx.lineWidth = 2;
-      for (let i = 0; i < items.length; i++) {
-        const it = items[i];
-        const x = xScale.getPixelForValue(i);
-        if (!Number.isFinite(x)) continue;
-        const q1 = Number(it?.q1);
-        const q3 = Number(it?.q3);
-        const med = Number(it?.median);
-        const wl = Number(it?.whisker_low);
-        const wh = Number(it?.whisker_high);
-        if (![q1, q3, med, wl, wh].every((v) => Number.isFinite(v))) continue;
-
-        const color = normalizeHexColor(it?.team_colour) || "#111111";
-        const fill = "rgba(17,17,17,0.08)";
-
-        const yQ1 = yScale.getPixelForValue(q1);
-        const yQ3 = yScale.getPixelForValue(q3);
-        const yMed = yScale.getPixelForValue(med);
-        const yWL = yScale.getPixelForValue(wl);
-        const yWH = yScale.getPixelForValue(wh);
-
-        const left = x - boxW / 2;
-        const top = Math.min(yQ1, yQ3);
-        const h = Math.abs(yQ3 - yQ1);
-
-        ctx.fillStyle = fill;
-        ctx.strokeStyle = color;
-        ctx.beginPath();
-        ctx.rect(left, top, boxW, Math.max(1, h));
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(left, yMed);
-        ctx.lineTo(left + boxW, yMed);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(x, yQ3);
-        ctx.lineTo(x, yWH);
-        ctx.moveTo(x, yQ1);
-        ctx.lineTo(x, yWL);
-        ctx.stroke();
-
-        const capW = boxW * 0.7;
-        ctx.beginPath();
-        ctx.moveTo(x - capW / 2, yWH);
-        ctx.lineTo(x + capW / 2, yWH);
-        ctx.moveTo(x - capW / 2, yWL);
-        ctx.lineTo(x + capW / 2, yWL);
-        ctx.stroke();
+  const inst = initChart(container);
+  inst.setOption({
+    ...baseOption(),
+    grid: { left: 60, right: 22, top: 34, bottom: 72 },
+    tooltip: {
+      trigger: "item",
+      backgroundColor: "rgba(0,0,0,0.85)",
+      borderWidth: 0,
+      textStyle: { color: "#fff" },
+      formatter: (p) => {
+        const raw = p?.data?.raw || {};
+        const v = Array.isArray(p?.value) ? p.value : [];
+        const label = p?.name ?? "";
+        const wl = v?.[0];
+        const q1 = v?.[1];
+        const med = v?.[2];
+        const q3 = v?.[3];
+        const wh = v?.[4];
+        const n = raw?.sample_count;
+        if ([wl, q1, med, q3, wh].every((x) => Number.isFinite(Number(x)))) {
+          return `${label}<br/>n=${n} wl=${Number(wl).toFixed(3)} q1=${Number(q1).toFixed(3)} med=${Number(med).toFixed(
+            3
+          )} q3=${Number(q3).toFixed(3)} wh=${Number(wh).toFixed(3)}`;
+        }
+        return String(label);
       }
-      ctx.restore();
-    }
-  };
-}
-
-export function renderLapTimeBoxplotChart(canvas, labels, items) {
-  const med = (items || []).map((x) => ({ x: x.label, y: x.median, ...x }));
-  const bounds = (items || []).reduce(
-    (acc, it) => {
-      const lo0 = Number(it?.min);
-      const lo1 = Number(it?.whisker_low);
-      const hi0 = Number(it?.max);
-      const hi1 = Number(it?.whisker_high);
-      const lo = Number.isFinite(lo1) ? lo1 : lo0;
-      const hi = Number.isFinite(hi1) ? hi1 : hi0;
-      if (!Number.isFinite(lo) || !Number.isFinite(hi)) return acc;
-      if (acc == null) return { lo, hi };
-      return { lo: Math.min(acc.lo, lo), hi: Math.max(acc.hi, hi) };
     },
-    null
-  );
-
-  const opt = baseOptions({ title: "Lap Time Boxplot" });
-  opt.interaction = { mode: "nearest", intersect: true };
-  opt.plugins.tooltip.callbacks = {
-    title: (ctx) => String(ctx?.[0]?.label ?? ""),
-    label: (ctx) => {
-      const raw = ctx?.raw || {};
-      const q1 = raw?.q1;
-      const medV = raw?.median;
-      const q3 = raw?.q3;
-      const wl = raw?.whisker_low;
-      const wh = raw?.whisker_high;
-      const n = raw?.sample_count;
-      if ([q1, medV, q3, wl, wh].every((v) => Number.isFinite(Number(v)))) {
-        return `n=${n} wl=${Number(wl).toFixed(3)} q1=${Number(q1).toFixed(3)} med=${Number(medV).toFixed(
-          3
-        )} q3=${Number(q3).toFixed(3)} wh=${Number(wh).toFixed(3)}`;
-      }
-      return `median: ${Number(ctx.parsed.y).toFixed(3)} s`;
-    }
-  };
-  opt.scales.x = {
-    type: "category",
-    labels,
-    grid: { color: "#e6e6e6" },
-    ticks: { color: "#111", maxRotation: 0, autoSkip: false }
-  };
-  opt.scales.y = {
-    grid: { color: "#e6e6e6" },
-    ticks: { color: "#111" },
-    title: { display: true, text: "Lap Time (s)", color: "#111" }
-  };
-  if (bounds && Number.isFinite(bounds.lo) && Number.isFinite(bounds.hi) && bounds.hi > bounds.lo) {
-    const range = bounds.hi - bounds.lo;
-    const pad = range / 2;
-    const minY = Math.max(0, bounds.lo - pad);
-    const maxY = bounds.hi + pad;
-    opt.scales.y.min = Math.floor(minY * 1000) / 1000;
-    opt.scales.y.max = Math.ceil(maxY * 1000) / 1000;
-  }
-
-  return new Chart(canvas, {
-    type: "line",
-    data: {
-      labels,
-      datasets: [
-        {
-          label: "median",
-          data: med,
-          parsing: { xAxisKey: "x", yAxisKey: "y" },
-          showLine: false,
-          pointRadius: 2,
-          pointHoverRadius: 8,
-          borderColor: "rgba(0,0,0,0)",
-          backgroundColor: "rgba(0,0,0,0)"
-        },
-      ]
-    },
-    options: opt,
-    plugins: [boxplotPlugin()]
+    xAxis: { type: "category", data: labels || [], axisLabel: { interval: 0 } },
+    yAxis: { type: "value", name: "s", scale: true },
+    series: [{ type: "boxplot", name: "Lap Time", data }]
   });
+  return inst;
 }

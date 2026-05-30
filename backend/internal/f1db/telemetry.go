@@ -10,9 +10,11 @@ import (
 )
 
 type TelemetryAvailableItem struct {
-	DriverNumber     int  `json:"driver_number"`
-	LatestSessionKey *int `json:"latest_session_key"`
-	RowCount         int  `json:"row_count"`
+	DriverNumber     int     `json:"driver_number"`
+	LatestSessionKey *int    `json:"latest_session_key"`
+	RowCount         int     `json:"row_count"`
+	NameAcronym      *string `json:"name_acronym"`
+	TeamColour       *string `json:"team_colour"`
 }
 
 func TelemetryLapsAvailable(db *gorm.DB) ([]TelemetryAvailableItem, error) {
@@ -27,7 +29,7 @@ func TelemetryLapsAvailable(db *gorm.DB) ([]TelemetryAvailableItem, error) {
         FROM openf1_laps
         GROUP BY driver_number
         ORDER BY driver_number ASC
-    `).Scan(&rows).Error; err != nil {
+	`).Scan(&rows).Error; err != nil {
 		return nil, err
 	}
 	out := make([]TelemetryAvailableItem, 0, len(rows))
