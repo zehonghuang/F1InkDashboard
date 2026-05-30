@@ -73,3 +73,27 @@ export async function fetchLapTimeBoxplot({ sessionKey, driverNumbers, includePi
   if (!j.ok) throw new Error(j.error || "backend error");
   return j;
 }
+
+export async function fetchMpTelemetrySectorControls({ sessionKey, driverNumber, lapNumber, maxPoints }) {
+  const qs = new URLSearchParams();
+  qs.set("session_key", String(sessionKey));
+  qs.set("driver_number", String(driverNumber));
+  if (lapNumber) qs.set("lap_number", String(lapNumber));
+  if (maxPoints) qs.set("max_points", String(maxPoints));
+  const r = await fetch(`${apiBase()}/api/v1/mp/telemetry/sector_controls?${qs.toString()}`);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || "backend error");
+  return j;
+}
+
+export async function fetchSessionMeta({ sessionKey, season }) {
+  const qs = new URLSearchParams();
+  qs.set("session_key", String(sessionKey));
+  if (season) qs.set("season", String(season));
+  const r = await fetch(`${apiBase()}/api/v1/f1/session-meta?${qs.toString()}`);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || "backend error");
+  return j;
+}

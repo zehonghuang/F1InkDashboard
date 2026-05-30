@@ -23,4 +23,8 @@
     <view class="section-title">Speed (km/h)</view>
     <ec-canvas canvasId="spd_chart" heightRpx="360" option="{{chartOptionSpeed}}" />
   </view>
+
+  <view class="driver-share" bindtap="onCopyTelemetryLink">
+    <i-icon type="share" size="18" color="rgba(255,255,255,0.5)" />
+  </view>
 </view>

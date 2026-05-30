@@ -1,5 +1,29 @@
 <template>
   <DriverTelemetryPage v-if="pageKey === 'driver-telemetry'" :initState="initState" :shareMode="shareMode" />
+  <CompareMetricPage
+    v-else-if="pageKey === 'compare-throttle'"
+    metric="throttle"
+    page="compare-throttle"
+    title="油门比对比"
+    :initState="initState"
+    :shareMode="shareMode"
+  />
+  <CompareMetricPage
+    v-else-if="pageKey === 'compare-brake'"
+    metric="brake"
+    page="compare-brake"
+    title="刹车比对比"
+    :initState="initState"
+    :shareMode="shareMode"
+  />
+  <CompareMetricPage
+    v-else-if="pageKey === 'compare-speed'"
+    metric="speed"
+    page="compare-speed"
+    title="速度对比"
+    :initState="initState"
+    :shareMode="shareMode"
+  />
   <LapTracePage v-else-if="pageKey === 'lap-trace'" :initState="initState" :shareMode="shareMode" />
   <LapTimesPage v-else-if="pageKey === 'lap-times'" :initState="initState" :shareMode="shareMode" />
   <SpeedsPage v-else-if="pageKey === 'speeds'" :initState="initState" :shareMode="shareMode" />
@@ -12,6 +36,7 @@
 <script setup>
 import { Card } from "view-ui-plus";
 import DriverTelemetryPage from "../pages/DriverTelemetryPage.vue";
+import CompareMetricPage from "../pages/CompareMetricPage.vue";
 import LapTracePage from "../pages/LapTracePage.vue";
 import LapTimesPage from "../pages/LapTimesPage.vue";
 import SpeedsPage from "../pages/SpeedsPage.vue";

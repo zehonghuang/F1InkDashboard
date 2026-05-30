@@ -1,3 +1,5 @@
+const { buildChartsShareUrl } = require("../../services/chartsShare")
+
 Page({
   data: {
     sessionKey: 0,
@@ -104,6 +106,7 @@ Page({
       method: "GET",
       success: (res) => {
         const data = (res && res.data) || {}
+        this._lastLapNumber = Number(data.lap_number || 0)
         const points = Array.isArray(data.points) ? data.points : []
         const x = points.map((_, i) => i)
         const toNumOrNull = (v) => {
@@ -274,6 +277,37 @@ Page({
       },
       fail: () => {
         done()
+      }
+    })
+  },
+  onCopyTelemetryLink() {
+    const sessionKey = Number(this.data.sessionKey || 0)
+    const dn = Number(this.data.driverNumber || 0)
+    if (!sessionKey || !dn) {
+      wx.showToast({ title: "暂无可复制链接", icon: "none" })
+      return
+    }
+    const ln0 = Number(this.data.selectedLapNumber || 0)
+    const ln = ln0 > 0 ? ln0 : Number(this._lastLapNumber || 0)
+    let url = ""
+    try {
+      url = buildChartsShareUrl({
+        page: "driver-telemetry",
+        driver_number: dn,
+        session_key: sessionKey,
+        lap_number: ln > 0 ? ln : undefined
+      })
+    } catch (e) {
+      wx.showToast({ title: "复制失败", icon: "none" })
+      return
+    }
+    wx.setClipboardData({
+      data: url,
+      success: () => {
+        wx.showToast({ title: "已复制", icon: "success" })
+      },
+      fail: () => {
+        wx.showToast({ title: "复制失败", icon: "none" })
       }
     })
   }

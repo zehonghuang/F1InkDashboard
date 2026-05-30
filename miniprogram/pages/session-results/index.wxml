@@ -44,6 +44,9 @@
         option="{{chartOptionBoxplot}}"
       />
     </view>
+    <view class="boxplot-share" bindtap="onCopyBoxplotLink">
+      <i-icon type="share" size="18" color="rgba(255,255,255,0.5)" />
+    </view>
   </view>
 
   <view wx:if="{{activeTabKey==='throttle' || activeTabKey==='brake' || activeTabKey==='speed'}}" class="telemetry">
@@ -59,6 +62,9 @@
         heightRpx="{{telemetryHeightRpx}}"
         option="{{chartOptionTelemetry}}"
       />
+    </view>
+    <view class="telemetry-share" bindtap="onCopyTelemetryLink">
+      <i-icon type="share" size="18" color="rgba(255,255,255,0.5)" />
     </view>
   </view>
 

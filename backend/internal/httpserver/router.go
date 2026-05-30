@@ -112,6 +112,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/f1/sessions", handlers.F1Sessions(cfg, gormOrNil(database), s.Cache))
 	s.Router.GET("/api/v1/f1/sessions/current", handlers.F1SessionsCurrentExplicit(cfg, gormOrNil(database), s.Cache))
 	s.Router.GET("/api/v1/f1/sessions/:season/:round/:session_name", handlers.F1SessionsByPath(cfg, gormOrNil(database), s.Cache))
+	s.Router.GET("/api/v1/f1/session-meta", handlers.F1SessionMeta(cfg, gormOrNil(database), s.Cache))
 
 	s.Router.GET("/api/v1/telemetry/laps/available", handlers.TelemetryLapsAvailable(gormOrNil(database), s.TeamCache))
 	s.Router.GET("/api/v1/telemetry/laps", handlers.TelemetryLaps(gormOrNil(database)))

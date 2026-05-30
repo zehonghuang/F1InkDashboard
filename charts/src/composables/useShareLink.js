@@ -19,7 +19,9 @@ async function copyTextToClipboard(text) {
 export function useShareLink() {
   const build = (state) => {
     const hash = encodeShareHash(state);
-    return `${location.origin}/#${hash}`;
+    const base = String(import.meta.env.BASE_URL || "/");
+    const prefix = base.endsWith("/") ? base : `${base}/`;
+    return `${location.origin}${prefix}#${hash}`;
   };
 
   const copy = async (state) => {
@@ -30,4 +32,3 @@ export function useShareLink() {
 
   return { build, copy };
 }
-

@@ -351,3 +351,71 @@ export function renderLapTimeBoxplotChart(container, labels, items) {
   });
   return inst;
 }
+
+export function renderSectorCompareChart(container, { series, metric }) {
+  const m = String(metric || "").toLowerCase();
+  const isPct = m === "throttle" || m === "brake";
+  const yName = m === "speed" ? "km/h" : "%";
+
+  const inst = initChart(container);
+  inst.setOption({
+    ...baseOption(),
+    grid: { left: 60, right: 24, top: 34, bottom: 46 },
+    tooltip: {
+      ...axisPointerTooltip(),
+      formatter: (params) => {
+        const items = Array.isArray(params) ? params : [params];
+        const p0 = items[0];
+        const x = p0?.value?.[0];
+        const sec = x < 1 ? 1 : x < 2 ? 2 : 3;
+        const pct = Math.round((Number(x) - (sec - 1)) * 100);
+        const head = `S${sec} ${Math.max(0, Math.min(100, pct))}%`;
+        const lines = [head];
+        for (const it of items) {
+          const name = it?.seriesName || "";
+          const y = it?.value?.[1];
+          if (y == null || !Number.isFinite(Number(y))) {
+            lines.push(`${name}: N/A`);
+            continue;
+          }
+          if (isPct) lines.push(`${name}: ${Math.round(Number(y))}%`);
+          else lines.push(`${name}: ${Math.round(Number(y))} km/h`);
+        }
+        return lines.join("<br/>");
+      }
+    },
+    xAxis: {
+      type: "value",
+      min: 0,
+      max: 3,
+      axisLabel: {
+        formatter: (v) => {
+          const x = Number(v);
+          if (x === 0) return "S1";
+          if (x === 1) return "S2";
+          if (x === 2) return "S3";
+          return "";
+        }
+      }
+    },
+    yAxis: isPct ? { type: "value", min: 0, max: 100, name: yName } : { type: "value", name: yName, scale: true },
+    series: (Array.isArray(series) ? series : []).map((s) => ({
+      type: "line",
+      name: s?.name || "",
+      data: s?.data || [],
+      showSymbol: false,
+      smooth: false,
+      emphasis: { focus: "series" },
+      lineStyle: { width: 1.8, color: s?.color || "#ffffff" },
+      itemStyle: { color: s?.color || "#ffffff" },
+      markLine: {
+        silent: true,
+        symbol: "none",
+        lineStyle: { color: "rgba(255,255,255,0.12)", type: "dashed", width: 1 },
+        label: { show: false },
+        data: [{ xAxis: 1 }, { xAxis: 2 }]
+      }
+    }))
+  });
+  return inst;
+}

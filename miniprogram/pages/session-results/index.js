@@ -1,3 +1,5 @@
+const { buildChartsShareUrl } = require("../../services/chartsShare")
+
 Page({
   data: {
     raceName: "",
@@ -385,6 +387,7 @@ Page({
         const brakeSeries = []
         const speedSeries = []
         const lapParts = []
+        const lapNumberByDn = {}
 
         for (const row of rows || []) {
           const dn = row && row.dn ? Number(row.dn) : 0
@@ -402,6 +405,8 @@ Page({
           } else {
             lapParts.push(label)
           }
+          const ln = Number(data.lap_number || 0)
+          if (ln > 0) lapNumberByDn[dn] = ln
 
           const throttlePts = []
           const brakePts = []
@@ -442,6 +447,8 @@ Page({
             lineStyle: { width: 1.6, color: baseColor }
           })
         }
+
+        this._telemetryLapNumberByDn = lapNumberByDn
 
         const formatX = (xv) => {
           const x = Number(xv)
@@ -632,6 +639,72 @@ Page({
         this.setData({ chartOptionThrottle: null, chartOptionBrake: null, chartOptionSpeed: null, chartOptionTelemetry: null, telemetryLapInfo: "" })
         done()
       })
+  },
+  onCopyTelemetryLink() {
+    const sessionKey = Number(this.data.sessionKey || 0)
+    const picked = Array.isArray(this.data.telemetryDriverNumbers) ? this.data.telemetryDriverNumbers.filter((x) => Number(x) > 0) : []
+    if (!sessionKey || !picked.length) {
+      wx.showToast({ title: "暂无可复制链接", icon: "none" })
+      return
+    }
+    const tab = String(this.data.activeTabKey || "")
+    const page =
+      tab === "throttle"
+        ? "compare-throttle"
+        : tab === "brake"
+          ? "compare-brake"
+          : tab === "speed"
+            ? "compare-speed"
+            : "compare-throttle"
+    let url = ""
+    try {
+      url = buildChartsShareUrl({
+        page,
+        session_key: sessionKey,
+        driver_numbers: picked
+      })
+    } catch (e) {
+      wx.showToast({ title: "复制失败", icon: "none" })
+      return
+    }
+    wx.setClipboardData({
+      data: url,
+      success: () => {
+        wx.showToast({ title: "已复制", icon: "success" })
+      },
+      fail: () => {
+        wx.showToast({ title: "复制失败", icon: "none" })
+      }
+    })
+  },
+  onCopyBoxplotLink() {
+    const sessionKey = Number(this.data.sessionKey || 0)
+    const selected = Array.isArray(this.data.selectedDriverNumbers) ? this.data.selectedDriverNumbers.filter((x) => Number(x) > 0) : []
+    if (!sessionKey || !selected.length) {
+      wx.showToast({ title: "暂无可复制链接", icon: "none" })
+      return
+    }
+    let url = ""
+    try {
+      url = buildChartsShareUrl({
+        page: "boxplot",
+        session_key: sessionKey,
+        driver_numbers: selected,
+        include_pit_out: 0
+      })
+    } catch (e) {
+      wx.showToast({ title: "复制失败", icon: "none" })
+      return
+    }
+    wx.setClipboardData({
+      data: url,
+      success: () => {
+        wx.showToast({ title: "已复制", icon: "success" })
+      },
+      fail: () => {
+        wx.showToast({ title: "复制失败", icon: "none" })
+      }
+    })
   },
   loadBoxplot(opts) {
     const done = () => {

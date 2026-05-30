@@ -149,6 +149,13 @@
   overflow: hidden;
 }
 
+.boxplot-share {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 10rpx;
+  opacity: 0.9;
+}
+
 .telemetry {
   display: flex;
   flex-direction: column;
@@ -197,6 +204,13 @@
   border-radius: 12rpx;
   background: #000000;
   overflow: hidden;
+}
+
+.telemetry-share {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 10rpx;
+  opacity: 0.9;
 }
 
 .picker-mask {

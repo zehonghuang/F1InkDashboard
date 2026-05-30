@@ -1,5 +1,9 @@
 <template>
   <Card class="card">
+    <div class="session-title">
+      <div class="session-title-main">{{ titleMain }}</div>
+      <div class="session-title-sub">{{ titleSub }}</div>
+    </div>
     <div class="card-title">Driver Telemetry</div>
     <div v-if="!shareMode" class="controls">
       <div class="control">
@@ -38,6 +42,7 @@ import { Button, Card, InputNumber, Option, Select } from "view-ui-plus";
 import { fetchLaps, fetchLapControlsSeries } from "../api";
 import { renderLapControlsSeriesChart } from "../charts";
 import { useDrivers } from "../composables/useDrivers";
+import { useSessionMeta } from "../composables/useSessionMeta";
 import { useShareLink } from "../composables/useShareLink";
 import { fastestLapNumber, parseIntOrNull } from "../utils";
 
@@ -61,6 +66,7 @@ const loading = ref(false);
 const status = ref("");
 
 const { copy } = useShareLink();
+const { titleMain, titleSub } = useSessionMeta(sessionKey, { pageTitle: "Driver Telemetry" });
 
 const driverColor = computed(() => {
   const dn = parseIntOrNull(driverNumber.value);
@@ -89,6 +95,7 @@ const load = async () => {
     if (!dn) throw new Error("driver 不能为空");
     const lapsInfo = await refreshLaps();
     const resolvedSk = lapsInfo?.res?.session_key ?? parseIntOrNull(sessionKey.value);
+    if (sessionKey.value == null && resolvedSk) sessionKey.value = resolvedSk;
     const ln = parseIntOrNull(lapNumber.value);
     if (!ln) throw new Error("lap 不能为空");
     const series = await fetchLapControlsSeries({ driverNumber: dn, sessionKey: resolvedSk, lapNumber: ln, maxPoints: 1200 });

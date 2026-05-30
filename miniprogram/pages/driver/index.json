@@ -1,6 +1,7 @@
 {
   "usingComponents": {
-    "ec-canvas": "/components/ec-canvas/index"
+    "ec-canvas": "/components/ec-canvas/index",
+    "i-icon": "/miniprogram_npm/iview-weapp/dist/icon/index"
   },
   "navigationBarTitleText": "车手",
   "enablePullDownRefresh": true,

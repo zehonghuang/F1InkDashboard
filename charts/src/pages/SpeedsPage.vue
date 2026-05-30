@@ -1,5 +1,9 @@
 <template>
   <Card class="card">
+    <div class="session-title">
+      <div class="session-title-main">{{ titleMain }}</div>
+      <div class="session-title-sub">{{ titleSub }}</div>
+    </div>
     <div class="card-title">Speeds</div>
     <div v-if="!shareMode" class="controls">
       <div class="control">
@@ -41,6 +45,7 @@ import { Button, Card, InputNumber, Option, Select } from "view-ui-plus";
 import { fetchLaps } from "../api";
 import { renderSpeedChart } from "../charts";
 import { useDrivers } from "../composables/useDrivers";
+import { useSessionMeta } from "../composables/useSessionMeta";
 import { useShareLink } from "../composables/useShareLink";
 import { lapLabels, parseIntOrNull, parseThird, sliceArrayByThird } from "../utils";
 
@@ -63,6 +68,7 @@ const loading = ref(false);
 const status = ref("");
 
 const { copy } = useShareLink();
+const { titleMain, titleSub } = useSessionMeta(sessionKey, { pageTitle: "Speeds" });
 
 const driverColor = computed(() => {
   const dn = parseIntOrNull(driverNumber.value);
@@ -79,6 +85,7 @@ const load = async () => {
     if (!dn) throw new Error("driver 不能为空");
     const sk = parseIntOrNull(sessionKey.value);
     const res = await fetchLaps({ driverNumber: dn, sessionKey: sk });
+    if (sessionKey.value == null && res.session_key) sessionKey.value = res.session_key;
     const allLaps = res.laps || [];
     const laps = sliceArrayByThird(allLaps, parseThird(lapThird.value));
     const labels = lapLabels(laps);
