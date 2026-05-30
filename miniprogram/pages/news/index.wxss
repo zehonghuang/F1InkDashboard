@@ -1,3 +1,12 @@
+.page-root {
+  height: 100vh;
+}
+
+.page-scroll {
+  height: 100%;
+  width: 100%;
+}
+
 .news-list {
   display: flex;
   flex-direction: column;
@@ -125,6 +134,7 @@
 }
 
 .news-card {
+  position: relative;
   padding: 20rpx;
   border: 1rpx solid rgba(255, 255, 255, 0.14);
   border-radius: 16rpx;
@@ -135,6 +145,18 @@
 .news-card-promoted {
   animation: prefPromoteIn 520ms cubic-bezier(0.22, 1, 0.36, 1);
   border-color: rgba(255, 255, 255, 0.22);
+}
+
+.news-card-promoted::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 10rpx;
+  background: linear-gradient(180deg, rgba(46, 232, 216, 1) 0%, rgba(46, 232, 216, 0.55) 100%);
+  border-top-left-radius: 16rpx;
+  border-bottom-left-radius: 16rpx;
 }
 
 .pref-move-overlay {

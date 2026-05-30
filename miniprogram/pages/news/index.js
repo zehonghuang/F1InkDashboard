@@ -232,7 +232,8 @@ Page({
     hasMore: true,
     statusBarHeight: 0,
     prefMoveOverlay: null,
-    listTransformStyle: ""
+    listTransformStyle: "",
+    refreshing: false
   },
   onLoad() {
     try {
@@ -243,6 +244,7 @@ Page({
       this._pxPerRpx = ww > 0 ? ww / 750 : 0
     } catch (e) {}
     this.setListOffset(0, 0)
+    this._useScrollViewRefresher = true
     this.reload()
   },
   onUnload() {
@@ -262,8 +264,28 @@ Page({
       }
     }
   },
+  onReady() {
+    this.initWorklet()
+  },
   onPullDownRefresh() {
+    if (this._useScrollViewRefresher) return
     this.reload({ stopRefresh: true, reset: true, softReset: true })
+  },
+  onRefresherRefresh() {
+    if (this.data.loading) {
+      this.setData({ refreshing: false })
+      return
+    }
+    this.setData({ refreshing: true }, () => {
+      this.reload({ stopRefresh: true, reset: true, softReset: true })
+    })
+  },
+  onPageScroll(e) {
+    const top = e && e.detail && typeof e.detail.scrollTop === "number" ? e.detail.scrollTop : 0
+    this._scrollTop = top
+  },
+  onScrollToLower() {
+    this.onReachBottom()
   },
   reload(opts) {
     if (this.data.loading) return
@@ -281,7 +303,11 @@ Page({
     }
     const done = () => {
       if (opts && opts.stopRefresh) {
-        wx.stopPullDownRefresh()
+        if (this._useScrollViewRefresher) {
+          this.setData({ refreshing: false })
+        } else {
+          wx.stopPullDownRefresh()
+        }
       }
       this.setData({ loading: false })
     }
@@ -384,6 +410,7 @@ Page({
       })
   },
   setListOffset(y, duration, timingFunction) {
+    if (this._workletEnabled) return
     const yy = Math.round(Number(y) || 0)
     const d = Math.max(0, Math.round(Number(duration) || 0))
     const tf = timingFunction || "ease-out"
@@ -391,11 +418,44 @@ Page({
     const s = `transform:translate3d(0,${yy}px,0);${t}`
     this.setData({ listTransformStyle: s })
   },
+  initWorklet() {
+    try {
+      if (!wx.worklet) return
+      if (typeof this.applyAnimatedStyle !== "function") return
+      const { shared } = wx.worklet
+      if (typeof shared !== "function") return
+
+      const listY = shared(0)
+      const overlayY = shared(0)
+      const overlayOpacity = shared(0)
+      this._workletState = { listY, overlayY, overlayOpacity }
+
+      this._workletEnabled = true
+      this.setData({ listTransformStyle: "" })
+    } catch (e) {
+      this._workletEnabled = false
+    }
+  },
   waitForReboundToTop(cb) {
     clearTimeout(this._waitTopTimer)
     const startAt = Date.now()
     let stable = 0
     const tick = () => {
+      if (this._useScrollViewRefresher) {
+        const top = Number(this._scrollTop || 0)
+        if (top <= 1) stable += 1
+        else stable = 0
+        if (stable >= 3) {
+          cb && cb()
+          return
+        }
+        if (Date.now() - startAt > 900) {
+          cb && cb()
+          return
+        }
+        this._waitTopTimer = setTimeout(tick, 50)
+        return
+      }
       try {
         const query = wx.createSelectorQuery().in(this)
         query.selectViewport().scrollOffset()
@@ -421,6 +481,145 @@ Page({
     tick()
   },
   startPrefMoveToTop({ id, finalList }) {
+    if (this._workletEnabled) {
+      this.startPrefMoveToTopWorklet({ id, finalList })
+      return
+    }
+    this.startPrefMoveToTopLegacy({ id, finalList })
+  },
+  startPrefMoveToTopWorklet({ id, finalList }) {
+    clearTimeout(this._prefMoveTimer)
+    clearTimeout(this._prefMoveTimer2)
+    const targetId = String(id || "").trim()
+    if (!targetId) return
+    const item = (finalList || []).find((x) => x && x.id === targetId) || null
+    if (!item) return
+
+    const q = wx.createSelectorQuery().in(this)
+    q.select("#news-list").boundingClientRect()
+    q.select("#news-list .news-card").boundingClientRect()
+    q.exec((rects) => {
+      const listRect = rects && rects[0]
+      const cardRect = rects && rects[1]
+      if (!listRect) {
+        this.setData({ list: finalList || [], prefMoveOverlay: null })
+        return
+      }
+
+      const left = Math.round((cardRect && cardRect.left) || (listRect && listRect.left) || 0)
+      const width = Math.round((cardRect && cardRect.width) || (listRect && listRect.width) || 0)
+      const height = Number((cardRect && cardRect.height) || 0)
+      const gapPx = Math.round((Number(this._pxPerRpx) || 0) * 16)
+      const pull = Math.max(0, Math.min(220, Math.round(height + gapPx)))
+      const gap = Math.max(12, gapPx)
+      const destTop = Math.round((listRect && listRect.top) || 0)
+
+      const style = `left:${left}px;top:${destTop}px;width:${width}px;`
+      this.setData({ prefMoveOverlay: { show: true, item, style } }, () => {
+        const st = this._workletState
+        if (!st || !wx.worklet || !wx.worklet.runOnUI) {
+          this.setData({ list: finalList || [], prefMoveOverlay: null })
+          return
+        }
+        if (typeof this.applyAnimatedStyle === "function" && !this._workletStylesApplied) {
+          this._workletStylesApplied = true
+          wx.nextTick(() => {
+            try {
+              const listY = st.listY
+              this.applyAnimatedStyle("#news-list", () => {
+                "worklet"
+                return { transform: `translateY(${listY.value}px)` }
+              })
+            } catch (e) {}
+            try {
+              const overlayY = st.overlayY
+              const overlayOpacity = st.overlayOpacity
+              this.applyAnimatedStyle("#pref-move-overlay", () => {
+                "worklet"
+                return {
+                  opacity: overlayOpacity.value,
+                  transform: `translateY(${overlayY.value}px)`
+                }
+              })
+            } catch (e) {}
+          })
+        }
+
+        try {
+          const { runOnUI, timing, sequence, delay, Easing } = wx.worklet
+          const listY = st.listY
+          const overlayY = st.overlayY
+          const overlayOpacity = st.overlayOpacity
+          runOnUI(() => {
+            "worklet"
+            const ease = Easing && Easing.ease ? Easing.ease : undefined
+            overlayOpacity.value = 1
+            overlayY.value = pull + gap
+            listY.value = 0
+            overlayY.value = timing(0, { duration: 520, easing: ease })
+            listY.value = sequence(
+              timing(pull, { duration: 220, easing: ease }),
+              delay(340, timing(0, { duration: 260, easing: ease }))
+            )
+          })()
+        } catch (e) {}
+
+        clearTimeout(this._prefMoveTimer)
+        this._prefMoveTimer = setTimeout(() => {
+          const hiddenList = (finalList || []).map((x, idx) => {
+            if (!x || !x.id) return x
+            if (idx !== 0) return x
+            return { ...x, _prefMoveHidden: true }
+          })
+          this.setData({ list: hiddenList })
+        }, 260)
+
+        clearTimeout(this._prefMoveTimer2)
+        this._prefMoveTimer2 = setTimeout(() => {
+          const unhidden = (finalList || []).map((x) => {
+            if (!x || !x.id) return x
+            if (!x._prefMoveHidden) return x
+            const { _prefMoveHidden, ...rest } = x
+            return rest
+          })
+          this.setData({ list: unhidden, prefMoveOverlay: null }, () => {
+            try {
+              const { runOnUI } = wx.worklet
+              const listY = st.listY
+              const overlayY = st.overlayY
+              const overlayOpacity = st.overlayOpacity
+              runOnUI(() => {
+                "worklet"
+                overlayOpacity.value = 0
+                overlayY.value = 0
+                listY.value = 0
+              })()
+            } catch (e) {}
+            if (typeof this.clearAnimatedStyle === "function") {
+              try {
+                this.clearAnimatedStyle("#news-list")
+              } catch (e) {}
+              try {
+                this.clearAnimatedStyle("#pref-move-overlay")
+              } catch (e) {}
+              this._workletStylesApplied = false
+            }
+
+            clearTimeout(this._prefPromotedTimer)
+            this._prefPromotedTimer = setTimeout(() => {
+              const cleared = (this.data.list || []).map((x) => {
+                if (!x || !x.id) return x
+                if (!x._prefPromoted) return x
+                return { ...x, _prefPromoted: false }
+              })
+              this.setData({ list: cleared })
+            }, 650)
+          })
+        }, 820)
+      })
+    })
+  },
+  startPrefMoveToTopLegacy({ id, finalList }) {
     clearTimeout(this._prefMoveTimer)
     clearTimeout(this._prefMoveTimer2)
     const targetId = String(id || "").trim()
