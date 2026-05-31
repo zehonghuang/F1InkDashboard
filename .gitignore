@@ -24,6 +24,7 @@ env/
 backend/.venv/
 backend/.deps/
 backend/static/news/
+mp_news_ingest/raw_html/
 
 Thumbs.db
 Desktop.ini
