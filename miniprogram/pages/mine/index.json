@@ -1,5 +1,7 @@
 {
-  "usingComponents": {},
+  "usingComponents": {
+    "i-icon": "/miniprogram_npm/iview-weapp/dist/icon/index"
+  },
   "navigationBarTitleText": "我的",
   "navigationStyle": "custom"
 }

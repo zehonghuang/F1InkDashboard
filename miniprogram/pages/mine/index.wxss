@@ -1,9 +1,60 @@
 .section {
   margin-top: 20rpx;
   padding: 20rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.12);
+  border-radius: 18rpx;
+  background: rgba(0, 0, 0, 0.42);
+  box-shadow: 0 18rpx 44rpx rgba(0, 0, 0, 0.36);
+}
+
+.mine {
+  padding-top: 44rpx;
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24rpx;
+  padding: 0 20rpx 22rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.12);
+}
+
+.hero-bg-fallback {
+  background: #15151e;
+}
+
+.hero-bg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 460rpx;
+  width: 100%;
+}
+
+.hero-bg-mask {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 460rpx;
+  background: transparent;
+  pointer-events: none;
+}
+
+.hero-head {
+  position: relative;
+  z-index: 2;
+  padding: 12rpx 0 18rpx;
+}
+
+.profile-card {
+  position: relative;
+  z-index: 2;
+  padding: 22rpx 20rpx;
+  border-radius: 20rpx;
+  background: rgba(0, 0, 0, 0.46);
   border: 1rpx solid rgba(255, 255, 255, 0.14);
-  border-radius: 12rpx;
-  background: #000000;
 }
 
 .profile {
@@ -12,10 +63,10 @@
   align-items: center;
 }
 
-.avatar {
-  width: 88rpx;
-  height: 88rpx;
-  border-radius: 44rpx;
+.profile-avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 48rpx;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.08);
   display: flex;
@@ -24,7 +75,7 @@
   margin-right: 16rpx;
 }
 
-.avatar-img {
+.profile-avatar-img {
   width: 100%;
   height: 100%;
 }
@@ -58,6 +109,52 @@
   gap: 10rpx;
 }
 
+.hero-metrics {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 18rpx;
+  margin-top: 18rpx;
+  padding-top: 18rpx;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.12);
+}
+
+.metric {
+  flex: 1;
+  min-width: 0;
+}
+
+.metric-label {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 700;
+}
+
+.metric-val {
+  margin-top: 10rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 48rpx;
+}
+
+.metric-text {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 800;
+}
+
+.metric-add {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1rpx solid rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .btn {
   font-size: 24rpx;
   line-height: 36rpx;
@@ -83,6 +180,52 @@
   color: #ffffff;
 }
 
+.more-grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 18rpx 0;
+}
+
+.more-item {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 12rpx 0;
+}
+
+.more-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 36rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1rpx solid rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22rpx;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.more-text {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.more-item-disabled .more-icon {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.more-item-disabled .more-text {
+  color: rgba(255, 255, 255, 0.55);
+}
+
 .row {
   display: flex;
   align-items: center;
@@ -97,6 +240,59 @@
 
 .row-val {
   color: rgba(255, 255, 255, 0.72);
+}
+
+.stack {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.stack-item {
+  position: relative;
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 22rpx;
+  overflow: hidden;
+  border: 2rpx solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.12);
+  margin-left: -14rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stack-item:first-child {
+  margin-left: 0;
+}
+
+.stack-img {
+  width: 100%;
+  height: 100%;
+}
+
+.stack-placeholder {
+  font-size: 18rpx;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.stack-more {
+  position: relative;
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 22rpx;
+  overflow: hidden;
+  margin-left: -14rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18rpx;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .divider {

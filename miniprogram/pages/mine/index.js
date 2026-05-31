@@ -28,8 +28,12 @@ Page({
     prefSeason: 2026,
     followDrivers: [],
     followDriversText: "未设置",
+    followDriverThumbs: [],
+    followDriverMoreCount: 0,
     followTeams: [],
     followTeamsText: "未设置",
+    followTeamThumbs: [],
+    followTeamMoreCount: 0,
     showPicker: false,
     pickerMode: "",
     pickerTitle: "",
@@ -153,7 +157,7 @@ Page({
     const followTeamsText = followTeams.length ? `${followTeams.length} 支` : "未设置"
     this.setData({ prefSeason, followDrivers, followDriversText, followTeams, followTeamsText }, () => {
       this.refreshFollowTextsFromOptions()
-      if ((this.data.followDrivers || []).length) {
+      if ((this.data.followDrivers || []).length || (this.data.followTeams || []).length) {
         this.ensurePickOptions({ silent: true })
       }
     })
@@ -190,6 +194,10 @@ Page({
     if (action === "standings") {
       const season = Number(this.data.prefSeason || 0) || 2026
       wx.navigateTo({ url: `/pages/standings/index?season=${season}` })
+      return
+    }
+    if (String(action || "").startsWith("soon")) {
+      wx.showToast({ title: "敬请期待", icon: "none" })
       return
     }
     if (action === "followDrivers") {
@@ -392,6 +400,7 @@ Page({
     const drivers = this.data.followDrivers || []
     const teams = this.data.followTeams || []
     const driverOptions = this.data.driverOptions || []
+    const teamOptions = this.data.teamOptions || []
     const byDriver = {}
     for (const it of driverOptions) {
       const dn = Number(it && it.driver_number)
@@ -408,7 +417,53 @@ Page({
     const followDriversText = drivers.length ? (driverLabels.length ? driverLabels.join(" / ") : "未设置") : "未设置"
 
     const followTeamsText = teams.length ? teams.join(" / ") : "未设置"
-    this.setData({ followDriversText, followTeamsText })
+    const byTeam = {}
+    for (const it of teamOptions || []) {
+      const k = String((it && it.team_key) || "").trim()
+      if (!k) continue
+      byTeam[k] = it
+    }
+
+    const maxThumbs = 6
+    const driverThumbsAll = drivers
+      .map((dn) => {
+        const n = Number(dn)
+        if (!n) return null
+        const it = byDriver[n] || null
+        const url = it && it.headshot_url ? String(it.headshot_url || "").trim() : ""
+        const text =
+          it && (it.name_acronym || it.full_name || it.driver_name)
+            ? String(it.name_acronym || it.full_name || it.driver_name).trim().slice(0, 3)
+            : `#${n}`
+        const color = it && it.team_color ? String(it.team_color || "").trim() : ""
+        return { key: String(n), url, text, color }
+      })
+      .filter(Boolean)
+    const followDriverThumbs = driverThumbsAll.slice(0, maxThumbs)
+    const followDriverMoreCount = Math.max(0, driverThumbsAll.length - maxThumbs)
+
+    const teamThumbsAll = teams
+      .map((k0) => {
+        const k = String(k0 || "").trim()
+        if (!k) return null
+        const it = byTeam[k] || null
+        const url = it && it.team_logo_url ? String(it.team_logo_url || "").trim() : ""
+        const text = String((it && (it.team_name || it.team_key)) || k).trim().slice(0, 1)
+        const color = it && it.team_color ? String(it.team_color || "").trim() : ""
+        return { key: k, url, text, color }
+      })
+      .filter(Boolean)
+    const followTeamThumbs = teamThumbsAll.slice(0, maxThumbs)
+    const followTeamMoreCount = Math.max(0, teamThumbsAll.length - maxThumbs)
+
+    this.setData({
+      followDriversText,
+      followTeamsText,
+      followDriverThumbs,
+      followDriverMoreCount,
+      followTeamThumbs,
+      followTeamMoreCount
+    })
   },
   async onAvatarTap() {
     if (!this.data.isLoggedIn) {
