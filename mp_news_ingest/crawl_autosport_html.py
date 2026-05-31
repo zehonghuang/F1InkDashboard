@@ -105,6 +105,12 @@ def _strip_style_and_script_tags(html: str) -> str:
     html = re.sub(r"<link\b[^>]*?/?>", "", html, flags=re.IGNORECASE)
     html = re.sub(r"<meta\b[^>]*?/?>", "", html, flags=re.IGNORECASE)
     html = re.sub(r"<style\b[\s\S]*?</style\s*>", "", html, flags=re.IGNORECASE)
+    html = re.sub(
+        r'<svg\b[^>]*\bclass=["\'][^"\']*\bw-6\b[^"\']*\bh-6\b[^"\']*-ms-1\b[^"\']*["\'][^>]*>[\s\S]*?</svg\s*>',
+        "",
+        html,
+        flags=re.IGNORECASE,
+    )
 
     def _keep_jsonld(m: re.Match[str]) -> str:
         tag = m.group(0) or ""
@@ -216,6 +222,28 @@ def _find_first(n: _HtmlNode, tag: str) -> _HtmlNode | None:
     return None
 
 
+def _attr_get(n: _HtmlNode, key: str) -> str:
+    k = key.lower()
+    for kk, vv in n.attrs:
+        if (kk or "").lower() == k:
+            return str(vv or "")
+    return ""
+
+
+def _find_first_by_class(n: _HtmlNode, tag: str, class_name: str) -> _HtmlNode | None:
+    tag = tag.lower()
+    class_name = class_name.strip()
+    for c in n.children:
+        if c.tag == tag:
+            cls = _attr_get(c, "class")
+            if cls and class_name in cls.split():
+                return c
+        found = _find_first_by_class(c, tag, class_name)
+        if found is not None:
+            return found
+    return None
+
+
 def _extract_html_body_div3_main(html: str) -> str:
     parser = _TreeBuilder()
     parser.feed(str(html or ""))
@@ -230,6 +258,20 @@ def _extract_html_body_div3_main(html: str) -> str:
 
     main = _find_first(scope, "main") or _find_first(body, "main") or scope
     return _serialize_node(main)
+
+
+def _extract_ms_article_detail(html: str) -> str:
+    parser = _TreeBuilder()
+    parser.feed(str(html or ""))
+    root = parser.root
+
+    html_node = _find_first(root, "html") or root
+    body = _find_first(html_node, "body") or html_node
+
+    node = _find_first_by_class(body, "div", "ms-article_detail")
+    if node is None:
+        return _extract_html_body_div3_main(html)
+    return _serialize_node(node)
 
 
 def _read_json_file(p: Path) -> dict:
@@ -345,7 +387,11 @@ async def main() -> int:
     ap.add_argument("--timeout", type=float, default=20.0)
     ap.add_argument("--sleep-ms", type=int, default=300)
     ap.add_argument("--fetch-mode", choices=["auto", "httpx", "playwright"], default="auto")
-    ap.add_argument("--extract", choices=["none", "html/body/div[3]/main"], default="html/body/div[3]/main")
+    ap.add_argument(
+        "--extract",
+        choices=["none", "html/body/div[3]/main", "ms-article_detail"],
+        default="ms-article_detail",
+    )
     ap.add_argument("--keep-raw", action="store_true")
     ap.add_argument("--no-strip-script-style", action="store_true")
     ap.add_argument("--state-file", default="")
@@ -384,7 +430,12 @@ async def main() -> int:
             html = await _fetch_article_html(client, url=url, fetch_mode=args.fetch_mode, timeout_s=args.timeout)
             fn = _guess_filename(url, it.title, it.published_at)
             p = out_dir / fn
-            extracted = _extract_html_body_div3_main(html) if args.extract == "html/body/div[3]/main" else html
+            if args.extract == "ms-article_detail":
+                extracted = _extract_ms_article_detail(html)
+            elif args.extract == "html/body/div[3]/main":
+                extracted = _extract_html_body_div3_main(html)
+            else:
+                extracted = html
             cleaned = extracted if args.no_strip_script_style else _strip_style_and_script_tags(extracted)
             p.write_text(cleaned, encoding="utf-8")
             if args.keep_raw:
