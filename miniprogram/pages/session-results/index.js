@@ -1,4 +1,5 @@
 const { buildChartsShareUrl } = require("../../services/chartsShare")
+const { getAuthState } = require("../../services/authService")
 
 Page({
   data: {
@@ -25,6 +26,22 @@ Page({
     pickerMode: "",
     pickedDriverNumbers: [],
     pickedMap: {}
+  },
+  ensureLoggedIn() {
+    const s = getAuthState()
+    if (s && s.isLoggedIn) return true
+    wx.showModal({
+      title: "需要登录",
+      content: "登录后才可以选择车手进行对比",
+      confirmText: "去登录",
+      cancelText: "取消",
+      success: (res) => {
+        if (res && res.confirm) {
+          wx.switchTab({ url: "/pages/mine/index" })
+        }
+      }
+    })
+    return false
   },
   buildTabs(sessionCode, sessionName) {
     const code = String(sessionCode || "")
@@ -246,12 +263,14 @@ Page({
     })
   },
   onOpenPicker() {
+    if (!this.ensureLoggedIn()) return
     const picked = Array.isArray(this.data.selectedDriverNumbers) ? this.data.selectedDriverNumbers.slice() : []
     const pickedMap = {}
     for (const dn of picked) pickedMap[dn] = true
     this.setData({ showPicker: true, pickerMode: "boxplot", pickedDriverNumbers: picked, pickedMap })
   },
   onOpenTelemetryPicker() {
+    if (!this.ensureLoggedIn()) return
     const picked = Array.isArray(this.data.telemetryDriverNumbers) ? this.data.telemetryDriverNumbers.slice() : []
     const pickedMap = {}
     for (const x of picked) pickedMap[x] = true
