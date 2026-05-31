@@ -2,7 +2,7 @@
   margin-top: 20rpx;
   padding: 20rpx;
   border: 1rpx solid rgba(255, 255, 255, 0.12);
-  border-radius: 18rpx;
+  border-radius: 12rpx;
   background: rgba(0, 0, 0, 0.42);
   box-shadow: 0 18rpx 44rpx rgba(0, 0, 0, 0.36);
 }
@@ -14,7 +14,7 @@
 .hero {
   position: relative;
   overflow: hidden;
-  border-radius: 24rpx;
+  border-radius: 12rpx;
   padding: 0 20rpx 22rpx;
   border: 1rpx solid rgba(255, 255, 255, 0.12);
 }
@@ -52,7 +52,7 @@
   position: relative;
   z-index: 2;
   padding: 22rpx 20rpx;
-  border-radius: 20rpx;
+  border-radius: 12rpx;
   background: rgba(0, 0, 0, 0.46);
   border: 1rpx solid rgba(255, 255, 255, 0.14);
 }
@@ -66,7 +66,7 @@
 .profile-avatar {
   width: 96rpx;
   height: 96rpx;
-  border-radius: 48rpx;
+  border-radius: 999rpx;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.08);
   display: flex;
@@ -147,7 +147,7 @@
 .metric-add {
   width: 48rpx;
   height: 48rpx;
-  border-radius: 24rpx;
+  border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.08);
   border: 1rpx solid rgba(255, 255, 255, 0.16);
   display: flex;
@@ -159,7 +159,7 @@
   font-size: 24rpx;
   line-height: 36rpx;
   padding: 10rpx 18rpx;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
 }
 
 .btn-primary {
@@ -199,7 +199,7 @@
 .more-icon {
   width: 72rpx;
   height: 72rpx;
-  border-radius: 36rpx;
+  border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.1);
   border: 1rpx solid rgba(255, 255, 255, 0.16);
   display: flex;
@@ -253,7 +253,7 @@
   position: relative;
   width: 44rpx;
   height: 44rpx;
-  border-radius: 22rpx;
+  border-radius: 999rpx;
   overflow: hidden;
   border: 2rpx solid rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.12);
@@ -282,7 +282,7 @@
   position: relative;
   width: 44rpx;
   height: 44rpx;
-  border-radius: 22rpx;
+  border-radius: 999rpx;
   overflow: hidden;
   margin-left: -14rpx;
   border: 2rpx solid rgba(255, 255, 255, 0.18);
@@ -315,7 +315,7 @@
 .nickname-input {
   margin-top: 10rpx;
   padding: 10rpx 12rpx;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   background: rgba(255, 255, 255, 0.06);
   border: 1rpx solid rgba(255, 255, 255, 0.14);
   color: rgba(255, 255, 255, 0.92);
@@ -340,7 +340,7 @@
   bottom: 120rpx;
   background: #0a0a0a;
   border: 1rpx solid rgba(255, 255, 255, 0.14);
-  border-radius: 16rpx;
+  border-radius: 12rpx;
   z-index: 901;
   display: flex;
   flex-direction: column;
@@ -368,7 +368,7 @@
 
 .picker-btn {
   padding: 10rpx 16rpx;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   border: 1rpx solid rgba(255, 255, 255, 0.2);
   color: #ffffff;
   font-weight: 700;

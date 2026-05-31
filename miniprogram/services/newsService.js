@@ -75,7 +75,7 @@ const MOCK_NEWS = [
             src: "/assets/circuits/2026/raw/miami_map.webp",
             mode: "widthFix",
             style:
-              "width:100%;display:block;border-radius:16rpx;overflow:hidden;margin:0 0 12rpx 0;"
+              "width:100%;display:block;border-radius:12rpx;overflow:hidden;margin:0 0 12rpx 0;"
           }
         },
         {

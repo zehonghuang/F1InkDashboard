@@ -5,7 +5,7 @@
   position: relative;
   background: #000000;
   border: 1rpx solid rgba(255, 255, 255, 0.14);
-  border-radius: 20rpx;
+  border-radius: 12rpx;
 }
 
 .card-full {
