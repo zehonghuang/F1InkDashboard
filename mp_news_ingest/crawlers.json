@@ -1,0 +1,12 @@
+{
+  "interval_minutes": 10,
+  "indices_dir": "mp_news_ingest/indices",
+  "tasks": [
+    {
+      "name": "autosport",
+      "cwd": ".",
+      "cmd": ["python", "mp_news_ingest/crawl_autosport_html.py", "--max-items", "10"]
+    }
+  ]
+}
+

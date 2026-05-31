@@ -3,6 +3,7 @@ import asyncio
 import datetime as dt
 import hashlib
 import html as html_lib
+import json
 from html.parser import HTMLParser
 import re
 from dataclasses import dataclass
@@ -231,6 +232,41 @@ def _extract_html_body_div3_main(html: str) -> str:
     return _serialize_node(main)
 
 
+def _read_json_file(p: Path) -> dict:
+    try:
+        obj = json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    return obj if isinstance(obj, dict) else {}
+
+
+def _write_json_file(p: Path, obj: dict) -> None:
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(obj, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def _select_new_items(
+    items: list[AutosportRssItem],
+    last_url: str,
+    seen_urls: list[str],
+    max_items: int,
+) -> tuple[list[AutosportRssItem], str]:
+    last_url = _normalize_url(last_url)
+    seen = {_normalize_url(u) for u in (seen_urls or []) if str(u or "").strip()}
+    out: list[AutosportRssItem] = []
+    for it in items:
+        u = _normalize_url(it.url)
+        if last_url and u == last_url:
+            break
+        if u and u in seen:
+            continue
+        out.append(it)
+        if max_items > 0 and len(out) >= max_items:
+            break
+    new_last_url = _normalize_url(items[0].url) if items else last_url
+    return out, new_last_url
+
+
 async def _fetch_text(client: httpx.AsyncClient, url: str) -> str:
     r = await client.get(url, follow_redirects=True)
     r.raise_for_status()
@@ -312,6 +348,7 @@ async def main() -> int:
     ap.add_argument("--extract", choices=["none", "html/body/div[3]/main"], default="html/body/div[3]/main")
     ap.add_argument("--keep-raw", action="store_true")
     ap.add_argument("--no-strip-script-style", action="store_true")
+    ap.add_argument("--state-file", default="")
     args = ap.parse_args()
 
     default_out_dir = Path(__file__).resolve().parent / "raw_html" / "autosport"
@@ -319,6 +356,14 @@ async def main() -> int:
     if args.date_subdir:
         out_dir = out_dir / dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d")
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    default_state_file = Path(__file__).resolve().parent / "state" / "autosport.json"
+    state_file = (Path(args.state_file).expanduser() if str(args.state_file or "").strip() else default_state_file).resolve()
+    state = _read_json_file(state_file) if state_file.exists() else {}
+    last_url = _normalize_url(str(state.get("last_url") or ""))
+    seen_urls = state.get("seen_urls")
+    if not isinstance(seen_urls, list):
+        seen_urls = []
 
     timeout = httpx.Timeout(args.timeout, connect=args.timeout)
     headers = {
@@ -330,10 +375,11 @@ async def main() -> int:
     async with httpx.AsyncClient(timeout=timeout, headers=headers) as client:
         rss_xml = await _fetch_text(client, str(args.rss_url))
         items = _iter_unique(_discover_autosport_f1_news_from_rss(rss_xml))
-        if args.max_items > 0:
-            items = items[: args.max_items]
+        to_fetch, new_last_url = _select_new_items(items, last_url, seen_urls, int(args.max_items or 0))
 
-        for it in items:
+        run_at_utc = dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z")
+        fetched_records: list[dict] = []
+        for it in to_fetch:
             url = _normalize_url(it.url)
             html = await _fetch_article_html(client, url=url, fetch_mode=args.fetch_mode, timeout_s=args.timeout)
             fn = _guess_filename(url, it.title, it.published_at)
@@ -344,7 +390,56 @@ async def main() -> int:
             if args.keep_raw:
                 raw_path = p.with_name(p.stem + ".raw.html")
                 raw_path.write_text(html, encoding="utf-8")
+            meta = {
+                "source": "autosport",
+                "url": url,
+                "title": str(it.title or ""),
+                "published_at": str(it.published_at or ""),
+                "fetched_at_utc": dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z"),
+                "fetch_mode": str(args.fetch_mode),
+                "extract": str(args.extract),
+                "cleaned": bool(not args.no_strip_script_style),
+                "file": p.name,
+            }
+            p.with_suffix(".json").write_text(json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            fetched_records.append(
+                {
+                    "url": url,
+                    "file": p.name,
+                    "title": str(it.title or ""),
+                    "published_at": str(it.published_at or ""),
+                    "fetched_at_utc": str(meta.get("fetched_at_utc") or ""),
+                }
+            )
             await asyncio.sleep(max(args.sleep_ms, 0) / 1000.0)
+
+        seen_limit = 5000
+        merged_seen: list[str] = []
+        merged_seen_set: set[str] = set()
+        for u in [r.get("url") for r in fetched_records] + list(seen_urls):
+            un = _normalize_url(str(u or ""))
+            if not un or un in merged_seen_set:
+                continue
+            merged_seen_set.add(un)
+            merged_seen.append(un)
+            if len(merged_seen) >= seen_limit:
+                break
+
+        _write_json_file(
+            state_file,
+            {
+                "source": "autosport",
+                "rss_url": str(args.rss_url),
+                "last_url": new_last_url,
+                "previous_last_url": last_url,
+                "updated_at_utc": dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z"),
+                "fetched_count": len(to_fetch),
+                "seen_urls": merged_seen,
+                "seen_urls_limit": seen_limit,
+                "seen_urls_truncated": len(merged_seen) >= seen_limit and len(merged_seen_set) > len(merged_seen),
+                "last_run": {"ran_at_utc": run_at_utc, "fetched": fetched_records},
+            },
+        )
 
     return 0
 
