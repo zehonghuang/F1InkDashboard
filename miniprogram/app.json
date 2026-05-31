@@ -6,6 +6,7 @@
     "pages/race-sessions/index",
     "pages/session-results/index",
     "pages/driver/index",
+    "pages/standings/index",
     "pages/mine/index"
   ],
   "lazyCodeLoading": "requiredComponents",

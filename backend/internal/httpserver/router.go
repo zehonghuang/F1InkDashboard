@@ -87,6 +87,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/mp/archive", handlers.MpArchive(gormOrNil(database), cfg.StaticDir))
 	s.Router.GET("/api/v1/mp/race-sessions", handlers.MpRaceSessions(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/session-results", handlers.MpSessionResults(gormOrNil(database), s.TeamCache))
+	s.Router.GET("/api/v1/mp/standings", handlers.MpStandings(gormOrNil(database), s.TeamCache))
 	s.Router.GET("/api/v1/mp/telemetry/controls", handlers.MpTelemetryControls(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/telemetry/sector_controls", handlers.MpTelemetrySectorControls(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/news", handlers.MpNewsList(cfg.StaticDir))

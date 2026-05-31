@@ -67,10 +67,16 @@
   </view>
 
   <view wx:if="{{isLoggedIn}}" class="section">
-    <view class="section-title">设备</view>
     <view class="row">
       <view class="row-key">当前设备ID</view>
       <view class="row-val">{{deviceId || "-"}}</view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="row" bindtap="onTapItem" data-action="standings">
+      <view class="row-key">赛季积分</view>
+      <view class="row-val">{{prefSeason}}</view>
     </view>
   </view>
 

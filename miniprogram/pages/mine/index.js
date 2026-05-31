@@ -187,6 +187,11 @@ Page({
   },
   onTapItem(e) {
     const action = e && e.currentTarget && e.currentTarget.dataset ? e.currentTarget.dataset.action : ""
+    if (action === "standings") {
+      const season = Number(this.data.prefSeason || 0) || 2026
+      wx.navigateTo({ url: `/pages/standings/index?season=${season}` })
+      return
+    }
     if (action === "followDrivers") {
       this.openPicker("drivers")
       return

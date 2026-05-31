@@ -1,0 +1,51 @@
+<view class="page">
+  <view class="header">
+    <view class="title">赛季排名</view>
+    <view class="subtitle">{{season}} 年度积分榜</view>
+  </view>
+
+  <view class="tabs">
+    <block wx:for="{{tabs}}" wx:key="key">
+      <view class="tab {{activeTabKey===item.key?'tab-active':''}}" data-tab="{{item.key}}" bindtap="onTabTap">{{item.label}}</view>
+    </block>
+  </view>
+
+  <view wx:if="{{updatedText}}" class="hint">{{updatedText}}</view>
+  <view wx:if="{{errorText}}" class="error">{{errorText}}</view>
+
+  <view wx:if="{{activeTabKey==='drivers'}}" class="list">
+    <block wx:for="{{drivers}}" wx:key="driver_number">
+      <view class="card" style="{{item.cardStyle}}">
+        <view class="card-left">
+          <image class="avatar" src="{{item.headshot_url}}" mode="aspectFit" wx:if="{{item.headshot_url}}" />
+        </view>
+        <view class="card-mid">
+          <view class="driver-row">
+            <view class="driver-no">#{{item.driver_number}}</view>
+            <view class="driver">{{item.display_name || item.full_name || item.name_acronym || item.driver_number}}</view>
+          </view>
+          <view class="team">{{item.team_name || '-'}}</view>
+        </view>
+        <view class="card-right">
+          <view class="pts">{{item.points}}</view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view wx:if="{{activeTabKey==='constructors'}}" class="list">
+    <block wx:for="{{constructors}}" wx:key="team_name">
+      <view class="card" style="{{item.cardStyle}}">
+        <view class="card-left">
+          <image class="avatar" src="{{item.team_logo_url}}" mode="aspectFit" wx:if="{{item.team_logo_url}}" />
+        </view>
+        <view class="card-mid">
+          <view class="driver">{{item.team_name || '-'}}</view>
+        </view>
+        <view class="card-right">
+          <view class="pts">{{item.points}}</view>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>
