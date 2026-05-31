@@ -12,6 +12,12 @@ Page({
     loading: false,
     errorText: ""
   },
+  onShareAppMessage() {
+    const id = String(this.data.id || "").trim()
+    const title = String(this.data.title || "").trim() || "资讯详情"
+    const path = id ? `/pages/news-detail/index?id=${encodeURIComponent(id)}` : "/pages/news/index"
+    return { title, path }
+  },
   onLoad(query) {
     const id = (query && query.id) || ""
     if (!id) {
