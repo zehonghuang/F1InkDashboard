@@ -1,0 +1,97 @@
+{
+  "file": "C:\\F1InkDashboard\\mp_news_ingest\\raw_html\\autosport\\20260528_autosport_Why_any_12th_team_project_would_face_an_uphill_battle_amid_BYD_rumours_3a8128eef5.html",
+  "title_from_html": "",
+  "title_from_json": "Why any 12th team project would face an uphill battle amid BYD rumours",
+  "title_tag_raw": "",
+  "title_class_raw": "",
+  "title_text_raw": "",
+  "content_container_tag": "div",
+  "content_container_class": "ms-article-content msnt-styled-content",
+  "content_container_data_series": "f1",
+  "content_container_data_position": "embed",
+  "paragraphs": [
+    {
+      "type": "p",
+      "text": "Record team valuations and the sheer complexity involved mean any potential path for Chinese giant BYD to join Formula 1 as a 12th team will be an uphill battle."
+    },
+    {
+      "type": "p",
+      "text": "The Chinese electric automotive giant has set its sights on Formula 1; Stella Li, BYD’s Executive Vice President and CEO for the Americas, Europe, and the Middle East, has never hidden that she views the world championship as the perfect stage to elevate the company’s brand image."
+    },
+    {
+      "type": "p",
+      "text": "Exactly how BYD could secure an F1 entry remains a subject of ongoing debate, but as previously analysed there appear to be three logical paths. A title sponsorship in the style of Gucci, which has secured , or even a full takeover of a team's brand identity like Alfa Romeo did with Sauber for a few years. Secondly, there is the takeover of an existing team, and lastly starting a 12th expansion team from scratch. co-naming rights for the Alpine team from 2027"
+    },
+    {
+      "type": "p",
+      "text": "Following exploratory talks earlier this year around the Chinese Grand Prix, Motorsport understands Li will be in attendance next week at the Monaco Grand Prix and will meet with F1 executives ahead of the weekend, but it is understood things are still in a very early fact-finding stage and far removed from any decisions on what BYD will want to do next."
+    },
+    {
+      "type": "img",
+      "src": "https://cdn.motorsport.com/images/mgl/2d1kNm7Y/s8/christian-horner-red-bull-raci.jpg",
+      "alt": "Christian Horner, Red Bull Racing",
+      "width": "1200",
+      "height": "801",
+      "from": "section[data-widget=image]"
+    },
+    {
+      "type": "p",
+      "text": "Photo by: Red Bull Content Pool"
+    },
+    {
+      "type": "p",
+      "text": "In recent weeks, however, the Chinese company's prospective bid has been linked with a potential F1 return of Christian Horner, who could now technically come back to the world championship after his Red Bull departure and is known to have met with a variety of current and prospective F1 teams and investors about his next move."
+    },
+    {
+      "type": "p",
+      "text": "Horner was photographed with Li at the Cannes Film Festival in what had the semblance of a carefully crafted PR op, whether to give BYD's interest in an F1 entry extra credence or to keep Horner's name in the spotlight, perhaps to put pressure on other projects the former Red Bull F1 chief has engaged with."
+    },
+    {
+      "type": "p",
+      "text": "Horner is also involved in a consortium to acquire Otro Capital's 24% share of the team, over which his group is vying with , and it is believed there are other brands waiting in the wings to vie with the likes of BYD for an eventual F1 entry. Alpine Mercedes"
+    },
+    {
+      "type": "p",
+      "text": "In any case, the sponsorship option is easily achievable. But if ultimate control is important, then all roads lead to a takeover of an existing team or the formation of a 12th, expansion team. Those roads are likely to feature an uphill climb, though."
+    },
+    {
+      "type": "p",
+      "text": "In recent months, several investment funds and a major automotive group are known to have approached teams with acquisition bids exceeding two billion dollars, only to receive a polite \"no, thank you\" in response. Nobody is willing to sell, even when faced with figures that just three or four years ago would have far surpassed the valuation of a top-tier team. The consensus is that team valuations will climb even higher in the coming years. As a result, no one wants to risk waking up with billion-dollar hangover by running out of patience before the strategically perfect moment to sanction a sale."
+    },
+    {
+      "type": "p",
+      "text": "The idea of creating a 12th team is even more complicated than buying an existing one, with F1 having only just admitted the Cadillac-GM project following a protracted process. F1 still hasn't seen the full impact yet of adding a 11th team at this stage, either commercially or logistically, but cramped grand prix paddocks like Monaco or Montreal can't magically keep adding space overnight, and given the aforementioned team valuations there is also the matter of agreeing to what will likely be an even higher anti-dilution fee."
+    },
+    {
+      "type": "img",
+      "src": "https://cdn.motorsport.com/images/mgl/68VWENB2/s8/george-russell-mercedes-andrea.jpg",
+      "alt": "George Russell, Mercedes, Andrea Kimi Antonelli, Mercedes",
+      "width": "1200",
+      "height": "800",
+      "from": "section[data-widget=image]"
+    },
+    {
+      "type": "p",
+      "text": "Photo by: Guido De Bortoli / LAT Images via Getty Images"
+    },
+    {
+      "type": "p",
+      "text": "BYD has the resources to easily absorb that and conclude with an existing OEM for initial technical support, but according to insiders in the Montreal paddock the timing for a 12th team doesn't seem right yet even if F1 currently has the governance framework to go up to 12 teams."
+    },
+    {
+      "type": "p",
+      "text": "While the upcoming Monaco weekend might offer further clues on the direction of travel, there is not enough evidence as of right now that BYD will end up being a serious bid, beyond carefully crafted speculation which has already delivered a lot of publicity for all involved."
+    },
+    {
+      "type": "p",
+      "text": "Nevertheless, it reinforces the idea that F1 is a seller's market, and that it is enjoying interest from the vast Chinese market, which both F1 CEO Stefano Domenicali and FIA president Mohammed Ben Sulayem would be keen on tapping into further."
+    }
+  ],
+  "images_widget": [
+    "https://cdn.motorsport.com/images/mgl/2d1kNm7Y/s8/christian-horner-red-bull-raci.jpg",
+    "https://cdn.motorsport.com/images/mgl/68VWENB2/s8/george-russell-mercedes-andrea.jpg"
+  ],
+  "source": "autosport",
+  "html_file": "mp_news_ingest/raw_html/autosport/20260528_autosport_Why_any_12th_team_project_would_face_an_uphill_battle_amid_BYD_rumours_3a8128eef5.html",
+  "generated_at_utc": "2026-06-01T14:52:29.817673Z"
+}

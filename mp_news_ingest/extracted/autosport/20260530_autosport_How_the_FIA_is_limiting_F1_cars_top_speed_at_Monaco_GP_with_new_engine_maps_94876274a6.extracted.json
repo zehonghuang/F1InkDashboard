@@ -1,0 +1,93 @@
+{
+  "file": "C:\\F1InkDashboard\\mp_news_ingest\\raw_html\\autosport\\20260530_autosport_How_the_FIA_is_limiting_F1_cars_top_speed_at_Monaco_GP_with_new_engine_maps_94876274a6.html",
+  "title_from_html": "",
+  "title_from_json": "How the FIA is limiting F1 cars’ top speed at Monaco GP with new engine maps",
+  "title_tag_raw": "",
+  "title_class_raw": "",
+  "title_text_raw": "",
+  "content_container_tag": "div",
+  "content_container_class": "ms-article-content msnt-styled-content",
+  "content_container_data_series": "f1",
+  "content_container_data_position": "embed",
+  "paragraphs": [
+    {
+      "type": "p",
+      "text": "The jewel in the crown of the Formula 1 calendar, Monaco has represented a challenge for the past century – challenge which will be transformed this year, as the new technical regulations introduce key elements that will significantly impact safety and car set-up, active aerodynamics will be disabled throughout the lap in order to minimise risks, for the first time this season. As revealed on Friday"
+    },
+    {
+      "type": "p",
+      "text": "The FIA normally defines activation zones within sections of the track where cars are not operating at the limit of grip – where the tyres are not subjected to maximal lateral or traction loads. This ensures the wings can be deployed safely without compromising stability, even on worn-out tyres."
+    },
+    {
+      "type": "p",
+      "text": "However, two additional criteria come into play. The activation zone must exceed three seconds, to avoid brief deployments that would increase drivers’ workload without offering substantial performance or efficiency benefits."
+    },
+    {
+      "type": "p",
+      "text": "Last season in Monaco, drivers used DRS on the pit straight for just over five seconds, reaching some 290km/h. Now, the 350kW MGU-K delivers significantly greater power in the acceleration phase, allowing cars to ramp up to high speed faster."
+    },
+    {
+      "type": "img",
+      "src": "https://cdn.motorsport.com/images/mgl/6DGqnDGY/s8/haas-f1-team-technical-detail.jpg",
+      "alt": "Haas VF-26",
+      "width": "1200",
+      "height": "800",
+      "from": "section[data-widget=image]"
+    },
+    {
+      "type": "p",
+      "text": "Haas VF-26"
+    },
+    {
+      "type": "p",
+      "text": "Photo by: Getty Images"
+    },
+    {
+      "type": "p",
+      "text": "The wing would therefore offer no genuine benefit. Considering the risk of approaching the Turn 1 braking zone, where the bumpy surface requires maximum downforce to prevent lock-ups, at even higher speed, the decision was made to disable ‘straight mode’."
+    },
+    {
+      "type": "p",
+      "text": "But this is not the only safety measure. With such a powerful electric motor, some grands prix – including Monaco – will feature a specific engine mapping named Rev1, applying an alternative limit to the MGU-K power curve."
+    },
+    {
+      "type": "p",
+      "text": "The goal is to prevent excessive speed in areas like the pit straight, the tunnel and the uphill section towards Massenet. The maximal power won’t be lowered in Monaco, but the clipping phase will be modified."
+    },
+    {
+      "type": "p",
+      "text": "In standard mode, the electric motor can deliver 350kW up to 290km/h before the available power is gradually cut back, dropping to 250kW at 310km/h and 0kW at 345km/h, unless teams choose to clip earlier to save energy."
+    },
+    {
+      "type": "p",
+      "text": "In Monaco, cars will deliver 350kW up to 200km/h only before entering the clipping phase. At 270km/h, the MGU-K output will decrease to around 100kW, and by 300km/h, its contribution will drop to zero."
+    },
+    {
+      "type": "img",
+      "src": "https://cdn.motorsport.com/images/mgl/25d3OLl0/s8/alternative-mgu-k-power-limit-.jpg",
+      "alt": "",
+      "width": "1200",
+      "height": "674",
+      "from": "section[data-widget=image]"
+    },
+    {
+      "type": "p",
+      "text": "Photo by: FIA"
+    },
+    {
+      "type": "p",
+      "text": "Monaco is not a demanding circuit for energy management, thanks to numerous braking zones allowing for efficient battery harvesting. As a consequence, in ‘overtake mode’, the MGU-K will stop deploying maximum power at 200km/h instead of 335km/h, but the clipping curve won’t be as steep."
+    },
+    {
+      "type": "p",
+      "text": "In theory, while at 260km/h the standard map provides some 150kW from the electric motor, overtake mode will deliver nearly 100kW extra."
+    }
+  ],
+  "images_widget": [
+    "https://cdn.motorsport.com/images/mgl/6DGqnDGY/s8/haas-f1-team-technical-detail.jpg",
+    "https://cdn.motorsport.com/images/mgl/25d3OLl0/s8/alternative-mgu-k-power-limit-.jpg"
+  ],
+  "source": "autosport",
+  "html_file": "mp_news_ingest/raw_html/autosport/20260530_autosport_How_the_FIA_is_limiting_F1_cars_top_speed_at_Monaco_GP_with_new_engine_maps_94876274a6.html",
+  "generated_at_utc": "2026-06-01T14:52:29.671199Z"
+}

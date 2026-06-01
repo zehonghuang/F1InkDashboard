@@ -1,0 +1,97 @@
+{
+  "file": "C:\\F1InkDashboard\\mp_news_ingest\\raw_html\\autosport\\20260529_autosport_FIA_scraps_F1_straight_mode_in_Monaco_GP_here_s_what_that_means_for_the_pecking_order_8c5dac6d81.html",
+  "title_from_html": "",
+  "title_from_json": "FIA scraps F1 straight mode in Monaco GP – here's what that means for the pecking order",
+  "title_tag_raw": "",
+  "title_class_raw": "",
+  "title_text_raw": "",
+  "content_container_tag": "div",
+  "content_container_class": "ms-article-content msnt-styled-content",
+  "content_container_data_series": "f1",
+  "content_container_data_position": "embed",
+  "paragraphs": [
+    {
+      "type": "p",
+      "text": "The news is official: active aerodynamics will not be used at the Monaco Grand Prix. The FIA made the decision with safety in mind. There was a risk of seeing cars become too fast at the exit of the Tunnel, given the limited run-off areas, and it was considered prudent to forgo one of the key features of the 2026 Formula 1 cars."
+    },
+    {
+      "type": "p",
+      "text": "The race in the principality will therefore be run with fixed aerodynamic surfaces and without straight mode. This is a major change, as there will not even be the DRS option that was available until last year."
+    },
+    {
+      "type": "p",
+      "text": "Monte Carlo thus becomes a unique event that teams will try to prepare for in a specific way. The race among the manhole covers and curbs of the street circuit becomes a great opportunity for anyone hoping to challenge the otherwise unbeatable . Mercedes"
+    },
+    {
+      "type": "p",
+      "text": "On paper, Monaco should be favourable territory for . The SF-26 suffers from a lack of power from its power unit at high engine speeds, but it is widely regarded as the best car in terms of chassis and aerodynamics through medium- and low-speed corners. Ferrari"
+    },
+    {
+      "type": "img",
+      "src": "https://cdn.motorsport.com/images/mgl/254MRdN0/s8/lando-norris-mclaren.jpg",
+      "alt": "There are fears over the high speeds that could be reached in Monaco",
+      "width": "1200",
+      "height": "799",
+      "from": "section[data-widget=image]"
+    },
+    {
+      "type": "p",
+      "text": "There are fears over the high speeds that could be reached in Monaco"
+    },
+    {
+      "type": "p",
+      "text": "Photo by: Erik Junius"
+    },
+    {
+      "type": "p",
+      "text": "As a result, the principality could become ’s chance for redemption. On a track where horsepower is far from the dominant performance factor, and where the aerodynamic efficiency obsessively pursued during the first five races will give way to the search for maximum downforce. Ferrari"
+    },
+    {
+      "type": "p",
+      "text": "Downforce will once again become the defining characteristic of cars that were otherwise designed to minimise drag. In short, we may see a shift in philosophy that could lead to some surprises. So far, has displayed an embarrassingly large advantage over the competition. Mercedes"
+    },
+    {
+      "type": "p",
+      "text": "Kimi Antonelli and have won every grand prix so far this year (four to one in favour of the young Itralian), and the latest upgrade package introduced on the W17 in Montreal was specifically aimed at increasing downforce. Mercedes must therefore be considered one of the clear favourites, even if Ferrari will have to play the role of the team whose car seems almost tailor-made for the streets of Monaco. George Russell"
+    },
+    {
+      "type": "p",
+      "text": "And , which has the shortest wheelbase on the grid, can also nurture significant ambitions in Monaco’s roulette wheel of a race. Everyone knows that success here is built on a perfect qualifying lap, since overtaking during the race is practically impossible unless the driver ahead makes a mistake. McLaren"
+    },
+    {
+      "type": "img",
+      "src": "https://cdn.motorsport.com/images/mgl/24QeAwqY/s8/isack-hadjar-red-bull-racing.jpg",
+      "alt": "Teams may be inclined to bring special wings for Monaco",
+      "width": "1200",
+      "height": "808",
+      "from": "section[data-widget=image]"
+    },
+    {
+      "type": "p",
+      "text": "Teams may be inclined to bring special wings for Monaco"
+    },
+    {
+      "type": "p",
+      "text": "Photo by: Clive Mason / Getty Images"
+    },
+    {
+      "type": "p",
+      "text": "It will be interesting to see who chooses to invest special resources into the Monaco Grand Prix. Since there is no point in using rear wings such as Ferrari’s “Macarena” design or Red Bull’s reverse-wing concept, could someone develop a solution specifically for Monte Carlo?, for example, will assemble the combination of available components that generates the most downforce. However, it appears that the Woking-based team has not been willing to spend additional budget-cap resources to challenge Mercedes’ supremacy. Led by Rob Marshall, the engineers will try to avoid the disappointment of Canada with an MCL40 that should nevertheless feel very much at home in Monaco. McLaren"
+    },
+    {
+      "type": "p",
+      "text": "And Ferrari? Team boss Fred Vasseur has promised a second upgrade package for the Spanish Grand Prix, which follows the Monaco race. It therefore seems unlikely that those updates would be brought forward for the event most eagerly anticipated by the home crowd’s favourite driver."
+    },
+    {
+      "type": "p",
+      "text": "Still, it cannot be ruled out that some teams may unveil special solutions on their cars, hoping to pull off a dramatic surprise in Monte Carlo."
+    }
+  ],
+  "images_widget": [
+    "https://cdn.motorsport.com/images/mgl/254MRdN0/s8/lando-norris-mclaren.jpg",
+    "https://cdn.motorsport.com/images/mgl/24QeAwqY/s8/isack-hadjar-red-bull-racing.jpg"
+  ],
+  "source": "autosport",
+  "html_file": "mp_news_ingest/raw_html/autosport/20260529_autosport_FIA_scraps_F1_straight_mode_in_Monaco_GP_here_s_what_that_means_for_the_pecking_order_8c5dac6d81.html",
+  "generated_at_utc": "2026-06-01T14:52:29.743968Z"
+}

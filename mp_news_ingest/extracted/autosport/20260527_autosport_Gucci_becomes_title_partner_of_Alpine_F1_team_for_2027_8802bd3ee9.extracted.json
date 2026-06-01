@@ -1,0 +1,54 @@
+{
+  "file": "C:\\F1InkDashboard\\mp_news_ingest\\raw_html\\autosport\\20260527_autosport_Gucci_becomes_title_partner_of_Alpine_F1_team_for_2027_8802bd3ee9.html",
+  "title_from_html": "",
+  "title_from_json": "Gucci becomes title partner of Alpine F1 team for 2027",
+  "title_tag_raw": "",
+  "title_class_raw": "",
+  "title_text_raw": "",
+  "content_container_tag": "div",
+  "content_container_class": "ms-article-content msnt-styled-content",
+  "content_container_data_series": "f1",
+  "content_container_data_position": "embed",
+  "paragraphs": [
+    {
+      "type": "p",
+      "text": "The F1 will be known as Gucci Racing Alpine in 2027 after signing a landmark deal with the luxury brand. Alpine"
+    },
+    {
+      "type": "p",
+      "text": "On Wednesday, Alpine announced Gucci would become its title partner in 2027, following the conclusion of the Enstone team's deal with current title sponsor BWT."
+    },
+    {
+      "type": "p",
+      "text": "As part of the deal, the brand says it's creating Gucci Racing, \"a new business and experiential platform built around the values of performance, precision, discipline and excellence at the intersection of luxury and sport.\""
+    },
+    {
+      "type": "p",
+      "text": "Former Alpine CEO Luca de Meo, who now heads up Gucci's parent company Kering, was a key player behind the deal."
+    },
+    {
+      "type": "p",
+      "text": "During the multi-year deal, the team will adopt Gucci colours for its F1 livery, a departure from its current blue and pink colour scheme."
+    },
+    {
+      "type": "p",
+      "text": "“This partnership with Alpine Formula One Team writes a new chapter: Gucci becomes the first luxury fashion house to serve as title partner in Formula 1,\" said Francesca Bellettini, president and chief executive officer of Gucci."
+    },
+    {
+      "type": "p",
+      "text": "\"That reflects our ambition for the brand and the role we want Gucci to play on this stage. Formula One represents today a unique convergence of performance, culture, and global reach, and Alpine Formula One Team is the right partner to bring this vision to life."
+    },
+    {
+      "type": "p",
+      "text": "\"Gucci Racing is more than a presence on the grid: it is an expression of who we are and where we want to take the brand. And there is much more to come. We are grateful to Alpine and the entire Renault Group for sharing this ambition with us.”"
+    },
+    {
+      "type": "p",
+      "text": "The deal makes Alpine the latest team on the F1 grid to agree a new title partnership in the championship's new era, after appointed Mastercard as its title partner for the 2026 season. McLaren"
+    }
+  ],
+  "images_widget": [],
+  "source": "autosport",
+  "html_file": "mp_news_ingest/raw_html/autosport/20260527_autosport_Gucci_becomes_title_partner_of_Alpine_F1_team_for_2027_8802bd3ee9.html",
+  "generated_at_utc": "2026-06-01T14:52:30.095527Z"
+}

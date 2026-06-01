@@ -1,0 +1,68 @@
+{
+  "file": "C:\\F1InkDashboard\\mp_news_ingest\\raw_html\\autosport\\20260530_autosport_Mercedes_pulls_out_of_Alpine_F1_share_talks_over_asking_price_cc605582db.html",
+  "title_from_html": "",
+  "title_from_json": "Mercedes pulls out of Alpine F1 share talks over asking price",
+  "title_tag_raw": "",
+  "title_class_raw": "",
+  "title_text_raw": "",
+  "content_container_tag": "div",
+  "content_container_class": "ms-article-content msnt-styled-content",
+  "content_container_data_series": "f1",
+  "content_container_data_position": "embed",
+  "paragraphs": [
+    {
+      "type": "p",
+      "text": "is no longer pursuing a minority stake in the F1 team after disagreeing with Otro Capital's asking price. Mercedes Alpine"
+    },
+    {
+      "type": "p",
+      "text": "Mercedes, which is already supplying power units and gearboxes to Alpine, had been interested in acquiring Otro Capital's 24% stake, and the manufacturer had agreed in principle with majority owner Renault to buy them."
+    },
+    {
+      "type": "p",
+      "text": "However, as first reported by the BBC and verified by Motorsport, that deal has now collapsed. It is understood Otro Capital's $720m asking price, which values the team at $3bn, is well above what Mercedes thinks Alpine's valuation is, and therefore exceeds what it considers a sound financial investment. Insiders at Alpine have also confirmed the talks have stopped."
+    },
+    {
+      "type": "p",
+      "text": "Mercedes and Alpine have both declined to comment on the matter."
+    },
+    {
+      "type": "img",
+      "src": "https://cdn.motorsport.com/images/mgl/0arKQry2/s8/george-russell-mercedes.jpg",
+      "alt": "George Russell, Mercedes",
+      "width": "1200",
+      "height": "800",
+      "from": "section[data-widget=image]"
+    },
+    {
+      "type": "p",
+      "text": "George Russell, Mercedes"
+    },
+    {
+      "type": "p",
+      "text": "Photo by: Sam Bagnall / Sutton Images via Getty Images"
+    },
+    {
+      "type": "p",
+      "text": "Otro acquired the shares as recently as June 2023 for $233m. Majority shareholder Renault is understood to have the power to veto any buyers of Otro's share until September. A consortium around former Red Bull F1 boss Christian Horner is among the other parties interested in acquiring the share."
+    },
+    {
+      "type": "p",
+      "text": "This week Alpine announced a landmark deal with luxury giant Gucci for a title sponsorship of the team, with the Enstone-based squad rebranded as Gucci Racing Alpine in 2027."
+    },
+    {
+      "type": "p",
+      "text": "Gucci will replace water technology BWT as the team's title sponsor and will also take over the team's car livery."
+    },
+    {
+      "type": "p",
+      "text": "Former Alpine CEO Luca de Meo, who now heads up Gucci's parent company Kering, was a key player in sealing the deal with the team's executive advisor Flavio Briatore."
+    }
+  ],
+  "images_widget": [
+    "https://cdn.motorsport.com/images/mgl/0arKQry2/s8/george-russell-mercedes.jpg"
+  ],
+  "source": "autosport",
+  "html_file": "mp_news_ingest/raw_html/autosport/20260530_autosport_Mercedes_pulls_out_of_Alpine_F1_share_talks_over_asking_price_cc605582db.html",
+  "generated_at_utc": "2026-06-01T14:52:29.598749Z"
+}

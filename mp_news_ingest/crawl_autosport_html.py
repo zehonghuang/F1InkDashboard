@@ -103,6 +103,9 @@ def _discover_autosport_f1_news_from_rss(xml_text: str) -> list[AutosportRssItem
         url = _normalize_url(_xml_text(it.find("link")))
         if not url.startswith("http"):
             continue
+        path = (urlparse(url).path or "").lower()
+        if "/f1/" not in path or "/news/" not in path:
+            continue
         title = _xml_text(it.find("title"))
         published_at = _xml_text(it.find("pubDate"))
         out.append(AutosportRssItem(url=url, title=title, published_at=published_at))
@@ -153,7 +156,7 @@ def _strip_style_and_script_tags(html: str) -> str:
         flags=re.IGNORECASE,
     )
     html = re.sub(
-        r'<svg\b[^>]*\bclass=["\'][^"\']*\bw-6\b[^"\']*\bh-6\b[^"\']*-ms-1\b[^"\']*["\'][^>]*>[\s\S]*?</svg\s*>',
+        r'<svg\b[^>]*\bclass=["\'][^"\']*\bw-6\b[^"\']*\bh-6\b[^"\']*["\'][^>]*>[\s\S]*?</svg\s*>',
         "",
         html,
         flags=re.IGNORECASE,
@@ -307,6 +310,60 @@ def _extract_html_body_div3_main(html: str) -> str:
     return _serialize_node(main)
 
 
+def _class_tokens(n: _HtmlNode) -> set[str]:
+    raw = _attr_get(n, "class").strip()
+    if not raw:
+        return set()
+    return {x for x in raw.split() if x}
+
+
+def _should_drop_node(n: _HtmlNode) -> bool:
+    tag = (n.tag or "").lower()
+    if tag in {"template"}:
+        return True
+
+    if tag.startswith("msnt-"):
+        return True
+
+    if tag in {"script", "style", "link", "meta"}:
+        return True
+
+    if (_attr_get(n, "data-msnt-label") or "").strip().lower() == "advertisement":
+        return True
+
+    node_id = (_attr_get(n, "id") or "").strip()
+    if node_id.startswith("ads_") or node_id.startswith("ad_"):
+        return True
+
+    cls = _class_tokens(n)
+    if cls & {
+        "ad-calc-data",
+        "ms-apb",
+        "ms-ap",
+        "ms-ap-native",
+        "ms-recommendations-placeholder",
+        "outstream_partner",
+    }:
+        return True
+
+    if tag == "section" and any(x.startswith("relatedContent") for x in cls):
+        return True
+
+    return False
+
+
+def _prune_tree(n: _HtmlNode) -> _HtmlNode | None:
+    if _should_drop_node(n):
+        return None
+    kept_children: list[_HtmlNode] = []
+    for c in n.children:
+        pc = _prune_tree(c)
+        if pc is not None:
+            kept_children.append(pc)
+    n.children = kept_children
+    return n
+
+
 def _extract_ms_article_detail(html: str) -> str:
     parser = _TreeBuilder()
     parser.feed(str(html or ""))
@@ -318,7 +375,12 @@ def _extract_ms_article_detail(html: str) -> str:
     node = _find_first_by_class(body, "div", "ms-article_detail")
     if node is None:
         return _extract_html_body_div3_main(html)
-    return _serialize_node(node)
+    content = _find_first_by_class(node, "div", "ms-article-content")
+    target = content or node
+    pruned = _prune_tree(target)
+    if pruned is None:
+        return ""
+    return _serialize_node(pruned)
 
 
 def _read_json_file(p: Path) -> dict:
@@ -331,7 +393,9 @@ def _read_json_file(p: Path) -> dict:
 
 def _write_json_file(p: Path, obj: dict) -> None:
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(obj, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    tmp = p.with_suffix(p.suffix + ".tmp")
+    tmp.write_text(json.dumps(obj, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    tmp.replace(p)
 
 
 def _select_new_items(
@@ -376,32 +440,49 @@ def _pick_xml_from_text(s: str) -> str:
     return s
 
 
+def _looks_like_rss_or_atom(s: str) -> bool:
+    s = (s or "").lower()
+    return "<rss" in s or "<feed" in s
+
+
 async def _fetch_rss_xml(
     client: httpx.AsyncClient,
     url: str,
     *,
-    fetch_mode: str,
+    rss_fetch_mode: str,
     timeout_s: float,
     interactive: bool,
     storage_state_path: str,
 ) -> str:
-    if fetch_mode == "playwright":
-        return _pick_xml_from_text(
-            await _fetch_fully_rendered_html_playwright(
-                url, timeout_s, interactive=interactive, storage_state_path=storage_state_path
-            )
+    rss_fetch_mode = str(rss_fetch_mode or "auto").strip().lower()
+
+    if rss_fetch_mode not in {"auto", "httpx", "playwright"}:
+        rss_fetch_mode = "auto"
+
+    if rss_fetch_mode in {"auto", "httpx"}:
+        try:
+            t = await _fetch_text(client, url)
+            picked = _pick_xml_from_text(t)
+            if _looks_like_rss_or_atom(picked) and not _is_human_verification_page(picked):
+                return picked
+            if rss_fetch_mode == "httpx":
+                return picked
+        except httpx.HTTPStatusError as e:
+            status = int(getattr(e.response, "status_code", 0) or 0)
+            if rss_fetch_mode == "httpx":
+                raise
+            if status not in {403, 405, 429}:
+                raise
+
+    picked = _pick_xml_from_text(
+        await _fetch_fully_rendered_html_playwright(
+            url, timeout_s, interactive=interactive, storage_state_path=storage_state_path
         )
-    try:
-        return await _fetch_text(client, url)
-    except httpx.HTTPStatusError as e:
-        status = int(getattr(e.response, "status_code", 0) or 0)
-        if status in {403, 405, 429}:
-            return _pick_xml_from_text(
-                await _fetch_fully_rendered_html_playwright(
-                    url, timeout_s, interactive=interactive, storage_state_path=storage_state_path
-                )
-            )
-        raise
+    )
+    if not _looks_like_rss_or_atom(picked):
+        if interactive:
+            raise RuntimeError("rss_not_xml_after_interactive")
+    return picked
 
 
 def _is_human_verification_page(html: str) -> bool:
@@ -527,6 +608,7 @@ async def main() -> int:
     ap.add_argument("--timeout", type=float, default=20.0)
     ap.add_argument("--sleep-ms", type=int, default=300)
     ap.add_argument("--fetch-mode", choices=["auto", "httpx", "playwright"], default="auto")
+    ap.add_argument("--rss-fetch-mode", choices=["auto", "httpx", "playwright"], default="auto")
     ap.add_argument(
         "--extract",
         choices=["none", "html/body/div[3]/main", "ms-article_detail"],
@@ -552,6 +634,9 @@ async def main() -> int:
     seen_urls = state.get("seen_urls")
     if not isinstance(seen_urls, list):
         seen_urls = []
+    prev_runs = state.get("runs")
+    if not isinstance(prev_runs, list):
+        prev_runs = []
 
     timeout = httpx.Timeout(args.timeout, connect=args.timeout)
     headers = {
@@ -581,7 +666,7 @@ async def main() -> int:
         rss_xml = await _fetch_rss_xml(
             client,
             str(args.rss_url),
-            fetch_mode=str(args.fetch_mode),
+            rss_fetch_mode=str(args.rss_fetch_mode),
             timeout_s=float(args.timeout),
             interactive=bool(args.interactive),
             storage_state_path=storage_state_path,
@@ -650,6 +735,16 @@ async def main() -> int:
             )
             await asyncio.sleep(max(args.sleep_ms, 0) / 1000.0)
 
+        runs_limit = 20
+        this_run = {"ran_at_utc": run_at_utc, "fetched": fetched_records, "fetched_count": len(fetched_records)}
+        runs = [this_run]
+        for r in prev_runs:
+            if not isinstance(r, dict):
+                continue
+            if len(runs) >= runs_limit:
+                break
+            runs.append(r)
+
         seen_limit = 5000
         merged_seen: list[str] = []
         merged_seen_set: set[str] = set()
@@ -675,6 +770,8 @@ async def main() -> int:
                 "seen_urls_limit": seen_limit,
                 "seen_urls_truncated": len(merged_seen) >= seen_limit and len(merged_seen_set) > len(merged_seen),
                 "last_run": {"ran_at_utc": run_at_utc, "fetched": fetched_records},
+                "runs": runs,
+                "runs_limit": runs_limit,
             },
         )
 

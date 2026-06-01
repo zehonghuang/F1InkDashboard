@@ -1,0 +1,76 @@
+{
+  "file": "C:\\F1InkDashboard\\mp_news_ingest\\raw_html\\autosport\\20260526_autosport_Why_Hamilton_now_has_everything_in_the_right_place_at_Ferrari_6f3a5ff74a.html",
+  "title_from_html": "",
+  "title_from_json": "Why Hamilton now has everything in the right place at Ferrari",
+  "title_tag_raw": "",
+  "title_class_raw": "",
+  "title_text_raw": "",
+  "content_container_tag": "div",
+  "content_container_class": "ms-article-content msnt-styled-content",
+  "content_container_data_series": "f1",
+  "content_container_data_position": "embed",
+  "paragraphs": [
+    {
+      "type": "p",
+      "text": "After he took his best-ever grand prix result with , it felt like a weight had fallen off Lewis Hamilton's shoulders. Hamilton took second at Montreal's Circuit Gilles Villeneuve after an entertaining, race-long battle with Red Bull's , hounding the Dutchman for laps before making the pass into Turn 1 on lap 62. Ferrari Max Verstappen"
+    },
+    {
+      "type": "p",
+      "text": "But beyond the headline result, what was even more satisfying– and important for the long-term picture of this season – is that the seven-time world champion finally is appearing to mesh with the squad after a character-building first season in 2025 which prompted an off-season reset, both for Hamilton personally and within Maranello."
+    },
+    {
+      "type": "p",
+      "text": "It is no secret that despite all the work that was done between Hamilton and the Scuderia to integrate him into the team, he hadn't fully felt at ease with the tools at his disposal on the engineering side until this year. But with both parties having committed to each other, at great expense, for what is believed to be at least three seasons, a number of personnel changes and other work going on in the background now appears to have borne fruit."
+    },
+    {
+      "type": "p",
+      "text": "Ferrari brought in former man Cedric Michel-Grosjean with a view to becoming Hamilton's long-term race engineer, supported by Carlo Santi. However, due to off-track commitments it won't necessarily always be the same voice on Hamilton's radio, and Autosport understands Santi will engineer the Briton at the upcoming Monaco Grand Prix. McLaren"
+    },
+    {
+      "type": "p",
+      "text": "Regardless, trackside engineering support isn't about one single person as it takes a team for a driver to fire on all cylinders, with performance engineer Luca Diella another important cog in the wheel."
+    },
+    {
+      "type": "p",
+      "text": "And after Hamilton outqualified Leclerc in both Montreal's sprint and grand prix qualifying as the Monegasque suffered a much more difficult weekend, he now felt all the pieces of the puzzle finally seemed to fit."
+    },
+    {
+      "type": "p",
+      "text": "\"I finally have the engineering team I have been working towards,\" he said, accompanied by a deep sigh of relief."
+    },
+    {
+      "type": "p",
+      "text": "\"This is my first second place with the team. It’s something I’ve been working [on] so hard, I can’t even begin to explain how deep I’ve had to dig to be able to get to this point, and the work and moving mountains in the background to enable this sort of performance. But I’m really grateful to the team for continuing to hold me up high and support me weekend in, weekend out. And it’s a really lovely feeling to see them so happy, because they truly deserve it with all the hard work they put in.\""
+    },
+    {
+      "type": "img",
+      "src": "https://cdn.motorsport.com/images/mgl/YvKQOrL6/s8/lewis-hamilton-ferrari-max-ver.jpg",
+      "alt": "Lewis Hamilton, Ferrari, Max Verstappen, Red Bull Racing",
+      "width": "1200",
+      "height": "800",
+      "from": "section[data-widget=image]"
+    },
+    {
+      "type": "p",
+      "text": "Photo by: Bryn Lennon / Formula 1 via Getty Images"
+    },
+    {
+      "type": "p",
+      "text": "What has also helped is that Hamilton has been an integral part of the 2026 development project, which wasn't the case in 2025, the last year of ground-effect regulations he didn't gel with. Having had key input into the car from an early stage means there is now less catching up to do."
+    },
+    {
+      "type": "p",
+      "text": "Commenting on his new engineering set-up, Hamilton said: \"I chose a different set-up this weekend through just ciphering through the data, working really well with my engineer. He’s absolutely awesome and I’m really loving working with him. And my number two did a fantastic job this weekend and helped me really pull more performance out of the car, getting into a much sweeter place. And I was able to attack all the corners finally."
+    },
+    {
+      "type": "p",
+      "text": "\"There’s a lot of changes that I’ve had to ask for, and Fred [Vasseur]’s been super supportive and again also moving mountains in order to make me comfortable. And it’s finally starting to show in my performance.\""
+    }
+  ],
+  "images_widget": [
+    "https://cdn.motorsport.com/images/mgl/YvKQOrL6/s8/lewis-hamilton-ferrari-max-ver.jpg"
+  ],
+  "source": "autosport",
+  "html_file": "mp_news_ingest/raw_html/autosport/20260526_autosport_Why_Hamilton_now_has_everything_in_the_right_place_at_Ferrari_6f3a5ff74a.html",
+  "generated_at_utc": "2026-06-01T14:52:30.237092Z"
+}

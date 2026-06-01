@@ -14,8 +14,11 @@ pip install -r mp_news_ingest/requirements.txt
   - `mp_news_ingest/raw_html/<source>/*.html`：清洗/抽取后的正文 HTML
   - `mp_news_ingest/raw_html/<source>/*.json`：与 html 同名的元信息（url/title/published_at/fetched_at_utc 等）
   - `mp_news_ingest/raw_html/<source>/*.raw.html`：可选保留原始页面（仅当爬虫参数开启）
+- 抽取输出（从已落盘 HTML 进一步结构化）：
+  - `mp_news_ingest/extracted/<source>/*.extracted.json`：对 html 进行“标题/段落/图片”抽取后的结构化结果
 - 增量状态：
   - `mp_news_ingest/state/<source>.json`：last_url、seen_urls 等
+  - `mp_news_ingest/state/<source>_crawl_inspect.json`：串联“crawl + inspect”时用到的处理状态（processed_files + runs）
 - 索引输出：
   - `mp_news_ingest/indices/<source>.json`：该来源目录下的 html 列表（含 url/title/published_at 等）
   - `mp_news_ingest/indices/all.json`：所有来源汇总
@@ -59,8 +62,14 @@ python mp_news_ingest/crawl_autosport_html.py --keep-raw --max-items 10
 遇到“需要确认您是人类 / 安全检查 / verify you are human”等拦截时，弹出浏览器手动完成验证并复用 cookie：
 
 ```bash
-python mp_news_ingest/crawl_autosport_html.py --fetch-mode playwright --interactive --max-items 10
+python mp_news_ingest/crawl_autosport_html.py --rss-fetch-mode playwright --fetch-mode playwright --interactive --max-items 10
 ```
+
+说明：
+
+- `--rss-fetch-mode playwright`：RSS 也走浏览器，适用于 RSS 直接触发人机校验的场景；会弹出浏览器让你操作
+- `--fetch-mode playwright`：文章详情页走浏览器渲染，确保 DOM 完整（并能绕过部分 403/校验）
+- `--interactive`：浏览器以非 headless 方式启动；检测到人机校验时会暂停等待你完成验证，回车后继续爬取
 
 ### 参数速查
 
@@ -72,13 +81,51 @@ python mp_news_ingest/crawl_autosport_html.py --fetch-mode playwright --interact
 - `--sleep-ms`：抓取间隔毫秒（避免过快触发站点限制）
 - `--fetch-mode`：`auto|httpx|playwright`
   - `auto`：优先普通请求；遇到 403/429 会切换到 playwright 渲染抓取
-  - 若 RSS 本身出现 403/405/429（站点人机校验/策略限制），会回退到 playwright 抓取 RSS 内容
+- `--rss-fetch-mode`：`auto|httpx|playwright`
+  - `auto`：优先 httpx；若响应疑似人机校验页/非 RSS XML，则自动切换到 playwright
+  - `playwright`：强制 RSS 使用浏览器（配合 `--interactive`，出现校验可手动通过）
 - `--extract`：正文抽取策略（默认 `ms-article_detail`）
 - `--keep-raw`：是否额外保存原始 HTML 到 `*.raw.html`
 - `--no-strip-script-style`：关闭 script/style 清理（调试用）
 - `--state-file`：状态文件路径（默认 `mp_news_ingest/state/autosport.json`）
 - `--interactive`：启用“弹出浏览器手动验证”模式（playwright 非 headless）
 - `--storage-state`：playwright storage_state 文件路径（用于复用 cookie；默认会写 `mp_news_ingest/state/autosport_playwright_state.json`）
+
+## 1.5) inspect_autosport_html_tags.py（从落盘 HTML 抽取段落/图片）
+
+文件：[inspect_autosport_html_tags.py](file:///c:/F1InkDashboard/mp_news_ingest/inspect_autosport_html_tags.py)
+
+用途：
+- 读取 `raw_html/autosport/*.html`（以及同名 `.json`）
+- 输出结构化的 `paragraphs` 数组（按页面顺序）
+- 规则要点：
+  - `paragraphs[]` 是 block 列表：`type=p` 或 `type=img`
+  - 图片来源以 `section[data-widget="image"]` 的 `data-src` 为准
+  - 会尝试从 `div.ms-content__main.ms-content__main--regular` 抽“第一张图”，并放在 paragraphs 的第一位
+
+常用命令：
+
+```bash
+python mp_news_ingest/inspect_autosport_html_tags.py --limit-files 3 --limit-paragraphs 20
+python mp_news_ingest/inspect_autosport_html_tags.py --limit-files 1 --limit-paragraphs 0 --json
+```
+
+## 1.6) run_autosport_crawl_and_inspect_loop.py（串联：抓取 → 抽取 → state 去重）
+
+文件：[run_autosport_crawl_and_inspect_loop.py](file:///c:/F1InkDashboard/mp_news_ingest/run_autosport_crawl_and_inspect_loop.py)
+
+用途：
+- 先执行 `crawl_autosport_html.py`
+- 再对“本轮新增/未处理过”的 html 执行 `inspect_autosport_html_tags.py --json`
+- 把抽取结果落到 `mp_news_ingest/extracted/autosport/*.extracted.json`
+- 把“已处理过的 html 列表 + 每次运行日志”写入 state（避免重复处理）
+
+常用命令：
+
+```bash
+python mp_news_ingest/run_autosport_crawl_and_inspect_loop.py --once --max-items 10
+python mp_news_ingest/run_autosport_crawl_and_inspect_loop.py --interval-minutes 10 --max-items 10
+```
 
 ## 2) run_crawlers_loop.py（按配置轮询运行爬虫 + 生成 indices）
 

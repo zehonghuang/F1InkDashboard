@@ -1,0 +1,80 @@
+{
+  "file": "C:\\F1InkDashboard\\mp_news_ingest\\raw_html\\autosport\\20260528_autosport_Ben_Sulayem_proposes_removal_of_FIA_presidential_term_limits_96bc870cad.html",
+  "title_from_html": "",
+  "title_from_json": "Ben Sulayem proposes removal of FIA presidential term limits",
+  "title_tag_raw": "",
+  "title_class_raw": "",
+  "title_text_raw": "",
+  "content_container_tag": "div",
+  "content_container_class": "ms-article-content msnt-styled-content",
+  "content_container_data_series": "f1",
+  "content_container_data_position": "embed",
+  "paragraphs": [
+    {
+      "type": "p",
+      "text": "FIA president Mohammed Ben Sulayem has proposed that the motorsport governing body should repeal the current article which sets a limit on presidential terms."
+    },
+    {
+      "type": "p",
+      "text": "Ben Sulayem, who is currently in his second term having run unopposed in last year's election, is currently subject to Article 20.10 in the FIA's statutes, which states that \"the President of the FIA may not serve more than three terms of office, whether consecutive or not, i.e. a maximum duration of 12 years\"."
+    },
+    {
+      "type": "p",
+      "text": "BBC Sport reported that Ben Sulayem was seeking to remove this, which has been verified by Autosport. This would allow him to continue to stand until he decides to step down."
+    },
+    {
+      "type": "p",
+      "text": "The Emirati was the only eligible candidate for last year's elections; none of the other candidates were able to nominate the seven vice-presidents– two from Europe, and one from each of the remaining global regions defined by the FIA– required to formally stand; Fabiana Ecclestone was the only available representative from South America, and she had aligned herself with Ben Sulayem's campaign."
+    },
+    {
+      "type": "p",
+      "text": "Limits on presidential terms were enshrined in the regulations under Jean Todt's premiership. Prior to the Frenchman's 12-year term, Max Mosley had remained president for 16 years, while Jean-Marie Balestre stood down after two four-year terms."
+    },
+    {
+      "type": "img",
+      "src": "https://cdn.motorsport.com/images/mgl/6x7ZNV5Y/s8/mohammed-ben-sulayem-fia-presi.jpg",
+      "alt": "Mohammed ben Sulayem, FIA President and Stefano Domenicali, CEO of the Formula One Group",
+      "width": "1200",
+      "height": "781",
+      "from": "section[data-widget=image]"
+    },
+    {
+      "type": "p",
+      "text": "Mohammed ben Sulayem, FIA President and Stefano Domenicali, CEO of the Formula One Group"
+    },
+    {
+      "type": "p",
+      "text": "Photo by: James Sutton / LAT Images via Getty Images"
+    },
+    {
+      "type": "p",
+      "text": "Autosport approached the FIA for comment, and a spokesperson for the governing body stated that this was otherwise in line with the other elected seats across the FIA's world councils and the senate."
+    },
+    {
+      "type": "p",
+      "text": "\"A proposal has been put forward to establish a consistent approach to tenure across all FIA bodies, similar to what currently exists for the World Councils and the Senate,\" the statement read."
+    },
+    {
+      "type": "p",
+      "text": "\"The proposal is subject to approval by the World Councils and by the General Assembly. FIA bodies retain full authority to democratically elect officeholders.\""
+    },
+    {
+      "type": "p",
+      "text": "The proposed changes to the FIA's statutes, including the removal of the limit on terms, will be up for vote at the next General Assembly."
+    },
+    {
+      "type": "p",
+      "text": "Ben Sulayem's premiership was challenged by former FIA steward Tim Mayer, racing driver Laura Villars and journalist Virginie Philippot during the previous election, but none were eligible for the presidential run-off."
+    },
+    {
+      "type": "p",
+      "text": "Villars has since taken legal action against the FIA over the electoral process."
+    }
+  ],
+  "images_widget": [
+    "https://cdn.motorsport.com/images/mgl/6x7ZNV5Y/s8/mohammed-ben-sulayem-fia-presi.jpg"
+  ],
+  "source": "autosport",
+  "html_file": "mp_news_ingest/raw_html/autosport/20260528_autosport_Ben_Sulayem_proposes_removal_of_FIA_presidential_term_limits_96bc870cad.html",
+  "generated_at_utc": "2026-06-01T14:52:29.958333Z"
+}

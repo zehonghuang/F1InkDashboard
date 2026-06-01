@@ -1,0 +1,84 @@
+{
+  "file": "C:\\F1InkDashboard\\mp_news_ingest\\raw_html\\autosport\\20260528_autosport_Why_McLaren_will_try_rejected_front_wing_again_in_Monaco_44f4391fea.html",
+  "title_from_html": "",
+  "title_from_json": "Why McLaren will try rejected front wing again in Monaco",
+  "title_tag_raw": "",
+  "title_class_raw": "",
+  "title_text_raw": "",
+  "content_container_tag": "div",
+  "content_container_class": "ms-article-content msnt-styled-content",
+  "content_container_data_series": "f1",
+  "content_container_data_position": "embed",
+  "paragraphs": [
+    {
+      "type": "p",
+      "text": "At Formula 1’s Canadian Grand Prix, introduced the second stage of a major update package to its MCL40 car, with a new front wing alongside a revised engine cover, rear suspension fairings and floor edges. McLaren"
+    },
+    {
+      "type": "p",
+      "text": "But introducing performance upgrades at sprint weekends is fraught with peril because there is only one practice session. Ultimately both and opted to revert to the previous front wing specification ahead of sprint qualifying. Lando Norris Oscar Piastri"
+    },
+    {
+      "type": "p",
+      "text": "But this isn’t necessarily the end of the road for this design, given the relatively small amount of on-track running."
+    },
+    {
+      "type": "p",
+      "text": "“We need to just make sure it works properly next time,” said Norris after the race. “It's not a guarantee we're going to run it in Monaco, but we'll do tests to see if we can make it work better.”"
+    },
+    {
+      "type": "p",
+      "text": "Actually the team will evaluate the wing again in Monaco, though it may yet decide not to race it. There are several reasons for this."
+    },
+    {
+      "type": "p",
+      "text": "Firstly there was very little room for representative on-track comparison, given just the one hour of practice on a track which was very ‘green’ to begin with, so grip levels were evolving throughout. Norris used the new wing design throughout practice while Piastri ran the previous spec for the first part of the session before moving to the new one."
+    },
+    {
+      "type": "img",
+      "src": "https://cdn.motorsport.com/images/mgl/0rVxg7O0/s8/mclaren-tech-detail.jpg",
+      "alt": "Mclaren tech detail",
+      "width": "1200",
+      "height": "900",
+      "from": "section[data-widget=image]"
+    },
+    {
+      "type": "p",
+      "text": "Mclaren tech detail"
+    },
+    {
+      "type": "p",
+      "text": "Photo by: Ronald Vording"
+    },
+    {
+      "type": "p",
+      "text": "The given reason for shelving the wing was that the drivers “didn’t have much confidence in the car” with it on, according to Norris. That plays into the second reason for not binning the new wing: Circuit Gilles Villeneuve is very much an outlier where confidence under braking and turning is key, and drivers gain lap time by riding the kerbs aggressively."
+    },
+    {
+      "type": "p",
+      "text": "Another reason for persisting with the new wing is that its on-track characteristics failed to correlate with the expectations generated in simulation. Understanding why this happened is important because the front wing exerts such a powerful influence on the entire aerodynamic map of the car."
+    },
+    {
+      "type": "p",
+      "text": "“We knew that this front wing had some element of deviation from an aerodynamic point of view,” said team principal Andrea Stella. “So we’ve tested the wing. We want to repeat some testing and gain some further information."
+    },
+    {
+      "type": "p",
+      "text": "“And also for this kind of circuit, the wing would have been better, but it wouldn't have been a game changer. So before we adopted [it] in a sprint event, we wanted to be just more reassured that we understand the full extent of the changes we’re making on the car."
+    },
+    {
+      "type": "p",
+      "text": "“While we've been pretty much always successful in the past, not necessarily the upgrades that we have taken to a certain event, we have introduced them for that event. Sometimes they were just exploratory and just to learn the correlation with our development tools."
+    },
+    {
+      "type": "p",
+      "text": "“So we will definitely see this wing again in Monaco.”"
+    }
+  ],
+  "images_widget": [
+    "https://cdn.motorsport.com/images/mgl/0rVxg7O0/s8/mclaren-tech-detail.jpg"
+  ],
+  "source": "autosport",
+  "html_file": "mp_news_ingest/raw_html/autosport/20260528_autosport_Why_McLaren_will_try_rejected_front_wing_again_in_Monaco_44f4391fea.html",
+  "generated_at_utc": "2026-06-01T14:52:29.888072Z"
+}
