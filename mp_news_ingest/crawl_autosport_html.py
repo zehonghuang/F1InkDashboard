@@ -12,7 +12,10 @@ from typing import Iterable
 from urllib.parse import urlparse
 import xml.etree.ElementTree as ET
 
-import httpx
+try:
+    import httpx
+except ModuleNotFoundError:
+    raise SystemExit('missing dependency: httpx. Install: pip install "httpx==0.28.1" (or pip install -r backend/requirements.txt)')
 
 
 @dataclass(frozen=True)
@@ -105,6 +108,12 @@ def _strip_style_and_script_tags(html: str) -> str:
     html = re.sub(r"<link\b[^>]*?/?>", "", html, flags=re.IGNORECASE)
     html = re.sub(r"<meta\b[^>]*?/?>", "", html, flags=re.IGNORECASE)
     html = re.sub(r"<style\b[\s\S]*?</style\s*>", "", html, flags=re.IGNORECASE)
+    html = re.sub(
+        r'<span\b[^>]*\bclass=["\'][^"\']*\brelatedContent__title\b[^"\']*["\'][^>]*>[\s\S]*?</span\s*>',
+        "",
+        html,
+        flags=re.IGNORECASE,
+    )
     html = re.sub(
         r'<svg\b[^>]*\bclass=["\'][^"\']*\bw-6\b[^"\']*\bh-6\b[^"\']*-ms-1\b[^"\']*["\'][^>]*>[\s\S]*?</svg\s*>',
         "",
@@ -315,6 +324,31 @@ async def _fetch_text(client: httpx.AsyncClient, url: str) -> str:
     return r.text
 
 
+def _pick_xml_from_text(s: str) -> str:
+    s = str(s or "")
+    markers = ["<?xml", "<rss", "<feed"]
+    best = -1
+    for m in markers:
+        i = s.lower().find(m.lower())
+        if i >= 0 and (best < 0 or i < best):
+            best = i
+    if best >= 0:
+        return s[best:]
+    return s
+
+
+async def _fetch_rss_xml(client: httpx.AsyncClient, url: str, *, fetch_mode: str, timeout_s: float) -> str:
+    if fetch_mode == "playwright":
+        return _pick_xml_from_text(await _fetch_fully_rendered_html_playwright(url, timeout_s))
+    try:
+        return await _fetch_text(client, url)
+    except httpx.HTTPStatusError as e:
+        status = int(getattr(e.response, "status_code", 0) or 0)
+        if status in {403, 405, 429}:
+            return _pick_xml_from_text(await _fetch_fully_rendered_html_playwright(url, timeout_s))
+        raise
+
+
 async def _fetch_fully_rendered_html_playwright(url: str, timeout_s: float) -> str:
     try:
         from playwright.async_api import async_playwright  # type: ignore
@@ -419,7 +453,7 @@ async def main() -> int:
         "Referer": "https://www.autosport.com/",
     }
     async with httpx.AsyncClient(timeout=timeout, headers=headers) as client:
-        rss_xml = await _fetch_text(client, str(args.rss_url))
+        rss_xml = await _fetch_rss_xml(client, str(args.rss_url), fetch_mode=str(args.fetch_mode), timeout_s=float(args.timeout))
         items = _iter_unique(_discover_autosport_f1_news_from_rss(rss_xml))
         to_fetch, new_last_url = _select_new_items(items, last_url, seen_urls, int(args.max_items or 0))
 

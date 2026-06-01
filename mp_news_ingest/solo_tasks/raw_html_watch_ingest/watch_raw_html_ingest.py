@@ -6,6 +6,7 @@ import re
 import time
 from dataclasses import dataclass
 from email.utils import parsedate_to_datetime
+from html import unescape as _html_unescape
 from pathlib import Path
 from typing import Any
 import urllib.error
@@ -89,16 +90,160 @@ def _extract_title_from_html(html: str) -> str:
         return ""
     s = re.sub(r"\s+", " ", (m.group(1) or "").strip())
     s = re.sub(r"<[^>]+>", "", s).strip()
-    return s
+    return _html_unescape(s)
 
 
-def _strip_html(html: str) -> str:
+def _extract_og_image(html: str) -> str:
+    html = str(html or "")
+    # og:image
+    m = re.search(
+        r"""<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["'][^>]*>""",
+        html,
+        flags=re.IGNORECASE,
+    )
+    if not m:
+        # twitter:image
+        m = re.search(
+            r"""<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["'][^>]*>""",
+            html,
+            flags=re.IGNORECASE,
+        )
+    if not m:
+        return ""
+    return str(m.group(1) or "").strip()
+
+
+def _extract_first_img_src(html: str) -> str:
+    html = str(html or "")
+    m = re.search(r"""<img[^>]+src=["']([^"']+)["'][^>]*>""", html, flags=re.IGNORECASE)
+    if not m:
+        return ""
+    src = str(m.group(1) or "").strip()
+    if not src or src.startswith("data:"):
+        return ""
+    return src
+
+
+def _html_to_text(html: str) -> str:
+    """
+    把 HTML 转成“可读纯文本”，尽量保留段落换行。
+    注意：这里只做轻量处理，不追求完美的正文抽取。
+    """
     html = str(html or "")
     html = re.sub(r"<script[\s\S]*?</script>", " ", html, flags=re.IGNORECASE)
     html = re.sub(r"<style[\s\S]*?</style>", " ", html, flags=re.IGNORECASE)
+
+    # 段落/换行：先把常见块级标签替换为换行，再去标签
+    html = re.sub(r"<br\s*/?>", "\n", html, flags=re.IGNORECASE)
+    html = re.sub(r"</(p|div|li|h[1-6])\s*>", "\n", html, flags=re.IGNORECASE)
+    html = re.sub(r"<(p|div|li|h[1-6])(\s[^>]*)?>", "\n", html, flags=re.IGNORECASE)
+
+    # 列表项前加一个短横线，便于形成 bulletin 的文本形态
+    html = re.sub(r"<li(\s[^>]*)?>", "\n- ", html, flags=re.IGNORECASE)
+
+    # 去掉剩余标签
     html = re.sub(r"<[^>]+>", " ", html)
-    html = re.sub(r"\s+", " ", html)
-    return html.strip()
+    html = _html_unescape(html)
+
+    # 规范化空白：保留换行
+    html = html.replace("\r\n", "\n").replace("\r", "\n")
+    lines: list[str] = []
+    for raw in html.split("\n"):
+        s = re.sub(r"[ \t\u00A0]+", " ", raw).strip()
+        if not s:
+            continue
+        lines.append(s)
+    return "\n\n".join(lines).strip()
+
+
+def _text_to_nodes(text: str, *, cover_url: str = "") -> list[dict[str, Any]]:
+    """
+    把纯文本拆成富文本 nodes（p + text），满足 mp_news_content.md 的约定。
+    """
+    t = str(text or "").strip()
+    if not t:
+        return []
+    nodes: list[dict[str, Any]] = []
+    for para in re.split(r"\n\s*\n+", t):
+        s = str(para or "").strip()
+        if not s:
+            continue
+        nodes.append({"name": "p", "children": [{"type": "text", "text": s}]})
+    if cover_url.strip():
+        nodes.insert(0, {"name": "img", "attrs": {"src": cover_url.strip(), "mode": "widthFix", "style": "width:100%;display:block;"}})
+    return nodes
+
+
+def _infer_layout_code(title: str, text: str) -> str:
+    s = (str(title or "") + "\n" + str(text or "")).lower()
+    if any(k in s for k in ["breaking", "confirmed", "official", "sacked", "resigns", "crash", "hospital", "disqualified", "ban", "penalty"]):
+        return "BREAKING"
+
+    # bulletin：很短且有明显列表/要点结构
+    if len(str(text or "")) < 600 and ("\n- " in str(text or "") or " - " in s or "•" in s):
+        return "BULLETIN"
+
+    # feature：长文/专访/解析
+    if len(str(text or "")) >= 4000 or any(k in s for k in ["interview", "feature", "analysis", "explained", "long read"]):
+        return "FEATURE"
+    return "STANDARD"
+
+
+def _infer_type_code(title: str, text: str) -> str:
+    s = (str(title or "") + "\n" + str(text or "")).lower()
+    if any(k in s for k in ["fia", "stewards", "regulation", "rule", "rules", "penalty points", "ban", "disqualified"]):
+        return "REGULATION"
+    if any(k in s for k in ["strategy", "tyre", "tire", "pit stop", "undercut", "overcut", "safety car"]):
+        return "STRATEGY"
+    if any(k in s for k in ["technical", "tech", "aero", "aerodynamic", "floor", "wing", "power unit", "engine", "upgrade"]):
+        return "TECH"
+    if any(k in s for k in ["driver", "rookie", "contract", "helmet", "race ban", "qualifying", "podium"]):
+        return "DRIVER"
+    return "PADDOCK"
+
+
+_TAG_PATTERNS: list[tuple[str, str]] = [
+    # Teams
+    (r"\bred bull\b", "Red Bull"),
+    (r"\bferrari\b", "Ferrari"),
+    (r"\bmercedes\b", "Mercedes"),
+    (r"\bmclaren\b", "McLaren"),
+    (r"\baston martin\b", "Aston Martin"),
+    (r"\balpine\b", "Alpine"),
+    (r"\bwilliams\b", "Williams"),
+    (r"\bhaas\b", "Haas"),
+    (r"\bsauber\b|\bkick sauber\b", "Sauber"),
+    (r"\bracing bulls\b|\bvisa cash app\b|\brb\b", "RB"),
+    # Drivers (partial list)
+    (r"\bverstappen\b", "Verstappen"),
+    (r"\bhamilton\b", "Hamilton"),
+    (r"\bleclerc\b", "Leclerc"),
+    (r"\bnorris\b", "Norris"),
+    (r"\bpiastri\b", "Piastri"),
+    (r"\balonso\b", "Alonso"),
+    (r"\bsainz\b", "Sainz"),
+    (r"\brussell\b", "Russell"),
+    (r"\bantonelli\b", "Antonelli"),
+]
+
+
+def _extract_tags(title: str, text: str) -> list[str]:
+    s = (str(title or "") + "\n" + str(text or "")).lower()
+    tags: list[str] = []
+    for pat, tag in _TAG_PATTERNS:
+        if re.search(pat, s, flags=re.IGNORECASE):
+            tags.append(tag)
+    # 去重 + 稳定排序
+    seen: set[str] = set()
+    out: list[str] = []
+    for t in tags:
+        key = t.strip().lower()
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        out.append(t.strip())
+    out.sort(key=lambda x: x.lower())
+    return out[:20]
 
 
 def _normalize_ingest_url(base: str, token: str) -> str:
@@ -227,8 +372,36 @@ def _build_ingest_payload(source: str, html_path: Path) -> dict[str, Any]:
     if not title:
         title = html_path.stem
 
-    text = _strip_html(html)
-    summary = (text[:160].strip() if text else "")
+    cover_url = str(meta.get("cover_url") or "").strip()
+    if not cover_url:
+        cover_url = _extract_og_image(html)
+    if not cover_url:
+        cover_url = _extract_first_img_src(html)
+
+    text = _html_to_text(html)
+    summary = ""
+    if text:
+        # 摘要取首段前 160 字
+        summary = (re.split(r"\n\s*\n+", text, maxsplit=1)[0] or "").strip()[:160]
+
+    layout_code = str(meta.get("layout_code") or "").strip().upper()
+    if layout_code not in {"BREAKING", "HERO", "FEATURE", "STANDARD", "BULLETIN"}:
+        layout_code = _infer_layout_code(title, text)
+
+    type_code = str(meta.get("type_code") or "").strip().upper()
+    if type_code not in {"REGULATION", "PADDOCK", "STRATEGY", "DRIVER", "TECH"}:
+        type_code = _infer_type_code(title, text)
+
+    tags = meta.get("tags") if isinstance(meta.get("tags"), list) else []
+    tags = [str(x).strip() for x in tags if str(x).strip()] if isinstance(tags, list) else []
+    if not tags:
+        tags = _extract_tags(title, text)
+
+    tag_text = str(meta.get("tag_text") or "").strip()
+    if not tag_text and tags:
+        tag_text = tags[0]
+
+    nodes = _text_to_nodes(text, cover_url=cover_url)
 
     root = _repo_root()
     file_rel = str(html_path.resolve().relative_to(root)).replace("\\", "/")
@@ -236,17 +409,18 @@ def _build_ingest_payload(source: str, html_path: Path) -> dict[str, Any]:
 
     payload: dict[str, Any] = {
         "id": item_id,
-        "layout_code": "STANDARD",
-        "type_code": "PADDOCK",
+        "layout_code": layout_code,
+        "type_code": type_code,
         "pinned": False,
         "weight": 0,
-        "tag_text": "",
+        "tag_text": tag_text[:64],
+        "tags": tags,
         "title": title[:256],
         "summary": summary[:1024],
-        "cover_url": "",
+        "cover_url": cover_url[:512],
         "published_at": published_at,
         "source": {"name": source[:64], "url": url[:1024]},
-        "content": {"format_code": "PLAIN", "text": text},
+        "content": {"format_code": ("RICH_TEXT_NODES" if nodes else "PLAIN"), "text": text, "nodes": nodes},
         "raw": {"file": file_rel, "fetched_at_utc": str(meta.get("fetched_at_utc") or ""), "url": url},
     }
     return payload
