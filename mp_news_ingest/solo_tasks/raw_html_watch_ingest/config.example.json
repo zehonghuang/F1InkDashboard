@@ -1,0 +1,11 @@
+{
+  "raw_html_dir": "mp_news_ingest/raw_html",
+  "ingest_url": "https://winpc-f1.normal-person.icu/api/v1/mp/news/ingest",
+  "token": "",
+  "poll_interval_sec": 5,
+  "state_path": "mp_news_ingest/state/raw_html_watch_ingest_state.json",
+  "out_dir": "mp_news_ingest/out_ingest_payloads",
+  "dry_run": false,
+  "timeout_sec": 20
+}
+
