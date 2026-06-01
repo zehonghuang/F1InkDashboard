@@ -56,6 +56,12 @@ python mp_news_ingest/crawl_autosport_html.py --date-subdir --max-items 10
 python mp_news_ingest/crawl_autosport_html.py --keep-raw --max-items 10
 ```
 
+遇到“需要确认您是人类 / 安全检查 / verify you are human”等拦截时，弹出浏览器手动完成验证并复用 cookie：
+
+```bash
+python mp_news_ingest/crawl_autosport_html.py --fetch-mode playwright --interactive --max-items 10
+```
+
 ### 参数速查
 
 - `--rss-url`：RSS 地址（默认 `https://www.autosport.com/rss/f1/news/`）
@@ -71,6 +77,8 @@ python mp_news_ingest/crawl_autosport_html.py --keep-raw --max-items 10
 - `--keep-raw`：是否额外保存原始 HTML 到 `*.raw.html`
 - `--no-strip-script-style`：关闭 script/style 清理（调试用）
 - `--state-file`：状态文件路径（默认 `mp_news_ingest/state/autosport.json`）
+- `--interactive`：启用“弹出浏览器手动验证”模式（playwright 非 headless）
+- `--storage-state`：playwright storage_state 文件路径（用于复用 cookie；默认会写 `mp_news_ingest/state/autosport_playwright_state.json`）
 
 ## 2) run_crawlers_loop.py（按配置轮询运行爬虫 + 生成 indices）
 

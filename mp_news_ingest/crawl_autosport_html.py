@@ -4,6 +4,7 @@ import datetime as dt
 import hashlib
 import html as html_lib
 import json
+import os
 from html.parser import HTMLParser
 import re
 from dataclasses import dataclass
@@ -16,6 +17,43 @@ try:
     import httpx
 except ModuleNotFoundError:
     raise SystemExit('missing dependency: httpx. Install: pip install "httpx==0.28.1" (or pip install -r backend/requirements.txt)')
+
+# #region debug-point A:dbg-emit
+def _dbg_emit(hypothesis_id: str, msg: str, data: dict | None = None, *, run_id: str = "pre") -> None:
+    try:
+        import json as _json
+        import time as _time
+        import urllib.request as _ur
+
+        u = "http://127.0.0.1:7777/event"
+        s = "autosport-no-items"
+        p = str(Path(__file__).resolve().parents[1] / ".dbg" / "autosport-no-items.env")
+        try:
+            c = Path(p).read_text(encoding="utf-8")
+            for line in c.splitlines():
+                if line.startswith("DEBUG_SERVER_URL="):
+                    u = line.split("=", 1)[1].strip() or u
+                elif line.startswith("DEBUG_SESSION_ID="):
+                    s = line.split("=", 1)[1].strip() or s
+        except Exception:
+            pass
+
+        payload = {
+            "sessionId": s,
+            "runId": run_id,
+            "hypothesisId": str(hypothesis_id or "").strip() or "A",
+            "location": "crawl_autosport_html.py",
+            "msg": str(msg or ""),
+            "data": data or {},
+            "ts": int(_time.time() * 1000),
+        }
+        b = _json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        _ur.urlopen(_ur.Request(u, data=b, headers={"Content-Type": "application/json"}), timeout=0.8).read()
+    except Exception:
+        return
+
+
+# #endregion
 
 
 @dataclass(frozen=True)
@@ -320,6 +358,7 @@ def _select_new_items(
 
 async def _fetch_text(client: httpx.AsyncClient, url: str) -> str:
     r = await client.get(url, follow_redirects=True)
+    _dbg_emit("A", "[DEBUG] httpx_get", {"url": url, "status": int(r.status_code), "content_type": str(r.headers.get("content-type") or ""), "len": int(len(r.text or ""))})
     r.raise_for_status()
     return r.text
 
@@ -337,19 +376,54 @@ def _pick_xml_from_text(s: str) -> str:
     return s
 
 
-async def _fetch_rss_xml(client: httpx.AsyncClient, url: str, *, fetch_mode: str, timeout_s: float) -> str:
+async def _fetch_rss_xml(
+    client: httpx.AsyncClient,
+    url: str,
+    *,
+    fetch_mode: str,
+    timeout_s: float,
+    interactive: bool,
+    storage_state_path: str,
+) -> str:
     if fetch_mode == "playwright":
-        return _pick_xml_from_text(await _fetch_fully_rendered_html_playwright(url, timeout_s))
+        return _pick_xml_from_text(
+            await _fetch_fully_rendered_html_playwright(
+                url, timeout_s, interactive=interactive, storage_state_path=storage_state_path
+            )
+        )
     try:
         return await _fetch_text(client, url)
     except httpx.HTTPStatusError as e:
         status = int(getattr(e.response, "status_code", 0) or 0)
         if status in {403, 405, 429}:
-            return _pick_xml_from_text(await _fetch_fully_rendered_html_playwright(url, timeout_s))
+            return _pick_xml_from_text(
+                await _fetch_fully_rendered_html_playwright(
+                    url, timeout_s, interactive=interactive, storage_state_path=storage_state_path
+                )
+            )
         raise
 
 
-async def _fetch_fully_rendered_html_playwright(url: str, timeout_s: float) -> str:
+def _is_human_verification_page(html: str) -> bool:
+    s = (html or "").lower()
+    hits = [
+        "verify you are human",
+        "we need to verify",
+        "安全检查",
+        "我们需要确认您是人类",
+        "captcha",
+        "cloudflare",
+    ]
+    return any(h.lower() in s for h in hits)
+
+
+async def _fetch_fully_rendered_html_playwright(
+    url: str,
+    timeout_s: float,
+    *,
+    interactive: bool = False,
+    storage_state_path: str = "",
+) -> str:
     try:
         from playwright.async_api import async_playwright  # type: ignore
     except Exception as e:
@@ -360,9 +434,13 @@ async def _fetch_fully_rendered_html_playwright(url: str, timeout_s: float) -> s
     timeout_ms = int(max(timeout_s, 1.0) * 1000)
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(headless=(not interactive))
         try:
-            context = await browser.new_context()
+            storage_state: str | None = None
+            sp = str(storage_state_path or "").strip()
+            if sp and Path(sp).exists():
+                storage_state = sp
+            context = await browser.new_context(storage_state=storage_state)
             page = await context.new_page()
             await page.goto(url, wait_until="networkidle", timeout=timeout_ms)
             try:
@@ -381,6 +459,28 @@ async def _fetch_fully_rendered_html_playwright(url: str, timeout_s: float) -> s
                     stable_count = 0
                     last_len = cur_len
                 await page.wait_for_timeout(500)
+
+            _dbg_emit("A", "[DEBUG] pw_content", {"url": url, "interactive": bool(interactive), "len": int(len(html or "")), "human_verification": bool(_is_human_verification_page(html)), "storage_state_in": bool(storage_state is not None)})
+            if _is_human_verification_page(html):
+                if not interactive:
+                    raise RuntimeError("blocked_by_human_verification")
+                await asyncio.to_thread(input, "页面需要人机验证。请在弹出的浏览器中完成验证后按回车继续...")
+                try:
+                    await page.wait_for_timeout(500)
+                    html = await page.content()
+                except Exception:
+                    pass
+                _dbg_emit("A", "[DEBUG] pw_after_interactive", {"url": url, "len": int(len(html or "")), "human_verification": bool(_is_human_verification_page(html))})
+
+            sp2 = str(storage_state_path or "").strip()
+            if interactive and sp2:
+                Path(sp2).parent.mkdir(parents=True, exist_ok=True)
+                await context.storage_state(path=sp2)
+                try:
+                    sz = int(Path(sp2).stat().st_size)
+                except Exception:
+                    sz = 0
+                _dbg_emit("A", "[DEBUG] pw_storage_saved", {"path": sp2, "size": sz})
             return html
         finally:
             await browser.close()
@@ -392,13 +492,17 @@ async def _fetch_article_html(
     url: str,
     fetch_mode: str,
     timeout_s: float,
+    interactive: bool,
+    storage_state_path: str,
 ) -> str:
     url = _normalize_url(url)
     if not url.startswith("http"):
         raise ValueError("bad_url")
 
     if fetch_mode == "playwright":
-        return await _fetch_fully_rendered_html_playwright(url, timeout_s)
+        return await _fetch_fully_rendered_html_playwright(
+            url, timeout_s, interactive=interactive, storage_state_path=storage_state_path
+        )
 
     if fetch_mode == "httpx":
         return await _fetch_text(client, url)
@@ -408,7 +512,9 @@ async def _fetch_article_html(
     except httpx.HTTPStatusError as e:
         status = int(getattr(e.response, "status_code", 0) or 0)
         if status in {403, 429}:
-            return await _fetch_fully_rendered_html_playwright(url, timeout_s)
+            return await _fetch_fully_rendered_html_playwright(
+                url, timeout_s, interactive=interactive, storage_state_path=storage_state_path
+            )
         raise
 
 
@@ -429,6 +535,8 @@ async def main() -> int:
     ap.add_argument("--keep-raw", action="store_true")
     ap.add_argument("--no-strip-script-style", action="store_true")
     ap.add_argument("--state-file", default="")
+    ap.add_argument("--interactive", action="store_true")
+    ap.add_argument("--storage-state", default=os.getenv("AUTOSPORT_STORAGE_STATE", "").strip())
     args = ap.parse_args()
 
     default_out_dir = Path(__file__).resolve().parent / "raw_html" / "autosport"
@@ -453,15 +561,59 @@ async def main() -> int:
         "Referer": "https://www.autosport.com/",
     }
     async with httpx.AsyncClient(timeout=timeout, headers=headers) as client:
-        rss_xml = await _fetch_rss_xml(client, str(args.rss_url), fetch_mode=str(args.fetch_mode), timeout_s=float(args.timeout))
+        default_storage_state = Path(__file__).resolve().parent / "state" / "autosport_playwright_state.json"
+        storage_state_path = str(args.storage_state or "").strip()
+        if not storage_state_path and bool(args.interactive):
+            storage_state_path = str(default_storage_state)
+
+        _dbg_emit(
+            "C",
+            "[DEBUG] state_loaded",
+            {
+                "last_url_set": bool(last_url),
+                "seen_urls_count": int(len(seen_urls)),
+                "storage_state_path": storage_state_path,
+                "storage_state_exists": bool(storage_state_path and Path(storage_state_path).exists()),
+                "fetch_mode": str(args.fetch_mode),
+                "interactive": bool(args.interactive),
+            },
+        )
+        rss_xml = await _fetch_rss_xml(
+            client,
+            str(args.rss_url),
+            fetch_mode=str(args.fetch_mode),
+            timeout_s=float(args.timeout),
+            interactive=bool(args.interactive),
+            storage_state_path=storage_state_path,
+        )
+        _dbg_emit(
+            "A",
+            "[DEBUG] rss_fetched",
+            {
+                "rss_len": int(len(rss_xml or "")),
+                "rss_has_rss_tag": bool("<rss" in (rss_xml or "").lower()),
+                "rss_has_feed_tag": bool("<feed" in (rss_xml or "").lower()),
+                "rss_human_verification": bool(_is_human_verification_page(rss_xml)),
+                "rss_sha1_2k": hashlib.sha1((rss_xml or "")[:2000].encode("utf-8", errors="ignore")).hexdigest(),
+            },
+        )
         items = _iter_unique(_discover_autosport_f1_news_from_rss(rss_xml))
+        _dbg_emit("B", "[DEBUG] rss_parsed", {"items_count": int(len(items))})
         to_fetch, new_last_url = _select_new_items(items, last_url, seen_urls, int(args.max_items or 0))
+        _dbg_emit("C", "[DEBUG] rss_selected", {"to_fetch_count": int(len(to_fetch)), "new_last_url_set": bool(new_last_url), "hit_last_url": bool(last_url and new_last_url == last_url)})
 
         run_at_utc = dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z")
         fetched_records: list[dict] = []
         for it in to_fetch:
             url = _normalize_url(it.url)
-            html = await _fetch_article_html(client, url=url, fetch_mode=args.fetch_mode, timeout_s=args.timeout)
+            html = await _fetch_article_html(
+                client,
+                url=url,
+                fetch_mode=args.fetch_mode,
+                timeout_s=args.timeout,
+                interactive=bool(args.interactive),
+                storage_state_path=storage_state_path,
+            )
             fn = _guess_filename(url, it.title, it.published_at)
             p = out_dir / fn
             if args.extract == "ms-article_detail":
