@@ -9,7 +9,7 @@ from html.parser import HTMLParser
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 from urllib.parse import urlparse
 import xml.etree.ElementTree as ET
 
@@ -17,43 +17,6 @@ try:
     import httpx
 except ModuleNotFoundError:
     raise SystemExit('missing dependency: httpx. Install: pip install "httpx==0.28.1" (or pip install -r backend/requirements.txt)')
-
-# #region debug-point A:dbg-emit
-def _dbg_emit(hypothesis_id: str, msg: str, data: dict | None = None, *, run_id: str = "pre") -> None:
-    try:
-        import json as _json
-        import time as _time
-        import urllib.request as _ur
-
-        u = "http://127.0.0.1:7777/event"
-        s = "autosport-no-items"
-        p = str(Path(__file__).resolve().parents[1] / ".dbg" / "autosport-no-items.env")
-        try:
-            c = Path(p).read_text(encoding="utf-8")
-            for line in c.splitlines():
-                if line.startswith("DEBUG_SERVER_URL="):
-                    u = line.split("=", 1)[1].strip() or u
-                elif line.startswith("DEBUG_SESSION_ID="):
-                    s = line.split("=", 1)[1].strip() or s
-        except Exception:
-            pass
-
-        payload = {
-            "sessionId": s,
-            "runId": run_id,
-            "hypothesisId": str(hypothesis_id or "").strip() or "A",
-            "location": "crawl_autosport_html.py",
-            "msg": str(msg or ""),
-            "data": data or {},
-            "ts": int(_time.time() * 1000),
-        }
-        b = _json.dumps(payload, ensure_ascii=False).encode("utf-8")
-        _ur.urlopen(_ur.Request(u, data=b, headers={"Content-Type": "application/json"}), timeout=0.8).read()
-    except Exception:
-        return
-
-
-# #endregion
 
 
 @dataclass(frozen=True)
@@ -70,6 +33,10 @@ def _normalize_url(u: str) -> str:
         u = u[1:-1].strip()
     u = u.strip("`").strip()
     return u
+
+
+def _dbg_emit(*_args: Any, **_kwargs: Any) -> None:
+    return
 
 
 def _safe_slug(s: str) -> str:
