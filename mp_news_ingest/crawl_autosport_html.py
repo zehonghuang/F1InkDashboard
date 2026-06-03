@@ -7,6 +7,7 @@ import json
 import os
 from html.parser import HTMLParser
 import re
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -27,11 +28,22 @@ class AutosportRssItem:
 
 
 def _normalize_url(u: str) -> str:
-    u = str(u or "").strip()
-    u = u.strip("`").strip()
+    u = str(u or "")
+    u = u.replace("\u200b", "").replace("\ufeff", "").replace("\u00a0", " ")
+    u = u.strip()
+    strip_chars = "`'\" \t\r\n"
+    while True:
+        u2 = u.strip(strip_chars)
+        if u2 == u:
+            break
+        u = u2
     if (u.startswith('"') and u.endswith('"')) or (u.startswith("'") and u.endswith("'")):
         u = u[1:-1].strip()
-    u = u.strip("`").strip()
+    while True:
+        u2 = u.strip(strip_chars)
+        if u2 == u:
+            break
+        u = u2
     return u
 
 
@@ -65,17 +77,70 @@ def _discover_autosport_f1_news_from_rss(xml_text: str) -> list[AutosportRssItem
     except Exception:
         return []
 
+    def _local(tag: str) -> str:
+        t = str(tag or "")
+        if "}" in t:
+            return t.split("}", 1)[1]
+        return t
+
+    def _first_child_text(parent: ET.Element, child_local: str) -> str:
+        for c in list(parent):
+            if _local(c.tag) == child_local:
+                return _xml_text(c)
+        return ""
+
+    def _first_atom_link(parent: ET.Element) -> str:
+        best = ""
+        for c in list(parent):
+            if _local(c.tag) != "link":
+                continue
+            href = str(c.attrib.get("href") or "").strip()
+            if not href:
+                continue
+            rel = str(c.attrib.get("rel") or "").strip().lower()
+            if rel in {"", "alternate"}:
+                return href
+            if not best:
+                best = href
+        return best
+
     out: list[AutosportRssItem] = []
-    for it in root.findall("./channel/item"):
-        url = _normalize_url(_xml_text(it.find("link")))
-        if not url.startswith("http"):
-            continue
-        path = (urlparse(url).path or "").lower()
-        if "/f1/" not in path or "/news/" not in path:
-            continue
-        title = _xml_text(it.find("title"))
-        published_at = _xml_text(it.find("pubDate"))
-        out.append(AutosportRssItem(url=url, title=title, published_at=published_at))
+    root_local = _local(root.tag)
+    if root_local == "rss":
+        channel: ET.Element | None = None
+        for c in list(root):
+            if _local(c.tag) == "channel":
+                channel = c
+                break
+        if channel is None:
+            return []
+        for it in list(channel):
+            if _local(it.tag) != "item":
+                continue
+            url = _normalize_url(_first_child_text(it, "link"))
+            if not url.startswith("http"):
+                continue
+            path = (urlparse(url).path or "").lower()
+            if "/f1/" not in path or "/news/" not in path:
+                continue
+            title = _first_child_text(it, "title")
+            published_at = _first_child_text(it, "pubDate")
+            out.append(AutosportRssItem(url=url, title=title, published_at=published_at))
+        return out
+
+    if root_local == "feed":
+        for it in list(root):
+            if _local(it.tag) != "entry":
+                continue
+            url = _normalize_url(_first_atom_link(it))
+            if not url.startswith("http"):
+                continue
+            path = (urlparse(url).path or "").lower()
+            if "/f1/" not in path or "/news/" not in path:
+                continue
+            title = _first_child_text(it, "title")
+            published_at = _first_child_text(it, "published") or _first_child_text(it, "updated")
+            out.append(AutosportRssItem(url=url, title=title, published_at=published_at))
     return out
 
 
@@ -443,26 +508,66 @@ async def _fetch_rss_xml(
 
     picked = _pick_xml_from_text(
         await _fetch_fully_rendered_html_playwright(
-            url, timeout_s, interactive=interactive, storage_state_path=storage_state_path
+            url,
+            timeout_s,
+            interactive=interactive,
+            storage_state_path=storage_state_path,
+            return_response_text=True,
         )
     )
-    if not _looks_like_rss_or_atom(picked):
-        if interactive:
+    if _looks_like_rss_or_atom(picked) and not _is_human_verification_page(picked):
+        return picked
+
+    if not interactive and (sys.stdin.isatty() or sys.stdout.isatty() or sys.stderr.isatty()):
+        picked2 = _pick_xml_from_text(
+            await _fetch_fully_rendered_html_playwright(
+                url,
+                timeout_s,
+                interactive=True,
+                storage_state_path=storage_state_path,
+                return_response_text=True,
+            )
+        )
+        if not _looks_like_rss_or_atom(picked2) or _is_human_verification_page(picked2):
             raise RuntimeError("rss_not_xml_after_interactive")
+        return picked2
+
+    if interactive:
+        raise RuntimeError("rss_not_xml_after_interactive")
     return picked
 
 
 def _is_human_verification_page(html: str) -> bool:
     s = (html or "").lower()
     hits = [
+        "human verification",
         "verify you are human",
         "we need to verify",
         "安全检查",
         "我们需要确认您是人类",
-        "captcha",
+        "captcha-container",
+        "challenge.js",
+        "awswaf",
         "cloudflare",
     ]
     return any(h.lower() in s for h in hits)
+
+
+def _is_blocked_403_page(html: str) -> bool:
+    s = (html or "").lower()
+    hits = [
+        "<h1>403 error</h1>",
+        "the request could not be satisfied",
+        "generated by cloudfront",
+        "error 403",
+        "access denied",
+    ]
+    return any(h in s for h in hits)
+
+
+def _is_blocked_page(html: str) -> bool:
+    return _is_human_verification_page(html) or _is_blocked_403_page(html)
+
 
 
 async def _fetch_fully_rendered_html_playwright(
@@ -471,9 +576,10 @@ async def _fetch_fully_rendered_html_playwright(
     *,
     interactive: bool = False,
     storage_state_path: str = "",
+    return_response_text: bool = False,
 ) -> str:
     try:
-        from playwright.async_api import async_playwright  # type: ignore
+        from playwright.async_api import async_playwright, TimeoutError as PWTimeoutError  # type: ignore
     except Exception as e:
         raise RuntimeError(
             "missing playwright dependency. Install: pip install playwright && playwright install chromium"
@@ -490,7 +596,70 @@ async def _fetch_fully_rendered_html_playwright(
                 storage_state = sp
             context = await browser.new_context(storage_state=storage_state)
             page = await context.new_page()
-            await page.goto(url, wait_until="networkidle", timeout=timeout_ms)
+            try:
+                await page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
+            except PWTimeoutError:
+                pass
+
+            async def _fetch_body_via_api() -> str:
+                r = await context.request.get(url, timeout=timeout_ms)
+                return await r.text()
+
+            if return_response_text:
+                body = await _fetch_body_via_api()
+                _dbg_emit(
+                    "A",
+                    "[DEBUG] pw_api_body",
+                    {
+                        "url": url,
+                        "interactive": bool(interactive),
+                        "len": int(len(body or "")),
+                        "human_verification": bool(_is_human_verification_page(body)),
+                    },
+                )
+                if _is_blocked_page(body):
+                    if not interactive:
+                        if sys.stdin.isatty() or sys.stdout.isatty() or sys.stderr.isatty():
+                            await browser.close()
+                            return await _fetch_fully_rendered_html_playwright(
+                                url,
+                                timeout_s,
+                                interactive=True,
+                                storage_state_path=storage_state_path,
+                                return_response_text=True,
+                            )
+                        raise RuntimeError("blocked_by_human_verification")
+                    loop = asyncio.get_running_loop()
+                    auto_deadline = loop.time() + 3.0
+                    while _is_blocked_page(body) and loop.time() < auto_deadline:
+                        await page.wait_for_timeout(500)
+                        body = await _fetch_body_via_api()
+                    if _is_blocked_page(body):
+                        try:
+                            await asyncio.to_thread(
+                                input,
+                                "检测到拦截/验证页面。若浏览器已通过验证，可直接回车继续；否则请完成验证后回车继续...",
+                            )
+                        except EOFError:
+                            pass
+                        deadline = loop.time() + 600.0
+                        while True:
+                            body = await _fetch_body_via_api()
+                            if not _is_blocked_page(body):
+                                break
+                            if loop.time() >= deadline:
+                                raise RuntimeError("blocked_by_human_verification")
+                            await page.wait_for_timeout(500)
+                sp2 = str(storage_state_path or "").strip()
+                if interactive and sp2:
+                    Path(sp2).parent.mkdir(parents=True, exist_ok=True)
+                    await context.storage_state(path=sp2)
+                    try:
+                        sz = int(Path(sp2).stat().st_size)
+                    except Exception:
+                        sz = 0
+                    _dbg_emit("A", "[DEBUG] pw_storage_saved", {"path": sp2, "size": sz})
+                return body
             try:
                 await page.wait_for_selector("article", timeout=min(timeout_ms, 15000))
             except Exception:
@@ -509,16 +678,48 @@ async def _fetch_fully_rendered_html_playwright(
                 await page.wait_for_timeout(500)
 
             _dbg_emit("A", "[DEBUG] pw_content", {"url": url, "interactive": bool(interactive), "len": int(len(html or "")), "human_verification": bool(_is_human_verification_page(html)), "storage_state_in": bool(storage_state is not None)})
-            if _is_human_verification_page(html):
+            if _is_blocked_page(html):
                 if not interactive:
+                    if sys.stdin.isatty() or sys.stdout.isatty() or sys.stderr.isatty():
+                        await browser.close()
+                        return await _fetch_fully_rendered_html_playwright(
+                            url,
+                            timeout_s,
+                            interactive=True,
+                            storage_state_path=storage_state_path,
+                            return_response_text=return_response_text,
+                        )
                     raise RuntimeError("blocked_by_human_verification")
-                await asyncio.to_thread(input, "页面需要人机验证。请在弹出的浏览器中完成验证后按回车继续...")
-                try:
-                    await page.wait_for_timeout(500)
-                    html = await page.content()
-                except Exception:
-                    pass
-                _dbg_emit("A", "[DEBUG] pw_after_interactive", {"url": url, "len": int(len(html or "")), "human_verification": bool(_is_human_verification_page(html))})
+                loop = asyncio.get_running_loop()
+                auto_deadline = loop.time() + 3.0
+                while _is_blocked_page(html) and loop.time() < auto_deadline:
+                    try:
+                        await page.wait_for_timeout(500)
+                        html = await page.content()
+                    except Exception:
+                        pass
+                if _is_blocked_page(html):
+                    try:
+                        await asyncio.to_thread(
+                            input,
+                            "检测到拦截/验证页面。若浏览器已通过验证，可直接回车继续；否则请完成验证后回车继续...",
+                        )
+                    except EOFError:
+                        pass
+                    deadline = loop.time() + 600.0
+                    while True:
+                        try:
+                            await page.wait_for_timeout(500)
+                            html = await page.content()
+                        except Exception:
+                            pass
+                        if not _is_blocked_page(html):
+                            break
+                        if loop.time() >= deadline:
+                            raise RuntimeError("blocked_by_human_verification")
+                    _dbg_emit("A", "[DEBUG] pw_after_interactive", {"url": url, "len": int(len(html or "")), "human_verification": bool(_is_human_verification_page(html))})
+                    if _is_blocked_page(html):
+                        raise RuntimeError("blocked_by_human_verification")
 
             sp2 = str(storage_state_path or "").strip()
             if interactive and sp2:
@@ -555,8 +756,19 @@ async def _fetch_article_html(
     if fetch_mode == "httpx":
         return await _fetch_text(client, url)
 
+    sp = str(storage_state_path or "").strip()
+    if fetch_mode == "auto" and sp and Path(sp).exists():
+        return await _fetch_fully_rendered_html_playwright(
+            url, timeout_s, interactive=interactive, storage_state_path=storage_state_path
+        )
+
     try:
-        return await _fetch_text(client, url)
+        t = await _fetch_text(client, url)
+        if fetch_mode == "auto" and _is_blocked_403_page(t):
+            return await _fetch_fully_rendered_html_playwright(
+                url, timeout_s, interactive=interactive, storage_state_path=storage_state_path
+            )
+        return t
     except httpx.HTTPStatusError as e:
         status = int(getattr(e.response, "status_code", 0) or 0)
         if status in {403, 429}:
@@ -615,7 +827,8 @@ async def main() -> int:
     async with httpx.AsyncClient(timeout=timeout, headers=headers) as client:
         default_storage_state = Path(__file__).resolve().parent / "state" / "autosport_playwright_state.json"
         storage_state_path = str(args.storage_state or "").strip()
-        if not storage_state_path and bool(args.interactive):
+        is_tty = sys.stdin.isatty() or sys.stdout.isatty() or sys.stderr.isatty()
+        if not storage_state_path and (bool(args.interactive) or is_tty):
             storage_state_path = str(default_storage_state)
 
         _dbg_emit(
@@ -653,6 +866,11 @@ async def main() -> int:
         _dbg_emit("B", "[DEBUG] rss_parsed", {"items_count": int(len(items))})
         to_fetch, new_last_url = _select_new_items(items, last_url, seen_urls, int(args.max_items or 0))
         _dbg_emit("C", "[DEBUG] rss_selected", {"to_fetch_count": int(len(to_fetch)), "new_last_url_set": bool(new_last_url), "hit_last_url": bool(last_url and new_last_url == last_url)})
+        print(
+            f"[autosport] rss_items={len(items)} to_fetch={len(to_fetch)} out_dir={out_dir}",
+            file=sys.stderr,
+            flush=True,
+        )
 
         run_at_utc = dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z")
         fetched_records: list[dict] = []
@@ -676,6 +894,7 @@ async def main() -> int:
                 extracted = html
             cleaned = extracted if args.no_strip_script_style else _strip_style_and_script_tags(extracted)
             p.write_text(cleaned, encoding="utf-8")
+            print(f"[autosport] saved {p.name}", file=sys.stderr, flush=True)
             if args.keep_raw:
                 raw_path = p.with_name(p.stem + ".raw.html")
                 raw_path.write_text(html, encoding="utf-8")

@@ -1,0 +1,108 @@
+{
+  "ingest_url": "https://winpc-f1.normal-person.icu/api/v1/mp/news/ingest",
+  "token_used": false,
+  "ok": 10,
+  "fail": 0,
+  "results": [
+    {
+      "n": 1,
+      "id": "n_autosport_20260526_6f3a5ff74a",
+      "http_status": 200,
+      "response": {
+        "ok": true,
+        "id": "n_autosport_20260526_6f3a5ff74a"
+      },
+      "ok": true
+    },
+    {
+      "n": 2,
+      "id": "n_autosport_20260527_240ab12eb8",
+      "http_status": 200,
+      "response": {
+        "ok": true,
+        "id": "n_autosport_20260527_240ab12eb8"
+      },
+      "ok": true
+    },
+    {
+      "n": 3,
+      "id": "n_autosport_20260527_8802bd3ee9",
+      "http_status": 200,
+      "response": {
+        "ok": true,
+        "id": "n_autosport_20260527_8802bd3ee9"
+      },
+      "ok": true
+    },
+    {
+      "n": 4,
+      "id": "n_autosport_20260527_e24cbd02a7",
+      "http_status": 200,
+      "response": {
+        "ok": true,
+        "id": "n_autosport_20260527_e24cbd02a7"
+      },
+      "ok": true
+    },
+    {
+      "n": 5,
+      "id": "n_autosport_20260528_96bc870cad",
+      "http_status": 200,
+      "response": {
+        "ok": true,
+        "id": "n_autosport_20260528_96bc870cad"
+      },
+      "ok": true
+    },
+    {
+      "n": 6,
+      "id": "n_autosport_20260528_44f4391fea",
+      "http_status": 200,
+      "response": {
+        "ok": true,
+        "id": "n_autosport_20260528_44f4391fea"
+      },
+      "ok": true
+    },
+    {
+      "n": 7,
+      "id": "n_autosport_20260528_3a8128eef5",
+      "http_status": 200,
+      "response": {
+        "ok": true,
+        "id": "n_autosport_20260528_3a8128eef5"
+      },
+      "ok": true
+    },
+    {
+      "n": 8,
+      "id": "n_autosport_20260529_8c5dac6d81",
+      "http_status": 200,
+      "response": {
+        "ok": true,
+        "id": "n_autosport_20260529_8c5dac6d81"
+      },
+      "ok": true
+    },
+    {
+      "n": 9,
+      "id": "n_autosport_20260530_94876274a6",
+      "http_status": 200,
+      "response": {
+        "ok": true,
+        "id": "n_autosport_20260530_94876274a6"
+      },
+      "ok": true
+    },
+    {
+      "n": 10,
+      "id": "n_autosport_20260530_cc605582db",
+      "http_status": 200,
+      "response": {
+        "ok": true,
+        "id": "n_autosport_20260530_cc605582db"
+      },
+      "ok": true
+    }
+  ]
+}

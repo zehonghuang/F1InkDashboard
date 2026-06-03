@@ -90,8 +90,8 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/mp/standings", handlers.MpStandings(gormOrNil(database), s.TeamCache))
 	s.Router.GET("/api/v1/mp/telemetry/controls", handlers.MpTelemetryControls(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/telemetry/sector_controls", handlers.MpTelemetrySectorControls(gormOrNil(database)))
-	s.Router.GET("/api/v1/mp/news", handlers.MpNewsList(cfg.StaticDir))
-	s.Router.GET("/api/v1/mp/news/:id", handlers.MpNewsDetail(cfg.StaticDir))
+	s.Router.GET("/api/v1/mp/news", handlers.MpNewsList(gormOrNil(database)))
+	s.Router.GET("/api/v1/mp/news/:id", handlers.MpNewsDetail(gormOrNil(database)))
 	s.Router.POST("/api/v1/mp/news/ingest", handlers.MpNewsIngest(cfg, gormOrNil(database)))
 
 	mpAuth := s.Router.Group("/api/v1/mp/auth")

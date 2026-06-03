@@ -13,6 +13,18 @@ import (
 
 var errMpNewsNotFound = errors.New("mp_news_not_found")
 
+func mpNewsLess(a, b model.MpNewsItem) bool {
+	if a.Pinned != b.Pinned {
+		return a.Pinned
+	}
+	if a.Weight != b.Weight {
+		return a.Weight > b.Weight
+	}
+	at, _ := time.Parse(time.RFC3339, a.PublishedAt)
+	bt, _ := time.Parse(time.RFC3339, b.PublishedAt)
+	return at.After(bt)
+}
+
 func mpNewsIndexPath(staticDir string) string {
 	return filepath.Join(staticDir, "mp_news", "index.json")
 }
