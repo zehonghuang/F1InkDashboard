@@ -277,6 +277,13 @@ Page({
   },
   onLoad() {
     try {
+      const app = getApp()
+      if (app && app.globalData && app.globalData.tweakAEffective) {
+        wx.switchTab({ url: "/pages/archive/index" })
+        return
+      }
+    } catch (e) {}
+    try {
       const sys = wx.getSystemInfoSync()
       const h = Number(sys && sys.statusBarHeight) || 0
       this.setData({ statusBarHeight: h })
