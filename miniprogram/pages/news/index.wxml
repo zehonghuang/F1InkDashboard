@@ -59,7 +59,7 @@
         <block wx:for="{{ list }}" wx:key="id">
           <view
             id="news-card-{{ item.id }}"
-            class="news-card {{ item._prefPromoted ? 'news-card-promoted' : '' }} {{ item._prefHit ? 'news-card-hit' : '' }}"
+            class="news-card {{ item.coverUrl ? 'news-card-with-cover' : '' }} {{ item._prefPromoted ? 'news-card-promoted' : '' }} {{ item._prefHit ? 'news-card-hit' : '' }}"
             style="{{ item._prefMoveHidden ? 'opacity:0;' : '' }}"
             bindtap="onTapCard"
             data-id="{{ item.id }}"
@@ -67,12 +67,17 @@
             hover-stay-time="120"
           >
             <view wx:if="{{ item._prefHit }}" class="news-hit-bar" style="background: {{ item._prefHitColor || '#2EE8D8' }};" />
-            <view class="news-title">{{ item.title }}</view>
-            <view class="news-summary">{{ item.summary }}</view>
-            <view class="news-meta">
-              <view class="news-tag">{{ item.tagText }}</view>
-              <view class="news-dot">•</view>
-              <view class="news-time">{{ item.timeText }}</view>
+            <view wx:if="{{ item.coverUrl }}" class="news-cover-wrap">
+              <image class="news-cover" src="{{ item.coverUrl }}" mode="aspectFill" lazy-load />
+            </view>
+            <view class="news-body">
+              <view class="news-title">{{ item.title }}</view>
+              <view wx:if="{{ !item.coverUrl }}" class="news-summary">{{ item.summary }}</view>
+              <view class="news-meta">
+                <view class="news-tag">{{ item.tagText }}</view>
+                <view class="news-dot">•</view>
+                <view class="news-time">{{ item.timeText }}</view>
+              </view>
             </view>
           </view>
         </block>
@@ -81,14 +86,19 @@
   </scroll-view>
 
   <view wx:if="{{ prefMoveOverlay && prefMoveOverlay.show && prefMoveOverlay.item }}" id="pref-move-overlay" class="pref-move-overlay" style="{{ prefMoveOverlay.style }}">
-    <view class="news-card news-card-promoted news-card-hit">
+    <view class="news-card {{ prefMoveOverlay.item.coverUrl ? 'news-card-with-cover' : '' }} news-card-promoted news-card-hit">
       <view class="news-hit-bar" style="background: {{ prefMoveOverlay.item._prefHitColor || '#2EE8D8' }};" />
-      <view class="news-title">{{ prefMoveOverlay.item.title }}</view>
-      <view class="news-summary">{{ prefMoveOverlay.item.summary }}</view>
-      <view class="news-meta">
-        <view class="news-tag">{{ prefMoveOverlay.item.tagText }}</view>
-        <view class="news-dot">•</view>
-        <view class="news-time">{{ prefMoveOverlay.item.timeText }}</view>
+      <view wx:if="{{ prefMoveOverlay.item.coverUrl }}" class="news-cover-wrap">
+        <image class="news-cover" src="{{ prefMoveOverlay.item.coverUrl }}" mode="aspectFill" lazy-load />
+      </view>
+      <view class="news-body">
+        <view class="news-title">{{ prefMoveOverlay.item.title }}</view>
+        <view wx:if="{{ !prefMoveOverlay.item.coverUrl }}" class="news-summary">{{ prefMoveOverlay.item.summary }}</view>
+        <view class="news-meta">
+          <view class="news-tag">{{ prefMoveOverlay.item.tagText }}</view>
+          <view class="news-dot">•</view>
+          <view class="news-time">{{ prefMoveOverlay.item.timeText }}</view>
+        </view>
       </view>
     </view>
   </view>
