@@ -1,11 +1,19 @@
 <view wx:if="{{ visible }}" class="tabbar">
   <block wx:for="{{ list }}" wx:key="key">
-    <view class="tabbar-item" bindtap="onTapItem" data-key="{{ item.key }}">
-      <i-icon
-        type="{{ item.icon }}"
-        size="24"
-        color="{{ selected === item.key ? '#ffffff' : 'rgba(255,255,255,0.55)' }}"
-      />
+    <view
+      class="tabbar-item {{ selected === item.key ? 'is-selected' : '' }}"
+      hover-class="tabbar-item--pressed"
+      hover-stay-time="120"
+      bindtap="onTapItem"
+      data-key="{{ item.key }}"
+    >
+      <view class="icon-wrap">
+        <i-icon
+          type="{{ item.icon }}"
+          size="24"
+          color="{{ selected === item.key ? '#ffffff' : 'rgba(255,255,255,0.55)' }}"
+        />
+      </view>
     </view>
   </block>
 </view>

@@ -32,6 +32,7 @@ Component({
       const { key } = e.currentTarget.dataset
       const item = this.data.list.find((x) => x.key === key)
       if (!item) return
+      this.setData({ selected: key })
       wx.switchTab({ url: item.pagePath })
     }
   }

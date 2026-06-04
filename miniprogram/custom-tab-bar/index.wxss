@@ -18,3 +18,22 @@
   align-items: center;
   justify-content: center;
 }
+
+.icon-wrap {
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999rpx;
+  transition: transform 120ms ease, background-color 120ms ease;
+}
+
+.tabbar-item.is-selected .icon-wrap {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.tabbar-item--pressed .icon-wrap {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(0.92);
+}
