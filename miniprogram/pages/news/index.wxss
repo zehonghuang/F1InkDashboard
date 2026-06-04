@@ -55,7 +55,7 @@
   top: 0;
   bottom: 0;
   z-index: 9997;
-  background: rgba(0, 0, 0, 0.62);
+  background: rgba(255, 255, 255, 0.28);
   display: flex;
   flex-direction: column;
   align-items: center;
