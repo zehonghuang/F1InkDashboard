@@ -48,6 +48,112 @@
   letter-spacing: 2rpx;
 }
 
+.press-preview-overlay {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 9997;
+  background: rgba(0, 0, 0, 0.62);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24rpx;
+}
+
+.press-preview {
+  width: 100%;
+  max-width: 680rpx;
+  position: relative;
+}
+
+.press-preview-close {
+  position: absolute;
+  right: 0;
+  top: -64rpx;
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 999rpx;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1rpx solid rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.86);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34rpx;
+  line-height: 34rpx;
+}
+
+.press-preview-card {
+  border-radius: 14rpx;
+  overflow: hidden;
+  border: 1rpx solid rgba(255, 255, 255, 0.16);
+  background: #000000;
+}
+
+.press-preview-pressed {
+  opacity: 0.92;
+}
+
+.press-preview-cover-wrap {
+  width: 100%;
+  height: 320rpx;
+  background: #0a0a0a;
+}
+
+.press-preview-cover {
+  width: 100%;
+  height: 100%;
+}
+
+.press-preview-body {
+  padding: 20rpx;
+}
+
+.press-preview-title {
+  font-weight: 800;
+  font-size: 34rpx;
+  line-height: 46rpx;
+}
+
+.press-preview-summary {
+  margin-top: 10rpx;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 40rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+}
+
+.press-preview-meta {
+  margin-top: 14rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.press-preview-tag {
+  padding: 6rpx 12rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 22rpx;
+}
+
+.press-preview-dot {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.press-preview-time {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 24rpx;
+}
+
 .hero-swiper {
   height: 320rpx;
   margin-top: 6rpx;

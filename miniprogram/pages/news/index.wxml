@@ -39,7 +39,16 @@
       >
         <block wx:for="{{ banners }}" wx:key="id">
           <swiper-item>
-            <view class="hero-banner" bindtap="onTapCard" data-id="{{ item.id }}" hover-class="hero-banner-pressed" hover-stay-time="120">
+            <view
+              class="hero-banner"
+              bindtap="onTapCard"
+              bindlongpress="onLongPressCard"
+              bindtouchend="onReleasePressCard"
+              bindtouchcancel="onReleasePressCard"
+              data-id="{{ item.id }}"
+              hover-class="hero-banner-pressed"
+              hover-stay-time="120"
+            >
               <image class="hero-image" src="{{ item.coverUrl }}" mode="aspectFill" />
               <view class="hero-mask" />
               <view class="hero-content">
@@ -62,6 +71,9 @@
             class="news-card {{ item.coverUrl ? 'news-card-with-cover' : '' }} {{ item._prefPromoted ? 'news-card-promoted' : '' }} {{ item._prefHit ? 'news-card-hit' : '' }}"
             style="{{ item._prefMoveHidden ? 'opacity:0;' : '' }}"
             bindtap="onTapCard"
+            bindlongpress="onLongPressCard"
+            bindtouchend="onReleasePressCard"
+            bindtouchcancel="onReleasePressCard"
             data-id="{{ item.id }}"
             hover-class="news-card-pressed"
             hover-stay-time="120"
@@ -98,6 +110,26 @@
           <view class="news-tag">{{ prefMoveOverlay.item.tagText }}</view>
           <view class="news-dot">•</view>
           <view class="news-time">{{ prefMoveOverlay.item.timeText }}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{ pressPreview && pressPreview.show && pressPreview.item }}" class="press-preview-overlay" bindtap="onClosePressPreview" catchtouchmove="noop">
+    <view class="press-preview" catchtap="noop">
+      <view class="press-preview-close" bindtap="onClosePressPreview">×</view>
+      <view class="press-preview-card" bindtap="onTapPressPreview" hover-class="press-preview-pressed" hover-stay-time="120">
+        <view wx:if="{{ pressPreview.item.coverUrl }}" class="press-preview-cover-wrap">
+          <image class="press-preview-cover" src="{{ pressPreview.item.coverUrl }}" mode="aspectFill" lazy-load />
+        </view>
+        <view class="press-preview-body">
+          <view class="press-preview-title">{{ pressPreview.item.title }}</view>
+          <view wx:if="{{ pressPreview.item.summary }}" class="press-preview-summary">{{ pressPreview.item.summary }}</view>
+          <view class="press-preview-meta">
+            <view class="press-preview-tag">{{ pressPreview.item.tagText }}</view>
+            <view class="press-preview-dot">•</view>
+            <view class="press-preview-time">{{ pressPreview.item.timeText }}</view>
+          </view>
         </view>
       </view>
     </view>

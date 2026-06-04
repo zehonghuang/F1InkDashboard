@@ -273,7 +273,8 @@ Page({
     statusBarHeight: 0,
     prefMoveOverlay: null,
     listTransformStyle: "",
-    refreshing: false
+    refreshing: false,
+    pressPreview: null
   },
   onLoad() {
     try {
@@ -299,6 +300,7 @@ Page({
     clearTimeout(this._prefMoveTimer)
     clearTimeout(this._prefMoveTimer2)
     clearTimeout(this._waitTopTimer)
+    clearTimeout(this._suppressTapTimer)
   },
   onShow() {
     if (typeof this.getTabBar === "function") {
@@ -307,7 +309,7 @@ Page({
         tb.setSelectedByRoute(this.route)
       }
       if (tb && typeof tb.setVisible === "function") {
-        tb.setVisible(!this.data.showWelcome)
+        tb.setVisible(!this.data.showWelcome && !(this.data.pressPreview && this.data.pressPreview.show))
       }
     }
   },
@@ -762,9 +764,69 @@ Page({
     this.reload({ reset: false, page: nextPage })
   },
   onTapCard(e) {
+    if (Date.now() < Number(this._suppressTapUntil || 0)) return
     const { id } = e.currentTarget.dataset
     if (!id) return
     wx.navigateTo({ url: `/pages/news-detail/index?id=${encodeURIComponent(id)}` })
+  },
+  findNewsItemById(id) {
+    const nid = String(id || "").trim()
+    if (!nid) return null
+    const list = Array.isArray(this.data.list) ? this.data.list : []
+    for (const it of list) {
+      if (it && it.id === nid) return it
+    }
+    const banners = Array.isArray(this.data.banners) ? this.data.banners : []
+    for (const it of banners) {
+      if (it && it.id === nid) return it
+    }
+    const w = this.data.welcome
+    if (w && w.id === nid) return w
+    return null
+  },
+  setTabbarVisible(visible) {
+    if (typeof this.getTabBar !== "function") return
+    const tb = this.getTabBar()
+    if (tb && typeof tb.setVisible === "function") {
+      tb.setVisible(Boolean(visible))
+    }
+  },
+  onLongPressCard(e) {
+    const { id } = e.currentTarget.dataset
+    if (!id) return
+    const item = this.findNewsItemById(id)
+    if (!item) return
+    this._suppressTapUntil = Date.now() + 600
+    clearTimeout(this._suppressTapTimer)
+    this._suppressTapTimer = setTimeout(() => {
+      this._suppressTapUntil = 0
+    }, 700)
+    this.setData({ pressPreview: { show: true, item } }, () => {
+      this.setTabbarVisible(false)
+    })
+  },
+  onReleasePressCard() {
+    if (!this.data.pressPreview || !this.data.pressPreview.show) return
+    this.onClosePressPreview()
+  },
+  onClosePressPreview() {
+    if (!this.data.pressPreview || !this.data.pressPreview.show) return
+    this.setData({ pressPreview: null }, () => {
+      this.setTabbarVisible(!this.data.showWelcome)
+    })
+  },
+  onTapPressPreview() {
+    const pv = this.data.pressPreview
+    const item = pv && pv.item
+    const id = item && item.id ? item.id : ""
+    if (!id) {
+      this.onClosePressPreview()
+      return
+    }
+    this.setData({ pressPreview: null }, () => {
+      this.setTabbarVisible(true)
+      wx.navigateTo({ url: `/pages/news-detail/index?id=${encodeURIComponent(id)}` })
+    })
   },
   onCloseWelcome() {
     this.setData({ showWelcome: false }, () => {
