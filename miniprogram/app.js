@@ -4,6 +4,13 @@ App({
     this.globalData.apiBase = defaultApiBase.replace(/\/+$/, "")
 
     try {
+      const v = wx.getStorageSync("k0a")
+      if (typeof this.globalData.tweakA !== "boolean" && typeof v === "boolean") {
+        this.globalData.tweakA = v
+      }
+    } catch (e) {}
+
+    try {
       const accountInfo = wx.getAccountInfoSync()
       const envVersion =
         (accountInfo &&
@@ -13,15 +20,20 @@ App({
         ""
       this.globalData.envVersion = envVersion
 
+      if (envVersion !== "develop") {
+        this.globalData.tweakAEffective = false
+        return
+      }
+
       const manual = this.globalData.tweakA
       if (typeof manual === "boolean") {
         this.globalData.tweakAEffective = manual
-      } else {
-        this.globalData.tweakAEffective = envVersion === "develop"
+        return
       }
+
+      this.globalData.tweakAEffective = true
     } catch (e) {
-      const manual = this.globalData.tweakA
-      this.globalData.tweakAEffective = typeof manual === "boolean" ? manual : false
+      this.globalData.tweakAEffective = false
     }
 
     try {
