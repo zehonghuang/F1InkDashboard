@@ -68,7 +68,7 @@
         <block wx:for="{{ list }}" wx:key="id">
           <view
             id="news-card-{{ item.id }}"
-            class="news-card {{ item.coverUrl ? 'news-card-with-cover' : '' }} {{ item._prefPromoted ? 'news-card-promoted' : '' }} {{ item._prefHit ? 'news-card-hit' : '' }}"
+            class="news-card {{ pressJiggleId === item.id ? 'news-card-jiggle' : '' }} {{ item.coverUrl ? 'news-card-with-cover' : '' }} {{ item._prefPromoted ? 'news-card-promoted' : '' }} {{ item._prefHit ? 'news-card-hit' : '' }}"
             style="{{ item._prefMoveHidden ? 'opacity:0;' : '' }}"
             bindtap="onTapCard"
             bindlongpress="onLongPressCard"
@@ -115,8 +115,13 @@
     </view>
   </view>
 
-  <view wx:if="{{ pressPreview && pressPreview.show && pressPreview.item }}" class="press-preview-overlay" bindtap="onClosePressPreview" catchtouchmove="noop">
-    <view class="press-preview" catchtap="noop">
+  <view
+    wx:if="{{ pressPreview && pressPreview.show && pressPreview.item }}"
+    class="press-preview-overlay {{ pressPreview.active ? 'press-preview-overlay-active' : '' }}"
+    bindtap="onClosePressPreview"
+    catchtouchmove="noop"
+  >
+    <view class="press-preview {{ pressPreview.active ? 'press-preview-active' : '' }}" catchtap="noop">
       <view class="press-preview-close" bindtap="onClosePressPreview">×</view>
       <view class="press-preview-card" bindtap="onTapPressPreview" hover-class="press-preview-pressed" hover-stay-time="120">
         <view wx:if="{{ pressPreview.item.coverUrl }}" class="press-preview-cover-wrap">

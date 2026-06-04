@@ -274,7 +274,8 @@ Page({
     prefMoveOverlay: null,
     listTransformStyle: "",
     refreshing: false,
-    pressPreview: null
+    pressPreview: null,
+    pressJiggleId: ""
   },
   onLoad() {
     try {
@@ -301,6 +302,7 @@ Page({
     clearTimeout(this._prefMoveTimer2)
     clearTimeout(this._waitTopTimer)
     clearTimeout(this._suppressTapTimer)
+    clearTimeout(this._pressPreviewHideTimer)
   },
   onShow() {
     if (typeof this.getTabBar === "function") {
@@ -801,8 +803,15 @@ Page({
     this._suppressTapTimer = setTimeout(() => {
       this._suppressTapUntil = 0
     }, 700)
-    this.setData({ pressPreview: { show: true, item } }, () => {
+    clearTimeout(this._pressPreviewHideTimer)
+    this.setData({ pressPreview: { show: true, active: false, item }, pressJiggleId: id }, () => {
       this.setTabbarVisible(false)
+      wx.nextTick(() => {
+        const pv = this.data.pressPreview
+        if (!pv || !pv.show) return
+        if (pv.active) return
+        this.setData({ pressPreview: { ...pv, active: true } })
+      })
     })
   },
   onReleasePressCard() {
@@ -810,10 +819,15 @@ Page({
     this.onClosePressPreview()
   },
   onClosePressPreview() {
-    if (!this.data.pressPreview || !this.data.pressPreview.show) return
-    this.setData({ pressPreview: null }, () => {
-      this.setTabbarVisible(!this.data.showWelcome)
-    })
+    const pv = this.data.pressPreview
+    if (!pv || !pv.show) return
+    clearTimeout(this._pressPreviewHideTimer)
+    this.setData({ pressPreview: { ...pv, active: false }, pressJiggleId: "" })
+    this._pressPreviewHideTimer = setTimeout(() => {
+      this.setData({ pressPreview: null }, () => {
+        this.setTabbarVisible(!this.data.showWelcome)
+      })
+    }, 170)
   },
   onTapPressPreview() {
     const pv = this.data.pressPreview

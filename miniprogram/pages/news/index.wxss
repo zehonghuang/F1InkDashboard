@@ -61,12 +61,27 @@
   align-items: center;
   justify-content: center;
   padding: 24rpx;
+  opacity: 0;
+  transition: opacity 160ms ease-out;
+}
+
+.press-preview-overlay-active {
+  opacity: 1;
 }
 
 .press-preview {
   width: 100%;
   max-width: 680rpx;
   position: relative;
+  transform: translate3d(0, 18rpx, 0) scale(0.98);
+  opacity: 0;
+  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1), opacity 160ms ease-out;
+  will-change: transform, opacity;
+}
+
+.press-preview-active {
+  transform: translate3d(0, 0, 0) scale(1);
+  opacity: 1;
 }
 
 .press-preview-close {
@@ -152,6 +167,23 @@
 .press-preview-time {
   color: rgba(255, 255, 255, 0.62);
   font-size: 24rpx;
+}
+
+@keyframes newsCardJiggle {
+  0% {
+    transform: rotate(-0.6deg) scale(0.995);
+  }
+  50% {
+    transform: rotate(0.6deg) scale(0.995);
+  }
+  100% {
+    transform: rotate(-0.6deg) scale(0.995);
+  }
+}
+
+.news-card-jiggle {
+  transform-origin: 50% 50%;
+  animation: newsCardJiggle 260ms ease-in-out infinite;
 }
 
 .hero-swiper {
