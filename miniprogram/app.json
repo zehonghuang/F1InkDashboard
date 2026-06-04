@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/entry/index",
     "pages/news/index",
     "pages/news-detail/index",
     "pages/archive/index",

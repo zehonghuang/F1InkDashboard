@@ -19,7 +19,7 @@ const BASE_TABS = [
 Component({
   data: {
     visible: true,
-    selected: "news",
+    selected: "archive",
     list: []
   },
   lifetimes: {
@@ -41,8 +41,7 @@ Component({
       const hideNewsTab =
         app &&
         app.globalData &&
-        (Boolean(app.globalData.tweakAEffective) ||
-          (typeof app.globalData.tweakA === "boolean" && app.globalData.tweakA))
+        Boolean(app.globalData.tweakAEffective)
 
       const list = hideNewsTab ? BASE_TABS.filter((x) => x.key !== "news") : BASE_TABS.slice()
       const selected =
