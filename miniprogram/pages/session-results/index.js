@@ -1,8 +1,10 @@
 const { buildChartsShareUrl } = require("../../services/chartsShare")
 const { getAuthState } = require("../../services/authService")
+const i18n = require("../../services/i18n")
 
 Page({
   data: {
+    i18n: i18n.getDict(),
     raceName: "",
     sessionName: "",
     sessionCode: "",
@@ -31,10 +33,10 @@ Page({
     const s = getAuthState()
     if (s && s.isLoggedIn) return true
     wx.showModal({
-      title: "需要登录",
-      content: "登录后才可以选择车手进行对比",
-      confirmText: "去登录",
-      cancelText: "取消",
+      title: i18n.t("sessionResults.needLogin"),
+      content: i18n.t("sessionResults.loginToCompare"),
+      confirmText: i18n.t("sessionResults.goLogin"),
+      cancelText: i18n.t("common.cancel"),
       success: (res) => {
         if (res && res.confirm) {
           wx.switchTab({ url: "/pages/mine/index" })
@@ -44,6 +46,7 @@ Page({
     return false
   },
   buildTabs(sessionCode, sessionName) {
+    const dict = i18n.getDict()
     const code = String(sessionCode || "")
       .trim()
       .toUpperCase()
@@ -56,19 +59,19 @@ Page({
 
     if (isRace || isSprintRace) {
       return [
-        { key: "rank", label: "排名" },
-        { key: "boxplot", label: "箱线图" }
+        { key: "rank", label: dict.sessionResults.tabRank },
+        { key: "boxplot", label: dict.sessionResults.tabBoxplot }
       ]
     }
     if (isQuali || isSprintQuali) {
       return [
-        { key: "rank", label: "排名" },
-        { key: "throttle", label: "油门比" },
-        { key: "brake", label: "刹车比" },
-        { key: "speed", label: "速度" }
+        { key: "rank", label: dict.sessionResults.tabRank },
+        { key: "throttle", label: dict.sessionResults.tabThrottle },
+        { key: "brake", label: dict.sessionResults.tabBrake },
+        { key: "speed", label: dict.sessionResults.tabSpeed }
       ]
     }
-    return [{ key: "rank", label: "排名" }]
+    return [{ key: "rank", label: dict.sessionResults.tabRank }]
   },
   hasTab(key) {
     return (this.data.tabs || []).some((t) => t && t.key === key)
@@ -136,6 +139,7 @@ Page({
     return fd > 0 ? `${sign}${m}:${sec2}.${fracStr}` : `${sign}${m}:${sec2}`
   },
   onLoad(options) {
+    this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     const raceName = decodeURIComponent(options.raceName || "")
     const sessionCode = decodeURIComponent(options.sessionCode || "")
     const sessionName = decodeURIComponent(options.sessionName || "")
@@ -143,13 +147,18 @@ Page({
     const tabs = this.buildTabs(sessionCode, sessionName)
     const activeTabKey = (tabs && tabs[0] && tabs[0].key) || "rank"
     this.setData({ raceName, sessionName, sessionCode, sessionKey, tabs, activeTabKey }, () => {
+      this.applyI18n()
       if (sessionName) {
         wx.setNavigationBarTitle({ title: sessionName })
       }
       this.loadResults()
     })
   },
+  onUnload() {
+    if (this._offLocale) this._offLocale()
+  },
   onShow() {
+    this.applyI18n()
     if (this.data.activeTabKey === "boxplot") {
       this.updateBoxplotHeight()
       return
@@ -244,7 +253,8 @@ Page({
       byDn[dn] = String(acr || dn)
     }
     const labels = (selected || []).map((dn) => byDn[dn] || String(dn))
-    return labels.length ? `对比：${labels.join(" / ")}` : "请选择车手"
+    const dict = i18n.getDict()
+    return labels.length ? `${dict.sessionResults.comparePrefix}${labels.join(" / ")}` : dict.sessionResults.pickDriver
   },
   onTabTap(e) {
     const key = String((e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.tab) || "")
@@ -647,7 +657,10 @@ Page({
                 series: speedSeriesAligned.map((s) => Object.assign({}, s, { markLine: markSectors }))
               }
 
-        const telemetryLapInfo = lapParts.length ? `最快圈：${lapParts.join(" / ")}` : "最快圈对比"
+        const dict = i18n.getDict()
+        const telemetryLapInfo = lapParts.length
+          ? `${dict.sessionResults.fastestLap}：${lapParts.join(" / ")}`
+          : dict.sessionResults.fastestLapCompare
         this.setData(
           { chartOptionThrottle: optionThrottle, chartOptionBrake: optionBrake, chartOptionSpeed: optionSpeed, telemetryLapInfo },
           () => this.syncTelemetryOption()
@@ -663,7 +676,7 @@ Page({
     const sessionKey = Number(this.data.sessionKey || 0)
     const picked = Array.isArray(this.data.telemetryDriverNumbers) ? this.data.telemetryDriverNumbers.filter((x) => Number(x) > 0) : []
     if (!sessionKey || !picked.length) {
-      wx.showToast({ title: "暂无可复制链接", icon: "none" })
+      wx.showToast({ title: i18n.t("common.noLinkToCopy"), icon: "none" })
       return
     }
     const tab = String(this.data.activeTabKey || "")
@@ -683,16 +696,16 @@ Page({
         driver_numbers: picked
       })
     } catch (e) {
-      wx.showToast({ title: "复制失败", icon: "none" })
+      wx.showToast({ title: i18n.t("common.copyFailed"), icon: "none" })
       return
     }
     wx.setClipboardData({
       data: url,
       success: () => {
-        wx.showToast({ title: "已复制", icon: "success" })
+        wx.showToast({ title: i18n.t("common.copied"), icon: "success" })
       },
       fail: () => {
-        wx.showToast({ title: "复制失败", icon: "none" })
+        wx.showToast({ title: i18n.t("common.copyFailed"), icon: "none" })
       }
     })
   },
@@ -700,7 +713,7 @@ Page({
     const sessionKey = Number(this.data.sessionKey || 0)
     const selected = Array.isArray(this.data.selectedDriverNumbers) ? this.data.selectedDriverNumbers.filter((x) => Number(x) > 0) : []
     if (!sessionKey || !selected.length) {
-      wx.showToast({ title: "暂无可复制链接", icon: "none" })
+      wx.showToast({ title: i18n.t("common.noLinkToCopy"), icon: "none" })
       return
     }
     let url = ""
@@ -712,16 +725,16 @@ Page({
         include_pit_out: 0
       })
     } catch (e) {
-      wx.showToast({ title: "复制失败", icon: "none" })
+      wx.showToast({ title: i18n.t("common.copyFailed"), icon: "none" })
       return
     }
     wx.setClipboardData({
       data: url,
       success: () => {
-        wx.showToast({ title: "已复制", icon: "success" })
+        wx.showToast({ title: i18n.t("common.copied"), icon: "success" })
       },
       fail: () => {
-        wx.showToast({ title: "复制失败", icon: "none" })
+        wx.showToast({ title: i18n.t("common.copyFailed"), icon: "none" })
       }
     })
   },
@@ -827,7 +840,8 @@ Page({
           const med = this.formatLapClock(v[2], 3)
           const q3 = this.formatLapClock(v[3], 3)
           const wh = this.formatLapClock(v[4], 3)
-          return `${p.name}\n下须=${wl}\nQ1=${q1}\n中位数=${med}\nQ3=${q3}\n上须=${wh}`
+          const dict = i18n.getDict()
+          return `${p.name}\n${dict.sessionResults.boxLowerWhisker}=${wl}\n${dict.sessionResults.boxQ1}=${q1}\n${dict.sessionResults.boxMedian}=${med}\n${dict.sessionResults.boxQ3}=${q3}\n${dict.sessionResults.boxUpperWhisker}=${wh}`
         }
       },
       xAxis: {
@@ -878,5 +892,17 @@ Page({
     wx.navigateTo({
       url: `/pages/driver/index?sessionKey=${this.data.sessionKey}&driverNumber=${driverNumber}&driverName=${encodeURIComponent(driverName)}&raceName=${encodeURIComponent(this.data.raceName || "")}&sessionName=${encodeURIComponent(this.data.sessionName || "")}`
     })
+  },
+  applyI18n() {
+    const dict = i18n.getDict()
+    const tabs = this.buildTabs(this.data.sessionCode, this.data.sessionName)
+    const cur = String(this.data.activeTabKey || "")
+    const hasCur = (tabs || []).some((t) => t && t.key === cur)
+    const activeTabKey = hasCur ? cur : (tabs[0] && tabs[0].key) || "rank"
+    const selectedDriverText = this.buildSelectedText(this.data.items, this.data.selectedDriverNumbers)
+    const telemetrySelectedText = this.buildSelectedText(this.data.items, this.data.telemetryDriverNumbers)
+    this.setData({ i18n: dict, tabs, activeTabKey, selectedDriverText, telemetrySelectedText })
+    const ssn = String(this.data.sessionName || "").trim()
+    if (ssn) wx.setNavigationBarTitle({ title: ssn })
   }
 })

@@ -1,20 +1,32 @@
+const i18n = require("../../services/i18n")
+
 Page({
   data: {
+    i18n: i18n.getDict(),
     season: 2026,
     round: 0,
     raceName: "",
-    sessions: []
+    sessions: [],
+    subtitleText: ""
   },
   onLoad(options) {
+    this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     const season = Number(options.season || 2026)
     const round = Number(options.round || 0)
     const raceName = decodeURIComponent(options.raceName || "")
     this.setData({ season, round, raceName }, () => {
+      this.applyI18n()
       if (raceName) {
         wx.setNavigationBarTitle({ title: raceName })
       }
       this.loadSessions()
     })
+  },
+  onUnload() {
+    if (this._offLocale) this._offLocale()
+  },
+  onShow() {
+    this.applyI18n()
   },
   onPullDownRefresh() {
     this.loadSessions({ isPullDown: true })
@@ -39,13 +51,20 @@ Page({
       success: (res) => {
         const data = (res && res.data) || {}
         const sessions = Array.isArray(data.sessions) ? data.sessions : []
+        const dict = i18n.getDict()
+        const isEn = i18n.getLocale() === "en-US"
         const mapped = sessions.map((s) => {
           const status = s.status || "upcoming"
-          const statusText = status === "done" ? "已结束" : status === "live" ? "进行中" : "未开始"
+          const statusText =
+            status === "done" ? dict.raceSessions.statusDone : status === "live" ? dict.raceSessions.statusLive : dict.raceSessions.statusUpcoming
+          const namePrimary = isEn ? s.name_en : s.name_cn
+          const nameSecondary = isEn ? s.name_cn : s.name_en
           return {
             key: s.key,
             name_cn: s.name_cn,
             name_en: s.name_en,
+            namePrimary,
+            nameSecondary,
             start_local: s.start_local,
             status,
             statusText,
@@ -83,5 +102,12 @@ Page({
         sessionName
       )}&raceName=${encodeURIComponent(raceName)}`
     })
+  },
+  applyI18n() {
+    const dict = i18n.getDict()
+    const subtitleText = i18n.t("raceSessions.subtitle", { season: this.data.season, round: this.data.round })
+    this.setData({ i18n: dict, subtitleText })
+    const rn = String(this.data.raceName || "").trim()
+    if (rn) wx.setNavigationBarTitle({ title: rn })
   }
 })

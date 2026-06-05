@@ -1,24 +1,24 @@
 <view class="page has-tabbar">
   <view class="header">
-    <view class="title">⚖️ 全局性能对比</view>
-    <view class="subtitle">跨分站/多车手脚法对齐</view>
+    <view class="title">{{i18n.compare.title}}</view>
+    <view class="subtitle">{{i18n.compare.subtitle}}</view>
   </view>
 
   <view class="section">
-    <view class="section-title">对比维度</view>
-    <view class="item" bindtap="onPickMode">按赛道</view>
-    <view class="item-desc">同一赛道不同赛季/车手对齐</view>
+    <view class="section-title">{{i18n.compare.sectionDimension}}</view>
+    <view class="item" bindtap="onPickMode">{{i18n.compare.byTrack}}</view>
+    <view class="item-desc">{{i18n.compare.byTrackDesc}}</view>
     <view class="divider" />
-    <view class="item" bindtap="onPickMode">按日期</view>
-    <view class="item-desc">按周末日期快速回看</view>
+    <view class="item" bindtap="onPickMode">{{i18n.compare.byDate}}</view>
+    <view class="item-desc">{{i18n.compare.byDateDesc}}</view>
     <view class="divider" />
-    <view class="item" bindtap="onPickMode">按车手</view>
-    <view class="item-desc">对比驾驶风格/刹车点</view>
+    <view class="item" bindtap="onPickMode">{{i18n.compare.byDriver}}</view>
+    <view class="item-desc">{{i18n.compare.byDriverDesc}}</view>
   </view>
 
   <view class="section">
-    <view class="section-title">提示</view>
-    <view class="section-desc">当前仅搭好 UI 框架与入口，后续接入后端数据后即可展示图表与 KPI。</view>
-    <button class="btn btn-primary" bindtap="onPickMode">开始对比</button>
+    <view class="section-title">{{i18n.compare.sectionHint}}</view>
+    <view class="section-desc">{{i18n.compare.hintText}}</view>
+    <button class="btn btn-primary" bindtap="onPickMode">{{i18n.compare.startCompare}}</button>
   </view>
 </view>

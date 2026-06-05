@@ -1,5 +1,6 @@
 const { getAuthState, loginWithWeChat, logout, fetchMe, bindDevice, uploadAvatar, updateNickName, setProfile } = require("../../services/authService")
 const { fetchPrefs, updatePrefs } = require("../../services/prefsService")
+const i18n = require("../../services/i18n")
 
 const STORAGE_KEYS = {
   season: "pref_season",
@@ -12,9 +13,11 @@ const STORAGE_KEYS = {
 
 Page({
   data: {
+    i18n: i18n.getDict(),
+    locale: i18n.getLocale(),
     isLoggedIn: false,
     profile: null,
-    displayName: "游客",
+    displayName: i18n.t("mine.guestName"),
     avatarText: "G",
     loadingLogin: false,
     syncingProfile: false,
@@ -27,11 +30,11 @@ Page({
     statusBarHeight: 0,
     prefSeason: 2026,
     followDrivers: [],
-    followDriversText: "未设置",
+    followDriversText: i18n.t("mine.notSet"),
     followDriverThumbs: [],
     followDriverMoreCount: 0,
     followTeams: [],
-    followTeamsText: "未设置",
+    followTeamsText: i18n.t("mine.notSet"),
     followTeamThumbs: [],
     followTeamMoreCount: 0,
     showPicker: false,
@@ -44,15 +47,21 @@ Page({
     syncingPrefs: false
   },
   onLoad() {
+    this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     try {
       const sys = wx.getSystemInfoSync()
       const h = Number(sys && sys.statusBarHeight) || 0
       this.setData({ statusBarHeight: h })
     } catch (e) {}
+    this.applyI18n()
     this.loadPreferences()
     this.refreshAuth()
   },
+  onUnload() {
+    if (this._offLocale) this._offLocale()
+  },
   onShow() {
+    this.applyI18n()
     this.refreshAuth()
     this.loadPreferences()
     try {
@@ -100,7 +109,7 @@ Page({
       this.loadPreferences()
     } catch (e) {
       if (!(opts && opts.silent)) {
-        wx.showToast({ title: "偏好同步失败", icon: "none" })
+        wx.showToast({ title: i18n.t("common.prefsSyncFailed"), icon: "none" })
       }
     } finally {
       this.setData({ syncingPrefs: false })
@@ -153,8 +162,9 @@ Page({
       if (m && typeof m === "object") followDriversDict = m
     } catch (e) {}
 
-    const followDriversText = followDrivers.length ? `${followDrivers.length} 人` : "未设置"
-    const followTeamsText = followTeams.length ? `${followTeams.length} 支` : "未设置"
+    const dict = i18n.getDict()
+    const followDriversText = followDrivers.length ? `${followDrivers.length}${dict.mine.peopleUnit}` : dict.mine.notSet
+    const followTeamsText = followTeams.length ? `${followTeams.length}${dict.mine.teamsUnit}` : dict.mine.notSet
     this.setData({ prefSeason, followDrivers, followDriversText, followTeams, followTeamsText }, () => {
       this.refreshFollowTextsFromOptions()
       if ((this.data.followDrivers || []).length || (this.data.followTeams || []).length) {
@@ -171,10 +181,10 @@ Page({
   refreshAuth() {
     const s = getAuthState()
     const profile = s.profile
-    const name = profile && (profile.nickName || profile.nickname) ? profile.nickName || profile.nickname : "游客"
+    const name = profile && (profile.nickName || profile.nickname) ? profile.nickName || profile.nickname : i18n.t("mine.guestName")
     const avatarUrl = profile && profile.avatarUrl ? String(profile.avatarUrl || "").trim() : ""
     const hasAvatar = Boolean(avatarUrl)
-    const hasNick = Boolean(String(name || "").trim() && name !== "游客")
+    const hasNick = Boolean(String(name || "").trim() && name !== i18n.t("mine.guestName"))
     const canEditProfile = Boolean(s.isLoggedIn && !(hasAvatar && hasNick))
     const avatarText = name ? String(name).slice(0, 1).toUpperCase() : "G"
     this.setData({
@@ -197,7 +207,7 @@ Page({
       return
     }
     if (String(action || "").startsWith("soon")) {
-      wx.showToast({ title: "敬请期待", icon: "none" })
+      wx.showToast({ title: i18n.t("common.comingSoon"), icon: "none" })
       return
     }
     if (action === "followDrivers") {
@@ -208,11 +218,12 @@ Page({
       this.openPicker("teams")
       return
     }
-    wx.showToast({ title: "功能待接入", icon: "none" })
+    wx.showToast({ title: i18n.t("common.featurePending"), icon: "none" })
   },
   openPicker(mode) {
     const m = mode === "teams" ? "teams" : "drivers"
-    const title = m === "teams" ? "关注车队" : "关注车手"
+    const dict = i18n.getDict()
+    const title = m === "teams" ? dict.mine.followTeams : dict.mine.followDrivers
     const pickedMap = {}
     if (m === "drivers") {
       for (const dn of this.data.followDrivers || []) {
@@ -259,7 +270,7 @@ Page({
       } catch (e) {}
       if (this.data.isLoggedIn) {
         updatePrefs({ teamKeys: this.data.followTeams || [], driverNumbers: out }).catch(() => {
-          wx.showToast({ title: "偏好保存失败", icon: "none" })
+          wx.showToast({ title: i18n.t("common.prefsSaveFailed"), icon: "none" })
         })
       }
     } else if (mode === "teams") {
@@ -275,7 +286,7 @@ Page({
       } catch (e) {}
       if (this.data.isLoggedIn) {
         updatePrefs({ teamKeys: out, driverNumbers: this.data.followDrivers || [] }).catch(() => {
-          wx.showToast({ title: "偏好保存失败", icon: "none" })
+          wx.showToast({ title: i18n.t("common.prefsSaveFailed"), icon: "none" })
         })
       }
     }
@@ -313,7 +324,7 @@ Page({
     const apiBase = (app && app.globalData && app.globalData.apiBase) || ""
     if (!apiBase) {
       if (!(opts && opts.silent)) {
-        wx.showToast({ title: "未配置后端地址", icon: "none" })
+        wx.showToast({ title: i18n.t("common.backendNotConfigured"), icon: "none" })
       }
       return
     }
@@ -330,7 +341,7 @@ Page({
         const sk = latest ? Number(latest.openf1_race_session_key || 0) : 0
         if (!sk) {
           if (!(opts && opts.silent)) {
-            wx.showToast({ title: "暂无可用赛季数据", icon: "none" })
+            wx.showToast({ title: i18n.t("common.noSeasonData"), icon: "none" })
           }
           return
         }
@@ -341,7 +352,7 @@ Page({
           console.log({ url: archiveUrl, err })
         } catch (e) {}
         if (!(opts && opts.silent)) {
-          wx.showToast({ title: "获取赛季信息失败", icon: "none" })
+          wx.showToast({ title: i18n.t("common.fetchSeasonFailed"), icon: "none" })
         }
       }
     })
@@ -370,7 +381,7 @@ Page({
         try {
           console.log({ url, err })
         } catch (e) {}
-        wx.showToast({ title: "获取车手列表失败", icon: "none" })
+        wx.showToast({ title: i18n.t("common.fetchDriverListFailed"), icon: "none" })
       }
     })
   },
@@ -414,9 +425,10 @@ Page({
       if (!it) return `#${n}`
       return String(it.name_acronym || it.full_name || it.driver_name || it.driver_number || "").trim() || `#${n}`
     }).filter(Boolean)
-    const followDriversText = drivers.length ? (driverLabels.length ? driverLabels.join(" / ") : "未设置") : "未设置"
+    const dict = i18n.getDict()
+    const followDriversText = drivers.length ? (driverLabels.length ? driverLabels.join(" / ") : dict.mine.notSet) : dict.mine.notSet
 
-    const followTeamsText = teams.length ? teams.join(" / ") : "未设置"
+    const followTeamsText = teams.length ? teams.join(" / ") : dict.mine.notSet
     const byTeam = {}
     for (const it of teamOptions || []) {
       const k = String((it && it.team_key) || "").trim()
@@ -474,7 +486,7 @@ Page({
   },
   async onChooseAvatar(e) {
     if (!this.data.isLoggedIn) {
-      wx.showToast({ title: "请先登录", icon: "none" })
+      wx.showToast({ title: i18n.t("common.loginFirst"), icon: "none" })
       return
     }
     const temp = e && e.detail && e.detail.avatarUrl ? String(e.detail.avatarUrl || "").trim() : ""
@@ -491,13 +503,13 @@ Page({
       await uploadAvatar(temp)
       await fetchMe()
       this.refreshAuth()
-      wx.showToast({ title: "头像已更新", icon: "none" })
+      wx.showToast({ title: i18n.t("common.avatarUpdated"), icon: "none" })
     } catch (e2) {
       try {
         console.log("[mine] upload avatar failed", e2)
       } catch (err) {}
       const msg = String((e2 && (e2.errMsg || e2.message)) || "unknown").slice(0, 40)
-      wx.showToast({ title: `头像上传失败:${msg}`, icon: "none" })
+      wx.showToast({ title: i18n.t("common.avatarUploadFailed", { msg }), icon: "none" })
     } finally {
       this.setData({ syncingProfile: false })
     }
@@ -512,12 +524,12 @@ Page({
       await updateNickName(v)
       await fetchMe()
       this.refreshAuth()
-      wx.showToast({ title: "昵称已更新", icon: "none" })
+      wx.showToast({ title: i18n.t("common.nicknameUpdated"), icon: "none" })
     } catch (e2) {
       try {
         console.log("[mine] update nickname failed", e2)
       } catch (err) {}
-      wx.showToast({ title: "昵称同步失败", icon: "none" })
+      wx.showToast({ title: i18n.t("common.nicknameSyncFailed"), icon: "none" })
     } finally {
       this.setData({ syncingProfile: false })
     }
@@ -533,19 +545,19 @@ Page({
         this.refreshAuth()
         await this.syncPrefsFromBackend({ silent: true })
       } catch (e) {}
-      wx.showToast({ title: "登录成功", icon: "none" })
+      wx.showToast({ title: i18n.t("common.loginSuccess"), icon: "none" })
     } catch (e) {
       try {
         console.log("[mine] login failed", e)
       } catch (err) {}
-      wx.showToast({ title: `登录失败:${String(e && e.message || "unknown")}`, icon: "none" })
+      wx.showToast({ title: i18n.t("common.loginFailed", { msg: String((e && e.message) || "unknown") }), icon: "none" })
     } finally {
       this.setData({ loadingLogin: false })
     }
   },
   async onBindDevice() {
     if (!this.data.isLoggedIn) {
-      wx.showToast({ title: "请先登录", icon: "none" })
+      wx.showToast({ title: i18n.t("common.loginFirst"), icon: "none" })
       return
     }
     if (this.data.bindingDevice) return
@@ -554,9 +566,9 @@ Page({
     try {
       const deviceId = await new Promise((resolve, reject) => {
         wx.showModal({
-          title: "绑定设备",
+          title: i18n.t("common.bindDeviceTitle"),
           editable: true,
-          placeholderText: "输入设备ID（12位）",
+          placeholderText: i18n.t("common.bindDevicePlaceholder"),
           success: (res) => {
             if (!res || !res.confirm) {
               reject(new Error("cancel"))
@@ -569,10 +581,10 @@ Page({
       })
       await bindDevice(deviceId)
       this.refreshAuth()
-      wx.showToast({ title: "已绑定", icon: "none" })
+      wx.showToast({ title: i18n.t("common.bound"), icon: "none" })
     } catch (e) {
       if (String(e && e.message || "") !== "cancel") {
-        wx.showToast({ title: "绑定失败", icon: "none" })
+        wx.showToast({ title: i18n.t("common.bindFailed"), icon: "none" })
       }
     } finally {
       this.setData({ bindingDevice: false })
@@ -581,6 +593,23 @@ Page({
   async onLogout() {
     await logout()
     this.refreshAuth()
-    wx.showToast({ title: "已退出", icon: "none" })
+    wx.showToast({ title: i18n.t("common.logoutSuccess"), icon: "none" })
+  },
+  onChangeLanguage() {
+    const dict = i18n.getDict()
+    wx.showActionSheet({
+      itemList: [dict.locale.zhName, dict.locale.enName],
+      success: (res) => {
+        const idx = Number(res && res.tapIndex)
+        const next = idx === 1 ? "en-US" : "zh-CN"
+        i18n.setLocale(next)
+        wx.showToast({ title: i18n.t("locale.switched"), icon: "none" })
+      }
+    })
+  },
+  applyI18n() {
+    const dict = i18n.getDict()
+    this.setData({ i18n: dict, locale: i18n.getLocale() })
+    wx.setNavigationBarTitle({ title: dict.nav.mine })
   }
 })
