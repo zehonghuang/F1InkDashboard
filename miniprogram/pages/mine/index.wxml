@@ -35,14 +35,14 @@
       <view class="profile-main">
         <view class="profile-name">{{displayName}}</view>
         <view class="profile-sub">
-          <text wx:if="{{isLoggedIn}}">已登录</text>
-          <text wx:else>游客浏览中（登录可同步设置）</text>
+          <text wx:if="{{isLoggedIn}}">{{i18n.mine.loggedIn}}</text>
+          <text wx:else>{{i18n.mine.guest}}</text>
         </view>
         <input
           wx:if="{{isLoggedIn && !hasNick}}"
           class="nickname-input"
           type="nickname"
-          placeholder="请输入昵称"
+          placeholder="{{i18n.mine.nickPlaceholder}}"
           value="{{nicknameDraft}}"
           bindblur="onNicknameBlur"
         />
@@ -54,7 +54,7 @@
           bindtap="onLogin"
           loading="{{loadingLogin}}"
         >
-          微信登录
+          {{i18n.mine.wechatLogin}}
         </button>
         <button
           wx:if="{{isLoggedIn}}"
@@ -62,14 +62,14 @@
           bindtap="onBindDevice"
           loading="{{bindingDevice}}"
         >
-          绑定设备
+          {{i18n.mine.bindDevice}}
         </button>
       </view>
     </view>
 
       <view class="hero-metrics">
         <view class="metric" bindtap="onTapItem" data-action="followDrivers">
-          <view class="metric-label">关注车手</view>
+          <view class="metric-label">{{i18n.mine.followDrivers}}</view>
           <view class="metric-val">
             <view wx:if="{{followDriverThumbs.length}}" class="stack">
               <block wx:for="{{followDriverThumbs}}" wx:key="key" wx:for-item="d" wx:for-index="idx">
@@ -87,7 +87,7 @@
         </view>
 
         <view class="metric" bindtap="onTapItem" data-action="followTeams">
-          <view class="metric-label">关注车队</view>
+          <view class="metric-label">{{i18n.mine.followTeams}}</view>
           <view class="metric-val">
             <view wx:if="{{followTeamThumbs.length}}" class="stack">
               <block wx:for="{{followTeamThumbs}}" wx:key="key" wx:for-item="t" wx:for-index="idx">
@@ -109,53 +109,60 @@
 
   <view wx:if="{{isLoggedIn}}" class="section">
     <view class="row">
-      <view class="row-key">当前设备ID</view>
+      <view class="row-key">{{i18n.mine.currentDeviceId}}</view>
       <view class="row-val">{{deviceId || "-"}}</view>
     </view>
   </view>
 
   <view class="section">
-    <view class="section-title">更多功能</view>
+    <view class="section-title">{{i18n.mine.more}}</view>
     <view class="more-grid">
       <view class="more-item" bindtap="onTapItem" data-action="standings">
         <view class="more-icon">
           <i-icon type="integral" size="26" color="rgba(255,255,255,0.9)" />
         </view>
-        <view class="more-text">赛季积分</view>
+        <view class="more-text">{{i18n.mine.standings}}</view>
       </view>
       <view class="more-item more-item-disabled" bindtap="onTapItem" data-action="soon_1">
         <view class="more-icon">...</view>
-        <view class="more-text">敬请期待</view>
+        <view class="more-text">{{i18n.common.comingSoon}}</view>
       </view>
       <view class="more-item more-item-disabled" bindtap="onTapItem" data-action="soon_2">
         <view class="more-icon">...</view>
-        <view class="more-text">敬请期待</view>
+        <view class="more-text">{{i18n.common.comingSoon}}</view>
       </view>
       <view class="more-item more-item-disabled" bindtap="onTapItem" data-action="soon_3">
         <view class="more-icon">...</view>
-        <view class="more-text">敬请期待</view>
+        <view class="more-text">{{i18n.common.comingSoon}}</view>
       </view>
       <view class="more-item more-item-disabled" bindtap="onTapItem" data-action="soon_4">
         <view class="more-icon">...</view>
-        <view class="more-text">敬请期待</view>
+        <view class="more-text">{{i18n.common.comingSoon}}</view>
       </view>
       <view class="more-item more-item-disabled" bindtap="onTapItem" data-action="soon_5">
         <view class="more-icon">...</view>
-        <view class="more-text">敬请期待</view>
+        <view class="more-text">{{i18n.common.comingSoon}}</view>
       </view>
       <view class="more-item more-item-disabled" bindtap="onTapItem" data-action="soon_6">
         <view class="more-icon">...</view>
-        <view class="more-text">敬请期待</view>
+        <view class="more-text">{{i18n.common.comingSoon}}</view>
       </view>
       <view class="more-item more-item-disabled" bindtap="onTapItem" data-action="soon_7">
         <view class="more-icon">...</view>
-        <view class="more-text">敬请期待</view>
+        <view class="more-text">{{i18n.common.comingSoon}}</view>
       </view>
     </view>
   </view>
 
+  <view class="section">
+    <view class="row" bindtap="onChangeLanguage">
+      <view class="row-key">{{i18n.mine.language}}</view>
+      <view class="row-val">{{i18n.locale.name}}</view>
+    </view>
+  </view>
+
   <view wx:if="{{isLoggedIn}}" class="section">
-    <button class="btn btn-ghost" bindtap="onLogout">退出登录</button>
+    <button class="btn btn-ghost" bindtap="onLogout">{{i18n.mine.logout}}</button>
   </view>
 
   <view wx:if="{{showPicker}}" class="picker-mask" bindtap="onClosePicker"></view>
@@ -163,8 +170,8 @@
     <view class="picker-header">
       <view class="picker-title">{{pickerTitle}}</view>
       <view class="picker-actions">
-        <view class="picker-btn" bindtap="onPickerCancel">取消</view>
-        <view class="picker-btn picker-btn-primary" bindtap="onPickerConfirm">确定</view>
+        <view class="picker-btn" bindtap="onPickerCancel">{{i18n.common.cancel}}</view>
+        <view class="picker-btn picker-btn-primary" bindtap="onPickerConfirm">{{i18n.common.ok}}</view>
       </view>
     </view>
     <view class="picker-list">

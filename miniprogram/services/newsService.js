@@ -1,11 +1,13 @@
+const i18n = require("./i18n")
+
 function formatRelativeTime(iso) {
   const t = Date.parse(iso)
   if (!Number.isFinite(t)) return ""
   const delta = Date.now() - t
-  if (delta < 60 * 1000) return "刚刚"
-  if (delta < 60 * 60 * 1000) return `${Math.max(1, Math.floor(delta / (60 * 1000)))} 分钟前`
-  if (delta < 24 * 60 * 60 * 1000) return `${Math.max(1, Math.floor(delta / (60 * 60 * 1000)))} 小时前`
-  if (delta < 7 * 24 * 60 * 60 * 1000) return `${Math.max(1, Math.floor(delta / (24 * 60 * 60 * 1000)))} 天前`
+  if (delta < 60 * 1000) return i18n.t("relativeTime.justNow")
+  if (delta < 60 * 60 * 1000) return i18n.t("relativeTime.minutesAgo", { n: Math.max(1, Math.floor(delta / (60 * 1000))) })
+  if (delta < 24 * 60 * 60 * 1000) return i18n.t("relativeTime.hoursAgo", { n: Math.max(1, Math.floor(delta / (60 * 60 * 1000))) })
+  if (delta < 7 * 24 * 60 * 60 * 1000) return i18n.t("relativeTime.daysAgo", { n: Math.max(1, Math.floor(delta / (24 * 60 * 60 * 1000))) })
   const d = new Date(t)
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, "0")

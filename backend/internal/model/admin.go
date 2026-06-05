@@ -1,0 +1,69 @@
+package model
+
+type AdminUserBrief struct {
+	ID        int64  `json:"id"`
+	OpenID    string `json:"openid,omitempty"`
+	NickName  string `json:"nick_name,omitempty"`
+	AvatarURL string `json:"avatar_url,omitempty"`
+}
+
+type AdminDeviceBrief struct {
+	DeviceID    string `json:"device_id"`
+	BoardType   string `json:"board_type,omitempty"`
+	FwUserAgent string `json:"fw_user_agent,omitempty"`
+	LastSeenAt  string `json:"last_seen_at,omitempty"`
+}
+
+type AdminDeviceItem struct {
+	DeviceID    string          `json:"device_id"`
+	DeviceUUID  string          `json:"device_uuid,omitempty"`
+	DeviceKey   string          `json:"device_key,omitempty"`
+	Mac         string          `json:"mac,omitempty"`
+	BoardType   string          `json:"board_type,omitempty"`
+	FwUserAgent string          `json:"fw_user_agent,omitempty"`
+	FirstSeenAt string          `json:"first_seen_at,omitempty"`
+	LastSeenAt  string          `json:"last_seen_at,omitempty"`
+	BoundUser   *AdminUserBrief `json:"bound_user,omitempty"`
+}
+
+type AdminDevicesListResponse struct {
+	Ok       bool              `json:"ok"`
+	Page     int               `json:"page"`
+	PageSize int               `json:"page_size"`
+	Total    int               `json:"total"`
+	Items    []AdminDeviceItem `json:"items"`
+}
+
+type AdminDeviceDetailResponse struct {
+	Ok   bool            `json:"ok"`
+	Item AdminDeviceItem `json:"item"`
+}
+
+type AdminUserItem struct {
+	ID        int64             `json:"id"`
+	OpenID    string            `json:"openid"`
+	UnionID   string            `json:"unionid,omitempty"`
+	NickName  string            `json:"nick_name,omitempty"`
+	AvatarURL string            `json:"avatar_url,omitempty"`
+	CreatedAt string            `json:"created_at,omitempty"`
+	UpdatedAt string            `json:"updated_at,omitempty"`
+	Device    *AdminDeviceBrief `json:"device,omitempty"`
+}
+
+type AdminUsersListResponse struct {
+	Ok       bool            `json:"ok"`
+	Page     int             `json:"page"`
+	PageSize int             `json:"page_size"`
+	Total    int             `json:"total"`
+	Items    []AdminUserItem `json:"items"`
+}
+
+type AdminUserDetailResponse struct {
+	Ok   bool          `json:"ok"`
+	Item AdminUserItem `json:"item"`
+}
+
+type AdminBindRequest struct {
+	UserID   int64  `json:"user_id"`
+	DeviceID string `json:"device_id"`
+}

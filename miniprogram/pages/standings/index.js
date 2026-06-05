@@ -1,4 +1,5 @@
 const { fetchStandings } = require("../../services/standingsService")
+const i18n = require("../../services/i18n")
 
 function formatPoints(v) {
   const n = Number(v)
@@ -18,21 +19,30 @@ function withCardStyle(items) {
 
 Page({
   data: {
+    i18n: i18n.getDict(),
     season: 2026,
-    tabs: [
-      { key: "drivers", label: "车手" },
-      { key: "constructors", label: "车队" }
-    ],
+    tabs: [],
     activeTabKey: "drivers",
     drivers: [],
     constructors: [],
     loading: false,
     errorText: "",
-    updatedText: ""
+    updatedText: "",
+    subtitleText: ""
   },
   onLoad(options) {
+    this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     const season = Number((options && options.season) || 0) || 2026
-    this.setData({ season }, () => this.refresh())
+    this.setData({ season }, () => {
+      this.applyI18n()
+      this.refresh()
+    })
+  },
+  onUnload() {
+    if (this._offLocale) this._offLocale()
+  },
+  onShow() {
+    this.applyI18n()
   },
   onPullDownRefresh() {
     Promise.resolve(this.refresh()).finally(() => {
@@ -53,16 +63,27 @@ Page({
       const r = await fetchStandings(this.data.season)
       const drivers = withCardStyle(r.drivers || [])
       const constructors = withCardStyle(r.constructors || [])
-      const updatedText = r.generatedAtUTC ? `数据更新时间(UTC)：${String(r.generatedAtUTC).replace("T", " ").replace("Z", "")}` : ""
+      const ts = r.generatedAtUTC ? String(r.generatedAtUTC).replace("T", " ").replace("Z", "") : ""
+      const updatedText = ts ? i18n.t("standings.updatedAtUTC", { ts }) : ""
       this.setData({ drivers, constructors, updatedText })
       if (!drivers.length && !constructors.length) {
-        this.setData({ errorText: "暂无可用赛季排名数据" })
+        this.setData({ errorText: i18n.t("standings.noData") })
       }
     } catch (e) {
-      this.setData({ errorText: "排名加载失败" })
+      this.setData({ errorText: i18n.t("standings.loadFailed") })
     } finally {
       this.setData({ loading: false })
     }
+  },
+  applyI18n() {
+    const dict = i18n.getDict()
+    const tabs = [
+      { key: "drivers", label: dict.standings.drivers },
+      { key: "constructors", label: dict.standings.teams }
+    ]
+    const subtitleText = i18n.t("standings.subtitle", { season: this.data.season })
+    this.setData({ i18n: dict, tabs, subtitleText })
+    wx.setNavigationBarTitle({ title: dict.standings.title })
   }
 })
 

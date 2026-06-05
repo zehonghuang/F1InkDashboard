@@ -12,7 +12,7 @@
   ],
   "lazyCodeLoading": "requiredComponents",
   "window": {
-    "navigationBarTitleText": "TONIC F1 数据分析",
+    "navigationBarTitleText": "TONIC F1 Analytics",
     "navigationBarBackgroundColor": "#15151E",
     "navigationBarTextStyle": "white",
     "backgroundColor": "#15151E",

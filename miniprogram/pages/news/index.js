@@ -1,5 +1,6 @@
 const { LAYOUT_CODE } = require("../../services/newsService")
 const { fetchNewsList } = require("../../services/mpNewsApi")
+const i18n = require("../../services/i18n")
 
 const WELCOME_KEY = "news_welcome_shown_v1"
 const PREF_TEAMS_KEY = "pref_follow_teams"
@@ -160,23 +161,16 @@ function buildPrefPromotePlan({ prevList, nextList, prefs }) {
   }
 
   const promoted = []
-  const otherNew = []
   for (const it of newItems) {
     if (getPrefHitInfo(it, prefs).hit) promoted.push(it)
-    else otherNew.push(it)
-  }
-
-  const existingInPrevOrder = []
-  for (const it of prev) {
-    if (!it || !it.id) continue
-    const updated = nextById.get(it.id)
-    if (updated) existingInPrevOrder.push(updated)
   }
 
   const promotedIds = promoted.map((x) => x.id)
   const moveId = promotedIds.length ? promotedIds[0] : ""
 
-  const finalList = [...promoted, ...otherNew, ...existingInPrevOrder].map((x) => {
+  const restWithoutPromoted = next.filter((x) => x && x.id && !promotedIds.includes(x.id))
+
+  const finalList = [...promoted, ...restWithoutPromoted].map((x) => {
     if (!x || !x.id) return x
     const info = getPrefHitInfo(x, prefs)
     const hit = Boolean(info && info.hit)
@@ -189,7 +183,7 @@ function buildPrefPromotePlan({ prevList, nextList, prefs }) {
     return { moveId: "", initialList: finalList, finalList, promotedIds }
   }
 
-  const initialList = [...otherNew, ...existingInPrevOrder].map((x) => {
+  const initialList = restWithoutPromoted.map((x) => {
     if (!x || !x.id) return x
     const info = getPrefHitInfo(x, prefs)
     if (!info || !info.hit) return { ...x, _prefHit: false, _prefHitColor: "" }
@@ -261,11 +255,13 @@ function buildDemoNewsItems(prefs) {
 
 Page({
   data: {
+    i18n: i18n.getDict(),
     banners: [],
     list: [],
     welcome: null,
     showWelcome: false,
     loading: false,
+    loadingMore: false,
     errorText: "",
     page: 1,
     pageSize: 20,
@@ -278,6 +274,7 @@ Page({
     pressJiggleId: ""
   },
   onLoad() {
+    this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     try {
       const app = getApp()
       if (app && app.globalData && app.globalData.tweakAEffective) {
@@ -292,11 +289,13 @@ Page({
       const ww = Number(sys && sys.windowWidth) || 0
       this._pxPerRpx = ww > 0 ? ww / 750 : 0
     } catch (e) {}
+    this.applyI18n()
     this.setListOffset(0, 0)
     this._useScrollViewRefresher = true
     this.reload()
   },
   onUnload() {
+    if (this._offLocale) this._offLocale()
     clearTimeout(this._prefPromotedTimer)
     clearTimeout(this._prefMoveTimer)
     clearTimeout(this._prefMoveTimer2)
@@ -305,6 +304,7 @@ Page({
     clearTimeout(this._pressPreviewHideTimer)
   },
   onShow() {
+    this.applyI18n()
     if (typeof this.getTabBar === "function") {
       const tb = this.getTabBar()
       if (tb && typeof tb.setSelectedByRoute === "function") {
@@ -323,7 +323,7 @@ Page({
     this.reload({ stopRefresh: true, reset: true, softReset: true })
   },
   onRefresherRefresh() {
-    if (this.data.loading) {
+    if (this.data.loading || this.data.loadingMore) {
       this.setData({ refreshing: false })
       return
     }
@@ -339,7 +339,7 @@ Page({
     this.onReachBottom()
   },
   reload(opts) {
-    if (this.data.loading) return
+    if (this.data.loading || this.data.loadingMore) return
     const reset = !opts || opts.reset !== false
     const softReset = Boolean(opts && opts.softReset)
     const nextPage = reset ? 1 : Number((opts && opts.page) || this.data.page || 1)
@@ -350,7 +350,8 @@ Page({
         this.setData({ loading: true, errorText: "", page: 1, hasMore: true, banners: [], list: [], welcome: null, showWelcome: false })
       }
     } else {
-      this.setData({ loading: true, errorText: "" })
+      this._loadingMoreStartAt = Date.now()
+      this.setData({ loadingMore: true, errorText: "" })
     }
     const done = () => {
       if (opts && opts.stopRefresh) {
@@ -360,7 +361,21 @@ Page({
           wx.stopPullDownRefresh()
         }
       }
-      this.setData({ loading: false })
+      if (reset) {
+        this.setData({ loading: false })
+        return
+      }
+      const startAt = Number(this._loadingMoreStartAt || 0)
+      const elapsed = startAt ? Date.now() - startAt : 9999
+      const minHold = 420
+      if (elapsed >= minHold) {
+        this.setData({ loadingMore: false })
+        return
+      }
+      clearTimeout(this._loadingMoreHoldTimer)
+      this._loadingMoreHoldTimer = setTimeout(() => {
+        this.setData({ loadingMore: false })
+      }, minHold - elapsed)
     }
 
     fetchNewsList({ page: nextPage, pageSize: this.data.pageSize, tz: "Asia/Shanghai" })
@@ -472,7 +487,7 @@ Page({
         this.setData({ list: decorated, page: Number(res.page || 1), hasMore }, done)
       })
       .catch(() => {
-        this.setData({ errorText: "加载失败，请下拉重试" }, () => done())
+        this.setData({ errorText: i18n.t("news.loadFailedRetry") }, () => done())
       })
   },
   setListOffset(y, duration, timingFunction) {
@@ -757,9 +772,8 @@ Page({
     })
   },
   onReachBottom() {
-    if (this.data.loading) return
+    if (this.data.loading || this.data.loadingMore) return
     if (!this.data.hasMore) {
-      wx.showToast({ title: "已到底", icon: "none" })
       return
     }
     const nextPage = Number(this.data.page || 1) + 1
@@ -852,5 +866,11 @@ Page({
       }
     })
   },
-  noop() {}
+  noop() {},
+  applyI18n() {
+    const dict = i18n.getDict()
+    if (this.data.i18n === dict) return
+    this.setData({ i18n: dict })
+    wx.setNavigationBarTitle({ title: dict.nav.news })
+  }
 })

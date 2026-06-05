@@ -6,6 +6,7 @@ import (
 	"toinc_f1_backend/internal/db"
 	"toinc_f1_backend/internal/httpserver/handlers"
 	"toinc_f1_backend/internal/openf1scheduler"
+	"toinc_f1_backend/internal/tasks"
 	"toinc_f1_backend/internal/teamdrivercache"
 	"toinc_f1_backend/internal/ws"
 
@@ -95,6 +96,13 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/mp/news/:id", handlers.MpNewsDetail(cfg, gormOrNil(database)))
 	s.Router.POST("/api/v1/mp/news/ingest", handlers.MpNewsIngest(cfg, gormOrNil(database)))
 
+	s.Router.GET("/api/v1/admin/devices", handlers.AdminDevicesList(cfg, gormOrNil(database)))
+	s.Router.GET("/api/v1/admin/devices/:device_id", handlers.AdminDeviceDetail(cfg, gormOrNil(database)))
+	s.Router.GET("/api/v1/admin/mp/users", handlers.AdminUsersList(cfg, gormOrNil(database)))
+	s.Router.GET("/api/v1/admin/mp/users/:user_id", handlers.AdminUserDetail(cfg, gormOrNil(database)))
+	s.Router.POST("/api/v1/admin/bind", handlers.AdminBind(cfg, gormOrNil(database)))
+	s.Router.POST("/api/v1/admin/unbind", handlers.AdminUnbind(cfg, gormOrNil(database)))
+
 	mpAuth := s.Router.Group("/api/v1/mp/auth")
 	mpAuth.POST("/login", handlers.MpAuthLogin(cfg, gormOrNil(database)))
 	mpAuthAuth := mpAuth.Group("")
@@ -127,6 +135,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 	handlers.RegisterCompatPlaceholders(s.Router)
 
 	openf1scheduler.Start(cfg, gormOrNil(database))
+	tasks.Start(cfg, gormOrNil(database))
 
 	return s
 }

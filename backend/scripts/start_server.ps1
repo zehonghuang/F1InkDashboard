@@ -9,6 +9,9 @@ if (-not $env:BACKEND_LISTEN_ADDR) { $env:BACKEND_LISTEN_ADDR = ":8008" }
 if (-not $env:BACKEND_STATIC_DIR) { $env:BACKEND_STATIC_DIR = ".\\static" }
 if (-not $env:BACKEND_UPDATE_DIR) { $env:BACKEND_UPDATE_DIR = "" }
 
+if (-not $env:MP_NEWS_SCHEDULER_ENABLED) { $env:MP_NEWS_SCHEDULER_ENABLED = "true" }
+
+
 if (-not $env:TOINC_F1_MYSQL_ENABLED) { $env:TOINC_F1_MYSQL_ENABLED = "1" }
 if (-not $env:TOINC_F1_MYSQL_HOST) { $env:TOINC_F1_MYSQL_HOST = "127.0.0.1" }
 if (-not $env:TOINC_F1_MYSQL_PORT) { $env:TOINC_F1_MYSQL_PORT = "3306" }

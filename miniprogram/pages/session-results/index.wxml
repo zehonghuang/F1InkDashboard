@@ -34,7 +34,7 @@
   <view wx:if="{{activeTabKey==='boxplot'}}" class="boxplot">
     <view class="boxplot-bar">
       <view class="boxplot-selected">{{selectedDriverText}}</view>
-      <view class="boxplot-btn" bindtap="onOpenPicker">选择车手</view>
+      <view class="boxplot-btn" bindtap="onOpenPicker">{{i18n.sessionResults.pickDriver}}</view>
     </view>
     <view class="boxplot-chart">
       <ec-canvas
@@ -52,7 +52,7 @@
   <view wx:if="{{activeTabKey==='throttle' || activeTabKey==='brake' || activeTabKey==='speed'}}" class="telemetry">
     <view class="telemetry-bar">
       <view class="telemetry-selected">{{telemetrySelectedText}}</view>
-      <view class="telemetry-btn" bindtap="onOpenTelemetryPicker">选择车手</view>
+      <view class="telemetry-btn" bindtap="onOpenTelemetryPicker">{{i18n.sessionResults.pickDriver}}</view>
     </view>
     <view class="telemetry-hint">{{telemetryLapInfo}}</view>
     <view class="telemetry-chart">
@@ -71,10 +71,10 @@
   <view wx:if="{{showPicker}}" class="picker-mask" bindtap="onClosePicker"></view>
   <view wx:if="{{showPicker}}" class="picker">
     <view class="picker-header">
-      <view class="picker-title">选择车手</view>
+      <view class="picker-title">{{i18n.sessionResults.pickDriver}}</view>
       <view class="picker-actions">
-        <view class="picker-btn" bindtap="onPickerCancel">取消</view>
-        <view class="picker-btn picker-btn-primary" bindtap="onPickerConfirm">确定</view>
+        <view class="picker-btn" bindtap="onPickerCancel">{{i18n.common.cancel}}</view>
+        <view class="picker-btn picker-btn-primary" bindtap="onPickerConfirm">{{i18n.common.ok}}</view>
       </view>
     </view>
     <view class="picker-list">

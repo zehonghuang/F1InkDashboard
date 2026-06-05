@@ -1,7 +1,10 @@
+const i18n = require("../../services/i18n")
+
 Page({
   data: {
+    i18n: i18n.getDict(),
     query: "",
-    seasonOptions: ["2026赛季", "2025赛季", "2024赛季", "2023赛季"],
+    seasonOptions: [],
     seasonIndex: 0,
     statusBarHeight: 0,
     races: [
@@ -13,7 +16,7 @@ Page({
         date: "05.24",
         dateShort: "05.24",
         thumb: "/assets/circuits/2026/maps/monaco_map.png",
-        winner: "待更新",
+        winner: i18n.t("archive.pending"),
         fastestLap: "1:32.405"
       },
       {
@@ -24,7 +27,7 @@ Page({
         date: "05.03",
         dateShort: "05.03",
         thumb: "/assets/circuits/2026/maps/miami_map.png",
-        winner: "待更新",
+        winner: i18n.t("archive.pending"),
         fastestLap: "1:29.802"
       },
       {
@@ -35,7 +38,7 @@ Page({
         date: "04.19",
         dateShort: "04.19",
         thumb: "/assets/circuits/2026/maps/shanghai_map.png",
-        winner: "待更新",
+        winner: i18n.t("archive.pending"),
         fastestLap: "1:37.521"
       },
       {
@@ -46,18 +49,23 @@ Page({
         date: "04.05",
         dateShort: "04.05",
         thumb: "/assets/circuits/2026/maps/suzuka_map.png",
-        winner: "待更新",
+        winner: i18n.t("archive.pending"),
         fastestLap: "1:33.784"
       }
     ]
   },
   onLoad() {
+    this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     try {
       const sys = wx.getSystemInfoSync()
       const h = Number(sys && sys.statusBarHeight) || 0
       this.setData({ statusBarHeight: h })
     } catch (e) {}
+    this.applyI18n()
     this.loadArchive()
+  },
+  onUnload() {
+    if (this._offLocale) this._offLocale()
   },
   onPullDownRefresh() {
     this.loadArchive({ isPullDown: true })
@@ -69,6 +77,16 @@ Page({
         tb.setSelectedByRoute(this.route)
       }
     }
+    this.applyI18n()
+  },
+  applyI18n() {
+    const dict = i18n.getDict()
+    const years = [2026, 2025, 2024, 2023]
+    const suffix = dict.archive.seasonSuffix || ""
+    const withSpace = suffix && /[a-z]/i.test(suffix)
+    const seasonOptions = years.map((y) => `${y}${withSpace ? " " : ""}${suffix}`)
+    this.setData({ i18n: dict, seasonOptions })
+    wx.setNavigationBarTitle({ title: dict.nav.archive })
   },
   onSeasonChange(e) {
     const idx = Number(e.detail.value || 0)
@@ -105,6 +123,7 @@ Page({
     wx.request({
       url,
       method: "GET",
+      header: { "Accept-Language": i18n.getLocale() },
       success: (res) => {
         const data = (res && res.data) || {}
         const races = Array.isArray(data.races) ? data.races : []
@@ -112,10 +131,11 @@ Page({
           done()
           return
         }
+        const pending = i18n.t("archive.pending")
         const mapped = races.map((it) => {
           const round = Number(it.round || 0)
-          const winner = (it.winner && (it.winner.name_acronym || it.winner.full_name || it.winner.driver_number)) || "待更新"
-          const fastestLap = (it.fastest_lap && it.fastest_lap.time) || "待更新"
+          const winner = (it.winner && (it.winner.name_acronym || it.winner.full_name || it.winner.driver_number)) || pending
+          const fastestLap = (it.fastest_lap && it.fastest_lap.time) || pending
           const thumb = (it.circuit && (it.circuit.map_image_url || it.circuit.map_image_url_thumb)) || ""
           const thumbFallback = (it.circuit && (it.circuit.map_image_url || it.circuit.map_image_url_thumb)) || ""
           const date = it.date_local || it.date_utc || ""
@@ -159,7 +179,7 @@ Page({
   onSearch() {
     const q = (this.data.query || "").trim()
     wx.showToast({
-      title: q ? `检索: ${q}` : "请输入赛道或日期",
+      title: q ? `${i18n.t("archive.searchPrefix")}${q}` : i18n.t("archive.searchPlaceholder"),
       icon: "none"
     })
   }

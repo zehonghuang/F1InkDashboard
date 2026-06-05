@@ -179,13 +179,13 @@ func MpNewsList(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
 		}
 		total := cr.Total
 
-		orderSQL := "a.pinned DESC, a.weight DESC, a.published_at DESC"
+		orderSQL := "a.pinned DESC, a.published_at DESC, a.created_at DESC, a.weight DESC"
 		switch sortQuery {
 		case "", "default":
 		case "published_at_desc":
-			orderSQL = "a.published_at DESC"
+			orderSQL = "a.published_at DESC, a.created_at DESC, a.weight DESC"
 		case "published_at_asc":
-			orderSQL = "a.published_at ASC"
+			orderSQL = "a.published_at ASC, a.created_at DESC, a.weight DESC"
 		default:
 			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: "bad_sort"})
 			return

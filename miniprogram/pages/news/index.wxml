@@ -2,7 +2,7 @@
   <view wx:if="{{ showWelcome && welcome }}" class="welcome" catchtap="onCloseWelcome" catchtouchmove="noop">
     <image class="welcome-image" src="{{ welcome.coverUrl }}" mode="aspectFill" />
     <view class="welcome-mask" />
-    <view class="welcome-tip">点击进入</view>
+    <view class="welcome-tip">{{i18n.news.welcomeEnter}}</view>
   </view>
 
   <scroll-view
@@ -20,13 +20,13 @@
   >
     <view class="page has-tabbar">
       <view class="header" style="padding-top: calc({{ statusBarHeight }}px + 12rpx);">
-        <view class="title">F1 资讯</view>
+        <view class="title">{{i18n.news.pageTitle}}</view>
         <view class="subtitle">News • Updates • Insights</view>
       </view>
 
-      <view wx:if="{{ loading }}" class="status">加载中...</view>
+      <view wx:if="{{ loading }}" class="status">{{i18n.common.loading}}</view>
       <view wx:if="{{ !loading && errorText }}" class="status status-error">{{ errorText }}</view>
-      <view wx:if="{{ !loading && !errorText && !banners.length && !list.length }}" class="status">暂无资讯</view>
+      <view wx:if="{{ !loading && !errorText && !banners.length && !list.length }}" class="status">{{i18n.news.empty}}</view>
 
       <swiper
         wx:if="{{ banners.length }}"
@@ -94,6 +94,13 @@
           </view>
         </block>
       </view>
+
+      <view wx:if="{{ loadingMore }}" class="load-more">
+        <text class="load-more-dot dot1">.</text>
+        <text class="load-more-dot dot2">.</text>
+        <text class="load-more-dot dot3">.</text>
+      </view>
+      <view wx:if="{{ !loadingMore && !hasMore && list.length }}" class="load-more load-more-end">— 已到底 —</view>
     </view>
   </scroll-view>
 

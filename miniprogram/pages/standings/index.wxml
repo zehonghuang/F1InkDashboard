@@ -1,7 +1,7 @@
 <view class="page">
   <view class="header">
-    <view class="title">赛季排名</view>
-    <view class="subtitle">{{season}} 年度积分榜</view>
+    <view class="title">{{i18n.standings.pageTitle}}</view>
+    <view class="subtitle">{{subtitleText}}</view>
   </view>
 
   <view class="tabs">
