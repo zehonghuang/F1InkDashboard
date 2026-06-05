@@ -160,23 +160,16 @@ function buildPrefPromotePlan({ prevList, nextList, prefs }) {
   }
 
   const promoted = []
-  const otherNew = []
   for (const it of newItems) {
     if (getPrefHitInfo(it, prefs).hit) promoted.push(it)
-    else otherNew.push(it)
-  }
-
-  const existingInPrevOrder = []
-  for (const it of prev) {
-    if (!it || !it.id) continue
-    const updated = nextById.get(it.id)
-    if (updated) existingInPrevOrder.push(updated)
   }
 
   const promotedIds = promoted.map((x) => x.id)
   const moveId = promotedIds.length ? promotedIds[0] : ""
 
-  const finalList = [...promoted, ...otherNew, ...existingInPrevOrder].map((x) => {
+  const restWithoutPromoted = next.filter((x) => x && x.id && !promotedIds.includes(x.id))
+
+  const finalList = [...promoted, ...restWithoutPromoted].map((x) => {
     if (!x || !x.id) return x
     const info = getPrefHitInfo(x, prefs)
     const hit = Boolean(info && info.hit)
@@ -189,7 +182,7 @@ function buildPrefPromotePlan({ prevList, nextList, prefs }) {
     return { moveId: "", initialList: finalList, finalList, promotedIds }
   }
 
-  const initialList = [...otherNew, ...existingInPrevOrder].map((x) => {
+  const initialList = restWithoutPromoted.map((x) => {
     if (!x || !x.id) return x
     const info = getPrefHitInfo(x, prefs)
     if (!info || !info.hit) return { ...x, _prefHit: false, _prefHitColor: "" }
