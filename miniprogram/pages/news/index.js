@@ -161,23 +161,16 @@ function buildPrefPromotePlan({ prevList, nextList, prefs }) {
   }
 
   const promoted = []
-  const otherNew = []
   for (const it of newItems) {
     if (getPrefHitInfo(it, prefs).hit) promoted.push(it)
-    else otherNew.push(it)
-  }
-
-  const existingInPrevOrder = []
-  for (const it of prev) {
-    if (!it || !it.id) continue
-    const updated = nextById.get(it.id)
-    if (updated) existingInPrevOrder.push(updated)
   }
 
   const promotedIds = promoted.map((x) => x.id)
   const moveId = promotedIds.length ? promotedIds[0] : ""
 
-  const finalList = [...promoted, ...otherNew, ...existingInPrevOrder].map((x) => {
+  const restWithoutPromoted = next.filter((x) => x && x.id && !promotedIds.includes(x.id))
+
+  const finalList = [...promoted, ...restWithoutPromoted].map((x) => {
     if (!x || !x.id) return x
     const info = getPrefHitInfo(x, prefs)
     const hit = Boolean(info && info.hit)
@@ -190,7 +183,7 @@ function buildPrefPromotePlan({ prevList, nextList, prefs }) {
     return { moveId: "", initialList: finalList, finalList, promotedIds }
   }
 
-  const initialList = [...otherNew, ...existingInPrevOrder].map((x) => {
+  const initialList = restWithoutPromoted.map((x) => {
     if (!x || !x.id) return x
     const info = getPrefHitInfo(x, prefs)
     if (!info || !info.hit) return { ...x, _prefHit: false, _prefHitColor: "" }
@@ -268,6 +261,7 @@ Page({
     welcome: null,
     showWelcome: false,
     loading: false,
+    loadingMore: false,
     errorText: "",
     page: 1,
     pageSize: 20,
@@ -329,7 +323,7 @@ Page({
     this.reload({ stopRefresh: true, reset: true, softReset: true })
   },
   onRefresherRefresh() {
-    if (this.data.loading) {
+    if (this.data.loading || this.data.loadingMore) {
       this.setData({ refreshing: false })
       return
     }
@@ -345,7 +339,7 @@ Page({
     this.onReachBottom()
   },
   reload(opts) {
-    if (this.data.loading) return
+    if (this.data.loading || this.data.loadingMore) return
     const reset = !opts || opts.reset !== false
     const softReset = Boolean(opts && opts.softReset)
     const nextPage = reset ? 1 : Number((opts && opts.page) || this.data.page || 1)
@@ -356,7 +350,8 @@ Page({
         this.setData({ loading: true, errorText: "", page: 1, hasMore: true, banners: [], list: [], welcome: null, showWelcome: false })
       }
     } else {
-      this.setData({ loading: true, errorText: "" })
+      this._loadingMoreStartAt = Date.now()
+      this.setData({ loadingMore: true, errorText: "" })
     }
     const done = () => {
       if (opts && opts.stopRefresh) {
@@ -366,7 +361,21 @@ Page({
           wx.stopPullDownRefresh()
         }
       }
-      this.setData({ loading: false })
+      if (reset) {
+        this.setData({ loading: false })
+        return
+      }
+      const startAt = Number(this._loadingMoreStartAt || 0)
+      const elapsed = startAt ? Date.now() - startAt : 9999
+      const minHold = 420
+      if (elapsed >= minHold) {
+        this.setData({ loadingMore: false })
+        return
+      }
+      clearTimeout(this._loadingMoreHoldTimer)
+      this._loadingMoreHoldTimer = setTimeout(() => {
+        this.setData({ loadingMore: false })
+      }, minHold - elapsed)
     }
 
     fetchNewsList({ page: nextPage, pageSize: this.data.pageSize, tz: "Asia/Shanghai" })
@@ -763,9 +772,8 @@ Page({
     })
   },
   onReachBottom() {
-    if (this.data.loading) return
+    if (this.data.loading || this.data.loadingMore) return
     if (!this.data.hasMore) {
-      wx.showToast({ title: i18n.t("news.noMore"), icon: "none" })
       return
     }
     const nextPage = Number(this.data.page || 1) + 1

@@ -45,8 +45,10 @@ type Config struct {
 	LogRequests    bool
 	RequireMySQL   bool
 
-	MySQL     MySQLConfig
-	WechatPay WechatPayConfig
+	AdminToken string
+
+	MySQL      MySQLConfig
+	WechatPay  WechatPayConfig
 	WechatMini WechatMiniConfig
 
 	NewsWsEnabled   bool
@@ -66,6 +68,10 @@ type Config struct {
 	OpenF1SchedulerMaxReqPerSec   int
 	OpenF1SchedulerMaxReqPerMin   int
 	OpenF1SchedulerQuiet          bool
+
+	MpNewsSchedulerEnabled   bool
+	MpNewsSchedulerDailyHour int
+	MpNewsSchedulerKeepHero  int
 }
 
 func FromEnv() Config {
@@ -82,6 +88,7 @@ func FromEnv() Config {
 		TrustedProxies:    parseTrustedProxies(os.Getenv("BACKEND_TRUSTED_PROXIES")),
 		LogRequests:       getenvBool("BACKEND_LOG_REQUESTS", true),
 		RequireMySQL:      getenvBool("BACKEND_REQUIRE_MYSQL", true),
+		AdminToken:        getenvTrim("BACKEND_ADMIN_TOKEN", ""),
 		MySQL:             mysqlFromEnv(),
 		WechatPay:         wechatPayFromEnv(),
 		WechatMini:        wechatMiniFromEnv(),
@@ -101,6 +108,10 @@ func FromEnv() Config {
 		OpenF1SchedulerMaxReqPerSec:   getenvInt("OPENF1_SCHEDULER_MAX_REQ_PER_SEC", 3),
 		OpenF1SchedulerMaxReqPerMin:   getenvInt("OPENF1_SCHEDULER_MAX_REQ_PER_MIN", 30),
 		OpenF1SchedulerQuiet:          getenvBool("OPENF1_SCHEDULER_QUIET", true),
+
+		MpNewsSchedulerEnabled:   getenvBool("MP_NEWS_SCHEDULER_ENABLED", false),
+		MpNewsSchedulerDailyHour: getenvInt("MP_NEWS_SCHEDULER_DAILY_HOUR", 4),
+		MpNewsSchedulerKeepHero:  getenvInt("MP_NEWS_SCHEDULER_KEEP_HERO", 5),
 	}
 }
 
