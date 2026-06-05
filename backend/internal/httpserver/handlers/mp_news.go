@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"toinc_f1_backend/internal/config"
 	"toinc_f1_backend/internal/model"
 
 	"github.com/gin-gonic/gin"
@@ -34,7 +35,7 @@ import (
 // @Failure 500 {object} model.ErrorResponse
 // @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/mp/news [get]
-func MpNewsList(db *gorm.DB) gin.HandlerFunc {
+func MpNewsList(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "mp_news_list", "mysql_required", nil)
@@ -131,6 +132,8 @@ func MpNewsList(db *gorm.DB) gin.HandlerFunc {
 		whereArgs := make([]any, 0, 12)
 		whereParts = append(whereParts, "1=1")
 
+		tables := mpNewsTablesByCfg(cfg)
+
 		if len(ids) > 0 {
 			whereParts = append(whereParts, "a.id IN (?)")
 			whereArgs = append(whereArgs, ids)
@@ -159,7 +162,7 @@ func MpNewsList(db *gorm.DB) gin.HandlerFunc {
 		if tagQuery != "" {
 			tag := strings.ToLower(strings.TrimSpace(tagQuery))
 			tagLike := "%" + tag + "%"
-			whereParts = append(whereParts, "(LOWER(a.tag_text) LIKE ? OR LOWER(a.title) LIKE ? OR LOWER(a.summary) LIKE ? OR EXISTS (SELECT 1 FROM mp_news_article_tags t WHERE t.article_id = a.id AND t.tag = ?))")
+			whereParts = append(whereParts, fmt.Sprintf("(LOWER(a.tag_text) LIKE ? OR LOWER(a.title) LIKE ? OR LOWER(a.summary) LIKE ? OR EXISTS (SELECT 1 FROM %s t WHERE t.article_id = a.id AND t.tag = ?))", tables.Tags))
 			whereArgs = append(whereArgs, tagLike, tagLike, tagLike, tag)
 		}
 
@@ -169,7 +172,7 @@ func MpNewsList(db *gorm.DB) gin.HandlerFunc {
 			Total int `gorm:"column:total"`
 		}
 		var cr countRow
-		if err := db.Raw("SELECT COUNT(*) AS total FROM mp_news_articles a WHERE "+whereSQL, whereArgs...).Scan(&cr).Error; err != nil {
+		if err := db.Raw(fmt.Sprintf("SELECT COUNT(*) AS total FROM %s a WHERE %s", tables.Articles, whereSQL), whereArgs...).Scan(&cr).Error; err != nil {
 			LogReqError(c, "mp_news_list", "db_count_failed", err)
 			c.JSON(500, model.ErrorResponse{Ok: false, Error: "news_unavailable"})
 			return
@@ -214,12 +217,17 @@ func MpNewsList(db *gorm.DB) gin.HandlerFunc {
 		args := append([]any{}, whereArgs...)
 		args = append(args, pageSize, start)
 		if err := db.Raw(
-			`SELECT a.id, a.layout_code, a.hero_display_code, a.type_code, a.pinned, a.weight, a.tag_text,
-			        a.title, a.summary, a.cover_url, a.published_at, a.source_name, a.source_url, a.updated_at
-			 FROM mp_news_articles a
-			 WHERE `+whereSQL+`
-			 ORDER BY `+orderSQL+`
-			 LIMIT ? OFFSET ?`,
+			fmt.Sprintf(
+				`SELECT a.id, a.layout_code, a.hero_display_code, a.type_code, a.pinned, a.weight, a.tag_text,
+				        a.title, a.summary, a.cover_url, a.published_at, a.source_name, a.source_url, a.updated_at
+				 FROM %s a
+				 WHERE %s
+				 ORDER BY %s
+				 LIMIT ? OFFSET ?`,
+				tables.Articles,
+				whereSQL,
+				orderSQL,
+			),
 			args...,
 		).Scan(&rows).Error; err != nil {
 			LogReqError(c, "mp_news_list", "db_list_failed", err)
@@ -242,7 +250,7 @@ func MpNewsList(db *gorm.DB) gin.HandlerFunc {
 			}
 			var trows []tagRow
 			if err := db.Raw(
-				"SELECT article_id, tag FROM mp_news_article_tags WHERE article_id IN (?) ORDER BY article_id, tag",
+				fmt.Sprintf("SELECT article_id, tag FROM %s WHERE article_id IN (?) ORDER BY article_id, tag", tables.Tags),
 				idsForTags,
 			).Scan(&trows).Error; err != nil {
 				LogReqError(c, "mp_news_list", "db_tags_failed", err)
@@ -302,7 +310,7 @@ func MpNewsList(db *gorm.DB) gin.HandlerFunc {
 // @Failure 500 {object} model.ErrorResponse
 // @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/mp/news/{id} [get]
-func MpNewsDetail(db *gorm.DB) gin.HandlerFunc {
+func MpNewsDetail(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
 			LogReqError(c, "mp_news_detail", "mysql_required", nil)
@@ -329,6 +337,8 @@ func MpNewsDetail(db *gorm.DB) gin.HandlerFunc {
 		baseURL := inferBaseURL(c)
 		now := time.Now().In(loc)
 
+		tables := mpNewsTablesByCfg(cfg)
+
 		type row struct {
 			ID              string          `gorm:"column:id"`
 			LayoutCode      string          `gorm:"column:layout_code"`
@@ -350,12 +360,15 @@ func MpNewsDetail(db *gorm.DB) gin.HandlerFunc {
 
 		var rows []row
 		if err := db.Raw(
-			`SELECT id, layout_code, hero_display_code, type_code, pinned, weight, tag_text,
-			        title, summary, cover_url, published_at, source_name, source_url,
-			        content_format_code, content_text, content_nodes
-			 FROM mp_news_articles
-			 WHERE id = ?
-			 LIMIT 1`,
+			fmt.Sprintf(
+				`SELECT id, layout_code, hero_display_code, type_code, pinned, weight, tag_text,
+				        title, summary, cover_url, published_at, source_name, source_url,
+				        content_format_code, content_text, content_nodes
+				 FROM %s
+				 WHERE id = ?
+				 LIMIT 1`,
+				tables.Articles,
+			),
 			id,
 		).Scan(&rows).Error; err != nil {
 			LogReqError(c, "mp_news_detail", "db_get_failed", err)
@@ -373,7 +386,7 @@ func MpNewsDetail(db *gorm.DB) gin.HandlerFunc {
 		}
 		var trows []tagRow
 		if err := db.Raw(
-			"SELECT tag FROM mp_news_article_tags WHERE article_id = ? ORDER BY tag",
+			fmt.Sprintf("SELECT tag FROM %s WHERE article_id = ? ORDER BY tag", tables.Tags),
 			id,
 		).Scan(&trows).Error; err != nil {
 			LogReqError(c, "mp_news_detail", "db_tags_failed", err)

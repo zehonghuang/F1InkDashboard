@@ -49,6 +49,9 @@ type Config struct {
 	WechatPay WechatPayConfig
 	WechatMini WechatMiniConfig
 
+	MpReviewMode  bool
+	MpNewsDataset string
+
 	NewsWsEnabled   bool
 	NewsIngestToken string
 
@@ -85,6 +88,8 @@ func FromEnv() Config {
 		MySQL:             mysqlFromEnv(),
 		WechatPay:         wechatPayFromEnv(),
 		WechatMini:        wechatMiniFromEnv(),
+		MpReviewMode:      getenvBool("MP_REVIEW_MODE", false),
+		MpNewsDataset:     getenvTrim("MP_NEWS_DATASET", "default"),
 		NewsWsEnabled:     getenvBool("NEWS_WS_ENABLED", false),
 		NewsIngestToken:   getenvTrim("NEWS_INGEST_TOKEN", ""),
 		OpenF1Enabled:     getenvBool("OPENF1_ENABLED", false),

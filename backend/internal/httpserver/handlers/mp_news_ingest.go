@@ -158,8 +158,10 @@ func MpNewsIngest(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
 			}
 		}()
 
+		tables := mpNewsTablesByCfg(cfg)
+
 		res := tx.Exec(`
-			INSERT INTO mp_news_articles
+			INSERT INTO `+tables.Articles+`
 				(id, layout_code, hero_display_code, type_code, pinned, weight, tag_text, title, summary, cover_url,
 				 published_at, source_name, source_url, content_format_code, content_text, content_nodes, created_at, updated_at)
 			VALUES
@@ -215,7 +217,7 @@ func MpNewsIngest(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		if err := tx.Exec(`DELETE FROM mp_news_article_tags WHERE article_id = ?`, it.ID).Error; err != nil {
+		if err := tx.Exec(`DELETE FROM `+tables.Tags+` WHERE article_id = ?`, it.ID).Error; err != nil {
 			if err2 := tx.Rollback().Error; err2 != nil {
 				LogReqError(c, "mp_news_ingest", "db_rollback_failed", err2)
 			}
@@ -225,7 +227,7 @@ func MpNewsIngest(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
 		}
 		for _, t := range tags {
 			if err := tx.Exec(
-				`INSERT INTO mp_news_article_tags (article_id, tag, created_at) VALUES (?, ?, ?)`,
+				`INSERT INTO `+tables.Tags+` (article_id, tag, created_at) VALUES (?, ?, ?)`,
 				it.ID, t, now,
 			).Error; err != nil {
 				if err2 := tx.Rollback().Error; err2 != nil {
