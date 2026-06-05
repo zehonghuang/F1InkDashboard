@@ -334,6 +334,7 @@ Page({
     wx.request({
       url: archiveUrl,
       method: "GET",
+      header: { "Accept-Language": i18n.getLocale() },
       success: (res) => {
         const data = (res && res.data) || {}
         const races = Array.isArray(data.races) ? data.races : []
@@ -366,6 +367,7 @@ Page({
     wx.request({
       url,
       method: "GET",
+      header: { "Accept-Language": i18n.getLocale() },
       success: (res) => {
         const data = (res && res.data) || {}
         const items = Array.isArray(data.items) ? data.items : []

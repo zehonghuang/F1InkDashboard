@@ -1,4 +1,5 @@
 const TOKEN_KEY = "auth_token"
+const i18n = require("./i18n")
 
 function redact(v) {
   if (!v) return v
@@ -36,6 +37,10 @@ function requestJson(path, options = {}) {
     { "Content-Type": "application/json" },
     options.header || {}
   )
+
+  if (!header["Accept-Language"]) {
+    header["Accept-Language"] = i18n.getLocale()
+  }
 
   if (needAuth) {
     const token = wx.getStorageSync(TOKEN_KEY) || ""

@@ -111,6 +111,7 @@ Page({
     wx.request({
       url,
       method: "GET",
+      header: { "Accept-Language": i18n.getLocale() },
       success: (res) => {
         const data = (res && res.data) || {}
         this._lastLapNumber = Number(data.lap_number || 0)

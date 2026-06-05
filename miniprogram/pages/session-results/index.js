@@ -194,6 +194,7 @@ Page({
     wx.request({
       url,
       method: "GET",
+      header: { "Accept-Language": i18n.getLocale() },
       success: (res) => {
         const data = (res && res.data) || {}
         const items = Array.isArray(data.items) ? data.items : []
