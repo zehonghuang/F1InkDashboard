@@ -1,5 +1,16 @@
+const i18n = require("./services/i18n")
+
 App({
   onLaunch() {
+    try {
+      const stored = wx.getStorageSync("locale")
+      const locale = i18n.normalizeLocale(stored || i18n.getSystemLocale())
+      this.globalData.locale = locale
+      if (!stored) wx.setStorageSync("locale", locale)
+    } catch (e) {
+      this.globalData.locale = i18n.getSystemLocale()
+    }
+
     const defaultApiBase = "https://winpc-f1.normal-person.icu"
     this.globalData.apiBase = defaultApiBase.replace(/\/+$/, "")
 

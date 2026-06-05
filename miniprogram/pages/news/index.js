@@ -1,5 +1,6 @@
 const { LAYOUT_CODE } = require("../../services/newsService")
 const { fetchNewsList } = require("../../services/mpNewsApi")
+const i18n = require("../../services/i18n")
 
 const WELCOME_KEY = "news_welcome_shown_v1"
 const PREF_TEAMS_KEY = "pref_follow_teams"
@@ -254,6 +255,7 @@ function buildDemoNewsItems(prefs) {
 
 Page({
   data: {
+    i18n: i18n.getDict(),
     banners: [],
     list: [],
     welcome: null,
@@ -272,6 +274,7 @@ Page({
     pressJiggleId: ""
   },
   onLoad() {
+    this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     try {
       const app = getApp()
       if (app && app.globalData && app.globalData.tweakAEffective) {
@@ -286,11 +289,13 @@ Page({
       const ww = Number(sys && sys.windowWidth) || 0
       this._pxPerRpx = ww > 0 ? ww / 750 : 0
     } catch (e) {}
+    this.applyI18n()
     this.setListOffset(0, 0)
     this._useScrollViewRefresher = true
     this.reload()
   },
   onUnload() {
+    if (this._offLocale) this._offLocale()
     clearTimeout(this._prefPromotedTimer)
     clearTimeout(this._prefMoveTimer)
     clearTimeout(this._prefMoveTimer2)
@@ -299,6 +304,7 @@ Page({
     clearTimeout(this._pressPreviewHideTimer)
   },
   onShow() {
+    this.applyI18n()
     if (typeof this.getTabBar === "function") {
       const tb = this.getTabBar()
       if (tb && typeof tb.setSelectedByRoute === "function") {
@@ -481,7 +487,7 @@ Page({
         this.setData({ list: decorated, page: Number(res.page || 1), hasMore }, done)
       })
       .catch(() => {
-        this.setData({ errorText: "加载失败，请下拉重试" }, () => done())
+        this.setData({ errorText: i18n.t("news.loadFailedRetry") }, () => done())
       })
   },
   setListOffset(y, duration, timingFunction) {
@@ -860,5 +866,11 @@ Page({
       }
     })
   },
-  noop() {}
+  noop() {},
+  applyI18n() {
+    const dict = i18n.getDict()
+    if (this.data.i18n === dict) return
+    this.setData({ i18n: dict })
+    wx.setNavigationBarTitle({ title: dict.nav.news })
+  }
 })

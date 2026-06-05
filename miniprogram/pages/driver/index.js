@@ -1,7 +1,9 @@
 const { buildChartsShareUrl } = require("../../services/chartsShare")
+const i18n = require("../../services/i18n")
 
 Page({
   data: {
+    i18n: i18n.getDict(),
     sessionKey: 0,
     driverNumber: 0,
     driverName: "",
@@ -9,13 +11,14 @@ Page({
     sessionName: "",
     lapInfo: "",
     showLapPicker: false,
-    lapOptions: [{ label: "最快圈", value: 0 }],
+    lapOptions: [{ label: i18n.t("driver.fastestLap"), value: 0 }],
     lapIndex: 0,
     selectedLapNumber: 0,
     chartOptionTB: null,
     chartOptionSpeed: null
   },
   onLoad(options) {
+    this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     const sessionKey = Number(options.sessionKey || 0)
     const driverNumber = Number(options.driverNumber || 0)
     const driverName = decodeURIComponent(options.driverName || "")
@@ -23,6 +26,7 @@ Page({
     const sessionName = decodeURIComponent(options.sessionName || "")
     const showLapPicker = /正赛/.test(sessionName) || /\brace\b/i.test(sessionName)
     this.setData({ sessionKey, driverNumber, driverName, raceName, sessionName, showLapPicker }, () => {
+      this.applyI18n()
       if (driverName) {
         wx.setNavigationBarTitle({ title: driverName })
       }
@@ -31,6 +35,9 @@ Page({
       }
       this.loadChart()
     })
+  },
+  onUnload() {
+    if (this._offLocale) this._offLocale()
   },
   onPullDownRefresh() {
     this.loadChart({ isPullDown: true })
@@ -68,7 +75,7 @@ Page({
       success: (res) => {
         const data = (res && res.data) || {}
         const laps = Array.isArray(data.laps) ? data.laps : []
-        const opts = [{ label: "最快圈", value: 0 }]
+        const opts = [{ label: i18n.t("driver.fastestLap"), value: 0 }]
         for (const it of laps) {
           const ln = Number(it && it.lap_number)
           const dur = it && it.lap_duration
@@ -104,6 +111,7 @@ Page({
     wx.request({
       url,
       method: "GET",
+      header: { "Accept-Language": i18n.getLocale() },
       success: (res) => {
         const data = (res && res.data) || {}
         this._lastLapNumber = Number(data.lap_number || 0)
@@ -117,7 +125,7 @@ Page({
         const brake = points.map((p) => toNumOrNull(p && p.brake))
         const speed = points.map((p) => toNumOrNull(p && p.speed))
         const lapInfo = data.lap_time
-          ? `${ln > 0 ? `L${data.lap_number || ln}` : `最快圈${data.lap_number ? ` L${data.lap_number}` : ""}`} ${data.lap_time}`
+          ? `${ln > 0 ? `L${data.lap_number || ln}` : `${i18n.t("driver.fastestLap")}${data.lap_number ? ` L${data.lap_number}` : ""}`} ${data.lap_time}`
           : ""
 
         const nPoints = x.length
@@ -194,7 +202,7 @@ Page({
           color: ["#2ecc71", "#e74c3c"],
           grid: { left: 18, right: 18, top: 20, bottom: 22, containLabel: true },
           tooltip: tooltipTB,
-          legend: { data: ["Throttle", "Brake"], textStyle: { color: "rgba(255,255,255,0.7)" } },
+          legend: { data: [i18n.t("driver.throttle"), i18n.t("driver.brake")], textStyle: { color: "rgba(255,255,255,0.7)" } },
           xAxis: {
             type: "category",
             data: xLabels,
@@ -214,7 +222,7 @@ Page({
           },
           series: [
             {
-              name: "Throttle",
+              name: i18n.t("driver.throttle"),
               type: "line",
               data: throttle,
               showSymbol: false,
@@ -228,7 +236,7 @@ Page({
                 data: [{ xAxis: i1 }, { xAxis: i2 }]
               }
             },
-            { name: "Brake", type: "line", data: brake, showSymbol: false, smooth: false, lineStyle: { width: 1.5 } }
+            { name: i18n.t("driver.brake"), type: "line", data: brake, showSymbol: false, smooth: false, lineStyle: { width: 1.5 } }
           ]
         }
 
@@ -237,7 +245,7 @@ Page({
           color: ["#3498db"],
           grid: { left: 18, right: 18, top: 20, bottom: 22, containLabel: true },
           tooltip: tooltipSpeed,
-          legend: { data: ["Speed"], textStyle: { color: "rgba(255,255,255,0.7)" } },
+          legend: { data: [i18n.t("driver.speed")], textStyle: { color: "rgba(255,255,255,0.7)" } },
           xAxis: {
             type: "category",
             data: xLabels,
@@ -255,7 +263,7 @@ Page({
           },
           series: [
             {
-              name: "Speed",
+              name: i18n.t("driver.speed"),
               type: "line",
               data: speed,
               showSymbol: false,
@@ -284,7 +292,7 @@ Page({
     const sessionKey = Number(this.data.sessionKey || 0)
     const dn = Number(this.data.driverNumber || 0)
     if (!sessionKey || !dn) {
-      wx.showToast({ title: "暂无可复制链接", icon: "none" })
+      wx.showToast({ title: i18n.t("common.noLinkToCopy"), icon: "none" })
       return
     }
     const ln0 = Number(this.data.selectedLapNumber || 0)
@@ -298,17 +306,25 @@ Page({
         lap_number: ln > 0 ? ln : undefined
       })
     } catch (e) {
-      wx.showToast({ title: "复制失败", icon: "none" })
+      wx.showToast({ title: i18n.t("common.copyFailed"), icon: "none" })
       return
     }
     wx.setClipboardData({
       data: url,
       success: () => {
-        wx.showToast({ title: "已复制", icon: "success" })
+        wx.showToast({ title: i18n.t("common.copied"), icon: "success" })
       },
       fail: () => {
-        wx.showToast({ title: "复制失败", icon: "none" })
+        wx.showToast({ title: i18n.t("common.copyFailed"), icon: "none" })
       }
     })
+  },
+  applyI18n() {
+    const dict = i18n.getDict()
+    const opts = Array.isArray(this.data.lapOptions) ? this.data.lapOptions.slice() : []
+    if (opts[0] && Number(opts[0].value) === 0) {
+      opts[0] = { ...opts[0], label: dict.driver.fastestLap }
+    }
+    this.setData({ i18n: dict, lapOptions: opts })
   }
 })
