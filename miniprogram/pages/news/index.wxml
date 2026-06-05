@@ -94,6 +94,13 @@
           </view>
         </block>
       </view>
+
+      <view wx:if="{{ loadingMore }}" class="load-more">
+        <text class="load-more-dot dot1">.</text>
+        <text class="load-more-dot dot2">.</text>
+        <text class="load-more-dot dot3">.</text>
+      </view>
+      <view wx:if="{{ !loadingMore && !hasMore && list.length }}" class="load-more load-more-end">— 已到底 —</view>
     </view>
   </scroll-view>
 
