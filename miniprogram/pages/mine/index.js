@@ -206,6 +206,10 @@ Page({
       wx.navigateTo({ url: `/pages/standings/index?season=${season}` })
       return
     }
+    if (action === "shop") {
+      wx.navigateTo({ url: "/pages/shop/index" })
+      return
+    }
     if (String(action || "").startsWith("soon")) {
       wx.showToast({ title: i18n.t("common.comingSoon"), icon: "none" })
       return

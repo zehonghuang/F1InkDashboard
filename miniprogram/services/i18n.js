@@ -141,8 +141,18 @@ const ZH_CN = {
     currentDeviceId: "当前设备ID",
     more: "更多功能",
     standings: "赛季积分",
+    shop: "商店",
     logout: "退出登录",
     language: "语言"
+  },
+  shop: {
+    title: "商店",
+    pageTitle: "商店",
+    detailTitle: "商品详情",
+    price: "价格",
+    buy: "购买",
+    empty: "暂无商品",
+    uiOnly: "仅 UI，无后端"
   },
   standings: {
     title: "赛季积分",
@@ -301,8 +311,18 @@ const EN_US = {
     currentDeviceId: "Device ID",
     more: "More",
     standings: "Standings",
+    shop: "Shop",
     logout: "Logout",
     language: "Language"
+  },
+  shop: {
+    title: "Shop",
+    pageTitle: "Shop",
+    detailTitle: "Product",
+    price: "Price",
+    buy: "Buy",
+    empty: "No products",
+    uiOnly: "UI only, no backend"
   },
   standings: {
     title: "Standings",

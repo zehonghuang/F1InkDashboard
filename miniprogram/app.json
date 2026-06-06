@@ -8,6 +8,8 @@
     "pages/session-results/index",
     "pages/driver/index",
     "pages/standings/index",
+    "pages/shop/index",
+    "pages/shop-detail/index",
     "pages/mine/index"
   ],
   "lazyCodeLoading": "requiredComponents",

@@ -1,0 +1,20 @@
+<view class="page">
+  <view wx:if="{{!product}}" class="empty">{{i18n.shop.empty}}</view>
+
+  <view wx:else>
+    <view class="header">
+      <view class="title">{{product.title}}</view>
+      <view class="subtitle">{{product.subtitle}}</view>
+    </view>
+
+    <view class="card">
+      <view class="row">
+        <view class="row-key">{{i18n.shop.price}}</view>
+        <view class="row-val">{{priceText}}</view>
+      </view>
+      <view wx:if="{{product.desc}}" class="desc">{{product.desc}}</view>
+      <button class="btn" bindtap="onTapBuy">{{i18n.shop.buy}}</button>
+    </view>
+  </view>
+</view>
+
