@@ -1,4 +1,4 @@
-<view class="msqt">
+<view class="msqt {{dense ? 'msqt-dense' : ''}}">
   <view class="msqt-header">
     <view class="msqt-title">{{title}}</view>
     <view class="msqt-actions" wx:if="{{showAllStats !== null}}">
@@ -7,8 +7,9 @@
     </view>
   </view>
 
-  <scroll-view class="msqt-scroll" scroll-x>
-    <view class="msqt-table">
+  <view class="msqt-frame">
+    <scroll-view class="msqt-scroll" scroll-x scroll-y enhanced show-scrollbar="{{false}}" style="height: {{bodyHeightRpx}}rpx;">
+      <view class="msqt-table">
       <view class="msqt-row msqt-head">
         <view class="msqt-cell msqt-c-cla">CLA</view>
         <view class="msqt-cell msqt-c-driver">DRIVER</view>
@@ -20,7 +21,7 @@
         <view class="msqt-cell msqt-c-tyre">TYRES</view>
       </view>
 
-      <block wx:for="{{rows}}" wx:key="pos">
+      <block wx:for="{{displayRows}}" wx:key="pos">
         <view class="msqt-row">
           <view class="msqt-cell msqt-c-cla">
             <view class="msqt-cla">{{item.pos}}</view>
@@ -61,6 +62,7 @@
           </view>
         </view>
       </block>
-    </view>
-  </scroll-view>
+      </view>
+    </scroll-view>
+  </view>
 </view>
