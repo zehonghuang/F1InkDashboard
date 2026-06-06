@@ -1,0 +1,3 @@
+<view class="page">
+  <ms-qualifying-table title="F1 Monaco GP: Qualifying Results" rows="{{rows}}" />
+</view>

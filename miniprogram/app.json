@@ -10,7 +10,8 @@
     "pages/standings/index",
     "pages/shop/index",
     "pages/shop-detail/index",
-    "pages/mine/index"
+    "pages/mine/index",
+    "pages/style-demo/index"
   ],
   "lazyCodeLoading": "requiredComponents",
   "window": {
