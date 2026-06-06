@@ -63,6 +63,16 @@
         </block>
       </swiper>
 
+      <view class="quali-panel {{ qualiOpen ? 'quali-panel-open' : '' }}">
+        <view class="quali-panel-header" bindtap="onToggleQualiPanel">
+          <view class="quali-panel-title">Qualifying Results</view>
+          <view class="quali-panel-icon">{{ qualiOpen ? '▴' : '▾' }}</view>
+        </view>
+        <view class="quali-panel-body {{ qualiOpen ? 'quali-panel-body-open' : '' }}">
+          <ms-qualifying-table wx:if="{{qualiVisible}}" title="" rows="{{qualiRows}}" dense bodyHeightRpx="520" maxRows="0" />
+        </view>
+      </view>
+
       <view id="news-list" class="news-list" style="{{ listTransformStyle }}">
         <block wx:for="{{ list }}" wx:key="id">
           <view
