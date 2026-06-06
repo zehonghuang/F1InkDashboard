@@ -2,7 +2,6 @@ Component({
   properties: {
     title: { type: String, value: '' },
     rows: { type: Array, value: [] },
-    showAllStats: { type: Boolean, value: false },
     maxRows: { type: Number, value: 0 },
     dense: { type: Boolean, value: true },
     bodyHeightRpx: { type: Number, value: 560 },
@@ -17,9 +16,5 @@ Component({
       this.setData({ displayRows: list.slice(0, n) })
     },
   },
-  methods: {
-    onToggleAllStats(e) {
-      this.triggerEvent('toggleallstats', { value: !!e.detail.value })
-    },
-  },
+  methods: {},
 })

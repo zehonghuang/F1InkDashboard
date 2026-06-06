@@ -54,7 +54,7 @@
 }
 
 .quali-panel-body-open {
-  height: 660rpx;
+  height: 460rpx;
   opacity: 1;
 }
 

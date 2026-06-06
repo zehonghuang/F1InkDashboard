@@ -69,7 +69,7 @@
           <view class="quali-panel-icon">{{ qualiOpen ? '▴' : '▾' }}</view>
         </view>
         <view class="quali-panel-body {{ qualiOpen ? 'quali-panel-body-open' : '' }}">
-          <ms-qualifying-table wx:if="{{qualiVisible}}" title="" rows="{{qualiRows}}" dense bodyHeightRpx="520" maxRows="0" />
+          <ms-qualifying-table wx:if="{{qualiVisible}}" title="" rows="{{qualiRows}}" dense bodyHeightRpx="420" maxRows="0" />
         </view>
       </view>
 

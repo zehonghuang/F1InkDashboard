@@ -1,10 +1,6 @@
 <view class="msqt {{dense ? 'msqt-dense' : ''}}">
-  <view class="msqt-header">
+  <view class="msqt-header" wx:if="{{title}}">
     <view class="msqt-title">{{title}}</view>
-    <view class="msqt-actions" wx:if="{{showAllStats !== null}}">
-      <view class="msqt-actions-label">All Stats</view>
-      <switch class="msqt-switch" checked="{{showAllStats}}" bindchange="onToggleAllStats" />
-    </view>
   </view>
 
   <view class="msqt-frame">
