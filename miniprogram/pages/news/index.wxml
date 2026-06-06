@@ -50,7 +50,6 @@
               hover-stay-time="120"
             >
               <image class="hero-image" src="{{ item.coverUrl }}" mode="aspectFill" />
-              <view class="hero-mask" />
               <view class="hero-content">
                 <view class="hero-title">{{ item.title }}</view>
                 <view class="hero-meta">

@@ -187,7 +187,7 @@
 }
 
 .hero-swiper {
-  height: 320rpx;
+  height: 360rpx;
   margin-top: 6rpx;
   margin-bottom: 16rpx;
   position: relative;
@@ -196,7 +196,7 @@
 
 .hero-banner {
   position: relative;
-  height: 320rpx;
+  height: 360rpx;
   border-radius: 12rpx;
   overflow: hidden;
   background: #000000;
