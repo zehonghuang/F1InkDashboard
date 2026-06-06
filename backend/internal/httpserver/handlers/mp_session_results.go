@@ -20,6 +20,7 @@ import (
 // @Tags MiniProgram
 // @Produce json
 // @Param session_key query int true "OpenF1 session_key"
+// @Param latest query bool false "为 true 时自动取最新 session_key（最大值），可不传 session_key"
 // @Success 200 {object} model.MpSessionResultsResponse
 // @Failure 400 {object} model.ErrorResponse
 // @Failure 503 {object} model.ErrorResponse
@@ -32,7 +33,20 @@ func MpSessionResults(db *gorm.DB, tdCache *teamdrivercache.Manager) gin.Handler
 			return
 		}
 
+		latest := parseBoolQuery(c, "latest", false) || parseBoolQuery(c, "lastest", false)
 		sessionKey := toIntQuery(c, "session_key", 0)
+		if sessionKey <= 0 && latest {
+			type row struct {
+				SessionKey int `gorm:"column:session_key"`
+			}
+			var r row
+			if err := db.Raw(`SELECT MAX(session_key) AS session_key FROM openf1_session_result`).Scan(&r).Error; err != nil {
+				LogReqError(c, "mp_session_results", "results_unavailable", err)
+				c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "results_unavailable"})
+				return
+			}
+			sessionKey = r.SessionKey
+		}
 		if sessionKey <= 0 {
 			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: "session_key_required"})
 			return

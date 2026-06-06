@@ -9,6 +9,7 @@ import NotFoundPage from '@/pages/NotFoundPage.vue'
 import SettingsPage from '@/pages/SettingsPage.vue'
 import UserDetailPage from '@/pages/UserDetailPage.vue'
 import UsersListPage from '@/pages/UsersListPage.vue'
+import MotorsportQualifyingDemoPage from '@/pages/MotorsportQualifyingDemoPage.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -62,6 +63,12 @@ const routes: RouteRecordRaw[] = [
         name: 'settings',
         component: SettingsPage,
         meta: { title: '设置' },
+      },
+      {
+        path: 'motorsport-demo',
+        name: 'motorsport-demo',
+        component: MotorsportQualifyingDemoPage,
+        meta: { title: '样式 Demo' },
       },
     ],
   },
