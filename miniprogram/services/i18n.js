@@ -66,6 +66,7 @@ const ZH_CN = {
     sessionSprint: "冲刺赛",
     sessionQ: "排位赛",
     sessionRace: "正赛",
+    unitDay: "天",
     unitHrs: "时",
     unitMin: "分",
     unitSec: "秒"
@@ -247,9 +248,10 @@ const EN_US = {
     sessionSprint: "Sprint",
     sessionQ: "Qualifying",
     sessionRace: "Race",
-    unitHrs: "HRS",
-    unitMin: "MIN",
-    unitSec: "SEC"
+    unitDay: "D",
+    unitHrs: "H",
+    unitMin: "M",
+    unitSec: "S"
   },
   newsDetail: {
     title: "News",

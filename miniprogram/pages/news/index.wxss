@@ -46,6 +46,14 @@
   font-size: 34rpx;
   font-weight: 900;
   letter-spacing: 1rpx;
+  line-height: 38rpx;
+  white-space: nowrap;
+}
+
+.raceweek-countdown-session-compact {
+  font-size: 28rpx;
+  line-height: 32rpx;
+  letter-spacing: 0;
 }
 
 .raceweek-countdown-suffix {

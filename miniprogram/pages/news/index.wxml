@@ -65,7 +65,7 @@
 
       <view wx:if="{{ raceWeek && raceWeek.isRaceWeek && raceWeek.nextSession && countdown }}" class="raceweek-countdown">
         <view class="raceweek-countdown-left">
-          <text class="raceweek-countdown-session">{{ raceWeekSessionLabel }}</text>
+          <text class="raceweek-countdown-session {{ raceWeekSessionLabelCompact ? 'raceweek-countdown-session-compact' : '' }}">{{ raceWeekSessionLabel }}</text>
           <text class="raceweek-countdown-suffix">{{ i18n.news.startsInSuffix }}</text>
         </view>
         <view class="raceweek-countdown-mid">
@@ -73,16 +73,16 @@
         </view>
         <view class="raceweek-countdown-clock">
           <view class="raceweek-countdown-seg">
-            <text class="raceweek-countdown-num">{{ countdown.hh }}</text>
-            <text class="raceweek-countdown-unit">{{ i18n.news.unitHrs }}</text>
+            <text class="raceweek-countdown-num">{{ countdown.a1 }}</text>
+            <text class="raceweek-countdown-unit">{{ countdown.mode === 'dhm' ? i18n.news.unitDay : i18n.news.unitHrs }}</text>
           </view>
           <view class="raceweek-countdown-seg">
-            <text class="raceweek-countdown-num">{{ countdown.mm }}</text>
-            <text class="raceweek-countdown-unit">{{ i18n.news.unitMin }}</text>
+            <text class="raceweek-countdown-num">{{ countdown.a2 }}</text>
+            <text class="raceweek-countdown-unit">{{ countdown.mode === 'dhm' ? i18n.news.unitHrs : i18n.news.unitMin }}</text>
           </view>
           <view class="raceweek-countdown-seg">
-            <text class="raceweek-countdown-num">{{ countdown.ss }}</text>
-            <text class="raceweek-countdown-unit">{{ i18n.news.unitSec }}</text>
+            <text class="raceweek-countdown-num">{{ countdown.a3 }}</text>
+            <text class="raceweek-countdown-unit">{{ countdown.mode === 'dhm' ? i18n.news.unitMin : i18n.news.unitSec }}</text>
           </view>
         </view>
       </view>
@@ -93,7 +93,7 @@
           <view class="quali-panel-icon">{{ qualiOpen ? '▴' : '▾' }}</view>
         </view>
         <view class="quali-panel-body {{ qualiOpen ? 'quali-panel-body-open' : '' }}">
-          <ms-qualifying-table wx:if="{{qualiVisible}}" title="" rows="{{qualiRows}}" dense bodyHeightRpx="420" maxRows="0" />
+          <ms-qualifying-table wx:if="{{qualiVisible}}" title="" rows="{{qualiRows}}" dense bodyHeightRpx="420" maxRows="0" baseUrl="{{apiBase}}" />
         </view>
       </view>
 

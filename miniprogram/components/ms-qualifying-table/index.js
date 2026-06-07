@@ -1,5 +1,3 @@
-const { getApiBase } = require("../../services/request")
-
 function joinUrl(base, path) {
   const p = String(path || "")
   if (!p) return ""
@@ -33,14 +31,20 @@ const CAR_FILE_BY_TEAM_KEY = {
   williams: "williams-fw48.png",
 }
 
-function resolveCarImageUrl(row) {
+function resolveCarImageUrl(row, baseUrl, carImageBasePath, carFileMap) {
   const r = row || {}
   const explicit = r.carImageUrl || r.car_image_url || ""
   if (explicit) return String(explicit)
+  const base = String(baseUrl || "").trim()
+  if (!base) return ""
+  const map = carFileMap && typeof carFileMap === "object" ? carFileMap : CAR_FILE_BY_TEAM_KEY
   const teamKey = normKey(r.teamKey || r.team_key || r.team || "")
-  const file = CAR_FILE_BY_TEAM_KEY[teamKey]
+  const file = map[teamKey]
   if (!file) return ""
-  return joinUrl(getApiBase(), `/static/cars/motorsport/${file}`)
+  const p0 = String(carImageBasePath || "").trim() || "/static/cars/motorsport"
+  const p1 = p0.replace(/\/+$/, "")
+  const rel = (p1.startsWith("/") ? p1 : `/${p1}`) + `/${file}`
+  return joinUrl(base, rel)
 }
 
 Component({
@@ -50,15 +54,26 @@ Component({
     maxRows: { type: Number, value: 0 },
     dense: { type: Boolean, value: true },
     bodyHeightRpx: { type: Number, value: 560 },
+    baseUrl: { type: String, value: "" },
+    carImageBasePath: { type: String, value: "/static/cars/motorsport" },
+    carFileMap: { type: Object, value: null },
   },
   data: {
     displayRows: [],
   },
   observers: {
-    'rows,maxRows': function (rows, maxRows) {
+    'rows,maxRows,baseUrl,carImageBasePath,carFileMap': function (
+      rows,
+      maxRows,
+      baseUrl,
+      carImageBasePath,
+      carFileMap
+    ) {
       const list = Array.isArray(rows) ? rows : []
       const n = typeof maxRows === 'number' && maxRows > 0 ? maxRows : list.length
-      const slice = list.slice(0, n).map((it) => ({ ...(it || {}), carImageUrl: resolveCarImageUrl(it) }))
+      const slice = list
+        .slice(0, n)
+        .map((it) => ({ ...(it || {}), carImageUrl: resolveCarImageUrl(it, baseUrl, carImageBasePath, carFileMap) }))
       this.setData({ displayRows: slice })
     },
   },

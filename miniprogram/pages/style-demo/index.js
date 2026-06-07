@@ -1,5 +1,6 @@
 Page({
   data: {
+    apiBase: "",
     rows: [
       {
         pos: 1,
@@ -132,5 +133,12 @@ Page({
         carAccent: '#5E8FAA',
       },
     ],
+  },
+  onLoad() {
+    try {
+      const app = getApp()
+      const apiBase = app && app.globalData && app.globalData.apiBase ? String(app.globalData.apiBase) : ""
+      this.setData({ apiBase })
+    } catch (e) {}
   },
 })

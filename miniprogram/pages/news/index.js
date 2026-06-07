@@ -257,10 +257,12 @@ function buildDemoNewsItems(prefs) {
 Page({
   data: {
     i18n: i18n.getDict(),
+    apiBase: "",
     banners: [],
     list: [],
     raceWeek: null,
     raceWeekSessionLabel: "",
+    raceWeekSessionLabelCompact: false,
     countdown: null,
     qualiOpen: false,
     qualiVisible: false,
@@ -418,9 +420,16 @@ Page({
   computeCountdown(seconds) {
     const s = Math.max(0, Math.floor(Number(seconds) || 0))
     const hh = Math.floor(s / 3600)
+    if (hh > 99) {
+      const dd = Math.floor(s / 86400)
+      const rem = s - dd * 86400
+      const hh2 = Math.floor(rem / 3600)
+      const mm2 = Math.floor((rem - hh2 * 3600) / 60)
+      return { mode: "dhm", a1: this.pad2(dd), a2: this.pad2(hh2), a3: this.pad2(mm2) }
+    }
     const mm = Math.floor((s - hh * 3600) / 60)
     const ss = s - hh * 3600 - mm * 60
-    return { hh: this.pad2(hh), mm: this.pad2(mm), ss: this.pad2(ss) }
+    return { mode: "hms", a1: this.pad2(hh), a2: this.pad2(mm), a3: this.pad2(ss) }
   },
   getSessionLabel(key, dict) {
     const k = String(key || "")
@@ -435,6 +444,13 @@ Page({
     if (k === "Q") return d.sessionQ || k
     if (k === "RACE") return d.sessionRace || k
     return k
+  },
+  buildRaceWeekSessionLabelState(label) {
+    const s = String(label || "").trim()
+    const hasCjk = /[\u4e00-\u9fff]/.test(s)
+    const hasSpace = /\s/.test(s)
+    const compact = Boolean(s && hasCjk && !hasSpace && s.length > 3)
+    return { raceWeekSessionLabel: s, raceWeekSessionLabelCompact: compact }
   },
   stopRaceWeekTimer() {
     clearInterval(this._raceWeekTimer)
@@ -463,20 +479,20 @@ Page({
       const ns = res && res.nextSession ? res.nextSession : null
       if (!res || !res.isRaceWeek || !ns || !ns.startsAtUTC) {
         this.stopRaceWeekTimer()
-        this.setData({ raceWeek: res || null, raceWeekSessionLabel: "", countdown: null })
+        this.setData({ raceWeek: res || null, ...this.buildRaceWeekSessionLabelState(""), countdown: null })
         return
       }
       const targetMs = Date.parse(ns.startsAtUTC)
       const remain = Math.max(0, Math.floor((targetMs - Date.now()) / 1000))
       const dict = i18n.getDict()
       const label = this.getSessionLabel(ns.key, dict)
-      this.setData({ raceWeek: res, raceWeekSessionLabel: label, countdown: this.computeCountdown(remain) })
+      this.setData({ raceWeek: res, ...this.buildRaceWeekSessionLabelState(label), countdown: this.computeCountdown(remain) })
       if (Number.isFinite(targetMs) && targetMs > Date.now()) {
         this.startRaceWeekTimer(targetMs)
       }
     } catch (e) {
       this.stopRaceWeekTimer()
-      this.setData({ raceWeek: null, raceWeekSessionLabel: "", countdown: null })
+      this.setData({ raceWeek: null, ...this.buildRaceWeekSessionLabelState(""), countdown: null })
     }
   },
   onToggleQualiPanel() {
@@ -502,6 +518,8 @@ Page({
         wx.switchTab({ url: "/pages/archive/index" })
         return
       }
+      const apiBase = app && app.globalData && app.globalData.apiBase ? String(app.globalData.apiBase) : ""
+      this.setData({ apiBase })
     } catch (e) {}
     try {
       const sys = wx.getSystemInfoSync()
@@ -1098,7 +1116,7 @@ Page({
     if (this.data.i18n === dict) return
     const ns = this.data.raceWeek && this.data.raceWeek.nextSession ? this.data.raceWeek.nextSession : null
     const label = ns && ns.key ? this.getSessionLabel(ns.key, dict) : ""
-    this.setData({ i18n: dict, raceWeekSessionLabel: label })
+    this.setData({ i18n: dict, ...this.buildRaceWeekSessionLabelState(label) })
     wx.setNavigationBarTitle({ title: dict.nav.news })
   }
 })
