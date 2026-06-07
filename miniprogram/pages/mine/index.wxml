@@ -119,13 +119,15 @@
     <view class="more-grid">
       <view class="more-item" bindtap="onTapItem" data-action="standings">
         <view class="more-icon">
-          <i-icon type="integral" size="26" color="rgba(255,255,255,0.9)" />
+          <i-icon type="flag_fill" size="26" color="rgba(255,255,255,0.9)" />
         </view>
         <view class="more-text">{{i18n.mine.standings}}</view>
       </view>
-      <view class="more-item more-item-disabled" bindtap="onTapItem" data-action="soon_1">
-        <view class="more-icon">...</view>
-        <view class="more-text">{{i18n.common.comingSoon}}</view>
+      <view class="more-item" bindtap="onTapItem" data-action="shop">
+        <view class="more-icon">
+          <i-icon type="shop_fill" size="26" color="rgba(255,255,255,0.9)" />
+        </view>
+        <view class="more-text">{{i18n.mine.shop}}</view>
       </view>
       <view class="more-item more-item-disabled" bindtap="onTapItem" data-action="soon_2">
         <view class="more-icon">...</view>

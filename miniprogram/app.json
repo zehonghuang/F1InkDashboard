@@ -8,7 +8,10 @@
     "pages/session-results/index",
     "pages/driver/index",
     "pages/standings/index",
-    "pages/mine/index"
+    "pages/shop/index",
+    "pages/shop-detail/index",
+    "pages/mine/index",
+    "pages/style-demo/index"
   ],
   "lazyCodeLoading": "requiredComponents",
   "window": {

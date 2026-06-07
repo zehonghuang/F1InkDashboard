@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "样式 Demo",
+  "usingComponents": {
+    "ms-qualifying-table": "/components/ms-qualifying-table/index"
+  }
+}

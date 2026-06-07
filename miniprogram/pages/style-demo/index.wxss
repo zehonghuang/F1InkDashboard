@@ -1,0 +1,7 @@
+.page {
+  padding: 24rpx;
+  background: #15151e;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
