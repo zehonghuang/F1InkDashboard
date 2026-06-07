@@ -57,7 +57,18 @@ const ZH_CN = {
     welcomeEnter: "点击进入",
     empty: "暂无资讯",
     loadFailedRetry: "加载失败，请下拉重试",
-    noMore: "已到底"
+    noMore: "已到底",
+    startsInSuffix: "开始倒计时",
+    sessionFP1: "练习赛一",
+    sessionFP2: "练习赛二",
+    sessionFP3: "练习赛三",
+    sessionSQ: "冲刺赛排位赛",
+    sessionSprint: "冲刺赛",
+    sessionQ: "排位赛",
+    sessionRace: "正赛",
+    unitHrs: "时",
+    unitMin: "分",
+    unitSec: "秒"
   },
   newsDetail: {
     title: "资讯详情",
@@ -227,7 +238,18 @@ const EN_US = {
     welcomeEnter: "Tap to enter",
     empty: "No news",
     loadFailedRetry: "Load failed. Pull down to retry.",
-    noMore: "No more"
+    noMore: "No more",
+    startsInSuffix: "starts in",
+    sessionFP1: "FP1",
+    sessionFP2: "FP2",
+    sessionFP3: "FP3",
+    sessionSQ: "Sprint Qualifying",
+    sessionSprint: "Sprint",
+    sessionQ: "Qualifying",
+    sessionRace: "Race",
+    unitHrs: "HRS",
+    unitMin: "MIN",
+    unitSec: "SEC"
   },
   newsDetail: {
     title: "News",

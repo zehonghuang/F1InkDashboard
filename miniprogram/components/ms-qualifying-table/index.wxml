@@ -38,7 +38,9 @@
           </view>
 
           <view class="msqt-cell msqt-c-car">
+            <image wx:if="{{item.carImageUrl}}" class="msqt-car-img" src="{{item.carImageUrl}}" mode="aspectFit" />
             <view
+              wx:else
               class="msqt-car"
               style="--car-accent: {{item.carAccent || item.teamColor || '#64748b'}};"
             ></view>

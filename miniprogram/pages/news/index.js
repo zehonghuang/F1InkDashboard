@@ -1,5 +1,6 @@
 const { LAYOUT_CODE } = require("../../services/newsService")
 const { fetchNewsList } = require("../../services/mpNewsApi")
+const { fetchRaceWeek } = require("../../services/mpRaceWeekApi")
 const i18n = require("../../services/i18n")
 
 const WELCOME_KEY = "news_welcome_shown_v1"
@@ -258,6 +259,9 @@ Page({
     i18n: i18n.getDict(),
     banners: [],
     list: [],
+    raceWeek: null,
+    raceWeekSessionLabel: "",
+    countdown: null,
     qualiOpen: false,
     qualiVisible: false,
     qualiRows: [
@@ -407,6 +411,74 @@ Page({
     pressPreview: null,
     pressJiggleId: ""
   },
+  pad2(v) {
+    const n = Math.max(0, Math.floor(Number(v) || 0))
+    return String(n).padStart(2, "0")
+  },
+  computeCountdown(seconds) {
+    const s = Math.max(0, Math.floor(Number(seconds) || 0))
+    const hh = Math.floor(s / 3600)
+    const mm = Math.floor((s - hh * 3600) / 60)
+    const ss = s - hh * 3600 - mm * 60
+    return { hh: this.pad2(hh), mm: this.pad2(mm), ss: this.pad2(ss) }
+  },
+  getSessionLabel(key, dict) {
+    const k = String(key || "")
+      .trim()
+      .toUpperCase()
+    const d = dict && dict.news ? dict.news : i18n.getDict().news
+    if (k === "FP1") return d.sessionFP1 || k
+    if (k === "FP2") return d.sessionFP2 || k
+    if (k === "FP3") return d.sessionFP3 || k
+    if (k === "SQ") return d.sessionSQ || k
+    if (k === "SPRINT") return d.sessionSprint || k
+    if (k === "Q") return d.sessionQ || k
+    if (k === "RACE") return d.sessionRace || k
+    return k
+  },
+  stopRaceWeekTimer() {
+    clearInterval(this._raceWeekTimer)
+    this._raceWeekTimer = null
+    this._raceWeekTargetMs = 0
+  },
+  startRaceWeekTimer(targetMs) {
+    const t = Number(targetMs) || 0
+    if (!t || !Number.isFinite(t)) return
+    this.stopRaceWeekTimer()
+    this._raceWeekTargetMs = t
+    this._raceWeekTimer = setInterval(() => {
+      const remainSec = Math.max(0, Math.floor((this._raceWeekTargetMs - Date.now()) / 1000))
+      const nextCountdown = this.computeCountdown(remainSec)
+      this.setData({ countdown: nextCountdown })
+      if (remainSec <= 0) {
+        this.stopRaceWeekTimer()
+      }
+    }, 1000)
+  },
+  async loadRaceWeek() {
+    try {
+      const tz = "Asia/Shanghai"
+      const season = 2026
+      const res = await fetchRaceWeek({ season, tz })
+      const ns = res && res.nextSession ? res.nextSession : null
+      if (!res || !res.isRaceWeek || !ns || !ns.startsAtUTC) {
+        this.stopRaceWeekTimer()
+        this.setData({ raceWeek: res || null, raceWeekSessionLabel: "", countdown: null })
+        return
+      }
+      const targetMs = Date.parse(ns.startsAtUTC)
+      const remain = Math.max(0, Math.floor((targetMs - Date.now()) / 1000))
+      const dict = i18n.getDict()
+      const label = this.getSessionLabel(ns.key, dict)
+      this.setData({ raceWeek: res, raceWeekSessionLabel: label, countdown: this.computeCountdown(remain) })
+      if (Number.isFinite(targetMs) && targetMs > Date.now()) {
+        this.startRaceWeekTimer(targetMs)
+      }
+    } catch (e) {
+      this.stopRaceWeekTimer()
+      this.setData({ raceWeek: null, raceWeekSessionLabel: "", countdown: null })
+    }
+  },
   onToggleQualiPanel() {
     if (!this.data.qualiOpen) {
       this.setData({ qualiVisible: true }, () => {
@@ -445,6 +517,7 @@ Page({
   },
   onUnload() {
     if (this._offLocale) this._offLocale()
+    this.stopRaceWeekTimer()
     clearTimeout(this._prefPromotedTimer)
     clearTimeout(this._prefMoveTimer)
     clearTimeout(this._prefMoveTimer2)
@@ -493,6 +566,9 @@ Page({
     const reset = !opts || opts.reset !== false
     const softReset = Boolean(opts && opts.softReset)
     const nextPage = reset ? 1 : Number((opts && opts.page) || this.data.page || 1)
+    if (reset) {
+      this.loadRaceWeek()
+    }
     if (reset) {
       if (softReset) {
         this.setData({ loading: true, errorText: "", page: 1, hasMore: true })
@@ -1020,7 +1096,9 @@ Page({
   applyI18n() {
     const dict = i18n.getDict()
     if (this.data.i18n === dict) return
-    this.setData({ i18n: dict })
+    const ns = this.data.raceWeek && this.data.raceWeek.nextSession ? this.data.raceWeek.nextSession : null
+    const label = ns && ns.key ? this.getSessionLabel(ns.key, dict) : ""
+    this.setData({ i18n: dict, raceWeekSessionLabel: label })
     wx.setNavigationBarTitle({ title: dict.nav.news })
   }
 })

@@ -131,6 +131,11 @@
   width: 152rpx;
 }
 
+.msqt-dense .msqt-car-img {
+  height: 36rpx;
+  width: 152rpx;
+}
+
 .msqt-dense .msqt-time {
   margin-top: 4rpx;
 }
@@ -242,6 +247,13 @@
     radial-gradient(closest-side at 20% 50%, rgba(255, 255, 255, 0.15), rgba(0, 0, 0, 0) 70%),
     linear-gradient(90deg, var(--car-accent), rgba(255, 255, 255, 0));
   opacity: 0.95;
+}
+
+.msqt-car-img {
+  height: 44rpx;
+  width: 168rpx;
+  margin: 0 auto;
+  display: block;
 }
 
 .msqt-gap {
