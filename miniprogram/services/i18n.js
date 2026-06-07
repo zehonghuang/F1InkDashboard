@@ -58,7 +58,7 @@ const ZH_CN = {
     empty: "暂无资讯",
     loadFailedRetry: "加载失败，请下拉重试",
     noMore: "已到底",
-    startsInSuffix: "开始倒计时",
+    startsInSuffix: "将始于",
     sessionFP1: "练习赛一",
     sessionFP2: "练习赛二",
     sessionFP3: "练习赛三",

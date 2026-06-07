@@ -1,0 +1,51 @@
+.ac {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ac-face {
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+
+.ac-tick {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+
+.ac-tick-line {
+  box-shadow: 0 0 6rpx rgba(0, 0, 0, 0.25);
+}
+
+.ac-hand {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+
+.ac-hand-line {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.35);
+}
+
+.ac-second-line {
+  box-shadow: 0 0 10rpx rgba(225, 6, 0, 0.22);
+}
+
+.ac-cap {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}

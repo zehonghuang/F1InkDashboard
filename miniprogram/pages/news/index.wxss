@@ -35,6 +35,12 @@
   gap: 6rpx;
 }
 
+.raceweek-countdown-mid {
+  width: 84rpx;
+  flex: 0 0 84rpx;
+  overflow: hidden;
+}
+
 .raceweek-countdown-session {
   color: #e10600;
   font-size: 34rpx;

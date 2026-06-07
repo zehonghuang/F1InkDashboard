@@ -1,0 +1,21 @@
+<view class="ac" style="{{ ringStyle }}">
+  <view class="ac-face" style="{{ faceStyle }}">
+    <view wx:for="{{ tickItems }}" wx:key="i" class="ac-tick" style="{{ item.style }}">
+      <view class="ac-tick-line" style="{{ item.major ? tickMajorStyle : tickMinorStyle }}" />
+    </view>
+
+    <view class="ac-hand" style="{{ hourHandStyle }}">
+      <view class="ac-hand-line" style="{{ hourLineStyle }}" />
+    </view>
+    <view class="ac-hand" style="{{ minuteHandStyle }}">
+      <view class="ac-hand-line" style="{{ minuteLineStyle }}" />
+    </view>
+    <view class="ac-hand" style="{{ secondHandStyle }}">
+      <view class="ac-hand-line ac-second-line" style="{{ secondLineStyle }}" />
+    </view>
+
+    <view class="ac-cap" style="{{ capOuterStyle }}" />
+    <view class="ac-cap" style="{{ capInnerStyle }}" />
+  </view>
+</view>
+

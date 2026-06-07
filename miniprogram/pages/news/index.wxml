@@ -68,6 +68,9 @@
           <text class="raceweek-countdown-session">{{ raceWeekSessionLabel }}</text>
           <text class="raceweek-countdown-suffix">{{ i18n.news.startsInSuffix }}</text>
         </view>
+        <view class="raceweek-countdown-mid">
+          <analog-clock sizeRpx="84" />
+        </view>
         <view class="raceweek-countdown-clock">
           <view class="raceweek-countdown-seg">
             <text class="raceweek-countdown-num">{{ countdown.hh }}</text>
