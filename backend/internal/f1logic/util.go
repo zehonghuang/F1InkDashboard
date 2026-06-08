@@ -71,3 +71,66 @@ func ClampInt(v, minV, maxV int) int {
 	}
 	return v
 }
+
+func FlagURLFromCountryCode(countryCode string) (string, bool) {
+	cc := strings.ToLower(strings.TrimSpace(countryCode))
+	if cc == "" || cc == "<nil>" {
+		return "", false
+	}
+	if cc == "uk" {
+		cc = "gb"
+	} else if cc == "uae" {
+		cc = "ae"
+	} else if cc == "usa" {
+		cc = "us"
+	} else if len(cc) == 3 {
+		switch cc {
+		case "are":
+			cc = "ae"
+		case "aut":
+			cc = "at"
+		case "aus":
+			cc = "au"
+		case "aze":
+			cc = "az"
+		case "bel":
+			cc = "be"
+		case "bhr":
+			cc = "bh"
+		case "bra":
+			cc = "br"
+		case "can":
+			cc = "ca"
+		case "chn":
+			cc = "cn"
+		case "esp":
+			cc = "es"
+		case "gbr":
+			cc = "gb"
+		case "hun":
+			cc = "hu"
+		case "ita":
+			cc = "it"
+		case "jpn":
+			cc = "jp"
+		case "mco":
+			cc = "mc"
+		case "mex":
+			cc = "mx"
+		case "nld":
+			cc = "nl"
+		case "qat":
+			cc = "qa"
+		case "sgp":
+			cc = "sg"
+		case "usa":
+			cc = "us"
+		default:
+			return "", false
+		}
+	}
+	if len(cc) != 2 {
+		return "", false
+	}
+	return "/static/flags/motorsport/" + cc + "-2.svg", true
+}

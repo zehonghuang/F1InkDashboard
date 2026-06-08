@@ -599,6 +599,7 @@ func OpenF1ScheduleJSON(db *gorm.DB, season int, lang string) (map[string]any, e
 		Year             int        `gorm:"column:year"`
 		MeetingName      string     `gorm:"column:meeting_name"`
 		Location         *string    `gorm:"column:location"`
+		CountryCode      *string    `gorm:"column:country_code"`
 		CountryName      *string    `gorm:"column:country_name"`
 		CircuitShortName *string    `gorm:"column:circuit_short_name"`
 		DateStartUTC     *time.Time `gorm:"column:date_start_utc"`
@@ -621,6 +622,7 @@ func OpenF1ScheduleJSON(db *gorm.DB, season int, lang string) (map[string]any, e
               year,
               meeting_name,
               location,
+              country_code,
               country_name,
               circuit_short_name,
               date_start_utc,
@@ -743,10 +745,11 @@ func OpenF1ScheduleJSON(db *gorm.DB, season int, lang string) (map[string]any, e
 		}
 
 		loc := map[string]any{
-			"lat":      nil,
-			"long":     nil,
-			"locality": nil,
-			"country":  nil,
+			"lat":          nil,
+			"long":         nil,
+			"locality":     nil,
+			"country":      nil,
+			"country_code": nil,
 		}
 		if m.Location != nil {
 			locality := strings.TrimSpace(*m.Location)
@@ -761,6 +764,9 @@ func OpenF1ScheduleJSON(db *gorm.DB, season int, lang string) (map[string]any, e
 				country = strings.TrimSpace(v)
 			}
 			loc["country"] = country
+		}
+		if m.CountryCode != nil {
+			loc["country_code"] = strings.TrimSpace(*m.CountryCode)
 		}
 		circuit := map[string]any{
 			"url":         nil,

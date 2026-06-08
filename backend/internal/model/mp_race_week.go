@@ -5,6 +5,7 @@ type MpRaceWeekRace struct {
 	Round                int     `json:"round"`
 	RaceName             string  `json:"race_name"`
 	Country              *string `json:"country,omitempty"`
+	FlagURL              *string `json:"flag_url,omitempty"`
 	RaceDateUTC          string  `json:"race_date_utc"`
 	RaceDateLocal        string  `json:"race_date_local"`
 	OpenF1RaceSessionKey *int    `json:"openf1_race_session_key,omitempty"`
