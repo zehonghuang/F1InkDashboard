@@ -1,7 +1,17 @@
 <script setup lang="ts">
 import { fetchMpNewsDetail, ingestMpNews, type MpNewsItem, type MpNewsRichTextNode } from '@/api/mpNews'
 import RichTextRenderer from '@/components/RichTextRenderer.vue'
-import { computed, onMounted, reactive, ref } from 'vue'
+import {
+  htmlToMpNodes,
+  itemContentToHTML,
+  nodesToHTML,
+} from '@/utils/mpNewsRichText'
+import Image from '@tiptap/extension-image'
+import Link from '@tiptap/extension-link'
+import Placeholder from '@tiptap/extension-placeholder'
+import StarterKit from '@tiptap/starter-kit'
+import { EditorContent, useEditor } from '@tiptap/vue-3'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Message } from 'view-ui-plus'
 
@@ -19,8 +29,7 @@ type EditorForm = {
   pinned: boolean
   source_name: string
   source_url: string
-  content_format_code: 'PLAIN' | 'RICH_TEXT_NODES'
-  content_text: string
+  content_mode: 'VISUAL' | 'JSON'
   content_nodes_json: string
 }
 
@@ -48,8 +57,7 @@ const form = reactive<EditorForm>({
   pinned: false,
   source_name: '',
   source_url: '',
-  content_format_code: 'PLAIN',
-  content_text: '',
+  content_mode: 'VISUAL',
   content_nodes_json: '[]',
 })
 
@@ -71,9 +79,38 @@ function fillForm(item: MpNewsItem) {
   form.pinned = Boolean(item.pinned)
   form.source_name = item.source?.name || ''
   form.source_url = item.source?.url || ''
-  form.content_format_code = item.content?.format_code === 'RICH_TEXT_NODES' ? 'RICH_TEXT_NODES' : 'PLAIN'
-  form.content_text = item.content?.text || ''
   form.content_nodes_json = formatNodesJSON(item.content?.nodes)
+  setEditorHTML(itemContentToHTML(item))
+}
+
+const editor = useEditor({
+  extensions: [
+    StarterKit,
+    Link.configure({
+      openOnClick: false,
+      autolink: true,
+      defaultProtocol: 'https',
+    }),
+    Image,
+    Placeholder.configure({
+      placeholder: '开始写正文，像 Notion 一样直接编辑...',
+    }),
+  ],
+  content: '<p></p>',
+  editorProps: {
+    attributes: {
+      class: 'tiptap prose max-w-none min-h-[420px] outline-none text-zinc-800',
+    },
+  },
+  onUpdate: ({ editor }) => {
+    if (form.content_mode !== 'VISUAL') return
+    form.content_nodes_json = formatNodesJSON(htmlToMpNodes(editor.getHTML()))
+  },
+})
+
+function setEditorHTML(html: string) {
+  if (!editor.value) return
+  editor.value.commands.setContent(html || '<p></p>', { emitUpdate: false })
 }
 
 async function load() {
@@ -106,7 +143,6 @@ function parseNodes(): MpNewsRichTextNode[] {
 }
 
 const previewNodes = computed(() => {
-  if (form.content_format_code !== 'RICH_TEXT_NODES') return []
   try {
     return parseNodes()
   } catch {
@@ -149,10 +185,7 @@ function buildPayload(): MpNewsItem {
       name: form.source_name.trim(),
       url: form.source_url.trim(),
     },
-    content:
-      form.content_format_code === 'RICH_TEXT_NODES'
-        ? { format_code: 'RICH_TEXT_NODES', nodes: parseNodes() }
-        : { format_code: 'PLAIN', text: form.content_text },
+    content: { format_code: 'RICH_TEXT_NODES', nodes: parseNodes() },
   }
 
   if (!payload.source?.name && !payload.source?.url) {
@@ -162,6 +195,64 @@ function buildPayload(): MpNewsItem {
     delete payload.hero_display_code
   }
   return payload
+}
+
+watch(
+  () => form.content_mode,
+  (mode) => {
+    if (mode === 'JSON') {
+      if (editor.value) {
+        form.content_nodes_json = formatNodesJSON(htmlToMpNodes(editor.value.getHTML()))
+      }
+      return
+    }
+    setEditorHTML(nodesToHTML(previewNodes.value))
+  },
+)
+
+function toggleMark(name: 'bold' | 'italic' | 'strike' | 'blockquote' | 'bulletList' | 'orderedList') {
+  if (!editor.value) return
+  const chain = editor.value.chain().focus()
+  switch (name) {
+    case 'bold':
+      chain.toggleBold().run()
+      return
+    case 'italic':
+      chain.toggleItalic().run()
+      return
+    case 'strike':
+      chain.toggleStrike().run()
+      return
+    case 'blockquote':
+      chain.toggleBlockquote().run()
+      return
+    case 'bulletList':
+      chain.toggleBulletList().run()
+      return
+    case 'orderedList':
+      chain.toggleOrderedList().run()
+      return
+  }
+}
+
+function setHeading(level: 1 | 2 | 3) {
+  editor.value?.chain().focus().toggleHeading({ level }).run()
+}
+
+function setParagraph() {
+  editor.value?.chain().focus().setParagraph().run()
+}
+
+function insertLink() {
+  const href = window.prompt('输入链接地址')
+  if (!href || !editor.value) return
+  editor.value.chain().focus().extendMarkRange('link').setLink({ href }).run()
+}
+
+function insertImage() {
+  const src = window.prompt('输入图片 URL')
+  if (!src || !editor.value) return
+  editor.value.chain().focus().setImage({ src }).run()
 }
 
 async function save() {
@@ -186,6 +277,9 @@ function goDetail() {
 }
 
 onMounted(load)
+onBeforeUnmount(() => {
+  editor.value?.destroy()
+})
 </script>
 
 <template>
@@ -234,26 +328,38 @@ onMounted(load)
             <div class="notion-label mb-3">正文</div>
             <div class="mb-4 flex flex-wrap items-center gap-2">
               <Button
-                :type="form.content_format_code === 'PLAIN' ? 'primary' : 'default'"
-                @click="form.content_format_code = 'PLAIN'"
+                :type="form.content_mode === 'VISUAL' ? 'primary' : 'default'"
+                @click="form.content_mode = 'VISUAL'"
               >
-                纯文本
+                Tiptap 编辑
               </Button>
               <Button
-                :type="form.content_format_code === 'RICH_TEXT_NODES' ? 'primary' : 'default'"
-                @click="form.content_format_code = 'RICH_TEXT_NODES'"
+                :type="form.content_mode === 'JSON' ? 'primary' : 'default'"
+                @click="form.content_mode = 'JSON'"
               >
-                RichText JSON
+                JSON 高级模式
               </Button>
             </div>
 
-            <textarea
-              v-if="form.content_format_code === 'PLAIN'"
-              v-model="form.content_text"
-              class="notion-field notion-textarea"
-              style="min-height: 420px"
-              placeholder="直接编辑正文内容"
-            />
+            <div v-if="form.content_mode === 'VISUAL'">
+              <div class="mb-3 flex flex-wrap gap-2 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                <Button size="small" @click="setParagraph">正文</Button>
+                <Button size="small" @click="setHeading(1)">H1</Button>
+                <Button size="small" @click="setHeading(2)">H2</Button>
+                <Button size="small" @click="setHeading(3)">H3</Button>
+                <Button size="small" @click="toggleMark('bold')">加粗</Button>
+                <Button size="small" @click="toggleMark('italic')">斜体</Button>
+                <Button size="small" @click="toggleMark('strike')">删除线</Button>
+                <Button size="small" @click="toggleMark('bulletList')">无序列表</Button>
+                <Button size="small" @click="toggleMark('orderedList')">有序列表</Button>
+                <Button size="small" @click="toggleMark('blockquote')">引用</Button>
+                <Button size="small" @click="insertLink">链接</Button>
+                <Button size="small" @click="insertImage">图片</Button>
+              </div>
+              <div class="notion-field min-h-[420px] px-4 py-4">
+                <EditorContent :editor="editor" />
+              </div>
+            </div>
             <textarea
               v-else
               v-model="form.content_nodes_json"
@@ -330,14 +436,7 @@ onMounted(load)
               {{ form.summary || '摘要会显示在这里' }}
             </div>
             <div class="rounded-xl border border-zinc-200 bg-white p-4">
-              <div v-if="form.content_format_code === 'PLAIN'" class="whitespace-pre-line text-sm text-zinc-800">
-                {{ form.content_text || '正文预览区域' }}
-              </div>
-              <RichTextRenderer
-                v-else-if="previewNodes.length"
-                :nodes="previewNodes"
-                :base-url="baseUrl"
-              />
+              <RichTextRenderer v-if="previewNodes.length" :nodes="previewNodes" :base-url="baseUrl" />
               <div v-else class="text-sm text-zinc-400">等待合法的 RichText JSON</div>
             </div>
           </div>
@@ -346,4 +445,3 @@ onMounted(load)
     </div>
   </div>
 </template>
-

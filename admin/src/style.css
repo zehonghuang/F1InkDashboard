@@ -91,3 +91,64 @@ a {
   border: 1px solid #ece7e3;
   border-radius: 18px;
 }
+
+.tiptap > :first-child {
+  margin-top: 0;
+}
+
+.tiptap p {
+  margin: 0.8em 0;
+  line-height: 1.8;
+}
+
+.tiptap h1,
+.tiptap h2,
+.tiptap h3 {
+  margin: 1.2em 0 0.5em;
+  color: #111827;
+  font-weight: 700;
+}
+
+.tiptap h1 {
+  font-size: 1.85rem;
+}
+
+.tiptap h2 {
+  font-size: 1.45rem;
+}
+
+.tiptap h3 {
+  font-size: 1.2rem;
+}
+
+.tiptap ul,
+.tiptap ol {
+  padding-left: 1.5rem;
+}
+
+.tiptap blockquote {
+  margin: 1rem 0;
+  border-left: 3px solid #ed4014;
+  padding-left: 1rem;
+  color: #4b5563;
+}
+
+.tiptap a {
+  color: #ed4014;
+  text-decoration: underline;
+}
+
+.tiptap img {
+  display: block;
+  max-width: 100%;
+  border-radius: 12px;
+  margin: 1rem 0;
+}
+
+.tiptap .is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
