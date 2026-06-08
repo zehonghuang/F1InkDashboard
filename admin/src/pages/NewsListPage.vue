@@ -58,14 +58,8 @@ async function quickUpdate(id: string, patch: Partial<MpNewsItem>) {
   }
 }
 
-async function setHero(id: string) {
-  const ok = await confirmAction('设为 Hero', '确认将该新闻设为 HERO 吗？')
-  if (!ok) return
-  await quickUpdate(id, { layout_code: 'HERO', hero_display_code: '' })
-}
-
 async function setBanner(id: string) {
-  const ok = await confirmAction('设为 Banner', '确认将该新闻设为 HERO + BANNER 展示吗？')
+  const ok = await confirmAction('一键 Hero+Banner', '确认将该新闻一键设为 HERO + BANNER 展示吗？')
   if (!ok) return
   await quickUpdate(id, { layout_code: 'HERO', hero_display_code: 'BANNER' })
 }
@@ -134,7 +128,7 @@ const columns = computed(() => {
     {
       title: '操作',
       key: 'actions',
-      width: 260,
+      width: 320,
       render: (hh: typeof h, params: any) => {
         const Button = resolveComponent('Button') as any
         const it = params.row as MpNewsItem
@@ -156,22 +150,12 @@ const columns = computed(() => {
             {
               size: 'small',
               type: 'error',
-              disabled: busy || isHero,
-              loading: busy,
-              onClick: () => setHero(it.id),
-            },
-            () => 'Hero',
-          ),
-          hh(
-            Button,
-            {
-              size: 'small',
-              type: 'error',
               ghost: true,
               disabled: busy || isBanner,
+              loading: busy,
               onClick: () => setBanner(it.id),
             },
-            () => 'Banner',
+            () => 'Hero+Banner',
           ),
           hh(
             Button,
@@ -182,6 +166,16 @@ const columns = computed(() => {
               onClick: () => cancelHero(it.id),
             },
             () => '取消',
+          ),
+          hh(
+            Button,
+            {
+              size: 'small',
+              type: 'default',
+              disabled: busy,
+              onClick: () => router.push({ name: 'news-edit', params: { id: it.id } }),
+            },
+            () => '编辑',
           ),
         ])
       },

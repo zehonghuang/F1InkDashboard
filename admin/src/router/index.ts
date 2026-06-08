@@ -4,6 +4,7 @@ import DeviceDetailPage from '@/pages/DeviceDetailPage.vue'
 import DevicesListPage from '@/pages/DevicesListPage.vue'
 import HomePage from '@/pages/HomePage.vue'
 import NewsDetailPage from '@/pages/NewsDetailPage.vue'
+import NewsEditorPage from '@/pages/NewsEditorPage.vue'
 import NewsListPage from '@/pages/NewsListPage.vue'
 import NotFoundPage from '@/pages/NotFoundPage.vue'
 import SettingsPage from '@/pages/SettingsPage.vue'
@@ -27,6 +28,12 @@ const routes: RouteRecordRaw[] = [
         name: 'news-list',
         component: NewsListPage,
         meta: { title: '新闻' },
+      },
+      {
+        path: 'news/:id/edit',
+        name: 'news-edit',
+        component: NewsEditorPage,
+        meta: { title: '编辑文章' },
       },
       {
         path: 'news/:id',

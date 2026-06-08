@@ -29,3 +29,65 @@ body {
 a {
   color: inherit;
 }
+
+.notion-page {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.notion-doc {
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 18px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+}
+
+.notion-title-input {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #111827;
+  font-size: 42px;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.notion-title-input::placeholder {
+  color: #9ca3af;
+}
+
+.notion-field {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  color: #17233d;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.notion-field:focus {
+  border-color: #ed4014;
+  box-shadow: 0 0 0 3px rgba(237, 64, 20, 0.12);
+}
+
+.notion-label {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.notion-textarea {
+  min-height: 220px;
+  resize: vertical;
+}
+
+.notion-sidebar {
+  background: linear-gradient(180deg, #ffffff 0%, #fafaf9 100%);
+  border: 1px solid #ece7e3;
+  border-radius: 18px;
+}

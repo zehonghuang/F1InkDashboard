@@ -70,6 +70,10 @@ function goBack() {
   router.push({ name: 'news-list' })
 }
 
+function goEdit() {
+  router.push({ name: 'news-edit', params: { id: id.value } })
+}
+
 onMounted(load)
 </script>
 
@@ -79,7 +83,10 @@ onMounted(load)
       <template #title>新闻预览</template>
       <div class="flex items-center justify-between gap-3">
         <div class="text-xs text-zinc-400">ID：{{ id }}</div>
-        <Button size="small" type="default" @click="goBack">返回列表</Button>
+        <div class="flex gap-2">
+          <Button size="small" type="default" @click="goEdit">编辑文章</Button>
+          <Button size="small" type="default" @click="goBack">返回列表</Button>
+        </div>
       </div>
       <Alert v-if="errorText" type="error" show-icon class="mt-3">{{ errorText }}</Alert>
     </Card>
@@ -88,14 +95,14 @@ onMounted(load)
       <Card class="col-span-12 lg:col-span-4" :loading="loading">
         <template #title>文章信息</template>
         <div v-if="item" class="space-y-3">
-          <div class="text-sm text-zinc-100 font-semibold">{{ item.title }}</div>
+          <div class="text-sm font-semibold text-zinc-900">{{ item.title }}</div>
           <div class="text-xs text-zinc-400">{{ item.tag_text }} · {{ item.published_at }}</div>
-          <div class="text-sm text-zinc-300 whitespace-pre-line">{{ item.summary }}</div>
+          <div class="whitespace-pre-line text-sm text-zinc-700">{{ item.summary }}</div>
           <div v-if="item.source?.name || item.source?.url" class="text-xs text-zinc-400">
             来源：
             <a
               v-if="item.source?.url"
-              class="underline hover:text-red-400"
+              class="underline text-zinc-700 hover:text-red-400"
               :href="item.source.url"
               target="_blank"
               rel="noopener noreferrer"
@@ -137,7 +144,7 @@ onMounted(load)
             :loading="saving"
             @click="updateItem({ layout_code: 'HERO', hero_display_code: 'BANNER' })"
           >
-            设为 Banner
+            一键 Hero+Banner
           </Button>
           <Button
             type="default"
@@ -146,6 +153,7 @@ onMounted(load)
           >
             取消 Hero
           </Button>
+          <Button type="default" :loading="saving" @click="goEdit">编辑文章</Button>
         </div>
         <div class="mt-2 text-xs text-zinc-400">
           说明：以上操作通过回写 /api/v1/mp/news/ingest 完成；若服务端配置了 NEWS_INGEST_TOKEN，请在“设置”页填入 Token。
