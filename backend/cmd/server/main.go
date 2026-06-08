@@ -5,12 +5,14 @@ import (
 	"os"
 	"strings"
 
+	"github.com/joho/godotenv"
 	"toinc_f1_backend/internal/config"
 	"toinc_f1_backend/internal/db"
 	"toinc_f1_backend/internal/httpserver"
 )
 
 func main() {
+	loadEnvFiles()
 	cfg := config.FromEnv()
 	logStartupConfig(cfg)
 	validateStartupConfig(cfg)
@@ -23,6 +25,14 @@ func main() {
 	s := httpserver.New(cfg, database)
 	if err := s.Router.Run(cfg.ListenAddr); err != nil {
 		log.Fatalf("listen failed: %v", err)
+	}
+}
+
+func loadEnvFiles() {
+	for _, name := range []string{".env.local", ".env"} {
+		if err := godotenv.Overload(name); err == nil {
+			log.Printf("loaded env file: %s", name)
+		}
 	}
 }
 

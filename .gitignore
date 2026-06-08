@@ -23,6 +23,9 @@ venv/
 env/
 backend/.venv/
 backend/.deps/
+backend/.env
+backend/.env.local
+backend/.env.*.local
 backend/static/news/
 mp_news_ingest/raw_html/
 
