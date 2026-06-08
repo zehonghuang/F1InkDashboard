@@ -263,6 +263,7 @@ Page({
     raceWeek: null,
     raceWeekSessionLabel: "",
     raceWeekSessionLabelCompact: false,
+    raceWeekShowFlag: false,
     countdown: null,
     qualiOpen: false,
     qualiVisible: false,
@@ -445,6 +446,10 @@ Page({
     if (k === "RACE") return d.sessionRace || k
     return k
   },
+  shouldShowRaceWeekFlag(seconds, race) {
+    const s = Math.max(0, Math.floor(Number(seconds) || 0))
+    return Boolean(race && race.flagUrl && s > 24 * 3600)
+  },
   buildRaceWeekSessionLabelState(label) {
     const s = String(label || "").trim()
     const hasCjk = /[\u4e00-\u9fff]/.test(s)
@@ -465,7 +470,10 @@ Page({
     this._raceWeekTimer = setInterval(() => {
       const remainSec = Math.max(0, Math.floor((this._raceWeekTargetMs - Date.now()) / 1000))
       const nextCountdown = this.computeCountdown(remainSec)
-      this.setData({ countdown: nextCountdown })
+      this.setData({
+        countdown: nextCountdown,
+        raceWeekShowFlag: this.shouldShowRaceWeekFlag(remainSec, this.data.raceWeek && this.data.raceWeek.race)
+      })
       if (remainSec <= 0) {
         this.stopRaceWeekTimer()
       }
@@ -479,20 +487,25 @@ Page({
       const ns = res && res.nextSession ? res.nextSession : null
       if (!res || !res.isRaceWeek || !ns || !ns.startsAtUTC) {
         this.stopRaceWeekTimer()
-        this.setData({ raceWeek: res || null, ...this.buildRaceWeekSessionLabelState(""), countdown: null })
+        this.setData({ raceWeek: res || null, ...this.buildRaceWeekSessionLabelState(""), raceWeekShowFlag: false, countdown: null })
         return
       }
       const targetMs = Date.parse(ns.startsAtUTC)
       const remain = Math.max(0, Math.floor((targetMs - Date.now()) / 1000))
       const dict = i18n.getDict()
       const label = this.getSessionLabel(ns.key, dict)
-      this.setData({ raceWeek: res, ...this.buildRaceWeekSessionLabelState(label), countdown: this.computeCountdown(remain) })
+      this.setData({
+        raceWeek: res,
+        ...this.buildRaceWeekSessionLabelState(label),
+        raceWeekShowFlag: this.shouldShowRaceWeekFlag(remain, res && res.race),
+        countdown: this.computeCountdown(remain)
+      })
       if (Number.isFinite(targetMs) && targetMs > Date.now()) {
         this.startRaceWeekTimer(targetMs)
       }
     } catch (e) {
       this.stopRaceWeekTimer()
-      this.setData({ raceWeek: null, ...this.buildRaceWeekSessionLabelState(""), countdown: null })
+      this.setData({ raceWeek: null, ...this.buildRaceWeekSessionLabelState(""), raceWeekShowFlag: false, countdown: null })
     }
   },
   onToggleQualiPanel() {

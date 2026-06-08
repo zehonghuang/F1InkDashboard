@@ -63,6 +63,12 @@
   letter-spacing: 1rpx;
 }
 
+.raceweek-countdown-flag {
+  width: 44rpx;
+  height: 30rpx;
+  border-radius: 4rpx;
+}
+
 .raceweek-countdown-clock {
   display: flex;
   flex-direction: row;

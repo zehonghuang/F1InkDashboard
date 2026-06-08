@@ -65,8 +65,14 @@
 
       <view wx:if="{{ raceWeek && raceWeek.isRaceWeek && raceWeek.nextSession && countdown }}" class="raceweek-countdown">
         <view class="raceweek-countdown-left">
-          <text class="raceweek-countdown-session {{ raceWeekSessionLabelCompact ? 'raceweek-countdown-session-compact' : '' }}">{{ raceWeekSessionLabel }}</text>
-          <text class="raceweek-countdown-suffix">{{ i18n.news.startsInSuffix }}</text>
+          <block wx:if="{{ raceWeekShowFlag && raceWeek && raceWeek.race && raceWeek.race.flagUrl }}">
+            <image class="raceweek-countdown-flag" src="{{ raceWeek.race.flagUrl }}" mode="aspectFit" />
+            <text class="raceweek-countdown-session {{ raceWeekSessionLabelCompact ? 'raceweek-countdown-session-compact' : '' }}">{{ raceWeekSessionLabel }}</text>
+          </block>
+          <block wx:else>
+            <text class="raceweek-countdown-session {{ raceWeekSessionLabelCompact ? 'raceweek-countdown-session-compact' : '' }}">{{ raceWeekSessionLabel }}</text>
+            <text class="raceweek-countdown-suffix">{{ i18n.news.startsInSuffix }}</text>
+          </block>
         </view>
         <view class="raceweek-countdown-mid">
           <analog-clock sizeRpx="84" />
