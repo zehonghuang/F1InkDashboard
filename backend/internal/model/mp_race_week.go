@@ -1,12 +1,13 @@
 package model
 
 type MpRaceWeekRace struct {
-	Season               int    `json:"season"`
-	Round                int    `json:"round"`
-	RaceName             string `json:"race_name"`
-	RaceDateUTC          string `json:"race_date_utc"`
-	RaceDateLocal        string `json:"race_date_local"`
-	OpenF1RaceSessionKey *int   `json:"openf1_race_session_key,omitempty"`
+	Season               int     `json:"season"`
+	Round                int     `json:"round"`
+	RaceName             string  `json:"race_name"`
+	Country              *string `json:"country,omitempty"`
+	RaceDateUTC          string  `json:"race_date_utc"`
+	RaceDateLocal        string  `json:"race_date_local"`
+	OpenF1RaceSessionKey *int    `json:"openf1_race_session_key,omitempty"`
 }
 
 type MpRaceWeekNextSession struct {

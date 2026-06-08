@@ -84,11 +84,18 @@ func MpRaceWeek(db *gorm.DB) gin.HandlerFunc {
 				x := skRace
 				skRaceOut = &x
 			}
+			country := scheduleCountryFromRace(weekRace)
+			var countryOut *string
+			if country != "" && country != "<nil>" {
+				x := country
+				countryOut = &x
+			}
 
 			outRace = &model.MpRaceWeekRace{
 				Season:               season,
 				Round:                round,
 				RaceName:             raceName,
+				Country:              countryOut,
 				RaceDateUTC:          weekRaceDtUTC.Format(time.RFC3339Nano),
 				RaceDateLocal:        weekRaceDtUTC.In(loc).Format("2006-01-02 15:04"),
 				OpenF1RaceSessionKey: skRaceOut,
@@ -156,4 +163,16 @@ func MpRaceWeek(db *gorm.DB) gin.HandlerFunc {
 			NextSession:    outNext,
 		})
 	}
+}
+
+func scheduleCountryFromRace(race map[string]any) string {
+	c, ok := race["Circuit"].(map[string]any)
+	if !ok || c == nil {
+		return ""
+	}
+	loc, ok := c["Location"].(map[string]any)
+	if !ok || loc == nil {
+		return ""
+	}
+	return strings.TrimSpace(fmt.Sprintf("%v", loc["country"]))
 }
