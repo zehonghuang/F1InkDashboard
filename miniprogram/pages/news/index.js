@@ -420,7 +420,7 @@ Page({
   computeCountdown(seconds) {
     const s = Math.max(0, Math.floor(Number(seconds) || 0))
     const hh = Math.floor(s / 3600)
-    if (hh > 99) {
+    if (s > 86400) {
       const dd = Math.floor(s / 86400)
       const rem = s - dd * 86400
       const hh2 = Math.floor(rem / 3600)
