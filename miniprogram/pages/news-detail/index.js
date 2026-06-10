@@ -40,6 +40,24 @@ function buildGalleryPreviewImages(images, activeIndex) {
   return out
 }
 
+function buildViewerStackImages(images, activeIndex) {
+  const list = Array.isArray(images) ? images.filter((x) => x && x.src) : []
+  const total = list.length
+  if (total <= 1) return []
+  const out = []
+  const layers = Math.min(total - 1, 2)
+  for (let offset = 1; offset <= layers; offset += 1) {
+    const imageIndex = normalizeGalleryIndex(activeIndex + offset, total)
+    const it = list[imageIndex]
+    out.push({
+      src: it.src,
+      alt: it.alt || "",
+      layerClass: offset === 1 ? "detail-viewer-stack-mid" : "detail-viewer-stack-back"
+    })
+  }
+  return out
+}
+
 function buildGalleryBlock(images, idx) {
   const list = Array.isArray(images) ? images.filter((x) => x && x.src) : []
   return {
@@ -76,6 +94,7 @@ function decorateGalleryBlocks(blocks, articleImages) {
       ...block,
       articleStartIndex: activeIndex,
       activeIndex,
+      inlineImage: images[activeIndex] || null,
       previewImages: buildGalleryPreviewImages(images, activeIndex),
       count: images.length,
       stacked: images.length > 1,
@@ -138,6 +157,7 @@ Page({
     viewerActive: false,
     viewerImages: [],
     viewerIndex: 0,
+    viewerStackImages: [],
     viewerCountText: "",
     loading: false,
     errorText: ""
@@ -206,6 +226,7 @@ Page({
       viewerActive: false,
       viewerImages: images,
       viewerIndex,
+      viewerStackImages: buildViewerStackImages(images, viewerIndex),
       viewerCountText: this.formatViewerCountText(viewerIndex, images.length)
     }, () => {
       wx.nextTick(() => {
@@ -234,6 +255,7 @@ Page({
     const total = Array.isArray(this.data.viewerImages) ? this.data.viewerImages.length : 0
     this.setData({
       viewerIndex: index,
+      viewerStackImages: buildViewerStackImages(this.data.viewerImages, index),
       viewerCountText: this.formatViewerCountText(index, total)
     })
   },
@@ -245,6 +267,7 @@ Page({
         viewerShow: false,
         viewerImages: [],
         viewerIndex: 0,
+        viewerStackImages: [],
         viewerCountText: ""
       })
     }, 180)
