@@ -10,6 +10,15 @@ export default defineConfig(({ mode }) => {
   const target = (env.VITE_DEV_PROXY_TARGET || env.VITE_API_BASE || 'http://127.0.0.1:8008')
     .trim()
     .replace(/\/+$/, '')
+  const allowedHosts = [
+    'localhost',
+    '127.0.0.1',
+    'winpc-f1admin.normal-person.icu',
+    ...String(env.VITE_ALLOWED_HOSTS || '')
+      .split(',')
+      .map((it) => it.trim())
+      .filter(Boolean),
+  ]
 
   return {
     build: {
@@ -34,6 +43,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
+      allowedHosts,
       proxy: {
         '/api': { target, changeOrigin: true, ws: true },
         '/ws': { target, changeOrigin: true, ws: true },
