@@ -9,6 +9,52 @@
       <view class="detail-time">{{ timeText }}</view>
     </view>
     <view wx:if="{{ contentFormatCode === 'PLAIN' }}" class="detail-content">{{ contentText }}</view>
-    <rich-text wx:if="{{ contentFormatCode === 'RICH_TEXT_NODES' }}" class="detail-rich" nodes="{{ contentNodes }}" />
+    <view wx:if="{{ contentFormatCode === 'RICH_TEXT_NODES' }}" class="detail-rich">
+      <block wx:for="{{ contentBlocks }}" wx:key="id" wx:for-item="block" wx:for-index="blockIndex">
+        <rich-text wx:if="{{ block.type === 'rich' }}" class="detail-rich-block" nodes="{{ block.nodes }}" />
+        <view wx:elif="{{ block.type === 'gallery' }}" class="detail-gallery-block">
+          <view class="detail-gallery-shell {{ block.stacked ? 'detail-gallery-shell-stack' : 'detail-gallery-shell-single' }}">
+            <block wx:for="{{ block.previewImages }}" wx:key="src" wx:for-item="galleryImage">
+              <view class="detail-gallery-card {{ galleryImage.layerClass }}">
+                <image class="detail-gallery-image" src="{{ galleryImage.src }}" mode="aspectFill" lazy-load />
+              </view>
+            </block>
+            <view class="detail-gallery-open" catchtap="onTapGallery" data-block-index="{{ blockIndex }}" />
+            <view wx:if="{{ block.stacked }}" class="detail-gallery-hit detail-gallery-hit-prev" catchtap="onGalleryStep" data-block-index="{{ blockIndex }}" data-delta="-1" />
+            <view wx:if="{{ block.stacked }}" class="detail-gallery-hit detail-gallery-hit-next" catchtap="onGalleryStep" data-block-index="{{ blockIndex }}" data-delta="1" />
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+  <view
+    wx:if="{{ viewerShow }}"
+    class="detail-viewer-mask {{ viewerActive ? 'detail-viewer-mask-active' : '' }}"
+    bindtap="onCloseViewer"
+    catchtouchmove="noop"
+  >
+    <view class="detail-viewer {{ viewerActive ? 'detail-viewer-active' : '' }}" catchtap="noop">
+      <swiper
+        class="detail-viewer-swiper"
+        current="{{ viewerIndex }}"
+        bindchange="onViewerChange"
+        circular="{{ viewerImages.length > 1 }}"
+        indicator-dots="{{ viewerImages.length > 1 }}"
+        indicator-color="rgba(255,255,255,0.28)"
+        indicator-active-color="#ffffff"
+      >
+        <block wx:for="{{ viewerImages }}" wx:key="src" wx:for-item="viewerImage">
+          <swiper-item>
+            <view class="detail-viewer-slide">
+              <image class="detail-viewer-image" src="{{ viewerImage.src }}" mode="aspectFit" />
+            </view>
+          </swiper-item>
+        </block>
+      </swiper>
+      <view class="detail-viewer-topbar">
+        <view class="detail-viewer-count">{{ viewerCountText }}</view>
+        <view class="detail-viewer-close" bindtap="onCloseViewer">×</view>
+      </view>
+    </view>
   </view>
 </view>
