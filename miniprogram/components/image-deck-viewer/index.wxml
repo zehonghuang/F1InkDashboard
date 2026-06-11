@@ -6,21 +6,48 @@
 >
   <view class="detail-viewer {{ active ? 'detail-viewer-active' : '' }}">
     <view class="detail-viewer-stage">
-      <block wx:for="{{ viewerStackImages }}" wx:key="src" wx:for-item="stackImage">
-        <view
-          class="detail-viewer-stack-card {{ stackImage.layerClass }}"
-          style="{{ stackImage.boxStyle }}{{ stackImage.layerClass === 'detail-viewer-stack-mid' ? viewerStackMidStyle : stackImage.layerClass === 'detail-viewer-stack-back' ? viewerStackBackStyle : stackImage.layerClass === 'detail-viewer-stack-bottom' ? viewerStackBottomStyle : '' }}"
-          catchtap="stopTap"
-        >
-          <image
-            class="detail-viewer-stack-image"
-            src="{{ stackImage.src }}"
-            mode="aspectFit"
-            data-src="{{ stackImage.src }}"
-            bindload="onViewerImageLoad"
-          />
-        </view>
-      </block>
+      <view
+        wx:if="{{ viewerStackBottomImage && viewerStackBottomImage.src }}"
+        class="detail-viewer-stack-card detail-viewer-stack-bottom"
+        style="{{ viewerStackBottomImage.boxStyle }}{{ viewerStackBottomStyle }}"
+        catchtap="stopTap"
+      >
+        <image
+          class="detail-viewer-stack-image"
+          src="{{ viewerStackBottomImage.src }}"
+          mode="aspectFit"
+          data-src="{{ viewerStackBottomImage.src }}"
+          bindload="onViewerImageLoad"
+        />
+      </view>
+      <view
+        wx:if="{{ viewerStackBackImage && viewerStackBackImage.src }}"
+        class="detail-viewer-stack-card detail-viewer-stack-back"
+        style="{{ viewerStackBackImage.boxStyle }}{{ viewerStackBackStyle }}"
+        catchtap="stopTap"
+      >
+        <image
+          class="detail-viewer-stack-image"
+          src="{{ viewerStackBackImage.src }}"
+          mode="aspectFit"
+          data-src="{{ viewerStackBackImage.src }}"
+          bindload="onViewerImageLoad"
+        />
+      </view>
+      <view
+        wx:if="{{ viewerStackMidImage && viewerStackMidImage.src }}"
+        class="detail-viewer-stack-card detail-viewer-stack-mid"
+        style="{{ viewerStackMidImage.boxStyle }}{{ viewerStackMidStyle }}"
+        catchtap="stopTap"
+      >
+        <image
+          class="detail-viewer-stack-image"
+          src="{{ viewerStackMidImage.src }}"
+          mode="aspectFit"
+          data-src="{{ viewerStackMidImage.src }}"
+          bindload="onViewerImageLoad"
+        />
+      </view>
       <view
         class="detail-viewer-front"
         style="{{ viewerFrontBoxStyle }}{{ viewerFrontStyle }}"

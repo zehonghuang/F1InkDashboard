@@ -72,7 +72,7 @@
   overflow: hidden;
   background: transparent;
   border: 1rpx solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 28rpx 72rpx rgba(0, 0, 0, 0.38);
+  box-shadow: 0 18rpx 48rpx rgba(0, 0, 0, 0.3);
   transform-origin: 50% 50%;
   transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease-out;
 }
@@ -110,7 +110,7 @@
   overflow: hidden;
   background: transparent;
   border: 1rpx solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 28rpx 72rpx rgba(0, 0, 0, 0.42);
+  box-shadow: 0 24rpx 60rpx rgba(0, 0, 0, 0.38);
 }
 
 .detail-viewer-slide {
