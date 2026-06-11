@@ -141,13 +141,6 @@
   text-align: center;
 }
 
-.detail-viewer-swiper {
-  position: relative;
-  z-index: 3;
-  width: 100%;
-  height: 100%;
-}
-
 .detail-viewer-stage {
   position: relative;
   width: calc(100% - 88rpx);
@@ -160,31 +153,44 @@
   position: absolute;
   top: 50%;
   left: 0;
-  width: 100%;
-  height: 76%;
   border-radius: 28rpx;
   overflow: hidden;
-  background: #080808;
-  border: 1rpx solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  border: 1rpx solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 28rpx 72rpx rgba(0, 0, 0, 0.38);
   transform-origin: 50% 50%;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease-out;
 }
 
 .detail-viewer-stack-mid {
-  z-index: 2;
+  z-index: 1;
   transform: translate3d(42rpx, -48%, 0) scale(0.95);
-  opacity: 0.92;
+  opacity: 0.9;
 }
 
 .detail-viewer-stack-back {
-  z-index: 1;
+  z-index: 0;
   transform: translate3d(82rpx, -46%, 0) scale(0.9);
-  opacity: 0.84;
+  opacity: 0.8;
 }
 
 .detail-viewer-stack-image {
   width: 100%;
   height: 100%;
+}
+
+.detail-viewer-front {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 3;
+  transform: translate3d(0, -50%, 0);
+  border-radius: 28rpx;
+  overflow: hidden;
+  background: transparent;
+  border: 1rpx solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 28rpx 72rpx rgba(0, 0, 0, 0.42);
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease-out;
 }
 
 .detail-viewer-slide {
@@ -193,24 +199,37 @@
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-}
-
-.detail-viewer-card {
-  position: relative;
-  z-index: 3;
-  width: 100%;
-  height: 76%;
-  border-radius: 28rpx;
-  overflow: hidden;
-  background: #080808;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 28rpx 72rpx rgba(0, 0, 0, 0.42);
+  justify-content: center;
 }
 
 .detail-viewer-image {
   width: 100%;
   height: 100%;
+}
+
+.detail-viewer-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(20rpx + env(safe-area-inset-bottom));
+  z-index: 4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.detail-viewer-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.detail-viewer-dot-active {
+  width: 18rpx;
+  height: 18rpx;
+  background: rgba(255, 255, 255, 0.96);
 }
 
 .status {
