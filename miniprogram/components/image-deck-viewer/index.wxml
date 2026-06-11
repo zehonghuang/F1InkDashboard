@@ -1,0 +1,55 @@
+<view
+  wx:if="{{ rendered }}"
+  class="detail-viewer-mask {{ active ? 'detail-viewer-mask-active' : '' }}"
+  bindtap="requestClose"
+  catchtouchmove="stopTap"
+>
+  <view class="detail-viewer {{ active ? 'detail-viewer-active' : '' }}">
+    <view class="detail-viewer-stage">
+      <block wx:for="{{ viewerStackImages }}" wx:key="src" wx:for-item="stackImage">
+        <view
+          class="detail-viewer-stack-card {{ stackImage.layerClass }}"
+          style="{{ stackImage.boxStyle }}{{ stackImage.layerClass === 'detail-viewer-stack-mid' ? viewerStackMidStyle : stackImage.layerClass === 'detail-viewer-stack-back' ? viewerStackBackStyle : stackImage.layerClass === 'detail-viewer-stack-bottom' ? viewerStackBottomStyle : '' }}"
+          catchtap="stopTap"
+        >
+          <image
+            class="detail-viewer-stack-image"
+            src="{{ stackImage.src }}"
+            mode="aspectFit"
+            data-src="{{ stackImage.src }}"
+            bindload="onViewerImageLoad"
+          />
+        </view>
+      </block>
+      <view
+        class="detail-viewer-front"
+        style="{{ viewerFrontBoxStyle }}{{ viewerFrontStyle }}"
+        catchtap="stopTap"
+        catchtouchstart="onViewerTouchStart"
+        catchtouchmove="onViewerTouchMove"
+        catchtouchend="onViewerTouchEnd"
+        catchtouchcancel="onViewerTouchCancel"
+      >
+        <view class="detail-viewer-slide">
+          <image
+            wx:if="{{ viewerFrontImage && viewerFrontImage.src }}"
+            class="detail-viewer-image"
+            src="{{ viewerFrontImage.src }}"
+            mode="aspectFit"
+            data-src="{{ viewerFrontImage.src }}"
+            bindload="onViewerImageLoad"
+          />
+        </view>
+      </view>
+    </view>
+    <view class="detail-viewer-topbar">
+      <view class="detail-viewer-count">{{ viewerCountText }}</view>
+      <view class="detail-viewer-close" bindtap="requestClose">×</view>
+    </view>
+    <view wx:if="{{ viewerImages.length > 1 }}" class="detail-viewer-dots">
+      <block wx:for="{{ viewerImages }}" wx:key="src" wx:for-index="dotIndex">
+        <view class="detail-viewer-dot {{ dotIndex === viewerIndex ? 'detail-viewer-dot-active' : '' }}" />
+      </block>
+    </view>
+  </view>
+</view>
