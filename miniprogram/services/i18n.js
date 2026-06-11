@@ -75,7 +75,8 @@ const ZH_CN = {
     title: "资讯详情",
     loading: "加载中...",
     missingId: "缺少资讯 ID",
-    loadFailed: "加载失败"
+    loadFailed: "加载失败",
+    expand: "展开"
   },
   archive: {
     headerTitle: "F1 数据分析",
@@ -257,7 +258,8 @@ const EN_US = {
     title: "News",
     loading: "Loading...",
     missingId: "Missing news id",
-    loadFailed: "Load failed"
+    loadFailed: "Load failed",
+    expand: "Open"
   },
   archive: {
     headerTitle: "F1 Analytics",

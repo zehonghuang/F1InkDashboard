@@ -1,0 +1,82 @@
+<view
+  wx:if="{{ rendered }}"
+  class="detail-viewer-mask {{ active ? 'detail-viewer-mask-active' : '' }}"
+  bindtap="requestClose"
+  catchtouchmove="stopTap"
+>
+  <view class="detail-viewer {{ active ? 'detail-viewer-active' : '' }}">
+    <view class="detail-viewer-stage">
+      <view
+        wx:if="{{ viewerStackBottomImage && viewerStackBottomImage.src }}"
+        class="detail-viewer-stack-card detail-viewer-stack-bottom"
+        style="{{ viewerStackBottomImage.boxStyle }}{{ viewerStackBottomStyle }}"
+        catchtap="stopTap"
+      >
+        <image
+          class="detail-viewer-stack-image"
+          src="{{ viewerStackBottomImage.src }}"
+          mode="aspectFit"
+          data-src="{{ viewerStackBottomImage.src }}"
+          bindload="onViewerImageLoad"
+        />
+      </view>
+      <view
+        wx:if="{{ viewerStackBackImage && viewerStackBackImage.src }}"
+        class="detail-viewer-stack-card detail-viewer-stack-back"
+        style="{{ viewerStackBackImage.boxStyle }}{{ viewerStackBackStyle }}"
+        catchtap="stopTap"
+      >
+        <image
+          class="detail-viewer-stack-image"
+          src="{{ viewerStackBackImage.src }}"
+          mode="aspectFit"
+          data-src="{{ viewerStackBackImage.src }}"
+          bindload="onViewerImageLoad"
+        />
+      </view>
+      <view
+        wx:if="{{ viewerStackMidImage && viewerStackMidImage.src }}"
+        class="detail-viewer-stack-card detail-viewer-stack-mid"
+        style="{{ viewerStackMidImage.boxStyle }}{{ viewerStackMidStyle }}"
+        catchtap="stopTap"
+      >
+        <image
+          class="detail-viewer-stack-image"
+          src="{{ viewerStackMidImage.src }}"
+          mode="aspectFit"
+          data-src="{{ viewerStackMidImage.src }}"
+          bindload="onViewerImageLoad"
+        />
+      </view>
+      <view
+        class="detail-viewer-front"
+        style="{{ viewerFrontBoxStyle }}{{ viewerFrontStyle }}"
+        catchtap="stopTap"
+        catchtouchstart="onViewerTouchStart"
+        catchtouchmove="onViewerTouchMove"
+        catchtouchend="onViewerTouchEnd"
+        catchtouchcancel="onViewerTouchCancel"
+      >
+        <view class="detail-viewer-slide">
+          <image
+            wx:if="{{ viewerFrontImage && viewerFrontImage.src }}"
+            class="detail-viewer-image"
+            src="{{ viewerFrontImage.src }}"
+            mode="aspectFit"
+            data-src="{{ viewerFrontImage.src }}"
+            bindload="onViewerImageLoad"
+          />
+        </view>
+      </view>
+    </view>
+    <view class="detail-viewer-topbar">
+      <view class="detail-viewer-count">{{ viewerCountText }}</view>
+      <view class="detail-viewer-close" bindtap="requestClose">×</view>
+    </view>
+    <view wx:if="{{ viewerImages.length > 1 }}" class="detail-viewer-dots">
+      <block wx:for="{{ viewerImages }}" wx:key="src" wx:for-index="dotIndex">
+        <view class="detail-viewer-dot {{ dotIndex === viewerIndex ? 'detail-viewer-dot-active' : '' }}" />
+      </block>
+    </view>
+  </view>
+</view>

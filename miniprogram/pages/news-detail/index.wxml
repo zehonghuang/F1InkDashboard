@@ -9,6 +9,27 @@
       <view class="detail-time">{{ timeText }}</view>
     </view>
     <view wx:if="{{ contentFormatCode === 'PLAIN' }}" class="detail-content">{{ contentText }}</view>
-    <rich-text wx:if="{{ contentFormatCode === 'RICH_TEXT_NODES' }}" class="detail-rich" nodes="{{ contentNodes }}" />
+    <view wx:if="{{ contentFormatCode === 'RICH_TEXT_NODES' }}" class="detail-rich">
+      <block wx:for="{{ contentBlocks }}" wx:key="id" wx:for-item="block" wx:for-index="blockIndex">
+        <rich-text wx:if="{{ block.type === 'rich' }}" class="detail-rich-block" nodes="{{ block.nodes }}" />
+        <view wx:elif="{{ block.type === 'gallery' }}" class="detail-gallery-block" catchtap="onTapGallery" data-block-index="{{ blockIndex }}">
+          <view class="detail-gallery-shell detail-gallery-shell-single">
+            <image
+              wx:if="{{ block.inlineImage && block.inlineImage.src }}"
+              class="detail-gallery-image"
+              src="{{ block.inlineImage.src }}"
+              mode="aspectFill"
+              lazy-load
+            />
+          </view>
+        </view>
+      </block>
+    </view>
   </view>
+  <image-deck-viewer
+    visible="{{ viewerVisible }}"
+    images="{{ articleImages }}"
+    initialIndex="{{ viewerInitialIndex }}"
+    bindclose="onViewerClose"
+  />
 </view>
