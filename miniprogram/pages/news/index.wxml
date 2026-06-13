@@ -96,7 +96,6 @@
       <view wx:if="{{liveStandingsRows.length}}" class="quali-panel live-standings-panel">
         <view class="quali-panel-header">
           <view class="quali-panel-title">Live Standings</view>
-          <view class="live-standings-debug-btn" bindtap="onSwapLiveStandingsRandomRows">Swap Random</view>
         </view>
         <view class="quali-panel-body-static">
           <ms-live-standings-table title="" rows="{{liveStandingsRows}}" dense bodyHeightRpx="520" maxRows="0" />

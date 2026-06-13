@@ -5,6 +5,7 @@ import (
 	"toinc_f1_backend/internal/config"
 	"toinc_f1_backend/internal/db"
 	"toinc_f1_backend/internal/httpserver/handlers"
+	"toinc_f1_backend/internal/motorsportlive"
 	"toinc_f1_backend/internal/openf1scheduler"
 	"toinc_f1_backend/internal/tasks"
 	"toinc_f1_backend/internal/teamdrivercache"
@@ -19,28 +20,35 @@ import (
 )
 
 type Server struct {
-	Router    *gin.Engine
-	DB        *db.DB
-	Config    config.Config
-	Cache     *cache.TTLCache
-	TeamCache *teamdrivercache.Manager
-	EchoHub   *ws.Hub
-	NewsHub   *ws.Hub
-	OpenF1Hub *ws.Hub
+	Router            *gin.Engine
+	DB                *db.DB
+	Config            config.Config
+	Cache             *cache.TTLCache
+	TeamCache         *teamdrivercache.Manager
+	EchoHub           *ws.Hub
+	NewsHub           *ws.Hub
+	OpenF1Hub         *ws.Hub
+	MotorsportLiveHub *ws.Hub
+	MotorsportLive    *motorsportlive.Manager
 }
 
 func New(cfg config.Config, database *db.DB) *Server {
+	motorsportLiveHub := ws.NewHub()
+	motorsportLiveMgr := motorsportlive.New(cfg, motorsportLiveHub)
 	s := &Server{
-		Router:    gin.New(),
-		DB:        database,
-		Config:    cfg,
-		Cache:     cache.New(),
-		TeamCache: teamdrivercache.New(gormOrNil(database), cfg.StaticDir),
-		EchoHub:   ws.NewHub(),
-		NewsHub:   ws.NewHub(),
-		OpenF1Hub: ws.NewHub(),
+		Router:            gin.New(),
+		DB:                database,
+		Config:            cfg,
+		Cache:             cache.New(),
+		TeamCache:         teamdrivercache.New(gormOrNil(database), cfg.StaticDir),
+		EchoHub:           ws.NewHub(),
+		NewsHub:           ws.NewHub(),
+		OpenF1Hub:         ws.NewHub(),
+		MotorsportLiveHub: motorsportLiveHub,
+		MotorsportLive:    motorsportLiveMgr,
 	}
 	s.TeamCache.Start()
+	s.MotorsportLive.Start()
 
 	s.Router.Use(gin.Recovery())
 	_ = s.Router.SetTrustedProxies(cfg.TrustedProxies)
@@ -74,6 +82,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/ws/openf1", handlers.WsOpenF1(cfg, s.OpenF1Hub))
 	s.Router.GET("/ws/openf1/raw", handlers.WsOpenF1(cfg, s.OpenF1Hub))
 	s.Router.GET("/ws/openf1/ingest", handlers.OpenF1IngestWS(cfg, s.OpenF1Hub))
+	s.Router.GET("/ws/motorsport/live", handlers.WsMotorsportLive(s.MotorsportLive, s.MotorsportLiveHub))
 
 	s.Router.GET("/api/v1/pages", handlers.Pages(cfg, gormOrNil(database), s.Cache, cfg.StaticDir))
 	s.Router.GET("/api/v1/pages/race-day", handlers.PagesRaceDay(cfg, gormOrNil(database), s.Cache, cfg.StaticDir))
@@ -90,6 +99,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/mp/race-sessions", handlers.MpRaceSessions(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/session-results", handlers.MpSessionResults(gormOrNil(database), s.TeamCache))
 	s.Router.GET("/api/v1/mp/session-results/latest-crawled", handlers.MpSessionResultsLatestCrawled(cfg, s.TeamCache))
+	s.Router.GET("/api/v1/mp/motorsport/live", handlers.MpMotorsportLive(s.MotorsportLive))
 	s.Router.GET("/api/v1/mp/standings", handlers.MpStandings(gormOrNil(database), s.TeamCache))
 	s.Router.GET("/api/v1/mp/telemetry/controls", handlers.MpTelemetryControls(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/telemetry/sector_controls", handlers.MpTelemetrySectorControls(gormOrNil(database)))

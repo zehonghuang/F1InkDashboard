@@ -2,6 +2,7 @@ const { LAYOUT_CODE } = require("../../services/newsService")
 const { fetchNewsList } = require("../../services/mpNewsApi")
 const { fetchRaceWeek } = require("../../services/mpRaceWeekApi")
 const { fetchLatestCrawledSessionResults } = require("../../services/mpSessionResultsApi")
+const { createMotorsportLiveClient } = require("../../services/motorsportLiveWs")
 const i18n = require("../../services/i18n")
 
 const WELCOME_KEY = "news_welcome_shown_v1"
@@ -255,6 +256,36 @@ function buildDemoNewsItems(prefs) {
   ]
 }
 
+function mapCrawledRowsToLiveStandings(rows) {
+  const list = Array.isArray(rows) ? rows : []
+  return list.map((row, index) => ({
+    position: Number(row && row.pos) || index + 1,
+    driver: (row && row.driver) || "",
+    team: (row && row.team) || "",
+    gap: (row && row.gap) || "",
+    time: (row && row.time) || "",
+    tyre: (row && row.tyre) || "",
+    laps: Number(row && row.laps) || 0,
+    pitCount: Number(row && row.pitCount) || 0,
+    teamColor: (row && row.teamColor) || ""
+  }))
+}
+
+function mapMotorsportStandingsRows(rows) {
+  const list = Array.isArray(rows) ? rows : []
+  return list.map((row, index) => ({
+    position: Number(row && row.position) || index + 1,
+    driver: (row && row.driver) || "",
+    team: (row && row.team) || "",
+    gap: (row && row.gap) || "",
+    time: (row && row.time) || "",
+    tyre: (row && row.tyre) || "",
+    laps: Number(row && row.laps) || 0,
+    pitCount: Number(row && row.pit_count) || Number(row && row.pitCount) || 0,
+    teamColor: (row && row.team_color) || (row && row.teamColor) || ""
+  }))
+}
+
 Page({
   data: {
     i18n: i18n.getDict(),
@@ -385,41 +416,57 @@ Page({
       const res = await fetchLatestCrawledSessionResults()
       const shouldDisplay = !res || res.shouldDisplay !== false
       const crawledRows = shouldDisplay && Array.isArray(res && res.rows) ? res.rows : []
-      this.setData({
+      const nextData = {
         qualiTitle: shouldDisplay ? (res && res.title) || "" : "",
-        qualiRows: crawledRows,
-        liveStandingsRows: crawledRows.map((row, index) => ({
-          position: Number(row && row.pos) || index + 1,
-          driver: (row && row.driver) || "",
-          team: (row && row.team) || "",
-          gap: (row && row.gap) || "",
-          time: (row && row.time) || "",
-          tyre: (row && row.tyre) || "",
-          laps: Number(row && row.laps) || 0,
-          teamColor: (row && row.teamColor) || ""
-        }))
-      })
+        qualiRows: crawledRows
+      }
+      if (!this._motorsportLiveHasSnapshot) {
+        nextData.liveStandingsRows = mapCrawledRowsToLiveStandings(crawledRows)
+      }
+      this.setData(nextData)
     } catch (e) {
-      this.setData({
+      const nextData = {
         qualiTitle: "",
-        qualiRows: [],
-        liveStandingsRows: []
-      })
+        qualiRows: []
+      }
+      if (!this._motorsportLiveHasSnapshot) {
+        nextData.liveStandingsRows = []
+      }
+      this.setData(nextData)
     }
   },
-  onSwapLiveStandingsRandomRows() {
-    const rows = Array.isArray(this.data.liveStandingsRows) ? this.data.liveStandingsRows.slice() : []
-    if (rows.length < 2) return
-    const firstIndex = Math.floor(Math.random() * rows.length)
-    let secondIndex = Math.floor(Math.random() * rows.length)
-    while (secondIndex === firstIndex) {
-      secondIndex = Math.floor(Math.random() * rows.length)
-    }
-    const first = Object.assign({}, rows[firstIndex])
-    const second = Object.assign({}, rows[secondIndex])
-    rows[firstIndex] = Object.assign({}, second, { position: firstIndex + 1 })
-    rows[secondIndex] = Object.assign({}, first, { position: secondIndex + 1 })
+  applyMotorsportLiveStandings(standings) {
+    const rows = mapMotorsportStandingsRows(standings && standings.rows)
+    if (!rows.length) return
+    this._motorsportLiveHasSnapshot = true
     this.setData({ liveStandingsRows: rows })
+  },
+  ensureMotorsportLiveClient() {
+    if (this._motorsportLiveClient) return
+    this._motorsportLiveClient = createMotorsportLiveClient({
+      reconnectDelayMs: 3000,
+      onStatus: (status) => {
+        this._motorsportLiveStatus = status || null
+      },
+      onStandings: (standings) => {
+        this.applyMotorsportLiveStandings(standings)
+      },
+      onError: (error) => {
+        this._motorsportLiveLastError = error || null
+      },
+      onClose: () => {}
+    })
+  },
+  connectMotorsportLiveWs() {
+    this.ensureMotorsportLiveClient()
+    if (this._motorsportLiveClient) {
+      this._motorsportLiveClient.connect()
+    }
+  },
+  disconnectMotorsportLiveWs() {
+    if (this._motorsportLiveClient) {
+      this._motorsportLiveClient.disconnect()
+    }
   },
   onToggleQualiPanel() {
     if (!this.data.qualiOpen) {
@@ -437,6 +484,7 @@ Page({
     }, 260)
   },
   onLoad() {
+    this._motorsportLiveHasSnapshot = false
     this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     try {
       const app = getApp()
@@ -457,9 +505,14 @@ Page({
     this.applyI18n()
     this.setListOffset(0, 0)
     this._useScrollViewRefresher = true
+    this.ensureMotorsportLiveClient()
     this.reload()
   },
+  onHide() {
+    this.disconnectMotorsportLiveWs()
+  },
   onUnload() {
+    this.disconnectMotorsportLiveWs()
     if (this._offLocale) this._offLocale()
     this.stopRaceWeekTimer()
     clearTimeout(this._prefPromotedTimer)
@@ -472,6 +525,7 @@ Page({
   },
   onShow() {
     this.applyI18n()
+    this.connectMotorsportLiveWs()
     if (typeof this.getTabBar === "function") {
       const tb = this.getTabBar()
       if (tb && typeof tb.setSelectedByRoute === "function") {

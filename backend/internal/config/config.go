@@ -69,6 +69,13 @@ type Config struct {
 	OpenF1SchedulerMaxReqPerMin   int
 	OpenF1SchedulerQuiet          bool
 
+	MotorsportLiveEnabled              bool
+	MotorsportLiveWSURL                string
+	MotorsportLiveOrigin               string
+	MotorsportLiveUserAgent            string
+	MotorsportLiveRecentLimit          int
+	MotorsportLiveReconnectIntervalSec int
+
 	MotorsportResultsSchedulerEnabled       bool
 	MotorsportResultsSchedulerIntervalSec   int
 	MotorsportResultsSchedulerLookbackHours int
@@ -117,6 +124,13 @@ func FromEnv() Config {
 		OpenF1SchedulerMaxReqPerSec:   getenvInt("OPENF1_SCHEDULER_MAX_REQ_PER_SEC", 3),
 		OpenF1SchedulerMaxReqPerMin:   getenvInt("OPENF1_SCHEDULER_MAX_REQ_PER_MIN", 30),
 		OpenF1SchedulerQuiet:          getenvBool("OPENF1_SCHEDULER_QUIET", true),
+
+		MotorsportLiveEnabled:              getenvBool("MOTORSPORT_LIVE_ENABLED", true),
+		MotorsportLiveWSURL:                getenvTrim("MOTORSPORT_LIVE_WS_URL", "wss://livetiming.motorsport.com:8080/782178-full/"),
+		MotorsportLiveOrigin:               getenvTrim("MOTORSPORT_LIVE_ORIGIN", "https://www.motorsport.com"),
+		MotorsportLiveUserAgent:            getenvTrim("MOTORSPORT_LIVE_USER_AGENT", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"),
+		MotorsportLiveRecentLimit:          getenvInt("MOTORSPORT_LIVE_RECENT_LIMIT", 20),
+		MotorsportLiveReconnectIntervalSec: getenvInt("MOTORSPORT_LIVE_RECONNECT_INTERVAL_SEC", 120),
 
 		MotorsportResultsSchedulerEnabled:       getenvBool("MOTORSPORT_RESULTS_SCHEDULER_ENABLED", false),
 		MotorsportResultsSchedulerIntervalSec:   getenvInt("MOTORSPORT_RESULTS_SCHEDULER_INTERVAL_SEC", 60),
