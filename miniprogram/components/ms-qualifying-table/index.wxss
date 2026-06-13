@@ -57,7 +57,7 @@
 }
 
 .msqt-head .msqt-cell {
-  font-size: 22rpx;
+  font-size: 18rpx;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -65,10 +65,10 @@
 }
 
 .msqt-cell {
-  padding: 18rpx 14rpx;
+  padding: 15rpx 14rpx;
   box-sizing: border-box;
   flex: none;
-  font-size: 26rpx;
+  font-size: 22rpx;
   color: rgba(226, 232, 240, 0.95);
   text-align: center;
 }
@@ -98,12 +98,12 @@
 }
 
 .msqt-dense .msqt-head .msqt-cell {
-  font-size: 20rpx;
+  font-size: 16rpx;
 }
 
 .msqt-dense .msqt-cell {
-  padding: 12rpx 10rpx;
-  font-size: 22rpx;
+  padding: 10rpx 10rpx;
+  font-size: 18rpx;
 }
 
 .msqt-dense .msqt-cla {
@@ -116,7 +116,7 @@
 }
 
 .msqt-dense .msqt-team {
-  font-size: 20rpx;
+  font-size: 16rpx;
   margin-top: 2rpx;
 }
 
@@ -127,12 +127,12 @@
 }
 
 .msqt-dense .msqt-car {
-  height: 36rpx;
+  height: 34rpx;
   width: 152rpx;
 }
 
 .msqt-dense .msqt-car-img {
-  height: 36rpx;
+  height: 34rpx;
   width: 152rpx;
 }
 
@@ -151,17 +151,17 @@
 }
 
 .msqt-c-driver {
-  width: 300rpx;
+  width: 240rpx;
   text-align: left;
   border-right: 1rpx solid rgba(148, 163, 184, 0.12);
 }
 
 .msqt-c-no {
-  width: 110rpx;
+  width: 96rpx;
 }
 
 .msqt-c-car {
-  width: 210rpx;
+  width: 240rpx;
   border-right: 1rpx solid rgba(148, 163, 184, 0.12);
 }
 
@@ -215,8 +215,8 @@
 }
 
 .msqt-team {
-  font-size: 22rpx;
-  margin-top: 4rpx;
+  font-size: 18rpx;
+  margin-top: 3rpx;
   color: rgba(148, 163, 184, 0.9);
   white-space: nowrap;
   overflow: hidden;
@@ -238,7 +238,7 @@
 
 .msqt-car {
   --car-accent: #64748b;
-  height: 44rpx;
+  height: 42rpx;
   width: 168rpx;
   border-radius: 9999rpx;
   margin: 0 auto;
@@ -250,7 +250,7 @@
 }
 
 .msqt-car-img {
-  height: 44rpx;
+  height: 42rpx;
   width: 168rpx;
   margin: 0 auto;
   display: block;
@@ -262,7 +262,7 @@
 }
 
 .msqt-time {
-  margin-top: 6rpx;
+  margin-top: 4rpx;
   font-weight: 800;
   line-height: 1;
 }
@@ -275,6 +275,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 20rpx;
+  font-size: 18rpx;
   font-weight: 800;
 }
