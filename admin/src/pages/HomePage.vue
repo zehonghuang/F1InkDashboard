@@ -29,5 +29,13 @@ const router = useRouter()
         <Button type="primary" @click="router.push({ name: 'users-list' })">进入</Button>
       </div>
     </Card>
+
+    <Card class="col-span-12 lg:col-span-4">
+      <template #title>Live Standings Demo</template>
+      <div class="text-sm text-zinc-700">抓取 Motorsport live-text 页里的实时榜单并在 admin 中预览。</div>
+      <div class="mt-3">
+        <Button type="primary" @click="router.push({ name: 'motorsport-live-demo' })">进入</Button>
+      </div>
+    </Card>
   </div>
 </template>

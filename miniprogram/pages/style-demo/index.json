@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "样式 Demo",
   "usingComponents": {
-    "ms-qualifying-table": "/components/ms-qualifying-table/index"
+    "ms-qualifying-table": "/components/ms-qualifying-table/index",
+    "ms-live-standings-table": "/components/ms-live-standings-table/index"
   }
 }

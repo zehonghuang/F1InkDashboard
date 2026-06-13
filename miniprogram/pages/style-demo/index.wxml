@@ -1,3 +1,17 @@
 <view class="page">
-  <ms-qualifying-table title="F1 Monaco GP: Qualifying Results" rows="{{rows}}" maxRows="0" dense bodyHeightRpx="520" baseUrl="{{apiBase}}" />
+  <view class="demo-block">
+    <view class="demo-title">Live Standings Table</view>
+    <ms-live-standings-table
+      title="F1 Barcelona GP: Practice 3"
+      rows="{{liveRows}}"
+      maxRows="0"
+      dense
+      bodyHeightRpx="720"
+    />
+  </view>
+
+  <view class="demo-block">
+    <view class="demo-title">Qualifying Table</view>
+    <ms-qualifying-table title="F1 Monaco GP: Qualifying Results" rows="{{rows}}" maxRows="0" dense bodyHeightRpx="520" baseUrl="{{apiBase}}" />
+  </view>
 </view>

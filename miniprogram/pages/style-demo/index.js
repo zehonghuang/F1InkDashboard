@@ -1,6 +1,20 @@
 Page({
   data: {
     apiBase: "",
+    liveRows: [
+      { position: 1, driver: "George Russell", team: "Mercedes", gap: "", time: "1:15.679", tyre: "S", laps: 8, pitCount: 3, teamColor: "#00D2BE" },
+      { position: 2, driver: "Oscar Piastri", team: "McLaren", gap: "+0.214", time: "1:15.893", tyre: "S", laps: 6, pitCount: 3, teamColor: "#FF8000" },
+      { position: 3, driver: "Charles Leclerc", team: "Ferrari", gap: "+0.243", time: "1:15.922", tyre: "S", laps: 7, pitCount: 4, teamColor: "#E8002D" },
+      { position: 4, driver: "Lando Norris", team: "McLaren", gap: "+0.246", time: "1:15.925", tyre: "S", laps: 6, pitCount: 3, teamColor: "#FF8000" },
+      { position: 5, driver: "Lewis Hamilton", team: "Ferrari", gap: "+0.702", time: "1:16.381", tyre: "S", laps: 9, pitCount: 3, teamColor: "#E8002D" },
+      { position: 6, driver: "Max Verstappen", team: "Red Bull Racing", gap: "+0.755", time: "1:16.434", tyre: "S", laps: 6, pitCount: 3, teamColor: "#3671C6" },
+      { position: 7, driver: "Andrea Kimi Antonelli", team: "Mercedes", gap: "+0.821", time: "1:16.500", tyre: "S", laps: 9, pitCount: 3, teamColor: "#00D2BE" },
+      { position: 8, driver: "Isack Hadjar", team: "Red Bull Racing", gap: "+1.005", time: "1:16.684", tyre: "S", laps: 9, pitCount: 4, teamColor: "#3671C6" },
+      { position: 9, driver: "Nico Hulkenberg", team: "Audi", gap: "+1.282", time: "1:16.961", tyre: "S", laps: 9, pitCount: 5, teamColor: "#52E252" },
+      { position: 10, driver: "Arvid Lindblad", team: "RB F1 Team", gap: "+1.341", time: "1:17.020", tyre: "S", laps: 8, pitCount: 4, teamColor: "#5E8FAA" },
+      { position: 11, driver: "Gabriel Bortoleto", team: "Audi", gap: "+1.348", time: "1:17.027", tyre: "S", laps: 7, pitCount: 4, teamColor: "#52E252" },
+      { position: 12, driver: "Liam Lawson", team: "RB F1 Team", gap: "+1.645", time: "1:17.324", tyre: "S", laps: 8, pitCount: 5, teamColor: "#5E8FAA" },
+    ],
     rows: [
       {
         pos: 1,

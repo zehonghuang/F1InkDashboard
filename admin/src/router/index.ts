@@ -11,6 +11,7 @@ import SettingsPage from '@/pages/SettingsPage.vue'
 import UserDetailPage from '@/pages/UserDetailPage.vue'
 import UsersListPage from '@/pages/UsersListPage.vue'
 import MotorsportQualifyingDemoPage from '@/pages/MotorsportQualifyingDemoPage.vue'
+import MotorsportLiveStandingsDemoPage from '@/pages/MotorsportLiveStandingsDemoPage.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -76,6 +77,12 @@ const routes: RouteRecordRaw[] = [
         name: 'motorsport-demo',
         component: MotorsportQualifyingDemoPage,
         meta: { title: '样式 Demo' },
+      },
+      {
+        path: 'motorsport-live-demo',
+        name: 'motorsport-live-demo',
+        component: MotorsportLiveStandingsDemoPage,
+        meta: { title: 'Live Standings Demo' },
       },
     ],
   },

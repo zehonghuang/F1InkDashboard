@@ -266,6 +266,7 @@ Page({
     raceWeekSessionLabelCompact: false,
     raceWeekShowFlag: false,
     countdown: null,
+    liveStandingsRows: [],
     qualiOpen: false,
     qualiVisible: false,
     qualiTitle: "",
@@ -383,14 +384,26 @@ Page({
     try {
       const res = await fetchLatestCrawledSessionResults()
       const shouldDisplay = !res || res.shouldDisplay !== false
+      const crawledRows = shouldDisplay && Array.isArray(res && res.rows) ? res.rows : []
       this.setData({
         qualiTitle: shouldDisplay ? (res && res.title) || "" : "",
-        qualiRows: shouldDisplay && Array.isArray(res && res.rows) ? res.rows : []
+        qualiRows: crawledRows,
+        liveStandingsRows: crawledRows.map((row, index) => ({
+          position: Number(row && row.pos) || index + 1,
+          driver: (row && row.driver) || "",
+          team: (row && row.team) || "",
+          gap: (row && row.gap) || "",
+          time: (row && row.time) || "",
+          tyre: (row && row.tyre) || "",
+          laps: Number(row && row.laps) || 0,
+          teamColor: (row && row.teamColor) || ""
+        }))
       })
     } catch (e) {
       this.setData({
         qualiTitle: "",
-        qualiRows: []
+        qualiRows: [],
+        liveStandingsRows: []
       })
     }
   },

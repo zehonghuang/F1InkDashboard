@@ -1,0 +1,185 @@
+.mslt {
+  background: #141a24;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 24rpx 60rpx rgba(0, 0, 0, 0.25);
+}
+
+.mslt-header {
+  padding: 20rpx 24rpx 12rpx;
+}
+
+.mslt-title {
+  font-size: 22rpx;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+.mslt-frame {
+  margin: 0 12rpx 12rpx;
+  border-radius: 14rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.mslt-scroll {
+  padding: 0 12rpx 12rpx;
+  box-sizing: border-box;
+}
+
+.mslt-table {
+  width: 730rpx;
+}
+
+.mslt-row {
+  display: flex;
+  align-items: center;
+  margin-top: 4rpx;
+}
+
+.mslt-row:not(.mslt-head) {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.mslt-head {
+  margin-top: 0;
+  padding: 8rpx 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #141a24;
+}
+
+.mslt-cell {
+  box-sizing: border-box;
+  flex: none;
+  padding: 12rpx 10rpx;
+  text-align: center;
+  font-size: 18rpx;
+  color: rgba(226, 232, 240, 0.96);
+}
+
+.mslt-head .mslt-cell {
+  font-size: 16rpx;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+.mslt-c-pos {
+  width: 88rpx;
+}
+
+.mslt-c-driver {
+  width: 214rpx;
+  text-align: left;
+}
+
+.mslt-c-gap {
+  width: 110rpx;
+}
+
+.mslt-c-time {
+  width: 106rpx;
+  padding-left: 4rpx;
+  padding-right: 4rpx;
+}
+
+.mslt-c-tyre {
+  width: 212rpx;
+  padding-left: 4rpx;
+  padding-right: 4rpx;
+}
+
+.mslt-pos-box {
+  width: 46rpx;
+  height: 38rpx;
+  border-radius: 10rpx;
+  background: rgba(15, 23, 42, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  margin: 0 auto;
+}
+
+.mslt-driver-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.mslt-driver-accent {
+  width: 6rpx;
+  height: 28rpx;
+  transform: skewX(-12deg);
+  border-radius: 2rpx;
+  flex: none;
+}
+
+.mslt-driver-text {
+  min-width: 0;
+}
+
+.mslt-driver {
+  font-size: 18rpx;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mslt-team {
+  margin-top: 2rpx;
+  font-size: 16rpx;
+  line-height: 1.2;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mslt-time {
+  font-weight: 800;
+  font-size: 16rpx;
+  line-height: 1.1;
+}
+
+.mslt-tyre-row {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  flex-wrap: wrap;
+}
+
+.mslt-tyre-badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 8rpx;
+  border-radius: 9999rpx;
+  background: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  font-size: 16rpx;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mslt-tyre-meta {
+  color: #94a3b8;
+  font-size: 14rpx;
+  line-height: 1;
+  font-weight: 600;
+  white-space: nowrap;
+}

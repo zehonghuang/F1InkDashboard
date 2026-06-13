@@ -67,3 +67,25 @@ type AdminBindRequest struct {
 	UserID   int64  `json:"user_id"`
 	DeviceID string `json:"device_id"`
 }
+
+type AdminMotorsportStandingRow struct {
+	Position  int    `json:"position"`
+	Driver    string `json:"driver"`
+	Team      string `json:"team"`
+	Gap       string `json:"gap,omitempty"`
+	Time      string `json:"time,omitempty"`
+	Tyre      string `json:"tyre,omitempty"`
+	Laps      int    `json:"laps,omitempty"`
+	PitCount  int    `json:"pit_count,omitempty"`
+	TeamColor string `json:"team_color,omitempty"`
+}
+
+type AdminMotorsportLiveStandingsResponse struct {
+	Ok            bool                         `json:"ok"`
+	SourceURL     string                       `json:"source_url,omitempty"`
+	LiveTimingURL string                       `json:"live_timing_url,omitempty"`
+	Status        string                       `json:"status,omitempty"`
+	SessionTitle  string                       `json:"session_title,omitempty"`
+	FetchedAtUTC  string                       `json:"fetched_at_utc,omitempty"`
+	Rows          []AdminMotorsportStandingRow `json:"rows"`
+}

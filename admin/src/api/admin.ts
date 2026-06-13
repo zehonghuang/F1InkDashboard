@@ -67,6 +67,29 @@ export type AdminUserDetailResponse = {
   item: AdminUserItem
 }
 
+export type AdminMotorsportStandingRow = {
+  position: number
+  driver: string
+  team: string
+  gap?: string
+  time?: string
+  tyre?: string
+  laps?: number
+  pit_count?: number
+  team_color?: string
+}
+
+export type AdminMotorsportLiveStandingsResponse = {
+  ok: boolean
+  error?: string
+  source_url?: string
+  live_timing_url?: string
+  status?: string
+  session_title?: string
+  fetched_at_utc?: string
+  rows: AdminMotorsportStandingRow[]
+}
+
 export async function fetchAdminDevices(params: { page?: number; pageSize?: number; q?: string }) {
   const qs = new URLSearchParams()
   qs.set('page', String(params.page || 1))
@@ -99,6 +122,16 @@ export async function fetchAdminUsers(params: { page?: number; pageSize?: number
 export async function fetchAdminUserDetail(userId: number) {
   const url = withToken(`/api/v1/admin/mp/users/${encodeURIComponent(String(userId))}`)
   const res = await fetchJSON<AdminUserDetailResponse>(url)
+  if (!res.ok) throw new Error(res.error || 'backend_error')
+  return res
+}
+
+export async function fetchAdminMotorsportLiveStandings(params?: { sourceUrl?: string }) {
+  const qs = new URLSearchParams()
+  if (params?.sourceUrl) qs.set('source_url', params.sourceUrl)
+  const suffix = qs.toString()
+  const url = withToken(`/api/v1/admin/motorsport/live-standings${suffix ? `?${suffix}` : ''}`)
+  const res = await fetchJSON<AdminMotorsportLiveStandingsResponse>(url)
   if (!res.ok) throw new Error(res.error || 'backend_error')
   return res
 }

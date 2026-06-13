@@ -101,6 +101,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/admin/devices/:device_id", handlers.AdminDeviceDetail(cfg, gormOrNil(database)))
 	s.Router.GET("/api/v1/admin/mp/users", handlers.AdminUsersList(cfg, gormOrNil(database)))
 	s.Router.GET("/api/v1/admin/mp/users/:user_id", handlers.AdminUserDetail(cfg, gormOrNil(database)))
+	s.Router.GET("/api/v1/admin/motorsport/live-standings", handlers.AdminMotorsportLiveStandings(cfg))
 	s.Router.POST("/api/v1/admin/bind", handlers.AdminBind(cfg, gormOrNil(database)))
 	s.Router.POST("/api/v1/admin/unbind", handlers.AdminUnbind(cfg, gormOrNil(database)))
 

@@ -108,6 +108,10 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
+.live-standings-panel {
+  margin-top: 0;
+}
+
 .quali-panel-header {
   padding: 18rpx 20rpx;
   display: flex;
@@ -142,6 +146,11 @@
 .quali-panel-body-open {
   height: 460rpx;
   opacity: 1;
+}
+
+.quali-panel-body-static {
+  opacity: 1;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.08);
 }
 
 .welcome {

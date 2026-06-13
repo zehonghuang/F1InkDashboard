@@ -93,6 +93,15 @@
         </view>
       </view>
 
+      <view wx:if="{{liveStandingsRows.length}}" class="quali-panel live-standings-panel">
+        <view class="quali-panel-header">
+          <view class="quali-panel-title">Live Standings</view>
+        </view>
+        <view class="quali-panel-body-static">
+          <ms-live-standings-table title="" rows="{{liveStandingsRows}}" dense bodyHeightRpx="520" maxRows="0" />
+        </view>
+      </view>
+
       <view wx:if="{{qualiRows.length}}" class="quali-panel {{ qualiOpen ? 'quali-panel-open' : '' }}">
         <view class="quali-panel-header" bindtap="onToggleQualiPanel">
           <view class="quali-panel-title">{{ qualiTitle || 'Latest Session Results' }}</view>

@@ -1,0 +1,51 @@
+<view class="mslt {{dense ? 'mslt-dense' : ''}}">
+  <view class="mslt-header" wx:if="{{title}}">
+    <view class="mslt-title">{{title}}</view>
+  </view>
+
+  <view class="mslt-frame">
+    <scroll-view class="mslt-scroll" scroll-x scroll-y enhanced show-scrollbar="{{false}}" style="height: {{bodyHeightRpx}}rpx;">
+      <view class="mslt-table">
+        <view class="mslt-row mslt-head">
+          <view class="mslt-cell mslt-c-pos">POS</view>
+          <view class="mslt-cell mslt-c-driver">DRIVER</view>
+          <view class="mslt-cell mslt-c-gap">GAP</view>
+          <view class="mslt-cell mslt-c-time">TIME</view>
+          <view class="mslt-cell mslt-c-tyre">TYRE</view>
+        </view>
+
+        <block wx:for="{{displayRows}}" wx:key="position">
+          <view class="mslt-row">
+            <view class="mslt-cell mslt-c-pos">
+              <view class="mslt-pos-box">{{item.position}}</view>
+            </view>
+
+            <view class="mslt-cell mslt-c-driver">
+              <view class="mslt-driver-wrap">
+                <view class="mslt-driver-accent" style="background-color: {{item.teamColor}};"></view>
+                <view class="mslt-driver-text">
+                  <view class="mslt-driver">{{item.driverShort}}</view>
+                  <view class="mslt-team">{{item.team}}</view>
+                </view>
+              </view>
+            </view>
+
+            <view class="mslt-cell mslt-c-gap">{{item.gap || '--'}}</view>
+
+            <view class="mslt-cell mslt-c-time">
+              <view class="mslt-time">{{item.time}}</view>
+            </view>
+
+            <view class="mslt-cell mslt-c-tyre">
+              <view class="mslt-tyre-row">
+                <block wx:for="{{item.tyreParts}}" wx:key="text">
+                  <view class="{{item.primary ? 'mslt-tyre-badge' : 'mslt-tyre-meta'}}">{{item.text}}</view>
+                </block>
+              </view>
+            </view>
+          </view>
+        </block>
+      </view>
+    </scroll-view>
+  </view>
+</view>
