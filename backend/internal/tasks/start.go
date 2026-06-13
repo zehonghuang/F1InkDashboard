@@ -7,7 +7,8 @@ import (
 )
 
 type Manager struct {
-	mpNewsHeroLimiter *MpNewsHeroLimiter
+	mpNewsHeroLimiter          *MpNewsHeroLimiter
+	motorsportResultsScheduler *MotorsportResultsScheduler
 }
 
 func Start(cfg config.Config, db *gorm.DB) *Manager {
@@ -17,5 +18,6 @@ func Start(cfg config.Config, db *gorm.DB) *Manager {
 
 	m := &Manager{}
 	m.mpNewsHeroLimiter = StartMpNewsHeroLimiter(cfg, db)
+	m.motorsportResultsScheduler = StartMotorsportResultsScheduler(cfg, db)
 	return m
 }

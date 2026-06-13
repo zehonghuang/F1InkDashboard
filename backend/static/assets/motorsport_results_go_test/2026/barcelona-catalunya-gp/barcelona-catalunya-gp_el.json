@@ -1,0 +1,257 @@
+{
+  "ok": true,
+  "season": 2026,
+  "event_name": "Barcelona-Catalunya GP",
+  "event_slug": "barcelona-catalunya-gp",
+  "event_key": "barcelona-catalunya-gp",
+  "page_title": "Formula 1 2026 Barcelona-Catalunya GP",
+  "results_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/",
+  "session_code": "EL",
+  "session_title": "EL",
+  "session_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/?st=EL",
+  "crawled_at": "2026-06-13T04:36:08.860315+00:00",
+  "row_count": 29,
+  "headers": [
+    "Driver",
+    "#",
+    "",
+    "Car",
+    "Engine",
+    "Tyres"
+  ],
+  "rows": [
+    {
+      "driver": "United Kingdom L. Norris McLaren",
+      "unknown": "1",
+      "unknown_2": "McLaren MCL40",
+      "car": "McLaren MCL40",
+      "engine": "Mercedes-AMG F1 M17 E Performance",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "Netherlands M. Verstappen Red Bull Racing",
+      "unknown": "3",
+      "unknown_2": "Red Bull Racing RB22",
+      "car": "Red Bull RB22",
+      "engine": "Red Bull Powertrains Ford DM01",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "Brazil G. Bortoleto Audi",
+      "unknown": "5",
+      "unknown_2": "Audi R26",
+      "car": "Audi R26",
+      "engine": "Audi AFR 26",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "France I. Hadjar Red Bull Racing",
+      "unknown": "6",
+      "unknown_2": "Red Bull Racing RB22",
+      "car": "Red Bull RB22",
+      "engine": "Red Bull Powertrains Ford DM01",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "France P. Gasly Alpine",
+      "unknown": "10",
+      "unknown_2": "Alpine A526",
+      "car": "Alpine A526",
+      "engine": "Mercedes-AMG F1 M17 E Performance",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "Mexico S. Perez Cadillac F1 Team",
+      "unknown": "11",
+      "unknown_2": "Cadillac",
+      "car": "Cadillac",
+      "engine": "Ferrari 067",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "Italy A. Antonelli Mercedes",
+      "unknown": "12",
+      "unknown_2": "Mercedes MGP W17",
+      "car": "Mercedes-Benz MGP W17",
+      "engine": "Mercedes-AMG F1 M17 E Performance",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "Spain F. Alonso Aston Martin Racing",
+      "unknown": "14",
+      "unknown_2": "Aston Martin AMR26",
+      "car": "Aston Martin AMR26",
+      "engine": "Honda RA626H",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "Monaco C. Leclerc Ferrari",
+      "unknown": "16",
+      "unknown_2": "Ferrari SF-26",
+      "car": "Ferrari SF-26",
+      "engine": "Ferrari 067",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "Canada L. Stroll Aston Martin Racing",
+      "unknown": "18",
+      "unknown_2": "Aston Martin AMR26",
+      "car": "Aston Martin AMR26",
+      "engine": "Honda RA626H",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "Thailand A. Albon Williams",
+      "unknown": "23",
+      "unknown_2": "Williams FW48",
+      "car": "Williams FW48",
+      "engine": "Mercedes-AMG F1 M17 E Performance",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "United States C. Herta Cadillac F1 Team",
+      "unknown": "25",
+      "unknown_2": "Cadillac",
+      "car": "Cadillac",
+      "engine": "Ferrari 067",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "Germany N. Hulkenberg Audi",
+      "unknown": "27",
+      "unknown_2": "Audi R26",
+      "car": "Audi R26",
+      "engine": "Audi AFR 26",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "New Zealand L. Lawson Racing Bulls",
+      "unknown": "30",
+      "unknown_2": "Racing Bulls VCARB03",
+      "car": "Racing Bulls VCARB03",
+      "engine": "Red Bull Powertrains Ford DM01",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "France E. Ocon Haas F1 Team",
+      "unknown": "31",
+      "unknown_2": "Haas VF-26",
+      "car": "Haas VF-26",
+      "engine": "Ferrari 067",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "Japan A. Iwasa Red Bull Racing",
+      "unknown": "36",
+      "unknown_2": "Red Bull Racing RB22",
+      "car": "Red Bull RB22",
+      "engine": "Red Bull Powertrains Ford DM01",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "D. Beganovic Ferrari",
+      "unknown": "38",
+      "unknown_2": "Ferrari SF-26",
+      "car": "Ferrari SF-26",
+      "engine": "Ferrari 067",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "United Kingdom A. Lindblad Racing Bulls",
+      "unknown": "41",
+      "unknown_2": "Racing Bulls VCARB03",
+      "car": "Racing Bulls VCARB03",
+      "engine": "Red Bull Powertrains Ford DM01",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "Argentina F. Colapinto Alpine",
+      "unknown": "43",
+      "unknown_2": "Alpine A526",
+      "car": "Alpine A526",
+      "engine": "Mercedes-AMG F1 M17 E Performance",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "United Kingdom L. Hamilton Ferrari",
+      "unknown": "44",
+      "unknown_2": "Ferrari SF-26",
+      "car": "Ferrari SF-26",
+      "engine": "Ferrari 067",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "L. Browning Williams",
+      "unknown": "46",
+      "unknown_2": "Williams FW48",
+      "car": "Williams FW48",
+      "engine": "Mercedes-AMG F1 M17 E Performance",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "Spain C. Sainz Williams",
+      "unknown": "55",
+      "unknown_2": "Williams FW48",
+      "car": "Williams FW48",
+      "engine": "Mercedes-AMG F1 M17 E Performance",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "United Kingdom G. Russell Mercedes",
+      "unknown": "63",
+      "unknown_2": "Mercedes MGP W17",
+      "car": "Mercedes-Benz MGP W17",
+      "engine": "Mercedes-AMG F1 M17 E Performance",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "L. Fornaroli McLaren",
+      "unknown": "67",
+      "unknown_2": "McLaren MCL40",
+      "car": "McLaren MCL40",
+      "engine": "Mercedes-AMG F1 M17 E Performance",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "Denmark F. Vesti Mercedes",
+      "unknown": "72",
+      "unknown_2": "Mercedes MGP W17",
+      "car": "Mercedes-Benz MGP W17",
+      "engine": "Mercedes-AMG F1 M17 E Performance",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "Finland V. Bottas Cadillac F1 Team",
+      "unknown": "77",
+      "unknown_2": "Cadillac",
+      "car": "Cadillac",
+      "engine": "Ferrari 067",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "Australia O. Piastri McLaren",
+      "unknown": "81",
+      "unknown_2": "McLaren MCL40",
+      "car": "McLaren MCL40",
+      "engine": "Mercedes-AMG F1 M17 E Performance",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "United Kingdom O. Bearman Haas F1 Team",
+      "unknown": "87",
+      "unknown_2": "Haas VF-26",
+      "car": "Haas VF-26",
+      "engine": "Ferrari 067",
+      "tyres": "Pirelli"
+    },
+    {
+      "driver": "P. Aron Audi",
+      "unknown": "97",
+      "unknown_2": "Audi R26",
+      "car": "Audi R26",
+      "engine": "Audi AFR 26",
+      "tyres": "Pirelli"
+    }
+  ],
+  "content_hash": "fc9e78e91dc2338197d643a1f61193b91ff8baa178230d5d894742fb74f69a0d"
+}

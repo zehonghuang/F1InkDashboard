@@ -93,9 +93,9 @@
         </view>
       </view>
 
-      <view class="quali-panel {{ qualiOpen ? 'quali-panel-open' : '' }}">
+      <view wx:if="{{qualiRows.length}}" class="quali-panel {{ qualiOpen ? 'quali-panel-open' : '' }}">
         <view class="quali-panel-header" bindtap="onToggleQualiPanel">
-          <view class="quali-panel-title">Qualifying Results</view>
+          <view class="quali-panel-title">{{ qualiTitle || 'Latest Session Results' }}</view>
           <view class="quali-panel-icon">{{ qualiOpen ? '▴' : '▾' }}</view>
         </view>
         <view class="quali-panel-body {{ qualiOpen ? 'quali-panel-body-open' : '' }}">

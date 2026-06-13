@@ -73,10 +73,10 @@
       <view class="detail-viewer-count">{{ viewerCountText }}</view>
       <view class="detail-viewer-close" bindtap="requestClose">×</view>
     </view>
-    <view wx:if="{{ viewerImages.length > 1 }}" class="detail-viewer-dots">
-      <block wx:for="{{ viewerImages }}" wx:key="src" wx:for-index="dotIndex">
-        <view class="detail-viewer-dot {{ dotIndex === viewerIndex ? 'detail-viewer-dot-active' : '' }}" />
-      </block>
+    <view wx:if="{{ viewerImages.length > 1 }}" class="detail-viewer-progress">
+      <view class="detail-viewer-progress-track">
+        <view class="detail-viewer-progress-fill" style="{{ viewerProgressStyle }}" />
+      </view>
     </view>
   </view>
 </view>

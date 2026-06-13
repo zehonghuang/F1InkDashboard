@@ -69,6 +69,15 @@ type Config struct {
 	OpenF1SchedulerMaxReqPerMin   int
 	OpenF1SchedulerQuiet          bool
 
+	MotorsportResultsSchedulerEnabled       bool
+	MotorsportResultsSchedulerIntervalSec   int
+	MotorsportResultsSchedulerLookbackHours int
+	MotorsportResultsSchedulerPython        string
+	MotorsportResultsSchedulerScript        string
+	MotorsportResultsSchedulerDelays        string
+	MotorsportResultsSchedulerTimeoutSec    int
+	MotorsportResultsSchedulerQuiet         bool
+
 	MpNewsSchedulerEnabled   bool
 	MpNewsSchedulerDailyHour int
 	MpNewsSchedulerKeepHero  int
@@ -108,6 +117,15 @@ func FromEnv() Config {
 		OpenF1SchedulerMaxReqPerSec:   getenvInt("OPENF1_SCHEDULER_MAX_REQ_PER_SEC", 3),
 		OpenF1SchedulerMaxReqPerMin:   getenvInt("OPENF1_SCHEDULER_MAX_REQ_PER_MIN", 30),
 		OpenF1SchedulerQuiet:          getenvBool("OPENF1_SCHEDULER_QUIET", true),
+
+		MotorsportResultsSchedulerEnabled:       getenvBool("MOTORSPORT_RESULTS_SCHEDULER_ENABLED", false),
+		MotorsportResultsSchedulerIntervalSec:   getenvInt("MOTORSPORT_RESULTS_SCHEDULER_INTERVAL_SEC", 60),
+		MotorsportResultsSchedulerLookbackHours: getenvInt("MOTORSPORT_RESULTS_SCHEDULER_LOOKBACK_HOURS", 12),
+		MotorsportResultsSchedulerPython:        getenvTrim("MOTORSPORT_RESULTS_SCHEDULER_PYTHON", "python"),
+		MotorsportResultsSchedulerScript:        getenvTrim("MOTORSPORT_RESULTS_SCHEDULER_SCRIPT", "scripts/motorsport_results_crawl.py"),
+		MotorsportResultsSchedulerDelays:        getenvTrim("MOTORSPORT_RESULTS_SCHEDULER_DELAYS", "30,15,10,5,1"),
+		MotorsportResultsSchedulerTimeoutSec:    getenvInt("MOTORSPORT_RESULTS_SCHEDULER_TIMEOUT_SEC", 180),
+		MotorsportResultsSchedulerQuiet:         getenvBool("MOTORSPORT_RESULTS_SCHEDULER_QUIET", true),
 
 		MpNewsSchedulerEnabled:   getenvBool("MP_NEWS_SCHEDULER_ENABLED", false),
 		MpNewsSchedulerDailyHour: getenvInt("MP_NEWS_SCHEDULER_DAILY_HOUR", 4),

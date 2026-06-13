@@ -1,0 +1,52 @@
+{
+  "executed_jobs": {
+    "2026:barcelona-catalunya-gp:FP2:2026-06-13T03:00:00+00:00:30": {
+      "executed_at": "2026-06-13T04:28:10.647583+00:00",
+      "event_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/",
+      "written_sessions": [
+        "EL",
+        "FP1",
+        "FP2"
+      ]
+    },
+    "2026:barcelona-catalunya-gp:FP2:2026-06-13T03:00:00+00:00:45": {
+      "executed_at": "2026-06-13T04:28:10.647583+00:00",
+      "event_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/",
+      "written_sessions": [
+        "EL",
+        "FP1",
+        "FP2"
+      ]
+    },
+    "2026:barcelona-catalunya-gp:FP2:2026-06-13T03:00:00+00:00:55": {
+      "executed_at": "2026-06-13T04:28:10.647583+00:00",
+      "event_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/",
+      "written_sessions": [
+        "EL",
+        "FP1",
+        "FP2"
+      ]
+    },
+    "2026:barcelona-catalunya-gp:FP2:2026-06-13T03:00:00+00:00:60": {
+      "executed_at": "2026-06-13T04:28:10.647583+00:00",
+      "event_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/",
+      "written_sessions": [
+        "EL",
+        "FP1",
+        "FP2"
+      ]
+    },
+    "2026:barcelona-catalunya-gp:FP2:2026-06-13T03:00:00+00:00:61": {
+      "executed_at": "2026-06-13T04:28:10.647583+00:00",
+      "event_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/",
+      "written_sessions": [
+        "EL",
+        "FP1",
+        "FP2"
+      ]
+    }
+  },
+  "results_url_cache": {
+    "2026:barcelona-catalunya-gp": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/"
+  }
+}

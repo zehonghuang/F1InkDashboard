@@ -1,0 +1,36 @@
+{
+  "ok": true,
+  "season": 2026,
+  "event_name": "Barcelona-Catalunya GP",
+  "event_slug": "barcelona-catalunya-gp",
+  "event_key": "barcelona-catalunya-gp",
+  "results_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/",
+  "page_title": "Formula 1 2026 Barcelona-Catalunya GP",
+  "crawled_at": "2026-06-13T04:28:10.647583+00:00",
+  "sessions": [
+    {
+      "session_code": "EL",
+      "session_title": "EL",
+      "session_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/?st=EL",
+      "file": "barcelona-catalunya-gp_el.json",
+      "row_count": 29,
+      "content_hash": "fc9e78e91dc2338197d643a1f61193b91ff8baa178230d5d894742fb74f69a0d"
+    },
+    {
+      "session_code": "FP1",
+      "session_title": "FP1",
+      "session_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/?st=FP1",
+      "file": "barcelona-catalunya-gp_fp1.json",
+      "row_count": 22,
+      "content_hash": "74209d27d832d325171817e605f42b242a955c1d9e937849b8da88929bb3e392"
+    },
+    {
+      "session_code": "FP2",
+      "session_title": "FP2",
+      "session_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/?st=FP2",
+      "file": "barcelona-catalunya-gp_fp2.json",
+      "row_count": 22,
+      "content_hash": "ee5080b7852dbbf4f2807791bf847b0006ab58504b0b4863021e226e8734151b"
+    }
+  ]
+}

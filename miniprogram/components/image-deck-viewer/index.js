@@ -89,12 +89,14 @@ function buildViewerDeck(images, activeIndex, imageMeta, maxWidth, maxHeight) {
   const total = list.length
   const index = normalizeGalleryIndex(activeIndex, total)
   const frontImage = total ? list[index] : null
+  const progress = total ? `${((index + 1) / total) * 100}%` : "0%"
   return {
     frontImage,
     frontBoxStyle: frontImage ? buildViewerBoxStyle(imageMeta && imageMeta[frontImage.src], maxWidth, maxHeight) : "",
     stackSlots: buildViewerStackSlots(list, index, imageMeta, maxWidth, maxHeight),
     index,
-    countText: `${index + 1} / ${total}`
+    countText: `${index + 1} / ${total}`,
+    progressStyle: `width:${progress};`
   }
 }
 
@@ -208,7 +210,8 @@ Component({
     viewerStackMidStyle: "",
     viewerStackBackStyle: "",
     viewerStackBottomStyle: "",
-    viewerCountText: ""
+    viewerCountText: "",
+    viewerProgressStyle: "width:0%;"
   },
   observers: {
     visible(v) {
@@ -355,7 +358,8 @@ Component({
         viewerStackBackImage: deck.stackSlots.back,
         viewerStackBottomImage: deck.stackSlots.bottom,
         viewerIndex: deck.index,
-        viewerCountText: deck.countText
+        viewerCountText: deck.countText,
+        viewerProgressStyle: deck.progressStyle
       })
     },
     openViewer() {
@@ -385,7 +389,8 @@ Component({
         viewerStackMidStyle: baseStyles.mid,
         viewerStackBackStyle: baseStyles.back,
         viewerStackBottomStyle: baseStyles.bottom,
-        viewerCountText: deck.countText
+        viewerCountText: deck.countText,
+        viewerProgressStyle: deck.progressStyle
       }
       if (!this.data.rendered) {
         nextData.active = false
@@ -421,7 +426,8 @@ Component({
           viewerStackMidStyle: baseStyles.mid,
           viewerStackBackStyle: baseStyles.back,
           viewerStackBottomStyle: baseStyles.bottom,
-          viewerCountText: ""
+          viewerCountText: "",
+          viewerProgressStyle: "width:0%;"
         })
       }, 180)
     },
@@ -577,7 +583,8 @@ Component({
           viewerStackMidStyle: baseStyles.mid,
           viewerStackBackStyle: baseStyles.back,
           viewerStackBottomStyle: baseStyles.bottom,
-          viewerCountText: deck.countText
+          viewerCountText: deck.countText,
+          viewerProgressStyle: deck.progressStyle
         })
         this.ensureViewerImageMeta(this.data.viewerImages, deck.index)
         this._viewerTouch = null

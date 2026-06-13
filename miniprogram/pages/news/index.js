@@ -1,6 +1,7 @@
 const { LAYOUT_CODE } = require("../../services/newsService")
 const { fetchNewsList } = require("../../services/mpNewsApi")
 const { fetchRaceWeek } = require("../../services/mpRaceWeekApi")
+const { fetchLatestCrawledSessionResults } = require("../../services/mpSessionResultsApi")
 const i18n = require("../../services/i18n")
 
 const WELCOME_KEY = "news_welcome_shown_v1"
@@ -267,138 +268,8 @@ Page({
     countdown: null,
     qualiOpen: false,
     qualiVisible: false,
-    qualiRows: [
-      {
-        pos: 1,
-        driver: "A. Antonelli",
-        team: "Mercedes",
-        number: 12,
-        laps: 28,
-        time: "1'12.051",
-        gap: "",
-        interval: "",
-        tyre: "S",
-        teamColor: "#00D2BE",
-        carAccent: "#00D2BE"
-      },
-      {
-        pos: 2,
-        driver: "M. Verstappen",
-        team: "Red Bull Racing",
-        number: 3,
-        laps: 26,
-        time: "1'12.094",
-        gap: "+0.043",
-        interval: "0.043",
-        tyre: "S",
-        teamColor: "#3671C6",
-        carAccent: "#3671C6"
-      },
-      {
-        pos: 3,
-        driver: "L. Hamilton",
-        team: "Ferrari",
-        number: 44,
-        laps: 28,
-        time: "1'12.279",
-        gap: "+0.228",
-        interval: "0.185",
-        tyre: "S",
-        teamColor: "#E8002D",
-        carAccent: "#E8002D"
-      },
-      {
-        pos: 4,
-        driver: "C. Leclerc",
-        team: "Ferrari",
-        number: 16,
-        laps: 29,
-        time: "1'12.351",
-        gap: "+0.300",
-        interval: "0.072",
-        tyre: "S",
-        teamColor: "#E8002D",
-        carAccent: "#E8002D"
-      },
-      {
-        pos: 5,
-        driver: "I. Hadjar",
-        team: "Red Bull Racing",
-        number: 6,
-        laps: 25,
-        time: "1'12.434",
-        gap: "+0.383",
-        interval: "0.083",
-        tyre: "S",
-        teamColor: "#3671C6",
-        carAccent: "#3671C6"
-      },
-      {
-        pos: 6,
-        driver: "G. Russell",
-        team: "Mercedes",
-        number: 63,
-        laps: 28,
-        time: "1'12.445",
-        gap: "+0.394",
-        interval: "0.011",
-        tyre: "S",
-        teamColor: "#00D2BE",
-        carAccent: "#00D2BE"
-      },
-      {
-        pos: 7,
-        driver: "O. Piastri",
-        team: "McLaren",
-        number: 81,
-        laps: 29,
-        time: "1'12.624",
-        gap: "+0.573",
-        interval: "0.179",
-        tyre: "S",
-        teamColor: "#FF8000",
-        carAccent: "#FF8000"
-      },
-      {
-        pos: 8,
-        driver: "L. Norris",
-        team: "McLaren",
-        number: 1,
-        laps: 28,
-        time: "1'12.765",
-        gap: "+0.714",
-        interval: "0.141",
-        tyre: "S",
-        teamColor: "#FF8000",
-        carAccent: "#FF8000"
-      },
-      {
-        pos: 9,
-        driver: "P. Gasly",
-        team: "Alpine",
-        number: 10,
-        laps: 32,
-        time: "1'13.226",
-        gap: "+1.175",
-        interval: "0.461",
-        tyre: "S",
-        teamColor: "#2293D1",
-        carAccent: "#2293D1"
-      },
-      {
-        pos: 10,
-        driver: "L. Lawson",
-        team: "Racing Bulls",
-        number: 30,
-        laps: 29,
-        time: "1'13.412",
-        gap: "+1.361",
-        interval: "0.186",
-        tyre: "S",
-        teamColor: "#5E8FAA",
-        carAccent: "#5E8FAA"
-      }
-    ],
+    qualiTitle: "",
+    qualiRows: [],
     welcome: null,
     showWelcome: false,
     loading: false,
@@ -508,6 +379,21 @@ Page({
       this.setData({ raceWeek: null, ...this.buildRaceWeekSessionLabelState(""), raceWeekShowFlag: false, countdown: null })
     }
   },
+  async loadLatestCrawledResults() {
+    try {
+      const res = await fetchLatestCrawledSessionResults()
+      const shouldDisplay = !res || res.shouldDisplay !== false
+      this.setData({
+        qualiTitle: shouldDisplay ? (res && res.title) || "" : "",
+        qualiRows: shouldDisplay && Array.isArray(res && res.rows) ? res.rows : []
+      })
+    } catch (e) {
+      this.setData({
+        qualiTitle: "",
+        qualiRows: []
+      })
+    }
+  },
   onToggleQualiPanel() {
     if (!this.data.qualiOpen) {
       this.setData({ qualiVisible: true }, () => {
@@ -599,6 +485,7 @@ Page({
     const nextPage = reset ? 1 : Number((opts && opts.page) || this.data.page || 1)
     if (reset) {
       this.loadRaceWeek()
+      this.loadLatestCrawledResults()
     }
     if (reset) {
       if (softReset) {

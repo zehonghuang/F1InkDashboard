@@ -24,6 +24,8 @@ const CAR_FILE_BY_TEAM_KEY = {
   cadillac: "cadillac-2.png",
   ferrari: "ferrari-sf-26.png",
   haas: "haas-vf-26.png",
+  "haas-f1-team": "haas-vf-26.png",
+  "moneygram-haas-f1-team": "haas-vf-26.png",
   mclaren: "mclaren-mcl40.png",
   mercedes: "mercedes-mgp-w17.png",
   "racing-bulls": "racing-bulls-vcarb03.png",

@@ -9,6 +9,7 @@ import (
 	"toinc_f1_backend/internal/config"
 	"toinc_f1_backend/internal/db"
 	"toinc_f1_backend/internal/httpserver"
+	"toinc_f1_backend/internal/tasks"
 )
 
 func main() {
@@ -21,6 +22,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("mysql connect failed: %v", err)
 	}
+
+	_ = tasks.Start(cfg, database.Gorm)
 
 	s := httpserver.New(cfg, database)
 	if err := s.Router.Run(cfg.ListenAddr); err != nil {
