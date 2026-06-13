@@ -49,10 +49,82 @@ def slugify(value: str) -> str:
     return text or "unknown"
 
 
+def normalize_event_label(value: str) -> str:
+    text = unicodedata.normalize("NFKD", value or "")
+    text = text.encode("ascii", "ignore").decode("ascii")
+    text = text.lower()
+    replacements = (
+        ("formula 1", " "),
+        ("f1", " "),
+        ("grand prix", " gp "),
+        ("grand-prix", " gp "),
+        ("prix", " gp "),
+    )
+    for old, new in replacements:
+        text = text.replace(old, new)
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return " ".join(text.split())
+
+
 def normalize_event_name(value: str) -> str:
-    text = slugify(value).replace("formula-1", "").replace("f1", "")
-    text = re.sub(r"-+", "-", text).strip("-")
-    return text
+    return normalize_event_label(value).replace(" ", "-")
+
+
+def event_tokens(value: str) -> list[str]:
+    return normalize_event_label(value).split()
+
+
+def meaningful_event_tokens(value: str) -> list[str]:
+    return [token for token in event_tokens(value) if token and token != "gp" and not token.isdigit()]
+
+
+def event_slug_from_url(url: str) -> str:
+    parts = [part for part in urlparse(url).path.split("/") if part]
+    if len(parts) >= 4 and parts[0] == "f1" and parts[1] == "results":
+        return collapse_ws(parts[3])
+    return ""
+
+
+def extract_current_results_url(html: str, season: int) -> str | None:
+    patterns = [
+        re.compile(rf'<meta[^>]+property=["\']og:url["\'][^>]+content=["\'](https://www\.motorsport\.com/f1/results/{season}/[^"\']+)["\']', re.I),
+        re.compile(rf'<link[^>]+rel=["\']canonical["\'][^>]+href=["\'](https://www\.motorsport\.com/f1/results/{season}/[^"\']+)["\']', re.I),
+    ]
+    for pattern in patterns:
+        match = pattern.search(html)
+        if match:
+            return match.group(1)
+    return None
+
+
+def score_event_candidate(query_values: list[str], candidate_values: list[str]) -> int:
+    best = -1
+    for query in query_values:
+        query_norm = normalize_event_name(query)
+        query_tokens = meaningful_event_tokens(query)
+        if not query_norm and not query_tokens:
+            continue
+        for candidate in candidate_values:
+            candidate_norm = normalize_event_name(candidate)
+            candidate_tokens = meaningful_event_tokens(candidate)
+            if not candidate_norm:
+                continue
+            score = -1
+            if query_norm and candidate_norm == query_norm:
+                score = 5000
+            elif query_tokens and candidate_tokens:
+                matched = sum(1 for token in query_tokens if token in candidate_tokens)
+                if matched == 0:
+                    continue
+                score = matched * 100 - abs(len(candidate_tokens) - len(query_tokens))
+                if matched == len(query_tokens):
+                    score += 1000
+            elif query_norm and (query_norm in candidate_norm or candidate_norm in query_norm):
+                score = 500 - abs(len(candidate_norm) - len(query_norm))
+            if score > best:
+                best = score
+    return best
+
 
 
 def ensure_dir(path: Path) -> None:
@@ -318,27 +390,36 @@ def discover_results_url(
     if cached_url:
         return cached_url
     season_url = f"{MOTORSPORT_ROOT}/f1/results/{season}/"
-    candidates = extract_season_results_links(client.fetch_text(season_url), season)
+    season_html = client.fetch_text(season_url)
+    queries: list[str] = []
+    for value in (event_name, event_slug or ""):
+        value = collapse_ws(value)
+        if value and value not in queries:
+            queries.append(value)
+    current_page_url = extract_current_results_url(season_html, season)
+    if current_page_url:
+        current_slug = event_slug_from_url(current_page_url)
+        if score_event_candidate(queries, [current_slug]) >= 100:
+            return current_page_url
+    candidates = extract_season_results_links(season_html, season)
     if event_slug:
+        slug_norm = normalize_event_name(event_slug)
         for item in candidates:
-            if item["slug"] == event_slug:
+            if normalize_event_name(item["slug"]) == slug_norm:
                 return item["url"]
-    target = normalize_event_name(event_name)
+    if current_page_url:
+        current_slug = event_slug_from_url(current_page_url)
+        if current_slug and all(item["slug"] != current_slug for item in candidates):
+            candidates.insert(0, {"slug": current_slug, "name": current_slug.replace("-", " "), "url": current_page_url})
     best_url = None
-    best_score = None
+    best_score = -1
     for item in candidates:
-        name_norm = normalize_event_name(item["name"])
-        if not name_norm:
+        candidate_values = [item["name"], item["slug"]]
+        candidate_best = score_event_candidate(queries, candidate_values)
+        if candidate_best < 0:
             continue
-        score = None
-        if name_norm == target:
-            score = 0
-        elif target in name_norm or name_norm in target:
-            score = abs(len(name_norm) - len(target)) + 5
-        if score is None:
-            continue
-        if best_score is None or score < best_score:
-            best_score = score
+        if candidate_best > best_score:
+            best_score = candidate_best
             best_url = item["url"]
     if best_url:
         return best_url
@@ -655,6 +736,12 @@ def run_direct_mode(args: argparse.Namespace) -> int:
         )
         if not event_url:
             raise ValueError(f"results url not found for season={season} event={event_name}")
+    canonical_slug = event_slug_from_url(event_url)
+    if canonical_slug:
+        if not args.event_slug or args.event_slug == event_slug:
+            event_slug = canonical_slug
+        if not args.event_key or args.event_key == event_key:
+            event_key = canonical_slug
     written = crawl_event_sessions(client, output_root, season, event_name, event_slug, event_key, event_url)
     print(json.dumps({"ok": True, "mode": "direct", "written_sessions": written, "output_root": str(output_root)}, ensure_ascii=False))
     return 0

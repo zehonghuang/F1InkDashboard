@@ -35,6 +35,9 @@ type motorsportSessionRow struct {
 	MeetingKey   int        `gorm:"column:meeting_key"`
 	Season       int        `gorm:"column:season"`
 	MeetingName  string     `gorm:"column:meeting_name"`
+	Location     *string    `gorm:"column:location"`
+	CountryName  *string    `gorm:"column:country_name"`
+	CircuitShort *string    `gorm:"column:circuit_short_name"`
 	SessionName  *string    `gorm:"column:session_name"`
 	SessionType  *string    `gorm:"column:session_type"`
 	DateStartUTC *time.Time `gorm:"column:date_start_utc"`
@@ -223,6 +226,9 @@ func (s *MotorsportResultsScheduler) collectDueTargets(now time.Time) ([]motorsp
           s.meeting_key,
           m.year AS season,
           m.meeting_name,
+          m.location,
+          m.country_name,
+          m.circuit_short_name,
           s.session_name,
           s.session_type,
           s.date_start_utc
@@ -562,11 +568,28 @@ func normalizeMotorsportSessionCode(name, typ *string) string {
 var nonSlugChars = regexp.MustCompile(`[^a-z0-9]+`)
 
 func slugifyMotorsport(value string) string {
-	s := strings.TrimSpace(strings.ToLower(value))
+	s := normalizeMotorsportEventLabel(value)
+	s = strings.ReplaceAll(s, " ", "-")
 	s = nonSlugChars.ReplaceAllString(s, "-")
 	s = strings.Trim(s, "-")
 	if s == "" {
 		return "unknown"
 	}
 	return s
+}
+
+func normalizeMotorsportEventLabel(value string) string {
+	s := strings.TrimSpace(strings.ToLower(value))
+	replacements := []struct{ old, new string }{
+		{"formula 1", " "},
+		{"f1", " "},
+		{"grand prix", " gp "},
+		{"grand-prix", " gp "},
+		{"prix", " gp "},
+	}
+	for _, item := range replacements {
+		s = strings.ReplaceAll(s, item.old, item.new)
+	}
+	s = nonSlugChars.ReplaceAllString(s, " ")
+	return strings.Join(strings.Fields(s), " ")
 }
