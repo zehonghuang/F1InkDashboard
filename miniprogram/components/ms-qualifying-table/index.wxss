@@ -146,6 +146,11 @@
   font-size: 18rpx;
 }
 
+.msqt-dense .msqt-tyre-img {
+  width: 48rpx;
+  height: 32rpx;
+}
+
 .msqt-c-cla {
   width: 90rpx;
 }
@@ -277,4 +282,11 @@
   align-items: center;
   font-size: 18rpx;
   font-weight: 800;
+}
+
+.msqt-tyre-img {
+  width: 54rpx;
+  height: 36rpx;
+  display: block;
+  margin: 0 auto;
 }

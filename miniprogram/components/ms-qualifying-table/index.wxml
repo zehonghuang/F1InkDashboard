@@ -56,7 +56,8 @@
           <view class="msqt-cell msqt-c-int">{{item.interval}}</view>
 
           <view class="msqt-cell msqt-c-tyre">
-            <view class="msqt-tyre">{{item.tyre}}</view>
+            <image wx:if="{{item.tyreImageUrl}}" class="msqt-tyre-img" src="{{item.tyreImageUrl}}" mode="aspectFit" />
+            <view wx:else class="msqt-tyre">{{item.tyre}}</view>
           </view>
         </view>
       </block>

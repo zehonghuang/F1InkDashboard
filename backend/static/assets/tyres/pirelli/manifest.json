@@ -1,0 +1,41 @@
+{
+  "source_page": "https://www.pirelli.com/tyres/en-ww/motorsport/car/formula-1",
+  "downloaded_at_utc": "2026-06-13",
+  "items": [
+    {
+      "key": "slick_white",
+      "label": "White",
+      "category": "slick",
+      "file": "white.png",
+      "source_url": "https://tyre24.pirelli.com/motorsport/assets/motorsport/carousel/pirelli-motorsport-car-Formula1-SlickTyres-white-2026.png"
+    },
+    {
+      "key": "slick_yellow",
+      "label": "Yellow",
+      "category": "slick",
+      "file": "yellow.png",
+      "source_url": "https://tyre24.pirelli.com/motorsport/assets/motorsport/carousel/pirelli-motorsport-car-Formula1-SlickTyres-yellow-2026.png"
+    },
+    {
+      "key": "slick_red",
+      "label": "Red",
+      "category": "slick",
+      "file": "red.png",
+      "source_url": "https://tyre24.pirelli.com/motorsport/assets/motorsport/carousel/pirelli-motorsport-car-Formula1-SlickTyres-red-2026.png"
+    },
+    {
+      "key": "wet_green",
+      "label": "Green",
+      "category": "wet",
+      "file": "green.png",
+      "source_url": "https://tyre24.pirelli.com/motorsport/assets/motorsport/banners/pirelli-motorsport-car-Formula1-WetTyres-green-senzaombra-2026.png"
+    },
+    {
+      "key": "wet_blue",
+      "label": "Blue",
+      "category": "wet",
+      "file": "blue.png",
+      "source_url": "https://tyre24.pirelli.com/motorsport/assets/motorsport/banners/pirelli-motorsport-car-Formula1-WetTyres-blu-senzaombra-2026.png"
+    }
+  ]
+}
