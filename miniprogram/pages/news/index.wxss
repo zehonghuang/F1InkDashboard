@@ -112,6 +112,21 @@
   margin-top: 0;
 }
 
+.live-standings-debug-btn {
+  min-width: 132rpx;
+  height: 48rpx;
+  padding: 0 16rpx;
+  border-radius: 9999rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 20rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .quali-panel-header {
   padding: 18rpx 20rpx;
   display: flex;

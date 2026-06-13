@@ -407,6 +407,20 @@ Page({
       })
     }
   },
+  onSwapLiveStandingsRandomRows() {
+    const rows = Array.isArray(this.data.liveStandingsRows) ? this.data.liveStandingsRows.slice() : []
+    if (rows.length < 2) return
+    const firstIndex = Math.floor(Math.random() * rows.length)
+    let secondIndex = Math.floor(Math.random() * rows.length)
+    while (secondIndex === firstIndex) {
+      secondIndex = Math.floor(Math.random() * rows.length)
+    }
+    const first = Object.assign({}, rows[firstIndex])
+    const second = Object.assign({}, rows[secondIndex])
+    rows[firstIndex] = Object.assign({}, second, { position: firstIndex + 1 })
+    rows[secondIndex] = Object.assign({}, first, { position: secondIndex + 1 })
+    this.setData({ liveStandingsRows: rows })
+  },
   onToggleQualiPanel() {
     if (!this.data.qualiOpen) {
       this.setData({ qualiVisible: true }, () => {
