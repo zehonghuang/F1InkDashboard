@@ -112,6 +112,7 @@ type SeedCalibration struct {
 	EventLabel             string `json:"event_label"`
 	SessionCode            string `json:"session_code"`
 	SessionName            string `json:"session_name"`
+	AnchorSessionKey       int    `json:"anchor_session_key,omitempty"`
 	ExpectedMeetingPattern string `json:"expected_meeting_pattern,omitempty"`
 	ExpectedLocation       string `json:"expected_location,omitempty"`
 	ExpectedCountry        string `json:"expected_country,omitempty"`
@@ -541,15 +542,13 @@ func baseSeedCalibration(seedID int) *SeedCalibration {
 		}
 	}
 	return &SeedCalibration{
-		SeedID:                 782179,
-		Season:                 2026,
-		EventLabel:             "Spanish Grand Prix",
-		SessionCode:            "Q",
-		SessionName:            "Qualifying",
-		ExpectedMeetingPattern: "spain|spanish|barcelona|catalunya",
-		ExpectedLocation:       "Barcelona-Catalunya",
-		ExpectedCountry:        "Spain",
-		Note:                   "seed 782179 is calibrated to 2026 Spain round qualifying; adjacent sessions map by +1 / -1 in schedule order",
+		SeedID:           782179,
+		Season:           2026,
+		EventLabel:       "Spanish Grand Prix",
+		SessionCode:      "Q",
+		SessionName:      "Qualifying",
+		AnchorSessionKey: 11303,
+		Note:             "seed 782179 is calibrated to session_key 11303; adjacent sessions map by +1 / -1 in schedule order",
 	}
 }
 
@@ -562,13 +561,7 @@ func findSeedCalibration(seedID int, rows []scheduleRow) (*SeedCalibration, int)
 		return cal, -1
 	}
 	for index, row := range rows {
-		if row.Year != cal.Season {
-			continue
-		}
-		if normalizeSessionCode(row.SessionName, row.SessionType) != cal.SessionCode {
-			continue
-		}
-		if !matchesSpanishGP(row) {
+		if row.SessionKey != cal.AnchorSessionKey {
 			continue
 		}
 		cal.MatchedSessionKey = row.SessionKey
@@ -578,22 +571,6 @@ func findSeedCalibration(seedID int, rows []scheduleRow) (*SeedCalibration, int)
 		return cal, index
 	}
 	return cal, -1
-}
-
-func matchesSpanishGP(row scheduleRow) bool {
-	haystack := strings.ToLower(strings.Join([]string{
-		ptrString(row.MeetingName),
-		ptrString(row.Location),
-		ptrString(row.CountryName),
-		ptrString(row.CircuitShortName),
-	}, " "))
-	needles := []string{"spain", "spanish", "barcelona", "catalunya"}
-	for _, needle := range needles {
-		if strings.Contains(haystack, needle) {
-			return true
-		}
-	}
-	return false
 }
 
 func selectAnchorRow(rows []scheduleRow, now time.Time, before time.Duration) int {
