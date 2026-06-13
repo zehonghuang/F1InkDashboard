@@ -74,6 +74,7 @@ type Config struct {
 	MotorsportLiveOrigin               string
 	MotorsportLiveUserAgent            string
 	MotorsportLiveRecentLimit          int
+	MotorsportLiveConnectBeforeMin     int
 	MotorsportLiveReconnectIntervalSec int
 
 	MotorsportResultsSchedulerEnabled       bool
@@ -130,6 +131,7 @@ func FromEnv() Config {
 		MotorsportLiveOrigin:               getenvTrim("MOTORSPORT_LIVE_ORIGIN", "https://www.motorsport.com"),
 		MotorsportLiveUserAgent:            getenvTrim("MOTORSPORT_LIVE_USER_AGENT", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"),
 		MotorsportLiveRecentLimit:          getenvInt("MOTORSPORT_LIVE_RECENT_LIMIT", 20),
+		MotorsportLiveConnectBeforeMin:     getenvInt("MOTORSPORT_LIVE_CONNECT_BEFORE_MIN", 30),
 		MotorsportLiveReconnectIntervalSec: getenvInt("MOTORSPORT_LIVE_RECONNECT_INTERVAL_SEC", 120),
 
 		MotorsportResultsSchedulerEnabled:       getenvBool("MOTORSPORT_RESULTS_SCHEDULER_ENABLED", false),

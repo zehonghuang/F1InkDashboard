@@ -34,7 +34,7 @@ type Server struct {
 
 func New(cfg config.Config, database *db.DB) *Server {
 	motorsportLiveHub := ws.NewHub()
-	motorsportLiveMgr := motorsportlive.New(cfg, motorsportLiveHub)
+	motorsportLiveMgr := motorsportlive.New(cfg, gormOrNil(database), motorsportLiveHub)
 	s := &Server{
 		Router:            gin.New(),
 		DB:                database,
