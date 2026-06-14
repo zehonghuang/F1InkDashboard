@@ -10,14 +10,51 @@
     </block>
   </view>
 
+  <view class="leaders" wx:if="{{leaderDriver || leaderConstructor}}">
+    <view wx:if="{{leaderDriver}}" class="leader-card">
+      <view class="leader-card-kicker">{{i18n.standings.drivers}}</view>
+      <view class="leader-card-main">
+        <view class="leader-card-rank">P1</view>
+        <view class="leader-card-body">
+          <view class="leader-card-name">{{leaderDriver.display_name || leaderDriver.full_name || leaderDriver.name_acronym || '-'}}</view>
+          <view class="leader-card-sub">{{leaderDriver.team_name || '-'}}</view>
+        </view>
+        <view class="leader-card-points">
+          <view class="leader-card-points-value">{{leaderDriver.points || '-'}}</view>
+          <view class="leader-card-points-unit">PTS</view>
+        </view>
+      </view>
+    </view>
+    <view wx:if="{{leaderConstructor}}" class="leader-card">
+      <view class="leader-card-kicker">{{i18n.standings.teams}}</view>
+      <view class="leader-card-main">
+        <view class="leader-card-rank">P1</view>
+        <view class="leader-card-body">
+          <view class="leader-card-name">{{leaderConstructor.team_name || '-'}}</view>
+          <view class="leader-card-sub">{{i18n.standings.teams}}</view>
+        </view>
+        <view class="leader-card-points">
+          <view class="leader-card-points-value">{{leaderConstructor.points || '-'}}</view>
+          <view class="leader-card-points-unit">PTS</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <view wx:if="{{updatedText}}" class="hint">{{updatedText}}</view>
   <view wx:if="{{errorText}}" class="error">{{errorText}}</view>
 
   <view wx:if="{{activeTabKey==='drivers'}}" class="list">
     <block wx:for="{{drivers}}" wx:key="driver_number">
-      <view class="card" style="{{item.cardStyle}}">
+      <view class="card standings-card {{item.topTier}}">
+        <view wx:if="{{item.accentStyle}}" class="card-accent" style="{{item.accentStyle}}" />
+        <view class="rank-col">
+          <view class="rank-badge">{{item.rankLabel}}</view>
+        </view>
         <view class="card-left">
-          <image class="avatar" src="{{item.headshot_url}}" mode="aspectFit" wx:if="{{item.headshot_url}}" />
+          <view class="avatar-shell" style="{{item.avatarShellStyle}}">
+            <image class="avatar" src="{{item.headshot_url}}" mode="aspectFit" wx:if="{{item.headshot_url}}" />
+          </view>
         </view>
         <view class="card-mid">
           <view class="driver-row">
@@ -25,9 +62,16 @@
             <view class="driver">{{item.display_name || item.full_name || item.name_acronym || item.driver_number}}</view>
           </view>
           <view class="team">{{item.team_name || '-'}}</view>
+          <view class="progress-row">
+            <view class="progress-track">
+              <view class="progress-fill" style="{{item.progressStyle}}" />
+            </view>
+            <view wx:if="{{!item.isLeader}}" class="gap">-{{item.gapPoints}}</view>
+          </view>
         </view>
         <view class="card-right">
           <view class="pts">{{item.points}}</view>
+          <view class="pts-unit">PTS</view>
         </view>
       </view>
     </block>
@@ -35,15 +79,29 @@
 
   <view wx:if="{{activeTabKey==='constructors'}}" class="list">
     <block wx:for="{{constructors}}" wx:key="team_name">
-      <view class="card" style="{{item.cardStyle}}">
+      <view class="card standings-card {{item.topTier}}">
+        <view wx:if="{{item.accentStyle}}" class="card-accent" style="{{item.accentStyle}}" />
+        <view class="rank-col">
+          <view class="rank-badge">{{item.rankLabel}}</view>
+        </view>
         <view class="card-left">
-          <image class="avatar" src="{{item.team_logo_url}}" mode="aspectFit" wx:if="{{item.team_logo_url}}" />
+          <view class="avatar-shell" style="{{item.avatarShellStyle}}">
+            <image class="avatar" src="{{item.team_logo_url}}" mode="aspectFit" wx:if="{{item.team_logo_url}}" />
+          </view>
         </view>
         <view class="card-mid">
           <view class="driver">{{item.team_name || '-'}}</view>
+          <view class="team">{{i18n.standings.teams}}</view>
+          <view class="progress-row">
+            <view class="progress-track">
+              <view class="progress-fill" style="{{item.progressStyle}}" />
+            </view>
+            <view wx:if="{{!item.isLeader}}" class="gap">-{{item.gapPoints}}</view>
+          </view>
         </view>
         <view class="card-right">
           <view class="pts">{{item.points}}</view>
+          <view class="pts-unit">PTS</view>
         </view>
       </view>
     </block>

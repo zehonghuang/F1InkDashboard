@@ -4,18 +4,47 @@
     <view class="subtitle">{{subtitleText}}</view>
   </view>
 
+  <view class="week-overview">
+    <view class="overview-card overview-card-wide">
+      <view class="overview-kicker">{{i18n.raceSessions.sectionSessions}}</view>
+      <view class="overview-main">{{liveSession ? liveSession.namePrimary : nextSession ? nextSession.namePrimary : raceName}}</view>
+      <view class="overview-sub">{{liveSession ? i18n.raceSessions.statusLive : nextSession ? i18n.raceSessions.statusUpcoming : i18n.raceSessions.statusDone}}</view>
+    </view>
+    <view class="overview-card">
+      <view class="overview-kicker">UP NEXT</view>
+      <view class="overview-value">{{nextSession ? nextSession.start_local : '--'}}</view>
+      <view class="overview-sub">{{nextSession ? nextSession.namePrimary : i18n.raceSessions.statusDone}}</view>
+    </view>
+    <view class="overview-card">
+      <view class="overview-kicker">COMPLETED</view>
+      <view class="overview-value">{{completedCount}} / {{totalCount}}</view>
+      <view class="overview-sub">{{i18n.raceSessions.statusDone}}</view>
+    </view>
+  </view>
+
   <view class="section">
     <view class="section-title">{{i18n.raceSessions.sectionSessions}}</view>
-    <view class="list">
+    <view class="section-desc">Race Weekend Timeline</view>
+    <view class="session-timeline">
       <block wx:for="{{sessions}}" wx:key="key">
-        <view class="row {{item.disabled ? 'row-disabled' : ''}}" bindtap="onSessionTap" data-key="{{item.key}}" data-disabled="{{item.disabled}}" data-session-key="{{item.openf1_session_key}}" data-session-name="{{item.namePrimary}}" data-race-name="{{raceName}}">
-          <view class="row-left">
-            <view class="row-name">{{item.namePrimary}}</view>
-            <view class="row-sub">{{item.nameSecondary}}</view>
+        <view class="session-item" bindtap="onSessionTap" data-key="{{item.key}}" data-disabled="{{item.disabled}}" data-session-key="{{item.openf1_session_key}}" data-session-name="{{item.namePrimary}}" data-race-name="{{raceName}}">
+          <view class="session-rail">
+            <view class="session-order">{{item.orderLabel}}</view>
+            <view class="session-dot {{item.statusClass}}" />
+            <view class="session-line" wx:if="{{index !== sessions.length - 1}}" />
           </view>
-          <view class="row-right">
-            <view class="row-time">{{item.start_local}}</view>
-            <view class="row-status">{{item.statusText}}</view>
+          <view class="session-card {{item.statusClass}} {{item.disabled ? 'session-card-disabled' : ''}}">
+            <view class="session-card-top">
+              <view class="session-card-title-wrap">
+                <view class="session-name">{{item.namePrimary}}</view>
+                <view class="session-sub">{{item.nameSecondary}}</view>
+              </view>
+              <view class="session-badge {{item.statusClass}}">{{item.statusBadge}}</view>
+            </view>
+            <view class="session-card-bottom">
+              <view class="session-time">{{item.start_local}}</view>
+              <view class="session-status">{{item.statusText}}</view>
+            </view>
           </view>
         </view>
       </block>

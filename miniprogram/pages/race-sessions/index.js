@@ -7,7 +7,11 @@ Page({
     round: 0,
     raceName: "",
     sessions: [],
-    subtitleText: ""
+    subtitleText: "",
+    liveSession: null,
+    nextSession: null,
+    completedCount: 0,
+    totalCount: 0
   },
   onLoad(options) {
     this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
@@ -54,12 +58,14 @@ Page({
         const sessions = Array.isArray(data.sessions) ? data.sessions : []
         const dict = i18n.getDict()
         const isEn = i18n.getLocale() === "en-US"
-        const mapped = sessions.map((s) => {
+        const mapped = sessions.map((s, index) => {
           const status = s.status || "upcoming"
           const statusText =
             status === "done" ? dict.raceSessions.statusDone : status === "live" ? dict.raceSessions.statusLive : dict.raceSessions.statusUpcoming
           const namePrimary = isEn ? s.name_en : s.name_cn
           const nameSecondary = isEn ? s.name_cn : s.name_en
+          const statusClass = status === "done" ? "is-done" : status === "live" ? "is-live" : "is-upcoming"
+          const statusBadge = status === "done" ? "FINAL" : status === "live" ? "LIVE" : "NEXT"
           return {
             key: s.key,
             name_cn: s.name_cn,
@@ -69,12 +75,18 @@ Page({
             start_local: s.start_local,
             status,
             statusText,
+            statusClass,
+            statusBadge,
             disabled: !!s.disabled,
-            openf1_session_key: s.openf1_session_key || null
+            openf1_session_key: s.openf1_session_key || null,
+            orderLabel: `S${index + 1}`
           }
         })
         const raceName = data.race_name || this.data.raceName
-        this.setData({ sessions: mapped, raceName }, () => {
+        const liveSession = mapped.find((x) => x.status === "live") || null
+        const nextSession = mapped.find((x) => x.status === "upcoming" && !x.disabled) || null
+        const completedCount = mapped.filter((x) => x.status === "done").length
+        this.setData({ sessions: mapped, raceName, liveSession, nextSession, completedCount, totalCount: mapped.length }, () => {
           if (raceName) {
             wx.setNavigationBarTitle({ title: raceName })
           }
