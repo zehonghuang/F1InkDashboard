@@ -1,63 +1,11 @@
-.page {
-  min-height: 100vh;
-  background:
-    radial-gradient(circle at top, rgba(225, 6, 0, 0.14) 0, rgba(225, 6, 0, 0) 32%),
-    linear-gradient(180deg, #15151e 0%, #101018 56%, #09090f 100%);
-}
-
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: 18rpx;
-}
-
-.tabs {
-  display: flex;
-  flex-direction: row;
-  gap: 10rpx;
-  margin: 14rpx 0 16rpx 0;
-  padding: 8rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.08);
-  border-radius: 18rpx;
-  background: rgba(7, 7, 12, 0.88);
-}
-
-.tab {
-  flex: 1;
-  text-align: center;
-  padding: 16rpx 0;
-  border-radius: 14rpx;
-  color: rgba(255, 255, 255, 0.62);
-  font-weight: 700;
-  letter-spacing: 1rpx;
-}
-
-.tab-active {
-  background: linear-gradient(180deg, rgba(225, 6, 0, 0.2) 0%, rgba(225, 6, 0, 0.12) 100%);
-  box-shadow: inset 0 0 0 1rpx rgba(225, 6, 0, 0.22);
-  color: #ffffff;
-}
+@import "../../styles/data-page.wxss";
 
 .leaders {
-  display: flex;
-  flex-direction: row;
-  gap: 16rpx;
   margin-bottom: 14rpx;
 }
 
 .leader-card {
   flex: 1;
-  padding: 20rpx 20rpx 22rpx;
-  border-radius: 20rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(180deg, rgba(14, 14, 18, 0.94) 0%, rgba(7, 7, 10, 0.98) 100%);
-  box-shadow: 0 18rpx 40rpx rgba(0, 0, 0, 0.22);
-}
-
-.leader-card-kicker {
-  color: rgba(255, 255, 255, 0.56);
-  font-size: 20rpx;
-  letter-spacing: 1.5rpx;
 }
 
 .leader-card-main {
@@ -117,41 +65,10 @@
   letter-spacing: 1rpx;
 }
 
-.hint {
-  display: inline-flex;
-  align-items: center;
-  min-height: 48rpx;
-  margin-bottom: 16rpx;
-  padding: 0 16rpx;
-  border-radius: 999rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.08);
-  background: rgba(7, 7, 12, 0.76);
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 22rpx;
-}
-
-.error {
-  margin-bottom: 16rpx;
-  padding: 16rpx 18rpx;
-  border-radius: 16rpx;
-  border: 1rpx solid rgba(255, 120, 120, 0.2);
-  background: rgba(64, 8, 8, 0.24);
-  color: rgba(255, 120, 120, 0.9);
-  font-size: 24rpx;
-}
-
 .standings-card {
   position: relative;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
   gap: 14rpx;
-  padding: 22rpx 24rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.08);
   border-radius: 20rpx;
-  background:
-    linear-gradient(180deg, rgba(12, 12, 16, 0.96) 0%, rgba(7, 7, 10, 0.98) 100%);
-  box-shadow: 0 14rpx 32rpx rgba(0, 0, 0, 0.18);
 }
 
 .card-accent {

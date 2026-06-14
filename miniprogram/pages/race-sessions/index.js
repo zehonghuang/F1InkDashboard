@@ -10,6 +10,10 @@ Page({
     subtitleText: "",
     liveSession: null,
     nextSession: null,
+    lastSession: null,
+    overviewSession: null,
+    overviewStatusText: "",
+    weekendDone: false,
     completedCount: 0,
     totalCount: 0
   },
@@ -84,13 +88,36 @@ Page({
         })
         const raceName = data.race_name || this.data.raceName
         const liveSession = mapped.find((x) => x.status === "live") || null
-        const nextSession = mapped.find((x) => x.status === "upcoming" && !x.disabled) || null
+        const nextSession = mapped.find((x) => x.status === "upcoming") || null
+        const lastSession = mapped.length ? mapped[mapped.length - 1] : null
         const completedCount = mapped.filter((x) => x.status === "done").length
-        this.setData({ sessions: mapped, raceName, liveSession, nextSession, completedCount, totalCount: mapped.length }, () => {
+        const totalCount = mapped.length
+        const weekendDone = totalCount > 0 && completedCount >= totalCount
+        const overviewSession = liveSession || nextSession || lastSession || null
+        const overviewStatusText = liveSession
+          ? dict.raceSessions.statusLive
+          : nextSession
+            ? dict.raceSessions.statusUpcoming
+            : dict.raceSessions.statusDone
+        this.setData(
+          {
+            sessions: mapped,
+            raceName,
+            liveSession,
+            nextSession,
+            lastSession,
+            overviewSession,
+            overviewStatusText,
+            weekendDone,
+            completedCount,
+            totalCount
+          },
+          () => {
           if (raceName) {
             wx.setNavigationBarTitle({ title: raceName })
           }
-        })
+          }
+        )
         done()
       },
       fail: () => {
@@ -119,7 +146,25 @@ Page({
   applyI18n() {
     const dict = i18n.getDict()
     const subtitleText = i18n.t("raceSessions.subtitle", { season: this.data.season, round: this.data.round })
-    this.setData({ i18n: dict, subtitleText })
+    const isEn = i18n.getLocale() === "en-US"
+    const sessions = (this.data.sessions || []).map((s) => {
+      const status = s.status || "upcoming"
+      return Object.assign({}, s, {
+        namePrimary: isEn ? s.name_en : s.name_cn,
+        nameSecondary: isEn ? s.name_cn : s.name_en,
+        statusText: status === "done" ? dict.raceSessions.statusDone : status === "live" ? dict.raceSessions.statusLive : dict.raceSessions.statusUpcoming
+      })
+    })
+    const liveSession = sessions.find((x) => x.status === "live") || null
+    const nextSession = sessions.find((x) => x.status === "upcoming") || null
+    const lastSession = sessions.length ? sessions[sessions.length - 1] : null
+    const overviewSession = liveSession || nextSession || lastSession || null
+    const overviewStatusText = liveSession
+      ? dict.raceSessions.statusLive
+      : nextSession
+        ? dict.raceSessions.statusUpcoming
+        : dict.raceSessions.statusDone
+    this.setData({ i18n: dict, subtitleText, sessions, liveSession, nextSession, lastSession, overviewSession, overviewStatusText })
     const rn = String(this.data.raceName || "").trim()
     if (rn) wx.setNavigationBarTitle({ title: rn })
   }

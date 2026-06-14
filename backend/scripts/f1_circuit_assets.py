@@ -61,6 +61,37 @@ def _build_detailed_track_png_url(year: int, key: str) -> str:
     )
 
 
+def _circuit_id_to_track_keys(circuit_id: str) -> List[str]:
+    cid = (circuit_id or "").lower().strip()
+    aliases: Dict[str, List[str]] = {
+        "albert_park": ["melbourne"],
+        "americas": ["austin", "unitedstates"],
+        "baku": ["baku"],
+        "catalunya": ["catalunya", "barcelona"],
+        "hungaroring": ["hungaroring"],
+        "interlagos": ["interlagos", "saopaulo", "sao-paulo"],
+        "jeddah": ["jeddah", "saudiarabia"],
+        "lasail": ["lusail"],
+        "losail": ["lusail"],
+        "marina_bay": ["singapore"],
+        "miami": ["miami"],
+        "monaco": ["montecarlo"],
+        "monza": ["monza"],
+        "red_bull_ring": ["spielberg"],
+        "rodriguez": ["mexicocity"],
+        "shanghai": ["shanghai"],
+        "silverstone": ["silverstone"],
+        "spa": ["spafrancorchamps", "spa"],
+        "suzuka": ["suzuka"],
+        "vegas": ["lasvegas"],
+        "villeneuve": ["montreal"],
+        "yas_marina": ["yasmarinacircuit", "yasmarina"],
+        "zandvoort": ["zandvoort"],
+    }
+    out = aliases.get(cid, [])
+    return list(dict.fromkeys([x for x in out if x]))
+
+
 def _slug_to_track_keys(slug: str) -> List[str]:
     s = (slug or "").lower().strip()
     no_dash = s.replace("-", "")
@@ -374,8 +405,22 @@ async def fetch_f1_circuit_assets(
         track_key: Optional[str] = None
         source_map_image_url: Optional[str] = None
         source_map_image_url_raw: Optional[str] = None
+        preferred_track_keys = _circuit_id_to_track_keys(str(circuit_id))
 
-        if page_html:
+        for key in preferred_track_keys:
+            detailed = _build_detailed_track_png_url(year, key)
+            try:
+                probe = await client.get(detailed, timeout=10, follow_redirects=True)
+                if probe.status_code == 200 and "image/" in (probe.headers.get("content-type") or "").lower():
+                    image_kind = "track_detailed"
+                    track_key = key
+                    source_map_image_url = detailed
+                    source_map_image_url_raw = detailed
+                    break
+            except Exception:
+                pass
+
+        if not source_map_image_url and page_html:
             hit = _extract_track_image_from_html(page_html, year)
             image_kind = hit.get("image_kind")
             track_key = hit.get("track_key")

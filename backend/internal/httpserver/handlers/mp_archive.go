@@ -98,17 +98,11 @@ func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 		}
 
 		sessionKeys := make([]int, 0, len(races))
-		sessionKeyByRound := map[int]int{}
 		for _, r := range races {
-			round, ok := anyToInt(r["round"])
-			if !ok || round <= 0 {
-				continue
-			}
 			sk, ok := anyToInt(r["openf1_race_session_key"])
 			if !ok || sk <= 0 {
 				continue
 			}
-			sessionKeyByRound[round] = sk
 			sessionKeys = append(sessionKeys, sk)
 		}
 		sessionKeys = uniqIntsLocal(sessionKeys)
@@ -262,7 +256,15 @@ func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 				raceName = fmt.Sprintf("Round %d", round)
 			}
 
-			sk := sessionKeyByRound[round]
+			scheduleDateISO := strings.TrimSpace(fmt.Sprintf("%v", r["date"]))
+			if len(scheduleDateISO) >= 10 {
+				scheduleDateISO = scheduleDateISO[:10]
+			}
+
+			sk, ok := anyToInt(r["openf1_race_session_key"])
+			if !ok || sk <= 0 {
+				sk = 0
+			}
 			startUTC := startBySessionKey[sk]
 			if startUTC.IsZero() {
 				startUTC = parseScheduleStartUTC(r)
@@ -283,12 +285,12 @@ func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 			circuitID := ""
 			circuitName := ""
 			thumbURL := ""
-			a := assetsByRound[round]
-			if a == nil {
-				a = assetsByDate[dateISO]
-			}
+			a := assetsByDate[scheduleDateISO]
 			if a == nil {
 				a = assetsByRaceName[strings.ToLower(raceName)]
+			}
+			if a == nil {
+				a = assetsByRound[round]
 			}
 			if a != nil {
 				circuitID = strings.TrimSpace(fmt.Sprintf("%v", a["circuit_id"]))

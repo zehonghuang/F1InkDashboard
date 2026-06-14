@@ -1,30 +1,30 @@
-<view class="page">
+<view class="page dp-page-shell">
   <view class="header">
     <view class="title">{{raceName}}</view>
     <view class="subtitle">{{subtitleText}}</view>
   </view>
 
-  <view class="week-overview">
-    <view class="overview-card overview-card-wide">
-      <view class="overview-kicker">{{i18n.raceSessions.sectionSessions}}</view>
-      <view class="overview-main">{{liveSession ? liveSession.namePrimary : nextSession ? nextSession.namePrimary : raceName}}</view>
-      <view class="overview-sub">{{liveSession ? i18n.raceSessions.statusLive : nextSession ? i18n.raceSessions.statusUpcoming : i18n.raceSessions.statusDone}}</view>
+  <view class="week-overview dp-overview-grid">
+    <view class="overview-card overview-card-wide dp-overview-card dp-overview-card-wide">
+      <view class="overview-kicker dp-overview-kicker">{{i18n.raceSessions.sectionSessions}}</view>
+      <view class="overview-main dp-overview-main">{{overviewSession ? overviewSession.namePrimary : raceName}}</view>
+      <view class="overview-sub dp-overview-sub">{{overviewStatusText}}</view>
     </view>
-    <view class="overview-card">
-      <view class="overview-kicker">UP NEXT</view>
-      <view class="overview-value">{{nextSession ? nextSession.start_local : '--'}}</view>
-      <view class="overview-sub">{{nextSession ? nextSession.namePrimary : i18n.raceSessions.statusDone}}</view>
+    <view class="overview-card dp-overview-card">
+      <view class="overview-kicker dp-overview-kicker">UP NEXT</view>
+      <view class="overview-value dp-overview-value">{{nextSession ? nextSession.start_local : '--'}}</view>
+      <view class="overview-sub dp-overview-sub">{{nextSession ? nextSession.namePrimary : weekendDone ? i18n.raceSessions.statusDone : i18n.raceSessions.statusUpcoming}}</view>
     </view>
-    <view class="overview-card">
-      <view class="overview-kicker">COMPLETED</view>
-      <view class="overview-value">{{completedCount}} / {{totalCount}}</view>
-      <view class="overview-sub">{{i18n.raceSessions.statusDone}}</view>
+    <view class="overview-card dp-overview-card">
+      <view class="overview-kicker dp-overview-kicker">COMPLETED</view>
+      <view class="overview-value dp-overview-value">{{completedCount}} / {{totalCount}}</view>
+      <view class="overview-sub dp-overview-sub">{{i18n.raceSessions.statusDone}}</view>
     </view>
   </view>
 
-  <view class="section">
-    <view class="section-title">{{i18n.raceSessions.sectionSessions}}</view>
-    <view class="section-desc">Race Weekend Timeline</view>
+  <view class="section dp-panel">
+    <view class="section-title dp-panel-title">{{i18n.raceSessions.sectionSessions}}</view>
+    <view class="section-desc dp-panel-desc">Race Weekend Timeline</view>
     <view class="session-timeline">
       <block wx:for="{{sessions}}" wx:key="key">
         <view class="session-item" bindtap="onSessionTap" data-key="{{item.key}}" data-disabled="{{item.disabled}}" data-session-key="{{item.openf1_session_key}}" data-session-name="{{item.namePrimary}}" data-race-name="{{raceName}}">
@@ -33,7 +33,7 @@
             <view class="session-dot {{item.statusClass}}" />
             <view class="session-line" wx:if="{{index !== sessions.length - 1}}" />
           </view>
-          <view class="session-card {{item.statusClass}} {{item.disabled ? 'session-card-disabled' : ''}}">
+          <view class="session-card dp-card {{item.statusClass}} {{item.disabled ? 'session-card-disabled' : ''}}">
             <view class="session-card-top">
               <view class="session-card-title-wrap">
                 <view class="session-name">{{item.namePrimary}}</view>

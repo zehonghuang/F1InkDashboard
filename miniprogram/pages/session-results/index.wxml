@@ -1,18 +1,18 @@
-<view class="page">
+<view class="page dp-page-shell">
   <view class="header">
     <view class="title">{{sessionName}}</view>
     <view class="subtitle">{{raceName}}</view>
   </view>
 
-  <view class="tabs">
+  <view class="tabs dp-tabs">
     <block wx:for="{{tabs}}" wx:key="key">
-      <view class="tab {{activeTabKey===item.key?'tab-active':''}}" data-tab="{{item.key}}" bindtap="onTabTap">{{item.label}}</view>
+      <view class="tab dp-tab {{activeTabKey===item.key?'tab-active dp-tab-active':''}}" data-tab="{{item.key}}" bindtap="onTabTap">{{item.label}}</view>
     </block>
   </view>
 
-  <view wx:if="{{activeTabKey==='rank'}}" class="list">
+  <view wx:if="{{activeTabKey==='rank'}}" class="list dp-list">
     <block wx:for="{{items}}" wx:key="driver_number">
-      <view class="card" style="{{item.cardStyle}}" bindtap="onDriverTap" data-driver-number="{{item.driver_number}}" data-driver-name="{{item.full_name || item.driver_name || ''}}">
+      <view class="card dp-card" style="{{item.cardStyle}}" bindtap="onDriverTap" data-driver-number="{{item.driver_number}}" data-driver-name="{{item.full_name || item.driver_name || ''}}">
         <view class="card-left">
           <image class="avatar" src="{{item.headshot_url}}" mode="aspectFit" wx:if="{{item.headshot_url}}" />
         </view>
@@ -32,11 +32,11 @@
   </view>
 
   <view wx:if="{{activeTabKey==='boxplot'}}" class="boxplot">
-    <view class="boxplot-bar">
-      <view class="boxplot-selected">{{selectedDriverText}}</view>
-      <view class="boxplot-btn" bindtap="onOpenPicker">{{i18n.sessionResults.pickDriver}}</view>
+    <view class="boxplot-bar dp-toolbar">
+      <view class="boxplot-selected dp-toolbar-text">{{selectedDriverText}}</view>
+      <view class="boxplot-btn dp-toolbar-btn" bindtap="onOpenPicker">{{i18n.sessionResults.pickDriver}}</view>
     </view>
-    <view class="boxplot-chart">
+    <view class="boxplot-chart dp-chart-shell">
       <ec-canvas
         wx:if="{{!showPicker}}"
         canvasId="boxplot_chart"
@@ -50,12 +50,12 @@
   </view>
 
   <view wx:if="{{activeTabKey==='throttle' || activeTabKey==='brake' || activeTabKey==='speed'}}" class="telemetry">
-    <view class="telemetry-bar">
-      <view class="telemetry-selected">{{telemetrySelectedText}}</view>
-      <view class="telemetry-btn" bindtap="onOpenTelemetryPicker">{{i18n.sessionResults.pickDriver}}</view>
+    <view class="telemetry-bar dp-toolbar">
+      <view class="telemetry-selected dp-toolbar-text">{{telemetrySelectedText}}</view>
+      <view class="telemetry-btn dp-toolbar-btn" bindtap="onOpenTelemetryPicker">{{i18n.sessionResults.pickDriver}}</view>
     </view>
     <view class="telemetry-hint">{{telemetryLapInfo}}</view>
-    <view class="telemetry-chart">
+    <view class="telemetry-chart dp-chart-shell">
       <ec-canvas
         wx:if="{{!showPicker}}"
         canvasId="telemetry_chart"
@@ -68,18 +68,18 @@
     </view>
   </view>
 
-  <view wx:if="{{showPicker}}" class="picker-mask" bindtap="onClosePicker"></view>
-  <view wx:if="{{showPicker}}" class="picker">
-    <view class="picker-header">
-      <view class="picker-title">{{i18n.sessionResults.pickDriver}}</view>
-      <view class="picker-actions">
-        <view class="picker-btn" bindtap="onPickerCancel">{{i18n.common.cancel}}</view>
-        <view class="picker-btn picker-btn-primary" bindtap="onPickerConfirm">{{i18n.common.ok}}</view>
+  <view wx:if="{{showPicker}}" class="picker-mask dp-dialog-mask" bindtap="onClosePicker"></view>
+  <view wx:if="{{showPicker}}" class="picker dp-dialog">
+    <view class="picker-header dp-dialog-header">
+      <view class="picker-title dp-dialog-title">{{i18n.sessionResults.pickDriver}}</view>
+      <view class="picker-actions dp-dialog-actions">
+        <view class="picker-btn dp-dialog-btn" bindtap="onPickerCancel">{{i18n.common.cancel}}</view>
+        <view class="picker-btn picker-btn-primary dp-dialog-btn dp-dialog-btn-primary" bindtap="onPickerConfirm">{{i18n.common.ok}}</view>
       </view>
     </view>
-    <view class="picker-list">
+    <view class="picker-list dp-dialog-list">
       <block wx:for="{{items}}" wx:key="driver_number">
-        <view class="card" style="{{item.cardStyle}}" bindtap="onTogglePickDriver" data-driver-number="{{item.driver_number}}">
+        <view class="card dp-card" style="{{item.cardStyle}}" bindtap="onTogglePickDriver" data-driver-number="{{item.driver_number}}">
           <view class="card-left">
             <image class="avatar" src="{{item.headshot_url}}" mode="aspectFit" wx:if="{{item.headshot_url}}" />
           </view>

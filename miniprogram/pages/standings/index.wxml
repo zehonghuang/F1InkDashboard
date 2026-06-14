@@ -1,18 +1,18 @@
-<view class="page">
+<view class="page dp-page-shell">
   <view class="header">
     <view class="title">{{i18n.standings.pageTitle}}</view>
     <view class="subtitle">{{subtitleText}}</view>
   </view>
 
-  <view class="tabs">
+  <view class="tabs dp-tabs">
     <block wx:for="{{tabs}}" wx:key="key">
-      <view class="tab {{activeTabKey===item.key?'tab-active':''}}" data-tab="{{item.key}}" bindtap="onTabTap">{{item.label}}</view>
+      <view class="tab dp-tab {{activeTabKey===item.key?'tab-active dp-tab-active':''}}" data-tab="{{item.key}}" bindtap="onTabTap">{{item.label}}</view>
     </block>
   </view>
 
-  <view class="leaders" wx:if="{{leaderDriver || leaderConstructor}}">
-    <view wx:if="{{leaderDriver}}" class="leader-card">
-      <view class="leader-card-kicker">{{i18n.standings.drivers}}</view>
+  <view class="leaders dp-overview-grid" wx:if="{{leaderDriver || leaderConstructor}}">
+    <view wx:if="{{leaderDriver}}" class="leader-card dp-overview-card">
+      <view class="leader-card-kicker dp-overview-kicker">{{i18n.standings.drivers}}</view>
       <view class="leader-card-main">
         <view class="leader-card-rank">P1</view>
         <view class="leader-card-body">
@@ -25,8 +25,8 @@
         </view>
       </view>
     </view>
-    <view wx:if="{{leaderConstructor}}" class="leader-card">
-      <view class="leader-card-kicker">{{i18n.standings.teams}}</view>
+    <view wx:if="{{leaderConstructor}}" class="leader-card dp-overview-card">
+      <view class="leader-card-kicker dp-overview-kicker">{{i18n.standings.teams}}</view>
       <view class="leader-card-main">
         <view class="leader-card-rank">P1</view>
         <view class="leader-card-body">
@@ -41,12 +41,12 @@
     </view>
   </view>
 
-  <view wx:if="{{updatedText}}" class="hint">{{updatedText}}</view>
-  <view wx:if="{{errorText}}" class="error">{{errorText}}</view>
+  <view wx:if="{{updatedText}}" class="hint dp-hint-pill">{{updatedText}}</view>
+  <view wx:if="{{errorText}}" class="error dp-error-panel">{{errorText}}</view>
 
-  <view wx:if="{{activeTabKey==='drivers'}}" class="list">
+  <view wx:if="{{activeTabKey==='drivers'}}" class="list dp-list">
     <block wx:for="{{drivers}}" wx:key="driver_number">
-      <view class="card standings-card {{item.topTier}}">
+      <view class="card dp-card standings-card {{item.topTier}}">
         <view wx:if="{{item.accentStyle}}" class="card-accent" style="{{item.accentStyle}}" />
         <view class="rank-col">
           <view class="rank-badge">{{item.rankLabel}}</view>
@@ -77,9 +77,9 @@
     </block>
   </view>
 
-  <view wx:if="{{activeTabKey==='constructors'}}" class="list">
+  <view wx:if="{{activeTabKey==='constructors'}}" class="list dp-list">
     <block wx:for="{{constructors}}" wx:key="team_name">
-      <view class="card standings-card {{item.topTier}}">
+      <view class="card dp-card standings-card {{item.topTier}}">
         <view wx:if="{{item.accentStyle}}" class="card-accent" style="{{item.accentStyle}}" />
         <view class="rank-col">
           <view class="rank-badge">{{item.rankLabel}}</view>
