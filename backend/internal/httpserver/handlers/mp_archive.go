@@ -96,6 +96,10 @@ func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 				}
 			}
 		}
+		meetingMapByKey := map[int]f1db.OpenF1MeetingCircuitMap{}
+		if v, err := f1db.OpenF1MeetingCircuitMapsByMeetingKey(db, season); err == nil && v != nil {
+			meetingMapByKey = v
+		}
 
 		sessionKeys := make([]int, 0, len(races))
 		for _, r := range races {
@@ -260,6 +264,7 @@ func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 			if len(scheduleDateISO) >= 10 {
 				scheduleDateISO = scheduleDateISO[:10]
 			}
+			meetingKey, _ := anyToInt(r["openf1_meeting_key"])
 
 			sk, ok := anyToInt(r["openf1_race_session_key"])
 			if !ok || sk <= 0 {
@@ -285,23 +290,26 @@ func MpArchive(db *gorm.DB, staticDir string) gin.HandlerFunc {
 			circuitID := ""
 			circuitName := ""
 			thumbURL := ""
-			a := assetsByDate[scheduleDateISO]
-			if a == nil {
-				a = assetsByRaceName[strings.ToLower(raceName)]
-			}
-			if a == nil {
-				a = assetsByRound[round]
-			}
-			if a != nil {
-				circuitID = strings.TrimSpace(fmt.Sprintf("%v", a["circuit_id"]))
-				if circuitID == "<nil>" {
-					circuitID = ""
+			if mm, ok := meetingMapByKey[meetingKey]; ok {
+				circuitID = strings.TrimSpace(mm.CircuitID)
+				circuitName = strings.TrimSpace(mm.CircuitName)
+				thumbURL = absURL(mm.MapImageURL)
+			} else {
+				a := assetsByDate[scheduleDateISO]
+				if a == nil {
+					a = assetsByRaceName[strings.ToLower(raceName)]
 				}
-				circuitName = strings.TrimSpace(fmt.Sprintf("%v", a["circuit_name"]))
-				if circuitName == "<nil>" {
-					circuitName = ""
+				if a != nil {
+					circuitID = strings.TrimSpace(fmt.Sprintf("%v", a["circuit_id"]))
+					if circuitID == "<nil>" {
+						circuitID = ""
+					}
+					circuitName = strings.TrimSpace(fmt.Sprintf("%v", a["circuit_name"]))
+					if circuitName == "<nil>" {
+						circuitName = ""
+					}
+					thumbURL = absURL(fmt.Sprintf("%v", a["public_map_image_url"]))
 				}
-				thumbURL = absURL(fmt.Sprintf("%v", a["public_map_image_url"]))
 			}
 			mapURL := ""
 			if circuitID != "" {
