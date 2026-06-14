@@ -4,14 +4,34 @@
     <view class="subtitle">Telemetry • Analysis • Archive</view>
   </view>
 
-  <picker mode="selector" range="{{seasonOptions}}" value="{{seasonIndex}}" bindchange="onSeasonChange">
-    <view class="season-picker">
-      <view class="season-pill">
-        <text class="season-text">{{seasonOptions[seasonIndex]}}</text>
-        <text class="season-arrow">▼</text>
+  <view class="archive-overview">
+    <picker mode="selector" range="{{seasonOptions}}" value="{{seasonIndex}}" bindchange="onSeasonChange">
+      <view class="season-picker">
+        <view class="season-pill">
+          <text class="season-text">{{seasonOptions[seasonIndex]}}</text>
+          <text class="season-arrow">▼</text>
+        </view>
       </view>
+    </picker>
+
+    <view class="overview-card overview-card-wide">
+      <view class="overview-kicker">{{selectedSeason}} Season Archive</view>
+      <view class="overview-main">{{latestRace ? latestRace.name : i18n.archive.headerTitle}}</view>
+      <view class="overview-sub">{{latestRace ? latestRace.roundText + ' • ' + latestRace.dateShort : i18n.archive.pending}}</view>
     </view>
-  </picker>
+
+    <view class="overview-card">
+      <view class="overview-kicker">ROUNDS</view>
+      <view class="overview-value">{{completedCount}}</view>
+      <view class="overview-sub">{{i18n.archive.headerTitle}}</view>
+    </view>
+
+    <view class="overview-card">
+      <view class="overview-kicker">LATEST WINNER</view>
+      <view class="overview-value overview-value-compact">{{latestRace ? latestRace.winner : '--'}}</view>
+      <view class="overview-sub">{{latestRace ? latestRace.fastestLap : i18n.archive.pending}}</view>
+    </view>
+  </view>
 
   <view class="timeline">
     <block wx:for="{{races}}" wx:key="id">
@@ -21,13 +41,31 @@
           <view class="timeline-dot" />
           <view class="timeline-line" wx:if="{{index !== races.length - 1}}" />
         </view>
-        <view class="timeline-content">
-          <race-card i-class="timeline-card" thumb="{{item.thumb}}" fallbackThumb="{{item.thumbFallback || ''}}" title="{{item.name}}" extra="{{item.roundText}}">
-            <view slot="content">
-              <view class="race-kv">{{i18n.archive.winner}}{{item.winner}}</view>
-              <view class="race-kv">{{i18n.archive.fastestLap}}{{item.fastestLap}}</view>
+        <view class="timeline-content {{index === 0 ? 'timeline-content-featured' : ''}}">
+          <view class="archive-card">
+            <view class="archive-thumb-wrap" wx:if="{{item.thumb}}">
+              <image class="archive-thumb" src="{{item.thumb}}" mode="aspectFit" />
+              <view class="archive-thumb-mask" />
             </view>
-          </race-card>
+            <view class="archive-body">
+              <view class="archive-top">
+                <view class="archive-round">{{item.roundText}}</view>
+                <view wx:if="{{item.latestTag}}" class="archive-badge">{{item.latestTag}}</view>
+              </view>
+              <view class="archive-name">{{item.name}}</view>
+              <view class="archive-date">{{item.dateShort}}</view>
+              <view class="archive-results">
+                <view class="archive-result-row">
+                  <view class="archive-result-key">{{i18n.archive.winner}}</view>
+                  <view class="archive-result-value">{{item.winner}}</view>
+                </view>
+                <view class="archive-result-row">
+                  <view class="archive-result-key">{{i18n.archive.fastestLap}}</view>
+                  <view class="archive-result-value">{{item.fastestLap}}</view>
+                </view>
+              </view>
+            </view>
+          </view>
         </view>
       </view>
     </block>

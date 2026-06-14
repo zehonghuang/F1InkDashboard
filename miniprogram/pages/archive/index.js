@@ -7,6 +7,9 @@ Page({
     seasonOptions: [],
     seasonIndex: 0,
     statusBarHeight: 0,
+    selectedSeason: 2026,
+    latestRace: null,
+    completedCount: 0,
     races: [
       {
         id: "R07",
@@ -128,6 +131,7 @@ Page({
         const data = (res && res.data) || {}
         const races = Array.isArray(data.races) ? data.races : []
         if (!races.length) {
+          this.setData({ selectedSeason: season, latestRace: null, completedCount: 0, races: [] })
           done()
           return
         }
@@ -150,10 +154,17 @@ Page({
             thumb,
             thumbFallback,
             winner: String(winner),
-            fastestLap: String(fastestLap)
+            fastestLap: String(fastestLap),
+            latestTag: ""
           }
         })
-        this.setData({ races: mapped })
+        if (mapped[0]) mapped[0].latestTag = "LATEST"
+        this.setData({
+          races: mapped,
+          selectedSeason: season,
+          latestRace: mapped[0] || null,
+          completedCount: mapped.length
+        })
         done()
       },
       fail: () => {

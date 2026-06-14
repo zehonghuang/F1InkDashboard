@@ -9,11 +9,56 @@ function formatPoints(v) {
   return String(Math.round(n * 10) / 10)
 }
 
+function normalizeTeamColor(v) {
+  const s = String(v || "").trim()
+  if (!s) return ""
+  if (/^#[0-9a-fA-F]{6}$/.test(s)) return s.toUpperCase()
+  if (/^[0-9a-fA-F]{6}$/.test(s)) return `#${s}`.toUpperCase()
+  return ""
+}
+
+function hexToRgba(hex, alpha) {
+  const h = normalizeTeamColor(hex)
+  if (!h) return ""
+  const r = parseInt(h.slice(1, 3), 16)
+  const g = parseInt(h.slice(3, 5), 16)
+  const b = parseInt(h.slice(5, 7), 16)
+  const a = Number.isFinite(Number(alpha)) ? Math.max(0, Math.min(1, Number(alpha))) : 1
+  return `rgba(${r},${g},${b},${a})`
+}
+
 function withCardStyle(items) {
-  return (items || []).map((it) => {
-    const c = (it && it.team_color) || ""
-    const cardStyle = c ? `border-left: 10rpx solid ${c}; padding-left: 16rpx;` : ""
-    return Object.assign({}, it, { cardStyle, points: formatPoints(it && it.points) })
+  const rows = Array.isArray(items) ? items : []
+  let leaderPoints = 0
+  for (const it of rows) {
+    const val = Number(it && it.points)
+    if (Number.isFinite(val) && val > leaderPoints) leaderPoints = val
+  }
+  return rows.map((it, index) => {
+    const rank = index + 1
+    const c = normalizeTeamColor(it && it.team_color)
+    const pointsValue = Number(it && it.points)
+    const leaderDelta = Number.isFinite(pointsValue) ? Math.max(0, leaderPoints - pointsValue) : 0
+    const progressRatio = leaderPoints > 0 && Number.isFinite(pointsValue) ? Math.max(0.08, Math.min(1, pointsValue / leaderPoints)) : 0.08
+    const fillStart = hexToRgba(c, 0.3) || "rgba(225, 6, 0, 0.24)"
+    const fillEnd = c || "#E10600"
+    const accentStyle = c ? `background:${c};` : ""
+    const avatarShellStyle = c
+      ? `background: linear-gradient(180deg, ${hexToRgba(c, 0.22)} 0%, rgba(255,255,255,0.05) 100%); border-color: ${hexToRgba(c, 0.22)};`
+      : ""
+    const progressStyle = `width:${Math.round(progressRatio * 100)}%; background: linear-gradient(90deg, ${fillStart} 0%, ${fillEnd} 100%);`
+    return Object.assign({}, it, {
+      rank,
+      rankLabel: `P${rank}`,
+      topTier: rank <= 3 ? `top-${rank}` : "",
+      isLeader: rank === 1,
+      accentStyle,
+      avatarShellStyle,
+      progressStyle,
+      gapPoints: leaderDelta > 0 ? formatPoints(leaderDelta) : "",
+      pointsValue: Number.isFinite(pointsValue) ? pointsValue : 0,
+      points: formatPoints(it && it.points)
+    })
   })
 }
 
@@ -25,6 +70,8 @@ Page({
     activeTabKey: "drivers",
     drivers: [],
     constructors: [],
+    leaderDriver: null,
+    leaderConstructor: null,
     loading: false,
     errorText: "",
     updatedText: "",
@@ -65,7 +112,13 @@ Page({
       const constructors = withCardStyle(r.constructors || [])
       const ts = r.generatedAtUTC ? String(r.generatedAtUTC).replace("T", " ").replace("Z", "") : ""
       const updatedText = ts ? i18n.t("standings.updatedAtUTC", { ts }) : ""
-      this.setData({ drivers, constructors, updatedText })
+      this.setData({
+        drivers,
+        constructors,
+        leaderDriver: drivers[0] || null,
+        leaderConstructor: constructors[0] || null,
+        updatedText
+      })
       if (!drivers.length && !constructors.length) {
         this.setData({ errorText: i18n.t("standings.noData") })
       }

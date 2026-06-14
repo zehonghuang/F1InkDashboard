@@ -49,25 +49,33 @@ func MpRaceWeek(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		nowUTC := time.Now().UTC()
-		nowLocal := nowUTC.In(loc)
-		pyWd := (int(nowLocal.Weekday()) + 6) % 7
-		weekStartLocal := time.Date(nowLocal.Year(), nowLocal.Month(), nowLocal.Day(), 0, 0, 0, 0, loc).AddDate(0, 0, -pyWd)
-		weekEndLocal := weekStartLocal.AddDate(0, 0, 7)
+		windowStartLocal := nowUTC.In(loc)
+		windowEndUTC := nowUTC.Add(7 * 24 * time.Hour)
+		windowEndLocal := windowEndUTC.In(loc)
 
 		var weekRace map[string]any
-		var weekRaceDtUTC time.Time
+		var weekRaceFirstUTC time.Time
+		var weekRaceItems []sessionItem
+		var hasLiveRace bool
 		for _, r := range races {
-			dtUTC := parseScheduleStartUTC(r)
-			if dtUTC.IsZero() {
+			items := buildRaceWeekSessionItems(r)
+			if len(items) == 0 {
 				continue
 			}
-			dtLocal := dtUTC.In(loc)
-			if dtLocal.Before(weekStartLocal) || !dtLocal.Before(weekEndLocal) {
+			firstUTC := items[0].Dt
+			lastEndUTC := items[len(items)-1].End
+			isLive := !nowUTC.Before(firstUTC) && nowUTC.Before(lastEndUTC)
+			isUpcomingSoon := firstUTC.After(nowUTC) && !firstUTC.After(windowEndUTC)
+			if !isLive && !isUpcomingSoon {
 				continue
 			}
-			if weekRace == nil || dtUTC.Before(weekRaceDtUTC) {
+			if weekRace == nil ||
+				(isLive && !hasLiveRace) ||
+				(isLive == hasLiveRace && firstUTC.Before(weekRaceFirstUTC)) {
 				weekRace = r
-				weekRaceDtUTC = dtUTC
+				weekRaceFirstUTC = firstUTC
+				weekRaceItems = items
+				hasLiveRace = isLive
 			}
 		}
 
@@ -105,41 +113,19 @@ func MpRaceWeek(db *gorm.DB) gin.HandlerFunc {
 				RaceName:             raceName,
 				Country:              countryOut,
 				FlagURL:              flagOut,
-				RaceDateUTC:          weekRaceDtUTC.Format(time.RFC3339Nano),
-				RaceDateLocal:        weekRaceDtUTC.In(loc).Format("2006-01-02 15:04"),
+				RaceDateUTC:          weekRaceFirstUTC.Format(time.RFC3339Nano),
+				RaceDateLocal:        weekRaceFirstUTC.In(loc).Format("2006-01-02 15:04"),
 				OpenF1RaceSessionKey: skRaceOut,
 			}
 
-			type item struct {
-				Dt  time.Time
-				Key string
-				SK  int
-			}
-			items := make([]item, 0, 8)
-			keys := []string{"FP1", "FP2", "FP3", "SQ", "SPRINT", "Q", "RACE"}
-			for _, k := range keys {
-				dtUTC, sk, ok := scheduleSessionFromRace(weekRace, k)
-				if !ok || dtUTC.IsZero() {
-					continue
-				}
-				items = append(items, item{Dt: dtUTC, Key: k, SK: sk})
-			}
-			sort.SliceStable(items, func(i, j int) bool {
-				return items[i].Dt.Before(items[j].Dt)
-			})
-
-			var next item
+			var next sessionItem
 			foundNext := false
-			for _, it := range items {
+			for _, it := range weekRaceItems {
 				if it.Dt.After(nowUTC) {
 					next = it
 					foundNext = true
 					break
 				}
-			}
-			if !foundNext && weekRaceDtUTC.After(nowUTC) {
-				next = item{Dt: weekRaceDtUTC, Key: "RACE", SK: skRace}
-				foundNext = true
 			}
 
 			if foundNext {
@@ -165,13 +151,48 @@ func MpRaceWeek(db *gorm.DB) gin.HandlerFunc {
 			GeneratedAtUTC: time.Now().UTC().Format(time.RFC3339Nano),
 			Season:         season,
 			TZ:             tzName,
-			WeekStartLocal: weekStartLocal.Format("2006-01-02"),
-			WeekEndLocal:   weekEndLocal.Format("2006-01-02"),
+			WeekStartLocal: windowStartLocal.Format("2006-01-02"),
+			WeekEndLocal:   windowEndLocal.Format("2006-01-02"),
 			IsRaceWeek:     isRaceWeek,
 			Race:           outRace,
 			NextSession:    outNext,
 		})
 	}
+}
+
+type sessionItem struct {
+	Dt  time.Time
+	End time.Time
+	Key string
+	SK  int
+}
+
+func buildRaceWeekSessionItems(race map[string]any) []sessionItem {
+	keys := []string{"FP1", "FP2", "FP3", "SQ", "SPRINT", "Q", "RACE"}
+	items := make([]sessionItem, 0, len(keys))
+	for _, k := range keys {
+		dtUTC, sk, ok := scheduleSessionFromRace(race, k)
+		if !ok || dtUTC.IsZero() {
+			continue
+		}
+		items = append(items, sessionItem{
+			Dt:  dtUTC.UTC(),
+			End: dtUTC.UTC().Add(raceWeekSessionDuration(k)),
+			Key: k,
+			SK:  sk,
+		})
+	}
+	sort.SliceStable(items, func(i, j int) bool {
+		return items[i].Dt.Before(items[j].Dt)
+	})
+	return items
+}
+
+func raceWeekSessionDuration(key string) time.Duration {
+	if strings.EqualFold(strings.TrimSpace(key), "RACE") {
+		return 4 * time.Hour
+	}
+	return 90 * time.Minute
 }
 
 func scheduleCountryFromRace(race map[string]any) string {

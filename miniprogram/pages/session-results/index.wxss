@@ -1,43 +1,4 @@
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
-}
-
-.tabs {
-  display: flex;
-  flex-direction: row;
-  gap: 12rpx;
-  margin: 12rpx 0 16rpx 0;
-  padding: 8rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  border-radius: 12rpx;
-  background: #000000;
-}
-
-.tab {
-  flex: 1;
-  text-align: center;
-  padding: 14rpx 0;
-  border-radius: 12rpx;
-  color: rgba(255, 255, 255, 0.72);
-  font-weight: 700;
-}
-
-.tab-active {
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
-}
-
-.card {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 20rpx 24rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  border-radius: 12rpx;
-  background: #000000;
-}
+@import "../../styles/data-page.wxss";
 
 .card-left {
   width: 88rpx;
@@ -47,8 +8,8 @@
 }
 
 .avatar {
-  width: 72rpx;
-  height: 72rpx;
+  width: 76rpx;
+  height: 76rpx;
 }
 
 .card-mid {
@@ -69,6 +30,7 @@
 
 .driver {
   font-weight: 800;
+  color: rgba(255, 255, 255, 0.94);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -82,7 +44,7 @@
 }
 
 .team {
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.62);
   font-size: 24rpx;
   white-space: nowrap;
   overflow: hidden;
@@ -90,7 +52,7 @@
 }
 
 .lap {
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.7);
   font-size: 24rpx;
 }
 
@@ -102,51 +64,80 @@
 
 .pos {
   font-weight: 800;
-  font-size: 34rpx;
+  font-size: 36rpx;
+  font-family: Formula1, sans-serif;
 }
 
 .boxplot {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 18rpx;
 }
 
-.boxplot-bar {
+.boxplot-summary {
+  margin-top: -2rpx;
+}
+
+.boxplot-summary-title {
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 26rpx;
+  font-weight: 800;
+  letter-spacing: 1rpx;
+}
+
+.boxplot-summary-desc {
+  margin-top: 8rpx;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 22rpx;
+  line-height: 32rpx;
+}
+
+.boxplot-summary-grid {
+  margin-top: 16rpx;
   display: flex;
   flex-direction: row;
-  align-items: center;
-  gap: 16rpx;
-  padding: 16rpx 18rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  border-radius: 12rpx;
-  background: #000000;
+  gap: 12rpx;
 }
 
-.boxplot-selected {
+.boxplot-summary-card {
   flex: 1;
   min-width: 0;
-  color: rgba(255, 255, 255, 0.72);
+  padding: 16rpx 16rpx 18rpx;
+  border-radius: 16rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.boxplot-summary-metric {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 20rpx;
+  line-height: 28rpx;
+}
+
+.boxplot-summary-driver {
+  margin-top: 10rpx;
+  color: rgba(255, 255, 255, 0.92);
   font-size: 24rpx;
+  font-weight: 800;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.boxplot-btn {
-  flex: none;
-  padding: 10rpx 16rpx;
-  border-radius: 12rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  font-weight: 700;
+.boxplot-summary-value {
+  margin-top: 8rpx;
+  color: rgba(255, 255, 255, 0.98);
+  font-size: 28rpx;
+  line-height: 34rpx;
+  font-weight: 900;
+  font-family: Formula1, sans-serif;
 }
 
-.boxplot-chart {
-  min-height: 520rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  border-radius: 12rpx;
-  background: #000000;
-  overflow: hidden;
+.boxplot-summary-note {
+  margin-top: 8rpx;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 20rpx;
+  line-height: 28rpx;
 }
 
 .boxplot-share {
@@ -159,51 +150,106 @@
 .telemetry {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 18rpx;
 }
 
-.telemetry-bar {
+.telemetry-hint {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 22rpx;
+  padding: 0 6rpx;
+}
+
+.telemetry-summary {
+  margin-top: -2rpx;
+}
+
+.telemetry-summary-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.telemetry-summary-title {
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 26rpx;
+  font-weight: 800;
+  letter-spacing: 1rpx;
+}
+
+.telemetry-summary-compare {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 20rpx;
+}
+
+.telemetry-sector-grid {
   display: flex;
   flex-direction: row;
-  align-items: center;
-  gap: 16rpx;
-  padding: 16rpx 18rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  border-radius: 12rpx;
-  background: #000000;
+  gap: 12rpx;
 }
 
-.telemetry-selected {
+.telemetry-sector-card {
   flex: 1;
   min-width: 0;
-  color: rgba(255, 255, 255, 0.72);
+  padding: 16rpx 16rpx 18rpx;
+  border-radius: 16rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.telemetry-sector-name {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 20rpx;
+  letter-spacing: 1rpx;
+}
+
+.telemetry-sector-driver {
+  margin-top: 10rpx;
+  color: rgba(255, 255, 255, 0.92);
   font-size: 24rpx;
+  font-weight: 800;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.telemetry-btn {
-  flex: none;
-  padding: 10rpx 16rpx;
-  border-radius: 12rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  font-weight: 700;
+.telemetry-sector-value {
+  margin-top: 8rpx;
+  color: rgba(255, 255, 255, 0.98);
+  font-size: 28rpx;
+  line-height: 34rpx;
+  font-weight: 900;
+  font-family: Formula1, sans-serif;
 }
 
-.telemetry-hint {
-  color: rgba(255, 255, 255, 0.62);
+.telemetry-sector-label {
+  margin-top: 8rpx;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 20rpx;
+  line-height: 28rpx;
+}
+
+.telemetry-insight {
+  margin-top: 16rpx;
+  padding: 16rpx 18rpx;
+  border-radius: 16rpx;
+  border: 1rpx solid rgba(225, 6, 0, 0.12);
+  background: linear-gradient(180deg, rgba(225, 6, 0, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.telemetry-insight-title {
+  color: #e10600;
+  font-size: 20rpx;
+  font-weight: 900;
+  letter-spacing: 1rpx;
+}
+
+.telemetry-insight-text {
+  margin-top: 8rpx;
+  color: rgba(255, 255, 255, 0.84);
   font-size: 22rpx;
-  padding: 0 6rpx;
-}
-
-.telemetry-chart {
-  min-height: 520rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  border-radius: 12rpx;
-  background: #000000;
-  overflow: hidden;
+  line-height: 34rpx;
 }
 
 .telemetry-share {
@@ -211,71 +257,6 @@
   justify-content: flex-end;
   padding: 0 10rpx;
   opacity: 0.9;
-}
-
-.picker-mask {
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.65);
-  z-index: 900;
-}
-
-.picker {
-  position: fixed;
-  left: 24rpx;
-  right: 24rpx;
-  top: 120rpx;
-  bottom: 120rpx;
-  background: #0a0a0a;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  border-radius: 12rpx;
-  z-index: 901;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.picker-header {
-  padding: 18rpx 20rpx;
-  border-bottom: 1rpx solid rgba(255, 255, 255, 0.12);
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.picker-title {
-  font-weight: 900;
-}
-
-.picker-actions {
-  display: flex;
-  flex-direction: row;
-  gap: 12rpx;
-}
-
-.picker-btn {
-  padding: 10rpx 16rpx;
-  border-radius: 12rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  font-weight: 700;
-}
-
-.picker-btn-primary {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.picker-list {
-  flex: 1;
-  overflow: auto;
-  padding: 16rpx 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
 }
 
 .pick-mark {

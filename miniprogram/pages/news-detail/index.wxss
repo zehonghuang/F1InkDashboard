@@ -1,24 +1,29 @@
 .page {
   min-height: 100vh;
-  padding: 20rpx 20rpx calc(36rpx + env(safe-area-inset-bottom));
+  padding: 24rpx 20rpx calc(40rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
+  background:
+    radial-gradient(circle at top, rgba(225, 6, 0, 0.14) 0, rgba(225, 6, 0, 0) 34%),
+    linear-gradient(180deg, #15151e 0%, #101018 56%, #09090f 100%);
 }
 
 .detail-card {
-  padding: 22rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  border-radius: 12rpx;
-  background: #000000;
+  padding: 28rpx 24rpx 30rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  border-radius: 22rpx;
+  background: linear-gradient(180deg, rgba(12, 12, 16, 0.96) 0%, rgba(7, 7, 10, 0.98) 100%);
+  box-shadow: 0 24rpx 54rpx rgba(0, 0, 0, 0.24);
 }
 
 .detail-title {
   font-weight: 700;
-  font-size: 36rpx;
-  line-height: 50rpx;
+  font-size: 42rpx;
+  line-height: 58rpx;
+  color: rgba(255, 255, 255, 0.96);
 }
 
 .detail-meta {
-  margin-top: 16rpx;
+  margin-top: 18rpx;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -26,12 +31,13 @@
 }
 
 .detail-tag {
-  padding: 6rpx 12rpx;
+  padding: 8rpx 16rpx;
   border-radius: 999rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.86);
+  border: 1rpx solid rgba(225, 6, 0, 0.22);
+  background: rgba(225, 6, 0, 0.14);
+  color: rgba(255, 255, 255, 0.92);
   font-size: 22rpx;
+  letter-spacing: 1rpx;
 }
 
 .detail-dot {
@@ -39,24 +45,24 @@
 }
 
 .detail-time {
-  color: rgba(255, 255, 255, 0.62);
+  color: rgba(255, 255, 255, 0.58);
   font-size: 24rpx;
 }
 
 .detail-content {
-  margin-top: 18rpx;
-  color: rgba(255, 255, 255, 0.78);
-  line-height: 44rpx;
+  margin-top: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 48rpx;
 }
 
 .detail-rich {
-  margin-top: 18rpx;
-  color: rgba(255, 255, 255, 0.78);
-  line-height: 44rpx;
+  margin-top: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 48rpx;
 }
 
 .detail-rich-block {
-  margin-top: 16rpx;
+  margin-top: 18rpx;
 }
 
 .detail-rich-block:first-child {
@@ -64,7 +70,7 @@
 }
 
 .detail-gallery-block {
-  margin-top: 20rpx;
+  margin-top: 24rpx;
 }
 
 .detail-gallery-shell {
@@ -72,6 +78,8 @@
   width: 100%;
   overflow: hidden;
   border-radius: 28rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18rpx 40rpx rgba(0, 0, 0, 0.22);
 }
 
 .detail-gallery-shell-single {
@@ -84,12 +92,12 @@
 }
 
 .status {
-  margin: 0 0 16rpx 0;
-  padding: 14rpx 18rpx;
-  border-radius: 12rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  background: rgba(0, 0, 0, 0.65);
-  color: rgba(255, 255, 255, 0.72);
+  margin: 0 0 18rpx 0;
+  padding: 18rpx 20rpx;
+  border-radius: 16rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  background: rgba(7, 7, 12, 0.82);
+  color: rgba(255, 255, 255, 0.68);
   font-size: 24rpx;
   line-height: 34rpx;
   text-align: center;

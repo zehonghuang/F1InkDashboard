@@ -19,6 +19,16 @@ var (
 	ErrNoConstructorStandings   = errors.New("no_constructor_standings")
 )
 
+type OpenF1MeetingCircuitMap struct {
+	MeetingKey        int
+	SeasonYear        int
+	CircuitID         string
+	CircuitName       string
+	TrackKey          string
+	MapImageURL       string
+	MapImageURLDetail string
+}
+
 func OpenF1LatestRaceSessionKey(db *gorm.DB, season int) (int, error) {
 	type row struct {
 		SessionKey int `gorm:"column:session_key"`
@@ -782,10 +792,11 @@ func OpenF1ScheduleJSON(db *gorm.DB, season int, lang string) (map[string]any, e
 		}
 
 		raceObj := map[string]any{
-			"season":   strconv.Itoa(season),
-			"round":    nil,
-			"url":      nil,
-			"raceName": raceName,
+			"season":             strconv.Itoa(season),
+			"round":              nil,
+			"url":                nil,
+			"raceName":           raceName,
+			"openf1_meeting_key": mk,
 			"raceName_en": func() string {
 				if strings.TrimSpace(raceNameEn) != "" {
 					return raceNameEn
@@ -1058,6 +1069,64 @@ func CircuitAssetsPayloadFromDB(db *gorm.DB, season int, lang string) (map[strin
 		"updated_at_utc": time.Now().UTC().Format(time.RFC3339Nano),
 		"items":          items,
 	}, nil
+}
+
+func OpenF1MeetingCircuitMapsByMeetingKey(db *gorm.DB, season int) (map[int]OpenF1MeetingCircuitMap, error) {
+	type row struct {
+		MeetingKey        int     `gorm:"column:meeting_key"`
+		SeasonYear        int     `gorm:"column:season_year"`
+		CircuitID         *string `gorm:"column:ergast_circuit_id"`
+		CircuitName       *string `gorm:"column:circuit_name"`
+		TrackKey          *string `gorm:"column:track_key"`
+		MapImageURL       *string `gorm:"column:map_image_url"`
+		MapImageURLDetail *string `gorm:"column:map_image_url_detail"`
+	}
+	var rows []row
+	if err := db.Raw(`
+            SELECT
+              meeting_key,
+              season_year,
+              ergast_circuit_id,
+              circuit_name,
+              track_key,
+              map_image_url,
+              map_image_url_detail
+            FROM openf1_meeting_circuit_maps
+            WHERE season_year = ?
+        `, season).Scan(&rows).Error; err != nil {
+		return nil, err
+	}
+	out := make(map[int]OpenF1MeetingCircuitMap, len(rows))
+	asString := func(p *string) string {
+		if p == nil {
+			return ""
+		}
+		return strings.TrimSpace(*p)
+	}
+	for _, r := range rows {
+		if r.MeetingKey <= 0 {
+			continue
+		}
+		cid := asString(r.CircuitID)
+		mapURL := ""
+		mapURLDetail := ""
+		if raw := asString(r.MapImageURL); raw != "" || cid != "" {
+			mapURL = strings.TrimSpace(fmt.Sprintf("%v", normalizePublicStaticURL(raw, season, cid, "map")))
+		}
+		if raw := asString(r.MapImageURLDetail); raw != "" || cid != "" {
+			mapURLDetail = strings.TrimSpace(fmt.Sprintf("%v", normalizePublicStaticURL(raw, season, cid, "detail")))
+		}
+		out[r.MeetingKey] = OpenF1MeetingCircuitMap{
+			MeetingKey:        r.MeetingKey,
+			SeasonYear:        r.SeasonYear,
+			CircuitID:         cid,
+			CircuitName:       asString(r.CircuitName),
+			TrackKey:          asString(r.TrackKey),
+			MapImageURL:       mapURL,
+			MapImageURLDetail: mapURLDetail,
+		}
+	}
+	return out, nil
 }
 
 func strPtr(p *string) any {
