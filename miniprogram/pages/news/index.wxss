@@ -112,19 +112,32 @@
   margin-top: 0;
 }
 
-.live-standings-debug-btn {
-  min-width: 132rpx;
-  height: 48rpx;
-  padding: 0 16rpx;
-  border-radius: 9999rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.86);
-  font-size: 20rpx;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.live-standings-wrap {
+  position: relative;
+  z-index: 4;
+  margin-top: 16rpx;
+  margin-bottom: 14rpx;
+}
+
+.live-standings-wrap-sticky {
+  position: sticky;
+}
+
+.live-session-card {
+  border-radius: 14rpx;
+  overflow: hidden;
+  border: 1rpx solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.92) 100%);
+  box-shadow: 0 14rpx 32rpx rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(10rpx);
+}
+
+.raceweek-live-card {
+  margin-top: 0;
+  margin-bottom: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .quali-panel-header {
@@ -132,6 +145,69 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.live-session-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 84rpx;
+}
+
+.live-session-title-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4rpx;
+}
+
+.live-session-title {
+  color: #e10600;
+  font-size: 34rpx;
+  font-weight: 900;
+  letter-spacing: 1rpx;
+  line-height: 38rpx;
+  white-space: nowrap;
+}
+
+.live-session-title-compact {
+  font-size: 28rpx;
+  line-height: 32rpx;
+  letter-spacing: 0;
+}
+
+.live-session-subtitle {
+  color: #e10600;
+  font-size: 24rpx;
+  font-weight: 800;
+  letter-spacing: 1rpx;
+}
+
+.live-session-toggle {
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 26rpx;
+}
+
+.live-session-login-hint {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 18rpx;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.raceweek-live-body {
+  border-top: 1rpx solid rgba(255, 255, 255, 0.08);
+  background: rgba(12, 14, 24, 0.98);
+  padding-bottom: 12rpx;
+}
+
+.raceweek-countdown-pressed {
+  opacity: 0.92;
 }
 
 .quali-panel-title {

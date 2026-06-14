@@ -6,8 +6,16 @@
   "event_key": "barcelona-catalunya-gp",
   "results_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/",
   "page_title": "Formula 1 2026 Barcelona-Catalunya GP",
-  "crawled_at": "2026-06-13T12:10:38.054841+00:00",
+  "crawled_at": "2026-06-14T01:15:45.902653+00:00",
   "sessions": [
+    {
+      "session_code": "CQ",
+      "session_title": "CQ",
+      "session_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/?st=CQ",
+      "file": "barcelona-catalunya-gp_cq.json",
+      "row_count": 22,
+      "content_hash": "75dc2e9f50ac64bd015898661a220097f9b588a67c9cddb5b409cdadf6f5f97a"
+    },
     {
       "session_code": "EL",
       "session_title": "EL",
@@ -39,6 +47,38 @@
       "file": "barcelona-catalunya-gp_fp3.json",
       "row_count": 22,
       "content_hash": "0a8418b00ee912f18e74b0460b15b2424732dfa6dcc099f104f4fa4fe477ecb3"
+    },
+    {
+      "session_code": "GRID",
+      "session_title": "GRID",
+      "session_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/?st=GRID",
+      "file": "barcelona-catalunya-gp_grid.json",
+      "row_count": 22,
+      "content_hash": "6bb4ed0888abf7eaaf0419b81f7bac11670d8d635dc265140b1fe7b79a46337a"
+    },
+    {
+      "session_code": "Q1",
+      "session_title": "Q1",
+      "session_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/?st=Q1",
+      "file": "barcelona-catalunya-gp_q1.json",
+      "row_count": 22,
+      "content_hash": "61d62ca687c6eb78580804972ef5d5b809b31e6153fe8aa3d4cab89dfd6599cf"
+    },
+    {
+      "session_code": "Q2",
+      "session_title": "Q2",
+      "session_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/?st=Q2",
+      "file": "barcelona-catalunya-gp_q2.json",
+      "row_count": 16,
+      "content_hash": "032dafe0213a39c6155f146d72fa9b84547affa5f3e7462d31c081e426240ca8"
+    },
+    {
+      "session_code": "Q3",
+      "session_title": "Q3",
+      "session_url": "https://www.motorsport.com/f1/results/2026/barcelona-catalunya-gp/?st=Q3",
+      "file": "barcelona-catalunya-gp_q3.json",
+      "row_count": 10,
+      "content_hash": "65afb24136eb009275a245a7ee297527871e9e9f4f50fdfef5963c20b5773405"
     }
   ]
 }
