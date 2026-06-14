@@ -63,7 +63,39 @@
         </block>
       </swiper>
 
-      <view wx:if="{{ raceWeek && raceWeek.isRaceWeek && raceWeek.nextSession && countdown }}" class="raceweek-countdown">
+      <view
+        wx:if="{{ raceWeek && raceWeek.isRaceWeek && raceWeekCardMode === 'live' }}"
+        class="live-standings-wrap {{ raceWeekLiveStandingsOpen ? '' : 'live-standings-wrap-sticky' }}"
+        style="{{ raceWeekLiveStandingsOpen ? '' : 'top:' + liveStandingsStickyTopPx + 'px;' }}"
+      >
+        <view
+          class="live-session-card"
+          bindtap="onTapRaceWeekCard"
+          hover-class="raceweek-countdown-pressed"
+          hover-stay-time="120"
+        >
+          <view class="raceweek-countdown raceweek-live-card">
+            <view class="live-session-title-group">
+              <view class="live-session-title {{ raceWeekSessionLabelCompact ? 'live-session-title-compact' : '' }}">{{ raceWeekSessionLabel }}</view>
+              <view class="live-session-subtitle">{{ i18n.raceSessions.statusLive }}</view>
+            </view>
+            <view class="raceweek-countdown-mid">
+              <analog-clock sizeRpx="84" />
+            </view>
+            <view class="live-session-meta">
+              <view class="live-session-toggle">{{ raceWeekLiveStandingsOpen ? '▴' : '▾' }}</view>
+            </view>
+          </view>
+          <view wx:if="{{ raceWeekLiveStandingsOpen && liveStandingsRows.length }}" class="raceweek-live-body">
+            <ms-live-standings-table title="" rows="{{liveStandingsRows}}" dense bodyHeightRpx="{{liveStandingsBodyHeightRpx}}" maxRows="0" />
+          </view>
+        </view>
+      </view>
+
+      <view
+        wx:elif="{{ raceWeek && raceWeek.isRaceWeek && raceWeekSessionLabel && countdown }}"
+        class="raceweek-countdown"
+      >
         <view class="raceweek-countdown-left">
           <block wx:if="{{ raceWeekShowFlag && raceWeek && raceWeek.race && raceWeek.race.flagUrl }}">
             <image class="raceweek-countdown-flag" src="{{ raceWeek.race.flagUrl }}" mode="aspectFit" />
@@ -90,15 +122,6 @@
             <text class="raceweek-countdown-num">{{ countdown.a3 }}</text>
             <text class="raceweek-countdown-unit">{{ countdown.mode === 'dhm' ? i18n.news.unitMin : i18n.news.unitSec }}</text>
           </view>
-        </view>
-      </view>
-
-      <view wx:if="{{liveStandingsRows.length}}" class="quali-panel live-standings-panel">
-        <view class="quali-panel-header">
-          <view class="quali-panel-title">Live Standings</view>
-        </view>
-        <view class="quali-panel-body-static">
-          <ms-live-standings-table title="" rows="{{liveStandingsRows}}" dense bodyHeightRpx="520" maxRows="0" />
         </view>
       </view>
 

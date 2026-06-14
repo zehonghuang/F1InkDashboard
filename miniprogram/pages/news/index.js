@@ -1,6 +1,7 @@
 const { LAYOUT_CODE } = require("../../services/newsService")
 const { fetchNewsList } = require("../../services/mpNewsApi")
 const { fetchRaceWeek } = require("../../services/mpRaceWeekApi")
+const { fetchRaceSessions } = require("../../services/mpRaceSessionsApi")
 const { fetchLatestCrawledSessionResults } = require("../../services/mpSessionResultsApi")
 const { createMotorsportLiveClient } = require("../../services/motorsportLiveWs")
 const i18n = require("../../services/i18n")
@@ -286,6 +287,64 @@ function mapMotorsportStandingsRows(rows) {
   }))
 }
 
+function getLiveStandingsFullBodyHeightRpx(rows) {
+  const count = Array.isArray(rows) ? rows.length : 0
+  if (count <= 0) return 360
+  const headRpx = 52
+  const rowRpx = 72
+  const bottomRpx = 20
+  return headRpx + count * rowRpx + bottomRpx
+}
+
+function getSessionLiveDurationSec(key) {
+  const code = String(key || "").trim().toUpperCase()
+  if (code === "RACE") return 4 * 3600
+  return 90 * 60
+}
+
+function buildRaceWeekTimelineSessions(sessions) {
+  const list = Array.isArray(sessions) ? sessions : []
+  return list
+    .map((session) => {
+      const startMs = Date.parse(session && session.startUTC)
+      if (!Number.isFinite(startMs) || startMs <= 0) return null
+      const durationSec = getSessionLiveDurationSec(session && session.key)
+      return {
+        key: session.key || "",
+        startUTC: session.startUTC || "",
+        startLocal: session.startLocal || "",
+        openF1SessionKey: Number(session && session.openF1SessionKey) || 0,
+        startMs,
+        endMs: startMs + durationSec * 1000,
+        durationSec
+      }
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.startMs - b.startMs)
+}
+
+function resolveRaceWeekTimelineState(sessions, nowMs) {
+  const list = Array.isArray(sessions) ? sessions : []
+  const now = Number(nowMs) || Date.now()
+  for (const session of list) {
+    if (now < session.startMs) {
+      return {
+        mode: "countdown",
+        session,
+        remainSec: Math.max(0, Math.floor((session.startMs - now) / 1000))
+      }
+    }
+    if (now < session.endMs) {
+      return {
+        mode: "live",
+        session,
+        remainSec: Math.max(0, Math.floor((session.endMs - now) / 1000))
+      }
+    }
+  }
+  return null
+}
+
 Page({
   data: {
     i18n: i18n.getDict(),
@@ -295,6 +354,8 @@ Page({
     raceWeek: null,
     raceWeekSessionLabel: "",
     raceWeekSessionLabelCompact: false,
+    raceWeekCardMode: "",
+    raceWeekLiveStandingsOpen: false,
     raceWeekShowFlag: false,
     countdown: null,
     liveStandingsRows: [],
@@ -311,6 +372,8 @@ Page({
     pageSize: 20,
     hasMore: true,
     statusBarHeight: 0,
+    liveStandingsStickyTopPx: 0,
+    liveStandingsBodyHeightRpx: 360,
     prefMoveOverlay: null,
     listTransformStyle: "",
     refreshing: false,
@@ -363,21 +426,43 @@ Page({
   stopRaceWeekTimer() {
     clearInterval(this._raceWeekTimer)
     this._raceWeekTimer = null
-    this._raceWeekTargetMs = 0
   },
-  startRaceWeekTimer(targetMs) {
-    const t = Number(targetMs) || 0
-    if (!t || !Number.isFinite(t)) return
-    this.stopRaceWeekTimer()
-    this._raceWeekTargetMs = t
-    this._raceWeekTimer = setInterval(() => {
-      const remainSec = Math.max(0, Math.floor((this._raceWeekTargetMs - Date.now()) / 1000))
-      const nextCountdown = this.computeCountdown(remainSec)
+  updateRaceWeekDisplay() {
+    const raceWeek = this.data.raceWeek
+    const state = resolveRaceWeekTimelineState(this._raceWeekTimelineSessions, Date.now())
+    if (!raceWeek || !raceWeek.isRaceWeek || !state || !state.session) {
       this.setData({
-        countdown: nextCountdown,
-        raceWeekShowFlag: this.shouldShowRaceWeekFlag(remainSec, this.data.raceWeek && this.data.raceWeek.race)
+        ...this.buildRaceWeekSessionLabelState(""),
+        raceWeekCardMode: "",
+        raceWeekLiveStandingsOpen: false,
+        raceWeekShowFlag: false,
+        countdown: null
       })
-      if (remainSec <= 0) {
+      return
+    }
+    const dict = i18n.getDict()
+    const label = this.getSessionLabel(state.session.key, dict)
+    this.setData({
+      ...this.buildRaceWeekSessionLabelState(label),
+      raceWeekCardMode: state.mode,
+      raceWeekLiveStandingsOpen: state.mode === "live" ? this.data.raceWeekLiveStandingsOpen : false,
+      raceWeekShowFlag: state.mode === "countdown" && this.shouldShowRaceWeekFlag(state.remainSec, raceWeek && raceWeek.race),
+      countdown: state.mode === "countdown" ? this.computeCountdown(state.remainSec) : null
+    })
+  },
+  onTapRaceWeekCard() {
+    if (this.data.raceWeekCardMode !== "live") return
+    if (!Array.isArray(this.data.liveStandingsRows) || !this.data.liveStandingsRows.length) return
+    this.setData({ raceWeekLiveStandingsOpen: !this.data.raceWeekLiveStandingsOpen })
+  },
+  startRaceWeekTimer() {
+    if (!Array.isArray(this._raceWeekTimelineSessions) || !this._raceWeekTimelineSessions.length) return
+    this.stopRaceWeekTimer()
+    this.updateRaceWeekDisplay()
+    this._raceWeekTimer = setInterval(() => {
+      this.updateRaceWeekDisplay()
+      const hasActive = resolveRaceWeekTimelineState(this._raceWeekTimelineSessions, Date.now())
+      if (!hasActive) {
         this.stopRaceWeekTimer()
       }
     }, 1000)
@@ -387,28 +472,42 @@ Page({
       const tz = "Asia/Shanghai"
       const season = 2026
       const res = await fetchRaceWeek({ season, tz })
-      const ns = res && res.nextSession ? res.nextSession : null
-      if (!res || !res.isRaceWeek || !ns || !ns.startsAtUTC) {
+      const round = Number(res && res.race && res.race.round) || 0
+      if (!res || !res.isRaceWeek || !round) {
         this.stopRaceWeekTimer()
-        this.setData({ raceWeek: res || null, ...this.buildRaceWeekSessionLabelState(""), raceWeekShowFlag: false, countdown: null })
+        this._raceWeekTimelineSessions = []
+        this.setData({ raceWeek: res || null, ...this.buildRaceWeekSessionLabelState(""), raceWeekCardMode: "", raceWeekShowFlag: false, countdown: null })
         return
       }
-      const targetMs = Date.parse(ns.startsAtUTC)
-      const remain = Math.max(0, Math.floor((targetMs - Date.now()) / 1000))
-      const dict = i18n.getDict()
-      const label = this.getSessionLabel(ns.key, dict)
-      this.setData({
-        raceWeek: res,
-        ...this.buildRaceWeekSessionLabelState(label),
-        raceWeekShowFlag: this.shouldShowRaceWeekFlag(remain, res && res.race),
-        countdown: this.computeCountdown(remain)
-      })
-      if (Number.isFinite(targetMs) && targetMs > Date.now()) {
-        this.startRaceWeekTimer(targetMs)
+      let timelineSessions = []
+      try {
+        const sessionsRes = await fetchRaceSessions({ season, round, tz })
+        timelineSessions = buildRaceWeekTimelineSessions(sessionsRes && sessionsRes.sessions)
+      } catch (e) {}
+      if (!timelineSessions.length) {
+        const ns = res && res.nextSession ? res.nextSession : null
+        timelineSessions = buildRaceWeekTimelineSessions(
+          ns && ns.startsAtUTC
+            ? [
+                {
+                  key: ns.key || "",
+                  startUTC: ns.startsAtUTC,
+                  startLocal: ns.startsAtLocal || "",
+                  openF1SessionKey: ns.openF1SessionKey || 0
+                }
+              ]
+            : []
+        )
       }
+      this._raceWeekTimelineSessions = timelineSessions
+      this.setData({ raceWeek: res }, () => {
+        this.updateRaceWeekDisplay()
+        this.startRaceWeekTimer()
+      })
     } catch (e) {
       this.stopRaceWeekTimer()
-      this.setData({ raceWeek: null, ...this.buildRaceWeekSessionLabelState(""), raceWeekShowFlag: false, countdown: null })
+      this._raceWeekTimelineSessions = []
+      this.setData({ raceWeek: null, ...this.buildRaceWeekSessionLabelState(""), raceWeekCardMode: "", raceWeekShowFlag: false, countdown: null })
     }
   },
   async loadLatestCrawledResults() {
@@ -421,7 +520,9 @@ Page({
         qualiRows: crawledRows
       }
       if (!this._motorsportLiveHasSnapshot) {
-        nextData.liveStandingsRows = mapCrawledRowsToLiveStandings(crawledRows)
+        const liveStandingsRows = mapCrawledRowsToLiveStandings(crawledRows)
+        nextData.liveStandingsRows = liveStandingsRows
+        nextData.liveStandingsBodyHeightRpx = getLiveStandingsFullBodyHeightRpx(liveStandingsRows)
       }
       this.setData(nextData)
     } catch (e) {
@@ -431,6 +532,7 @@ Page({
       }
       if (!this._motorsportLiveHasSnapshot) {
         nextData.liveStandingsRows = []
+        nextData.liveStandingsBodyHeightRpx = getLiveStandingsFullBodyHeightRpx([])
       }
       this.setData(nextData)
     }
@@ -439,7 +541,10 @@ Page({
     const rows = mapMotorsportStandingsRows(standings && standings.rows)
     if (!rows.length) return
     this._motorsportLiveHasSnapshot = true
-    this.setData({ liveStandingsRows: rows })
+    this.setData({
+      liveStandingsRows: rows,
+      liveStandingsBodyHeightRpx: getLiveStandingsFullBodyHeightRpx(rows)
+    })
   },
   ensureMotorsportLiveClient() {
     if (this._motorsportLiveClient) return
@@ -485,6 +590,7 @@ Page({
   },
   onLoad() {
     this._motorsportLiveHasSnapshot = false
+    this._raceWeekTimelineSessions = []
     this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     try {
       const app = getApp()
@@ -498,9 +604,13 @@ Page({
     try {
       const sys = wx.getSystemInfoSync()
       const h = Number(sys && sys.statusBarHeight) || 0
-      this.setData({ statusBarHeight: h })
       const ww = Number(sys && sys.windowWidth) || 0
       this._pxPerRpx = ww > 0 ? ww / 750 : 0
+      const stickyTopPx = h + Math.round((this._pxPerRpx || 0) * 12)
+      this.setData({
+        statusBarHeight: h,
+        liveStandingsStickyTopPx: stickyTopPx
+      })
     } catch (e) {}
     this.applyI18n()
     this.setListOffset(0, 0)
@@ -1095,9 +1205,10 @@ Page({
   applyI18n() {
     const dict = i18n.getDict()
     if (this.data.i18n === dict) return
-    const ns = this.data.raceWeek && this.data.raceWeek.nextSession ? this.data.raceWeek.nextSession : null
-    const label = ns && ns.key ? this.getSessionLabel(ns.key, dict) : ""
+    const state = resolveRaceWeekTimelineState(this._raceWeekTimelineSessions, Date.now())
+    const label = state && state.session && state.session.key ? this.getSessionLabel(state.session.key, dict) : ""
     this.setData({ i18n: dict, ...this.buildRaceWeekSessionLabelState(label) })
+    this.updateRaceWeekDisplay()
     wx.setNavigationBarTitle({ title: dict.nav.news })
   }
 })
