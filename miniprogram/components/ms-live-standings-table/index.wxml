@@ -14,8 +14,8 @@
           <view class="mslt-cell mslt-c-tyre">TYRE</view>
         </view>
 
-        <block wx:for="{{displayRows}}" wx:key="position">
-          <view class="mslt-row">
+        <block wx:for="{{displayRows}}" wx:key="rowKey">
+          <view class="mslt-row mslt-data-row {{item.animClass}}" style="{{item.animStyle}}">
             <view class="mslt-cell mslt-c-pos">
               <view class="mslt-pos-box">{{item.position}}</view>
             </view>

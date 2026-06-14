@@ -9,6 +9,15 @@ Component({
   data: {
     displayRows: [],
   },
+  lifetimes: {
+    attached() {
+      this._rowLayoutMap = {}
+      this._reorderTimer = null
+    },
+    detached() {
+      clearTimeout(this._reorderTimer)
+    },
+  },
   observers: {
     'rows,maxRows': function (rows, maxRows) {
       const list = Array.isArray(rows) ? rows : []
@@ -29,9 +38,117 @@ Component({
         row.team = String(row.team || '-')
         row.gap = String(row.gap || '')
         row.time = String(row.time || '-')
+        row.rowKey = buildRowKey(row, idx)
+        row.animStyle = ''
+        row.animClass = ''
         return row
       })
-      this.setData({ displayRows })
+      this.applyDisplayRows(displayRows)
+    },
+  },
+  methods: {
+    applyDisplayRows(nextRows) {
+      const prevRows = Array.isArray(this.data.displayRows) ? this.data.displayRows : []
+      const prevLayoutMap = this._rowLayoutMap || {}
+      const hasPrevLayout = Object.keys(prevLayoutMap).length > 0
+      const prevIndexMap = {}
+      const nextIndexMap = {}
+
+      prevRows.forEach((row, index) => {
+        if (!row || !row.rowKey) return
+        prevIndexMap[row.rowKey] = index
+      })
+      nextRows.forEach((row, index) => {
+        if (!row || !row.rowKey) return
+        nextIndexMap[row.rowKey] = index
+      })
+
+      clearTimeout(this._reorderTimer)
+
+      this.setData({ displayRows: nextRows }, () => {
+        this.measureRowLayout((nextLayoutMap) => {
+          this._rowLayoutMap = nextLayoutMap
+          if (!hasPrevLayout) return
+
+          const animatedRows = this.data.displayRows.map((row) => {
+            const prevLayout = prevLayoutMap[row.rowKey]
+            const nextLayout = nextLayoutMap[row.rowKey]
+            const prevIndex = prevIndexMap[row.rowKey]
+            const nextIndex = nextIndexMap[row.rowKey]
+            const hasOrderChanged = typeof prevIndex === 'number' && typeof nextIndex === 'number' && prevIndex !== nextIndex
+
+            if (!prevLayout || !nextLayout || !hasOrderChanged) {
+              return row
+            }
+            const deltaY = Math.round((prevLayout.top - nextLayout.top) * 100) / 100
+            if (!deltaY) {
+              return row
+            }
+            const animClass = deltaY > 0 ? 'mslt-row-rise' : 'mslt-row-fall'
+            return Object.assign({}, row, {
+              animClass,
+              animStyle: `transform: translateY(${deltaY}px) scale(0.985); opacity: 0.92;`,
+            })
+          })
+
+          const shouldAnimate = animatedRows.some((row) => row.animStyle)
+          if (!shouldAnimate) return
+
+          this.setData({ displayRows: animatedRows }, () => {
+            wx.nextTick(() => {
+              const settledRows = this.data.displayRows.map((row) => {
+                if (!row.animStyle) return row
+                return Object.assign({}, row, {
+                  animStyle: 'transform: translateY(0) scale(1); opacity: 1; transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease-out, box-shadow 360ms ease-out, background-color 360ms ease-out;',
+                })
+              })
+
+              this.setData({ displayRows: settledRows })
+
+              this._reorderTimer = setTimeout(() => {
+                const clearedRows = this.data.displayRows.map((row) => {
+                  if (!row.animStyle) return row
+                  return Object.assign({}, row, { animStyle: '', animClass: '' })
+                })
+                this.setData({ displayRows: clearedRows }, () => {
+                  this.measureRowLayout((layoutMap) => {
+                    this._rowLayoutMap = layoutMap
+                  })
+                })
+              }, 420)
+            })
+          })
+        })
+      })
+    },
+    measureRowLayout(done) {
+      wx.nextTick(() => {
+        const query = wx.createSelectorQuery().in(this)
+        query.select('.mslt-scroll').boundingClientRect()
+        query.select('.mslt-scroll').scrollOffset()
+        query.selectAll('.mslt-data-row').boundingClientRect()
+        query.exec((res) => {
+          const scrollRect = (res && res[0]) || null
+          const scrollOffset = (res && res[1]) || null
+          const rects = (res && res[2]) || []
+          const rows = this.data.displayRows || []
+          const layoutMap = {}
+          const containerTop = Number(scrollRect && scrollRect.top) || 0
+          const scrollTop = Number(scrollOffset && scrollOffset.scrollTop) || 0
+
+          ;(rects || []).forEach((rect, index) => {
+            const row = rows[index]
+            if (!row || !row.rowKey || !rect) return
+            layoutMap[row.rowKey] = {
+              // Use coordinates relative to scroll content so page/table scrolling
+              // does not make unchanged rows look like they moved.
+              top: (Number(rect.top) || 0) - containerTop + scrollTop,
+              height: Number(rect.height) || 0,
+            }
+          })
+          if (typeof done === 'function') done(layoutMap)
+        })
+      })
     },
   },
 })
@@ -45,4 +162,12 @@ function formatDriverName(name) {
   const last = parts[parts.length - 1]
   const initial = first.charAt(0).toUpperCase()
   return `${initial}. ${last}`
+}
+
+function buildRowKey(row, idx) {
+  const driver = String(row.driver || '').trim()
+  const team = String(row.team || '').trim()
+  const number = String(row.number || '').trim()
+  const fallback = String(row.driverShort || row.position || idx).trim()
+  return [driver, team, number || fallback].join('|')
 }

@@ -109,7 +109,10 @@ const ZH_CN = {
     sectionSessions: "场次",
     statusDone: "已结束",
     statusLive: "进行中",
-    statusUpcoming: "未开始"
+    statusUpcoming: "未开始",
+    liveNeedLoginTitle: "需要登录",
+    liveNeedLoginText: "登录后即可查看实时直播数据",
+    liveGoLogin: "去登录"
   },
   sessionResults: {
     title: "场次成绩",
@@ -292,7 +295,10 @@ const EN_US = {
     sectionSessions: "Sessions",
     statusDone: "Finished",
     statusLive: "Live",
-    statusUpcoming: "Upcoming"
+    statusUpcoming: "Upcoming",
+    liveNeedLoginTitle: "Login required",
+    liveNeedLoginText: "Login to view live timing data",
+    liveGoLogin: "Login"
   },
   sessionResults: {
     title: "Session Results",
