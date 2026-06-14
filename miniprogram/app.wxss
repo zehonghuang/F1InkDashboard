@@ -9,8 +9,8 @@ page {
 }
 
 .has-tabbar {
-  padding-bottom: calc(24rpx + 104rpx + constant(safe-area-inset-bottom));
-  padding-bottom: calc(24rpx + 104rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(24rpx + 112rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(24rpx + 112rpx + env(safe-area-inset-bottom));
 }
 
 .header {
@@ -20,12 +20,12 @@ page {
 .title {
   font-size: 40rpx;
   font-weight: normal;
-  letter-spacing: 2rpx;
+  letter-spacing: 3rpx;
   font-family: Formula1, sans-serif;
 }
 
 .subtitle {
   margin-top: 8rpx;
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(255, 255, 255, 0.6);
 }

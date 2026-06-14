@@ -2,17 +2,20 @@ const BASE_TABS = [
   {
     key: "news",
     pagePath: "/pages/news/index",
-    icon: "document"
+    icon: "document",
+    label: "资讯"
   },
   {
     key: "archive",
     pagePath: "/pages/archive/index",
-    icon: "barrage"
+    icon: "barrage",
+    label: "归档"
   },
   {
     key: "mine",
     pagePath: "/pages/mine/index",
-    icon: "mine"
+    icon: "mine",
+    label: "我的"
   }
 ]
 

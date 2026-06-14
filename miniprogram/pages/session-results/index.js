@@ -200,7 +200,7 @@ Page({
         const items = Array.isArray(data.items) ? data.items : []
         const mapped = items.map((it) => {
           const c = (it && it.team_color) || ""
-          const cardStyle = c ? `border-left: 10rpx solid ${c}; padding-left: 16rpx;` : ""
+          const cardStyle = c ? `box-shadow: inset 6rpx 0 0 ${c};` : ""
           return Object.assign({}, it, { cardStyle })
         })
         const selected = this.hasTab("boxplot") ? this.selectDefaultDrivers(mapped, this.data.selectedDriverNumbers) : []

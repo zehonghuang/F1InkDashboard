@@ -1,5 +1,8 @@
 .page-root {
   height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(225, 6, 0, 0.16) 0, rgba(225, 6, 0, 0) 34%),
+    linear-gradient(180deg, #15151e 0%, #111118 54%, #0a0a10 100%);
 }
 
 .page-scroll {
@@ -10,17 +13,18 @@
 .news-list {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 18rpx;
 }
 
 .raceweek-countdown {
-  margin-top: 16rpx;
-  margin-bottom: 14rpx;
-  padding: 18rpx 20rpx 16rpx;
-  border-radius: 14rpx;
+  margin-top: 18rpx;
+  margin-bottom: 18rpx;
+  padding: 22rpx 24rpx 20rpx;
+  border-radius: 20rpx;
   overflow: hidden;
-  border: 1rpx solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.92) 100%);
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(14, 14, 18, 0.9) 0%, rgba(6, 6, 10, 0.96) 100%);
+  box-shadow: 0 18rpx 40rpx rgba(0, 0, 0, 0.28);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -43,10 +47,10 @@
 
 .raceweek-countdown-session {
   color: #e10600;
-  font-size: 34rpx;
+  font-size: 36rpx;
   font-weight: 900;
-  letter-spacing: 1rpx;
-  line-height: 38rpx;
+  letter-spacing: 2rpx;
+  line-height: 40rpx;
   white-space: nowrap;
 }
 
@@ -60,7 +64,7 @@
   color: #e10600;
   font-size: 24rpx;
   font-weight: 800;
-  letter-spacing: 1rpx;
+  letter-spacing: 2rpx;
 }
 
 .raceweek-countdown-flag {
@@ -84,10 +88,10 @@
 }
 
 .raceweek-countdown-num {
-  font-size: 72rpx;
+  font-size: 76rpx;
   font-weight: 900;
   color: rgba(255, 255, 255, 0.96);
-  line-height: 72rpx;
+  line-height: 76rpx;
   font-family: Formula1, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
@@ -100,12 +104,13 @@
 }
 
 .quali-panel {
-  margin-top: 6rpx;
-  margin-bottom: 16rpx;
-  border-radius: 12rpx;
+  margin-top: 8rpx;
+  margin-bottom: 18rpx;
+  border-radius: 18rpx;
   overflow: hidden;
-  border: 1rpx solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 14rpx 32rpx rgba(0, 0, 0, 0.22);
 }
 
 .live-standings-panel {
@@ -124,12 +129,12 @@
 }
 
 .live-session-card {
-  border-radius: 14rpx;
+  border-radius: 20rpx;
   overflow: hidden;
-  border: 1rpx solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.92) 100%);
-  box-shadow: 0 14rpx 32rpx rgba(0, 0, 0, 0.34);
-  backdrop-filter: blur(10rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(14, 14, 18, 0.94) 0%, rgba(5, 5, 8, 0.98) 100%);
+  box-shadow: 0 18rpx 40rpx rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(14rpx);
 }
 
 .raceweek-live-card {
@@ -141,7 +146,7 @@
 }
 
 .quali-panel-header {
-  padding: 18rpx 20rpx;
+  padding: 20rpx 22rpx;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -163,10 +168,10 @@
 
 .live-session-title {
   color: #e10600;
-  font-size: 34rpx;
+  font-size: 36rpx;
   font-weight: 900;
-  letter-spacing: 1rpx;
-  line-height: 38rpx;
+  letter-spacing: 2rpx;
+  line-height: 40rpx;
   white-space: nowrap;
 }
 
@@ -180,7 +185,7 @@
   color: #e10600;
   font-size: 24rpx;
   font-weight: 800;
-  letter-spacing: 1rpx;
+  letter-spacing: 2rpx;
 }
 
 .live-session-toggle {
@@ -201,9 +206,9 @@
 }
 
 .raceweek-live-body {
-  border-top: 1rpx solid rgba(255, 255, 255, 0.08);
-  background: rgba(12, 14, 24, 0.98);
-  padding-bottom: 12rpx;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.06);
+  background: rgba(10, 12, 18, 0.98);
+  padding-bottom: 14rpx;
 }
 
 .raceweek-countdown-pressed {
@@ -211,9 +216,10 @@
 }
 
 .quali-panel-title {
-  font-size: 30rpx;
+  font-size: 28rpx;
   font-weight: 800;
   color: rgba(255, 255, 255, 0.92);
+  letter-spacing: 1rpx;
 }
 
 .quali-panel-icon {
@@ -419,8 +425,8 @@
 
 .hero-swiper {
   height: 360rpx;
-  margin-top: 6rpx;
-  margin-bottom: 16rpx;
+  margin-top: 10rpx;
+  margin-bottom: 20rpx;
   position: relative;
   z-index: 2;
 }
@@ -428,16 +434,16 @@
 .hero-banner {
   position: relative;
   height: 360rpx;
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   overflow: hidden;
-  background: #000000;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  transform: translateY(-6rpx);
-  box-shadow: none;
+  background: #050507;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  transform: translateY(-4rpx);
+  box-shadow: 0 24rpx 54rpx rgba(0, 0, 0, 0.32);
 }
 
 .hero-banner-pressed {
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   overflow: hidden;
   opacity: 0.92;
 }
@@ -456,20 +462,23 @@
   top: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, rgba(225, 6, 0, 0.16) 0%, rgba(0, 0, 0, 0.8) 65%, rgba(0, 0, 0, 0.92) 100%);
+  background:
+    linear-gradient(180deg, rgba(225, 6, 0, 0.2) 0%, rgba(225, 6, 0, 0.08) 26%, rgba(0, 0, 0, 0.3) 52%, rgba(0, 0, 0, 0.88) 100%);
 }
 
 .hero-content {
   position: absolute;
-  left: 18rpx;
-  right: 18rpx;
-  bottom: 18rpx;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: 24rpx;
 }
 
 .hero-title {
   font-weight: 800;
-  font-size: 36rpx;
-  line-height: 50rpx;
+  font-size: 42rpx;
+  line-height: 56rpx;
+  letter-spacing: 0.5rpx;
+  text-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.38);
 }
 
 .hero-meta {
@@ -481,12 +490,13 @@
 }
 
 .hero-tag {
-  padding: 6rpx 12rpx;
+  padding: 8rpx 16rpx;
   border-radius: 999rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.9);
+  border: 1rpx solid rgba(225, 6, 0, 0.22);
+  background: rgba(225, 6, 0, 0.14);
+  color: rgba(255, 255, 255, 0.94);
   font-size: 22rpx;
+  letter-spacing: 1rpx;
 }
 
 .load-more {
@@ -536,7 +546,7 @@
 }
 
 .hero-time {
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.76);
   font-size: 24rpx;
 }
 
@@ -546,25 +556,26 @@
 
 .news-card {
   position: relative;
-  padding: 20rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  border-radius: 12rpx;
-  background: #000000;
+  padding: 24rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  border-radius: 18rpx;
+  background: linear-gradient(180deg, rgba(12, 12, 16, 0.96) 0%, rgba(7, 7, 10, 0.98) 100%);
   overflow: hidden;
+  box-shadow: 0 14rpx 32rpx rgba(0, 0, 0, 0.18);
 }
 
 .news-card-with-cover {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  gap: 16rpx;
+  gap: 18rpx;
 }
 
 .news-cover-wrap {
-  width: 176rpx;
-  height: 132rpx;
+  width: 188rpx;
+  height: 144rpx;
   flex-shrink: 0;
-  border-radius: 10rpx;
+  border-radius: 14rpx;
   overflow: hidden;
   background: #0a0a0a;
 }
@@ -580,8 +591,8 @@
 }
 
 .news-card-with-cover .news-title {
-  font-size: 30rpx;
-  line-height: 42rpx;
+  font-size: 32rpx;
+  line-height: 44rpx;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -590,7 +601,7 @@
 
 .news-card-with-cover .news-summary {
   margin-top: 8rpx;
-  line-height: 36rpx;
+  line-height: 38rpx;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -603,7 +614,8 @@
 
 .news-card-promoted {
   animation: prefPromoteIn 520ms cubic-bezier(0.22, 1, 0.36, 1);
-  border-color: rgba(255, 255, 255, 0.22);
+  border-color: rgba(225, 6, 0, 0.2);
+  box-shadow: 0 18rpx 40rpx rgba(225, 6, 0, 0.08);
 }
 
 .news-hit-bar {
@@ -611,10 +623,10 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 10rpx;
+  width: 8rpx;
   opacity: 0.95;
-  border-top-left-radius: 12rpx;
-  border-bottom-left-radius: 12rpx;
+  border-top-left-radius: 18rpx;
+  border-bottom-left-radius: 18rpx;
 }
 
 .pref-move-overlay {
@@ -625,7 +637,7 @@
 }
 
 .news-card-pressed {
-  border-radius: 12rpx;
+  border-radius: 18rpx;
   overflow: hidden;
   opacity: 0.92;
 }
@@ -643,18 +655,19 @@
 
 .news-title {
   font-weight: 700;
-  font-size: 32rpx;
-  line-height: 44rpx;
+  font-size: 34rpx;
+  line-height: 48rpx;
+  color: rgba(255, 255, 255, 0.96);
 }
 
 .news-summary {
-  margin-top: 10rpx;
-  color: rgba(255, 255, 255, 0.72);
-  line-height: 42rpx;
+  margin-top: 12rpx;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 40rpx;
 }
 
 .news-meta {
-  margin-top: 14rpx;
+  margin-top: 16rpx;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -662,11 +675,11 @@
 }
 
 .news-tag {
-  padding: 6rpx 12rpx;
+  padding: 8rpx 16rpx;
   border-radius: 999rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.86);
+  border: 1rpx solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
   font-size: 22rpx;
 }
 
@@ -675,17 +688,17 @@
 }
 
 .news-time {
-  color: rgba(255, 255, 255, 0.62);
+  color: rgba(255, 255, 255, 0.58);
   font-size: 24rpx;
 }
 
 .status {
-  margin: 8rpx 0 12rpx 0;
-  padding: 14rpx 18rpx;
-  border-radius: 12rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  background: rgba(0, 0, 0, 0.65);
-  color: rgba(255, 255, 255, 0.72);
+  margin: 12rpx 0 18rpx 0;
+  padding: 18rpx 22rpx;
+  border-radius: 16rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  background: rgba(7, 7, 12, 0.82);
+  color: rgba(255, 255, 255, 0.68);
   font-size: 24rpx;
   line-height: 34rpx;
   text-align: center;
