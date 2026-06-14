@@ -193,6 +193,13 @@
   font-size: 26rpx;
 }
 
+.live-session-login-hint {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 18rpx;
+  line-height: 1.2;
+  text-align: right;
+}
+
 .raceweek-live-body {
   border-top: 1rpx solid rgba(255, 255, 255, 0.08);
   background: rgba(12, 14, 24, 0.98);

@@ -4,6 +4,7 @@ const { fetchRaceWeek } = require("../../services/mpRaceWeekApi")
 const { fetchRaceSessions } = require("../../services/mpRaceSessionsApi")
 const { fetchLatestCrawledSessionResults } = require("../../services/mpSessionResultsApi")
 const { createMotorsportLiveClient } = require("../../services/motorsportLiveWs")
+const { getAuthState } = require("../../services/authService")
 const i18n = require("../../services/i18n")
 
 const WELCOME_KEY = "news_welcome_shown_v1"
@@ -357,6 +358,7 @@ Page({
     raceWeekCardMode: "",
     raceWeekLiveStandingsOpen: false,
     raceWeekShowFlag: false,
+    isLoggedIn: false,
     countdown: null,
     liveStandingsRows: [],
     qualiOpen: false,
@@ -452,8 +454,35 @@ Page({
   },
   onTapRaceWeekCard() {
     if (this.data.raceWeekCardMode !== "live") return
+    if (!this.data.isLoggedIn) {
+      wx.showModal({
+        title: i18n.t("raceSessions.liveNeedLoginTitle"),
+        content: i18n.t("raceSessions.liveNeedLoginText"),
+        confirmText: i18n.t("raceSessions.liveGoLogin"),
+        cancelText: i18n.t("common.cancel"),
+        success: (res) => {
+          if (res && res.confirm) {
+            wx.switchTab({ url: "/pages/mine/index" })
+          }
+        }
+      })
+      return
+    }
     if (!Array.isArray(this.data.liveStandingsRows) || !this.data.liveStandingsRows.length) return
     this.setData({ raceWeekLiveStandingsOpen: !this.data.raceWeekLiveStandingsOpen })
+  },
+  syncAuthState() {
+    const auth = getAuthState()
+    const isLoggedIn = Boolean(auth && auth.isLoggedIn)
+    const nextData = { isLoggedIn }
+    if (!isLoggedIn) {
+      this._motorsportLiveHasSnapshot = false
+      nextData.raceWeekLiveStandingsOpen = false
+      nextData.liveStandingsRows = []
+      nextData.liveStandingsBodyHeightRpx = getLiveStandingsFullBodyHeightRpx([])
+    }
+    this.setData(nextData)
+    return isLoggedIn
   },
   startRaceWeekTimer() {
     if (!Array.isArray(this._raceWeekTimelineSessions) || !this._raceWeekTimelineSessions.length) return
@@ -519,7 +548,10 @@ Page({
         qualiTitle: shouldDisplay ? (res && res.title) || "" : "",
         qualiRows: crawledRows
       }
-      if (!this._motorsportLiveHasSnapshot) {
+      if (!this.data.isLoggedIn) {
+        nextData.liveStandingsRows = []
+        nextData.liveStandingsBodyHeightRpx = getLiveStandingsFullBodyHeightRpx([])
+      } else if (!this._motorsportLiveHasSnapshot) {
         const liveStandingsRows = mapCrawledRowsToLiveStandings(crawledRows)
         nextData.liveStandingsRows = liveStandingsRows
         nextData.liveStandingsBodyHeightRpx = getLiveStandingsFullBodyHeightRpx(liveStandingsRows)
@@ -538,6 +570,7 @@ Page({
     }
   },
   applyMotorsportLiveStandings(standings) {
+    if (!this.data.isLoggedIn) return
     const rows = mapMotorsportStandingsRows(standings && standings.rows)
     if (!rows.length) return
     this._motorsportLiveHasSnapshot = true
@@ -563,6 +596,10 @@ Page({
     })
   },
   connectMotorsportLiveWs() {
+    if (!this.data.isLoggedIn) {
+      this.disconnectMotorsportLiveWs()
+      return
+    }
     this.ensureMotorsportLiveClient()
     if (this._motorsportLiveClient) {
       this._motorsportLiveClient.connect()
@@ -615,7 +652,8 @@ Page({
     this.applyI18n()
     this.setListOffset(0, 0)
     this._useScrollViewRefresher = true
-    this.ensureMotorsportLiveClient()
+    this.syncAuthState()
+    if (this.data.isLoggedIn) this.ensureMotorsportLiveClient()
     this.reload()
   },
   onHide() {
@@ -635,7 +673,12 @@ Page({
   },
   onShow() {
     this.applyI18n()
-    this.connectMotorsportLiveWs()
+    const isLoggedIn = this.syncAuthState()
+    if (isLoggedIn) {
+      this.connectMotorsportLiveWs()
+    } else {
+      this.disconnectMotorsportLiveWs()
+    }
     if (typeof this.getTabBar === "function") {
       const tb = this.getTabBar()
       if (tb && typeof tb.setSelectedByRoute === "function") {

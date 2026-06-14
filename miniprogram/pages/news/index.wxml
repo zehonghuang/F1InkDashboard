@@ -83,10 +83,11 @@
               <analog-clock sizeRpx="84" />
             </view>
             <view class="live-session-meta">
-              <view class="live-session-toggle">{{ raceWeekLiveStandingsOpen ? '▴' : '▾' }}</view>
+              <view wx:if="{{ isLoggedIn }}" class="live-session-toggle">{{ raceWeekLiveStandingsOpen ? '▴' : '▾' }}</view>
+              <view wx:else class="live-session-login-hint">{{ i18n.common.loginFirst }}</view>
             </view>
           </view>
-          <view wx:if="{{ raceWeekLiveStandingsOpen && liveStandingsRows.length }}" class="raceweek-live-body">
+          <view wx:if="{{ isLoggedIn && raceWeekLiveStandingsOpen && liveStandingsRows.length }}" class="raceweek-live-body">
             <ms-live-standings-table title="" rows="{{liveStandingsRows}}" dense bodyHeightRpx="{{liveStandingsBodyHeightRpx}}" maxRows="0" />
           </view>
         </view>
