@@ -36,6 +36,20 @@
       <view class="boxplot-selected dp-toolbar-text">{{selectedDriverText}}</view>
       <view class="boxplot-btn dp-toolbar-btn" bindtap="onOpenPicker">{{i18n.sessionResults.pickDriver}}</view>
     </view>
+    <view wx:if="{{boxplotSummaryCards.length || boxplotHintText}}" class="boxplot-summary dp-panel">
+      <view class="boxplot-summary-title">{{i18n.sessionResults.boxplotSummary}}</view>
+      <view wx:if="{{boxplotHintText}}" class="boxplot-summary-desc">{{boxplotHintText}}</view>
+      <view wx:if="{{boxplotSummaryCards.length}}" class="boxplot-summary-grid">
+        <block wx:for="{{boxplotSummaryCards}}" wx:key="key">
+          <view class="boxplot-summary-card" style="{{item.accentStyle}}">
+            <view class="boxplot-summary-metric">{{item.title}}</view>
+            <view class="boxplot-summary-driver">{{item.name}}</view>
+            <view class="boxplot-summary-value">{{item.value}}</view>
+            <view class="boxplot-summary-note">{{item.note}}</view>
+          </view>
+        </block>
+      </view>
+    </view>
     <view class="boxplot-chart dp-chart-shell">
       <ec-canvas
         wx:if="{{!showPicker}}"

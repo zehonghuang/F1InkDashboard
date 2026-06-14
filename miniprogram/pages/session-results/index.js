@@ -14,6 +14,8 @@ Page({
     activeTabKey: "rank",
     chartOptionBoxplot: null,
     boxplotHeightRpx: 520,
+    boxplotSummaryCards: [],
+    boxplotHintText: "",
     selectedDriverNumbers: [],
     selectedDriverText: "",
     chartOptionThrottle: null,
@@ -572,6 +574,7 @@ Page({
   onLoad(options) {
     this._telemetryCache = Object.create(null)
     this._telemetryAnalysisMap = null
+    this._boxplotRowsNormalized = null
     this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     const raceName = decodeURIComponent(options.raceName || "")
     const sessionCode = decodeURIComponent(options.sessionCode || "")
@@ -940,7 +943,8 @@ Page({
     const sessionKey = Number(this.data.sessionKey || 0)
     const selected = Array.isArray(this.data.selectedDriverNumbers) ? this.data.selectedDriverNumbers : []
     if (!apiBase || !sessionKey || !selected.length) {
-      this.setData({ chartOptionBoxplot: null })
+      this._boxplotRowsNormalized = null
+      this.setData({ chartOptionBoxplot: null, boxplotSummaryCards: [], boxplotHintText: "" })
       done()
       return
     }
@@ -954,8 +958,12 @@ Page({
       success: (res) => {
         const data = (res && res.data) || {}
         const items = Array.isArray(data.items) ? data.items : []
-        const opt = this.buildBoxplotOption(items)
-        this.setData({ chartOptionBoxplot: opt })
+        const normalized = this.normalizeBoxplotRows(items)
+        this._boxplotRowsNormalized = normalized
+        const opt = this.buildBoxplotOption(normalized)
+        const boxplotSummaryCards = this.buildBoxplotSummaryCards(normalized)
+        const boxplotHintText = i18n.getDict().sessionResults.boxplotSummaryDesc
+        this.setData({ chartOptionBoxplot: opt, boxplotSummaryCards, boxplotHintText })
         done()
       },
       fail: () => {
@@ -963,8 +971,79 @@ Page({
       }
     })
   },
-  buildBoxplotOption(items) {
+  normalizeBoxplotRows(items) {
     const rows = Array.isArray(items) ? items : []
+    return rows
+      .map((it) => {
+        const wl = Number(it && it.whisker_low)
+        const q1 = Number(it && it.q1)
+        const med = Number(it && it.median)
+        const q3 = Number(it && it.q3)
+        const wh = Number(it && it.whisker_high)
+        if (![wl, q1, med, q3, wh].every((v) => Number.isFinite(v))) return null
+        const color = this.normalizeTeamColor(it && it.team_colour) || "#ffffff"
+        return {
+          raw: it || {},
+          label: String((it && (it.name_acronym || it.driver_number)) || ""),
+          color,
+          whiskerLow: wl,
+          q1,
+          median: med,
+          q3,
+          whiskerHigh: wh,
+          iqr: q3 - q1,
+          spread: wh - wl
+        }
+      })
+      .filter(Boolean)
+      .sort((a, b) => {
+        if (a.median !== b.median) return a.median - b.median
+        if (a.iqr !== b.iqr) return a.iqr - b.iqr
+        return String(a.label).localeCompare(String(b.label))
+      })
+  },
+  buildBoxplotSummaryCards(rows) {
+    const list = Array.isArray(rows) ? rows : []
+    if (!list.length) return []
+    const dict = i18n.getDict()
+    const fastest = list[0]
+    let stable = list[0]
+    let widest = list[0]
+    for (const row of list) {
+      if (row.iqr < stable.iqr) stable = row
+      if (row.spread > widest.spread) widest = row
+    }
+    const makeStyle = (color) =>
+      color ? `background:${this.hexToRgba(color, 0.14)}; border-color:${this.hexToRgba(color, 0.2)};` : ""
+    return [
+      {
+        key: "pace",
+        title: dict.sessionResults.boxplotFastestPace,
+        name: fastest.label || "-",
+        value: this.formatLapClock(fastest.median, 3),
+        note: dict.sessionResults.boxplotMedianPace,
+        accentStyle: makeStyle(fastest.color)
+      },
+      {
+        key: "stable",
+        title: dict.sessionResults.boxplotMostStable,
+        name: stable.label || "-",
+        value: this.formatLapClock(stable.iqr, 3),
+        note: dict.sessionResults.boxplotTypicalRange,
+        accentStyle: makeStyle(stable.color)
+      },
+      {
+        key: "spread",
+        title: dict.sessionResults.boxplotLargestSpread,
+        name: widest.label || "-",
+        value: this.formatLapClock(widest.spread, 3),
+        note: dict.sessionResults.boxplotOverallSpread,
+        accentStyle: makeStyle(widest.color)
+      }
+    ]
+  },
+  buildBoxplotOption(items) {
+    const rows = Array.isArray(items) ? items : this.normalizeBoxplotRows(items)
     const cats = []
     const data = []
     let lo = null
@@ -972,17 +1051,16 @@ Page({
     let fastest = null
     for (let i = 0; i < rows.length; i++) {
       const it = rows[i] || {}
-      const label = String(it.name_acronym || it.driver_number || "")
-      const wl = Number(it.whisker_low)
+      const label = String(it.label || "")
+      const wl = Number(it.whiskerLow)
       const q1 = Number(it.q1)
       const med = Number(it.median)
       const q3 = Number(it.q3)
-      const wh = Number(it.whisker_high)
-      if (![wl, q1, med, q3, wh].every((v) => Number.isFinite(v))) continue
+      const wh = Number(it.whiskerHigh)
       lo = lo == null ? wl : Math.min(lo, wl)
       hi = hi == null ? wh : Math.max(hi, wh)
       fastest = fastest == null ? wl : Math.min(fastest, wl)
-      const color = this.normalizeTeamColor(it.team_colour) || "#ffffff"
+      const color = it.color || "#ffffff"
       const fill = this.buildBoxGradient(color)
       const shadowColor = this.hexToRgba(color, 0.35) || "rgba(255,255,255,0.18)"
       const xIndex = data.length
@@ -1032,7 +1110,7 @@ Page({
           const q3 = this.formatLapClock(v[3], 3)
           const wh = this.formatLapClock(v[4], 3)
           const dict = i18n.getDict()
-          return `${p.name}\n${dict.sessionResults.boxLowerWhisker}=${wl}\n${dict.sessionResults.boxQ1}=${q1}\n${dict.sessionResults.boxMedian}=${med}\n${dict.sessionResults.boxQ3}=${q3}\n${dict.sessionResults.boxUpperWhisker}=${wh}`
+          return `${p.name}\n${dict.sessionResults.boxplotPaceFloor}=${wl}\n${dict.sessionResults.boxplotMedianPace}=${med}\n${dict.sessionResults.boxplotTypicalRange}=${q1} - ${q3}\n${dict.sessionResults.boxplotOverallSpread}=${wl} - ${wh}`
         }
       },
       xAxis: {
@@ -1092,7 +1170,12 @@ Page({
     const activeTabKey = hasCur ? cur : (tabs[0] && tabs[0].key) || "rank"
     const selectedDriverText = this.buildSelectedText(this.data.items, this.data.selectedDriverNumbers)
     const telemetrySelectedText = this.buildSelectedText(this.data.items, this.data.telemetryDriverNumbers)
-    this.setData({ i18n: dict, tabs, activeTabKey, selectedDriverText, telemetrySelectedText })
+    const updates = { i18n: dict, tabs, activeTabKey, selectedDriverText, telemetrySelectedText, boxplotHintText: dict.sessionResults.boxplotSummaryDesc }
+    if (this._boxplotRowsNormalized && this._boxplotRowsNormalized.length) {
+      updates.chartOptionBoxplot = this.buildBoxplotOption(this._boxplotRowsNormalized)
+      updates.boxplotSummaryCards = this.buildBoxplotSummaryCards(this._boxplotRowsNormalized)
+    }
+    this.setData(updates)
     if (this.data.chartOptionThrottle || this.data.chartOptionBrake || this.data.chartOptionSpeed) {
       this.loadTelemetry()
     }
