@@ -7,7 +7,7 @@
 
   <scroll-view
     id="page-scroll"
-    class="page-scroll"
+    class="page-scroll {{ pressPreview && pressPreview.show ? 'page-scroll-previewing' : '' }}"
     scroll-y
     enhanced
     show-scrollbar="{{false}}"
@@ -18,7 +18,7 @@
     bindscrolltolower="onScrollToLower"
     scrolltolower-threshold="120"
   >
-    <view class="page has-tabbar">
+    <view class="page has-tabbar {{ pressPreview && pressPreview.active ? 'page-previewing' : '' }}">
       <view class="header" style="padding-top: calc({{ statusBarHeight }}px + 12rpx);">
         <view class="title">{{i18n.news.pageTitle}}</view>
         <view class="subtitle">News • Updates • Insights</view>
@@ -205,6 +205,7 @@
       <view class="press-preview-card" bindtap="onTapPressPreview" hover-class="press-preview-pressed" hover-stay-time="120">
         <view wx:if="{{ pressPreview.item.coverUrl }}" class="press-preview-cover-wrap">
           <image class="press-preview-cover" src="{{ pressPreview.item.coverUrl }}" mode="aspectFill" lazy-load />
+          <view class="press-preview-cover-mask" />
         </view>
         <view class="press-preview-body">
           <view class="press-preview-title">{{ pressPreview.item.title }}</view>
