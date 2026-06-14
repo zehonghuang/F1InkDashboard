@@ -55,6 +55,26 @@
       <view class="telemetry-btn dp-toolbar-btn" bindtap="onOpenTelemetryPicker">{{i18n.sessionResults.pickDriver}}</view>
     </view>
     <view class="telemetry-hint">{{telemetryLapInfo}}</view>
+    <view wx:if="{{telemetrySectorCards.length || telemetryInsightText}}" class="telemetry-summary dp-panel">
+      <view class="telemetry-summary-head">
+        <view class="telemetry-summary-title">{{i18n.sessionResults.telemetrySummary}}</view>
+        <view wx:if="{{telemetryInsightTitle}}" class="telemetry-summary-compare">{{telemetryInsightTitle}}</view>
+      </view>
+      <view wx:if="{{telemetrySectorCards.length}}" class="telemetry-sector-grid">
+        <block wx:for="{{telemetrySectorCards}}" wx:key="sector">
+          <view class="telemetry-sector-card" style="{{item.accentStyle}}">
+            <view class="telemetry-sector-name">{{item.sector}}</view>
+            <view class="telemetry-sector-driver">{{item.label}}</view>
+            <view class="telemetry-sector-value">{{item.value}}</view>
+            <view class="telemetry-sector-label">{{item.metricLabel}}</view>
+          </view>
+        </block>
+      </view>
+      <view wx:if="{{telemetryInsightText}}" class="telemetry-insight">
+        <view class="telemetry-insight-title">{{i18n.sessionResults.telemetryInsight}}</view>
+        <view class="telemetry-insight-text">{{telemetryInsightText}}</view>
+      </view>
+    </view>
     <view class="telemetry-chart dp-chart-shell">
       <ec-canvas
         wx:if="{{!showPicker}}"

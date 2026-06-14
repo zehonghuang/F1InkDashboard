@@ -93,6 +93,99 @@
   padding: 0 6rpx;
 }
 
+.telemetry-summary {
+  margin-top: -2rpx;
+}
+
+.telemetry-summary-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.telemetry-summary-title {
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 26rpx;
+  font-weight: 800;
+  letter-spacing: 1rpx;
+}
+
+.telemetry-summary-compare {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 20rpx;
+}
+
+.telemetry-sector-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 12rpx;
+}
+
+.telemetry-sector-card {
+  flex: 1;
+  min-width: 0;
+  padding: 16rpx 16rpx 18rpx;
+  border-radius: 16rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.telemetry-sector-name {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 20rpx;
+  letter-spacing: 1rpx;
+}
+
+.telemetry-sector-driver {
+  margin-top: 10rpx;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 24rpx;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.telemetry-sector-value {
+  margin-top: 8rpx;
+  color: rgba(255, 255, 255, 0.98);
+  font-size: 28rpx;
+  line-height: 34rpx;
+  font-weight: 900;
+  font-family: Formula1, sans-serif;
+}
+
+.telemetry-sector-label {
+  margin-top: 8rpx;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 20rpx;
+  line-height: 28rpx;
+}
+
+.telemetry-insight {
+  margin-top: 16rpx;
+  padding: 16rpx 18rpx;
+  border-radius: 16rpx;
+  border: 1rpx solid rgba(225, 6, 0, 0.12);
+  background: linear-gradient(180deg, rgba(225, 6, 0, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.telemetry-insight-title {
+  color: #e10600;
+  font-size: 20rpx;
+  font-weight: 900;
+  letter-spacing: 1rpx;
+}
+
+.telemetry-insight-text {
+  margin-top: 8rpx;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 22rpx;
+  line-height: 34rpx;
+}
+
 .telemetry-share {
   display: flex;
   justify-content: flex-end;
