@@ -1,0 +1,56 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: f1ink-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-8008}:8008"
+    environment:
+      BACKEND_LISTEN_ADDR: ":8008"
+      BACKEND_STATIC_DIR: "./static"
+      BACKEND_UPDATE_DIR: "./static/update"
+      BACKEND_TRUSTED_PROXIES: "${BACKEND_TRUSTED_PROXIES:-all}"
+      BACKEND_LOG_REQUESTS: "${BACKEND_LOG_REQUESTS:-1}"
+      BACKEND_REQUIRE_MYSQL: "${BACKEND_REQUIRE_MYSQL:-1}"
+      BACKEND_ADMIN_TOKEN: "${BACKEND_ADMIN_TOKEN:-}"
+      TOINC_F1_MYSQL_ENABLED: "${TOINC_F1_MYSQL_ENABLED:-1}"
+      TOINC_F1_MYSQL_HOST: "${TOINC_F1_MYSQL_HOST:-192.168.31.110}"
+      TOINC_F1_MYSQL_PORT: "${TOINC_F1_MYSQL_PORT:-3306}"
+      TOINC_F1_MYSQL_USER: "${TOINC_F1_MYSQL_USER:-root}"
+      TOINC_F1_MYSQL_PASSWORD: "${TOINC_F1_MYSQL_PASSWORD:-123456}"
+      TOINC_F1_MYSQL_DB: "${TOINC_F1_MYSQL_DB:-toinc_F1}"
+      TOINC_F1_MYSQL_CHARSET: "${TOINC_F1_MYSQL_CHARSET:-utf8mb4}"
+      WECHAT_MINI_ENABLED: "${WECHAT_MINI_ENABLED:-0}"
+      WECHATPAY_ENABLED: "${WECHATPAY_ENABLED:-0}"
+      NEWS_WS_ENABLED: "${NEWS_WS_ENABLED:-0}"
+      OPENF1_ENABLED: "${OPENF1_ENABLED:-0}"
+      OPENF1_SCHEDULER_ENABLED: "${OPENF1_SCHEDULER_ENABLED:-0}"
+      MP_NEWS_SCHEDULER_ENABLED: "${MP_NEWS_SCHEDULER_ENABLED:-0}"
+
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE: "${ADMIN_VITE_API_BASE:-http://192.168.31.110:8008}"
+    container_name: f1ink-admin
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${ADMIN_PORT:-8080}:80"
+
+  charts:
+    build:
+      context: ./charts
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE: "${CHARTS_VITE_API_BASE:-http://192.168.31.110:8008}"
+    container_name: f1ink-charts
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${CHARTS_PORT:-8081}:80"
