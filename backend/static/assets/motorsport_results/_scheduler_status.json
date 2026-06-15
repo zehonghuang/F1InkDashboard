@@ -13,10 +13,10 @@
   "status_file": "C:\\F1InkDashboard\\backend\\static\\assets\\motorsport_results\\_scheduler_status.json",
   "output_root": "C:\\F1InkDashboard\\backend\\static\\assets\\motorsport_results",
   "startup_run_attempted": true,
-  "last_tick_at_utc": "2026-06-15T14:37:03Z",
+  "last_tick_at_utc": "2026-06-15T15:45:04Z",
   "last_reason": "interval",
-  "last_run_started_at_utc": "2026-06-15T14:37:03Z",
-  "last_run_finished_at_utc": "2026-06-15T14:37:03Z",
+  "last_run_started_at_utc": "2026-06-15T15:45:04Z",
+  "last_run_finished_at_utc": "2026-06-15T15:45:04Z",
   "last_success_at_utc": "2026-06-14T16:17:23Z",
   "last_event_name": "Barcelona Grand Prix",
   "recent_runs": [

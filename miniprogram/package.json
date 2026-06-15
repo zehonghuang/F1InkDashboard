@@ -7,8 +7,9 @@
     "prepare:mp": "node scripts/prepare-mp.js"
   },
   "dependencies": {
-    "echarts-for-weixin": "^1.0.2",
     "echarts": "^5.3.3",
-    "iview-weapp": "^2.0.0"
+    "echarts-for-weixin": "^1.0.2",
+    "iview-weapp": "^2.0.0",
+    "we-cropper": "^1.4.0"
   }
 }

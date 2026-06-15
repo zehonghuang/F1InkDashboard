@@ -1,71 +1,89 @@
 <view class="page has-tabbar mine">
-  <view class="hero" style="padding-top: calc({{ statusBarHeight }}px + 12rpx);">
-    <view class="hero-bg hero-bg-fallback"></view>
-    <view class="hero-bg-mask"></view>
-
-    <view class="profile-card">
-      <view class="profile">
-        <button
-          wx:if="{{isLoggedIn && canEditProfile}}"
-          class="profile-avatar avatar-btn"
-          open-type="chooseAvatar"
-          bindchooseavatar="onChooseAvatar"
-          loading="{{syncingProfile}}"
-        >
-          <image
-            wx:if="{{profile && profile.avatarUrl}}"
-            class="profile-avatar-img"
-            src="{{profile.avatarUrl}}"
-            mode="aspectFill"
-          />
-          <view wx:else class="avatar-placeholder">{{avatarText}}</view>
-        </button>
-        <view wx:else class="profile-avatar" bindtap="onAvatarTap">
-          <image
-            wx:if="{{profile && profile.avatarUrl}}"
-            class="profile-avatar-img"
-            src="{{profile.avatarUrl}}"
-            mode="aspectFill"
-          />
-          <view wx:else class="avatar-placeholder">{{avatarText}}</view>
-        </view>
-
-        <view class="profile-main">
-          <view class="profile-name">{{displayName}}</view>
-          <view class="profile-sub">
-            <text wx:if="{{isLoggedIn}}">{{i18n.mine.loggedIn}}</text>
-            <text wx:else>{{i18n.mine.guest}}</text>
-          </view>
-          <input
-            wx:if="{{isLoggedIn && !hasNick}}"
-            class="nickname-input"
-            type="nickname"
-            placeholder="{{i18n.mine.nickPlaceholder}}"
-            value="{{nicknameDraft}}"
-            bindblur="onNicknameBlur"
-          />
-        </view>
-
-        <view class="profile-actions">
-          <button
-            wx:if="{{!isLoggedIn}}"
-            class="btn btn-primary"
-            bindtap="onLogin"
-            loading="{{loadingLogin}}"
-          >
-            {{i18n.mine.wechatLogin}}
-          </button>
-          <button
-            wx:if="{{isLoggedIn}}"
-            class="btn btn-ghost"
-            bindtap="onBindDevice"
-            loading="{{bindingDevice}}"
-          >
-            {{i18n.mine.bindDevice}}
-          </button>
+  <view
+    class="hero {{heroPullDistance > 0 ? 'hero-pulling' : ''}}"
+    style="transform: translate3d(0, {{heroPullDistance}}px, 0); transition: {{heroPullAnimating ? 'transform 180ms ease' : 'none'}};"
+    catchtouchstart="onHeroPullStart"
+    catchtouchmove="onHeroPullMove"
+    catchtouchend="onHeroPullEnd"
+    catchtouchcancel="onHeroPullEnd"
+  >
+    <view class="hero-cover-frame">
+      <view class="hero-bg hero-bg-fallback"></view>
+      <view
+        wx:if="{{heroCoverUrl}}"
+        class="hero-custom-bg"
+        style="{{heroCoverStyle}}"
+      ></view>
+      <view class="hero-bg-mask"></view>
+      <view wx:if="{{heroPullDistance > 0}}" class="hero-pull-indicator">
+        <view class="hero-pull-pill {{heroPullReady ? 'hero-pull-pill-ready' : ''}}">
+          {{heroPullReady ? i18n.mine.coverPullReady : i18n.mine.coverPullIdle}}
         </view>
       </view>
-      <view wx:if="{{!isLoggedIn}}" class="hero-sync-hint">{{i18n.mine.syncHint}}</view>
+      <view class="profile-card">
+        <view class="profile">
+          <button
+            wx:if="{{isLoggedIn && canEditProfile}}"
+            class="profile-avatar avatar-btn"
+            open-type="chooseAvatar"
+            bindchooseavatar="onChooseAvatar"
+            loading="{{syncingProfile}}"
+          >
+            <image
+              wx:if="{{profile && profile.avatarUrl}}"
+              class="profile-avatar-img"
+              src="{{profile.avatarUrl}}"
+              mode="aspectFill"
+            />
+            <view wx:else class="avatar-placeholder">{{avatarText}}</view>
+          </button>
+          <view wx:else class="profile-avatar" bindtap="onAvatarTap">
+            <image
+              wx:if="{{profile && profile.avatarUrl}}"
+              class="profile-avatar-img"
+              src="{{profile.avatarUrl}}"
+              mode="aspectFill"
+            />
+            <view wx:else class="avatar-placeholder">{{avatarText}}</view>
+          </view>
+
+          <view class="profile-main">
+            <view class="profile-name">{{displayName}}</view>
+            <view class="profile-sub">
+              <text wx:if="{{isLoggedIn}}">{{i18n.mine.loggedIn}}</text>
+              <text wx:else>{{i18n.mine.guest}}</text>
+            </view>
+            <input
+              wx:if="{{isLoggedIn && !hasNick}}"
+              class="nickname-input"
+              type="nickname"
+              placeholder="{{i18n.mine.nickPlaceholder}}"
+              value="{{nicknameDraft}}"
+              bindblur="onNicknameBlur"
+            />
+          </view>
+
+          <view class="profile-actions">
+            <button
+              wx:if="{{!isLoggedIn}}"
+              class="btn btn-primary"
+              bindtap="onLogin"
+              loading="{{loadingLogin}}"
+            >
+              {{i18n.mine.wechatLogin}}
+            </button>
+            <button
+              wx:if="{{isLoggedIn}}"
+              class="btn btn-ghost"
+              bindtap="onBindDevice"
+              loading="{{bindingDevice}}"
+            >
+              {{i18n.mine.bindDevice}}
+            </button>
+          </view>
+        </view>
+        <view wx:if="{{!isLoggedIn}}" class="hero-sync-hint">{{i18n.mine.syncHint}}</view>
+      </view>
     </view>
   </view>
 

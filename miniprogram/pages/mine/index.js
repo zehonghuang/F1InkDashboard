@@ -8,8 +8,12 @@ const STORAGE_KEYS = {
   followTeams: "pref_follow_teams",
   followDriversDict: "pref_follow_drivers_dict",
   followTeamsDict: "pref_follow_teams_dict",
-  prefsInited: "pref_prefs_inited"
+  prefsInited: "pref_prefs_inited",
+  heroCoverUrl: "mine_hero_cover_url"
 }
+
+const HERO_PULL_TRIGGER = 84
+const HERO_PULL_MAX = 126
 
 Page({
   data: {
@@ -37,6 +41,14 @@ Page({
     followTeamsText: i18n.t("mine.notSet"),
     followTeamThumbs: [],
     followTeamMoreCount: 0,
+    heroCoverUrl: "",
+    heroCoverStyle: "",
+    heroFrameWidth: 0,
+    heroFrameHeight: 0,
+    pageScrollTop: 0,
+    heroPullDistance: 0,
+    heroPullReady: false,
+    heroPullAnimating: false,
     showPicker: false,
     pickerMode: "",
     pickerTitle: "",
@@ -54,16 +66,21 @@ Page({
       this.setData({ statusBarHeight: h })
     } catch (e) {}
     this.applyI18n()
+    this.loadHeroCover()
     this.loadPreferences()
     this.refreshAuth()
   },
   onUnload() {
     if (this._offLocale) this._offLocale()
   },
+  onReady() {
+    this.measureHeroRect()
+  },
   onShow() {
     this.applyI18n()
     this.refreshAuth()
     this.loadPreferences()
+    this.measureHeroRect()
     try {
       const s = getAuthState()
       if (s && s.isLoggedIn) {
@@ -79,6 +96,10 @@ Page({
         tb.setSelectedByRoute(this.route)
       }
     }
+  },
+  onPageScroll(e) {
+    const top = e && Number.isFinite(e.scrollTop) ? e.scrollTop : Number((e && e.scrollTop) || 0)
+    this.setData({ pageScrollTop: top > 0 ? top : 0 })
   },
   async syncPrefsFromBackend(opts) {
     if (this.data.syncingPrefs) return
@@ -178,6 +199,128 @@ Page({
       }
     } catch (e) {}
   },
+  loadHeroCover() {
+    let heroCoverUrl = ""
+    try {
+      heroCoverUrl = String(wx.getStorageSync(STORAGE_KEYS.heroCoverUrl) || "").trim()
+    } catch (e) {}
+    this.setData({
+      heroCoverUrl,
+      heroCoverStyle: this.buildHeroCoverStyle(heroCoverUrl)
+    })
+  },
+  saveHeroCoverState(patch) {
+    if (!patch || typeof patch !== "object") return
+    if (Object.prototype.hasOwnProperty.call(patch, "heroCoverUrl")) {
+      const url = String(patch.heroCoverUrl || "").trim()
+      try {
+        if (url) wx.setStorageSync(STORAGE_KEYS.heroCoverUrl, url)
+        else wx.removeStorageSync(STORAGE_KEYS.heroCoverUrl)
+      } catch (e) {}
+    }
+  },
+  saveLocalFile(tempFilePath) {
+    const fp = String(tempFilePath || "").trim()
+    if (!fp) return Promise.reject(new Error("cover_file_required"))
+    return new Promise((resolve) => {
+      wx.saveFile({
+        tempFilePath: fp,
+        success: (res) => resolve(String((res && res.savedFilePath) || fp).trim() || fp),
+        fail: () => resolve(fp)
+      })
+    })
+  },
+  buildHeroCoverStyle(url) {
+    const v = String(url || "").trim()
+    if (!v) return ""
+    const safe = v.replace(/'/g, "%27")
+    return `background-image:url('${safe}');`
+  },
+  measureHeroRect() {
+    return new Promise((resolve) => {
+      const query = this.createSelectorQuery ? this.createSelectorQuery() : wx.createSelectorQuery()
+      query.select(".hero-cover-frame").boundingClientRect((rect) => {
+        if (rect && Number(rect.width) > 0 && Number(rect.height) > 0) {
+          const out = {
+            width: Math.round(Number(rect.width)),
+            height: Math.round(Number(rect.height))
+          }
+          this.setData({
+            heroFrameWidth: out.width,
+            heroFrameHeight: out.height
+          })
+          resolve(out)
+          return
+        }
+        const sys = wx.getSystemInfoSync()
+        const windowWidth = Number(sys && sys.windowWidth) || 375
+        const fallbackWidth = Math.round(windowWidth - (windowWidth * 48) / 750)
+        const fallbackHeight = Math.round(fallbackWidth / 1.45)
+        const out = { width: fallbackWidth, height: fallbackHeight }
+        this.setData({
+          heroFrameWidth: out.width,
+          heroFrameHeight: out.height
+        })
+        resolve(out)
+      }).exec()
+    })
+  },
+  onHeroPullStart(e) {
+    const touch = e && e.touches && e.touches[0]
+    if (!touch) return
+    this._heroPullTouch = {
+      startX: Number(touch.clientX) || 0,
+      startY: Number(touch.clientY) || 0,
+      active: false
+    }
+    if (this.data.heroPullAnimating) {
+      this.setData({ heroPullAnimating: false })
+    }
+  },
+  onHeroPullMove(e) {
+    const touch = e && e.touches && e.touches[0]
+    const state = this._heroPullTouch
+    if (!touch || !state) return
+    if ((this.data.pageScrollTop || 0) > 2) return
+    const deltaX = (Number(touch.clientX) || 0) - state.startX
+    const deltaY = (Number(touch.clientY) || 0) - state.startY
+    if (!state.active) {
+      if (deltaY <= 0) return
+      if (Math.abs(deltaY) <= Math.abs(deltaX)) return
+      state.active = true
+    }
+    const resisted = Math.round(Math.min(HERO_PULL_MAX, deltaY * 0.48))
+    this.setData({
+      heroPullAnimating: false,
+      heroPullDistance: resisted,
+      heroPullReady: resisted >= HERO_PULL_TRIGGER
+    })
+  },
+  onHeroPullEnd() {
+    const shouldOpen = Boolean(this.data.heroPullReady)
+    this._heroPullTouch = null
+    if (!this.data.heroPullDistance && !this.data.heroPullReady) return
+    this.setData({
+      heroPullDistance: 0,
+      heroPullReady: false,
+      heroPullAnimating: true
+    })
+    setTimeout(() => {
+      this.setData({ heroPullAnimating: false })
+    }, 180)
+    if (shouldOpen) {
+      setTimeout(() => this.openHeroCoverActions(), 120)
+    }
+  },
+  getHeroRect() {
+    if ((this.data.heroFrameWidth || 0) > 0 && (this.data.heroFrameHeight || 0) > 0) {
+      return Promise.resolve({
+        width: this.data.heroFrameWidth,
+        height: this.data.heroFrameHeight
+      })
+    }
+    return this.measureHeroRect()
+  },
   refreshAuth() {
     const s = getAuthState()
     const profile = s.profile
@@ -223,6 +366,56 @@ Page({
       return
     }
     wx.showToast({ title: i18n.t("common.featurePending"), icon: "none" })
+  },
+  async onChooseHeroCover() {
+    try {
+      const heroRect = await this.getHeroRect()
+      const res = await new Promise((resolve, reject) => {
+        wx.chooseMedia({
+          count: 1,
+          mediaType: ["image"],
+          sizeType: ["compressed"],
+          success: resolve,
+          fail: reject
+        })
+      })
+      const file =
+        (res && Array.isArray(res.tempFiles) && res.tempFiles[0] && res.tempFiles[0].tempFilePath) ||
+        ""
+      if (!file) throw new Error("cover_file_missing")
+      wx.navigateTo({
+        url: `/pages/image-crop/index?file=${encodeURIComponent(file)}&scene=mine-hero&targetWidth=${encodeURIComponent(heroRect.width)}&targetHeight=${encodeURIComponent(heroRect.height)}`,
+        events: {
+          done: async (payload) => {
+            const croppedPath = payload && payload.filePath ? String(payload.filePath || "").trim() : ""
+            if (!croppedPath) return
+            const savedFilePath = await this.saveLocalFile(croppedPath)
+            if (!savedFilePath) return
+            this.setData({
+              heroCoverUrl: savedFilePath,
+              heroCoverStyle: this.buildHeroCoverStyle(savedFilePath)
+            })
+            this.saveHeroCoverState({ heroCoverUrl: savedFilePath })
+            wx.showToast({ title: i18n.t("mine.coverUpdated"), icon: "none" })
+          }
+        }
+      })
+    } catch (e) {
+      const msg = String((e && (e.errMsg || e.message)) || "")
+      if (msg && /cancel/i.test(msg)) return
+      wx.showToast({ title: i18n.t("mine.coverUploadFailed"), icon: "none" })
+    }
+  },
+  openHeroCoverActions() {
+    this.onChooseHeroCover()
+  },
+  onRemoveHeroCover() {
+    this.setData({
+      heroCoverUrl: "",
+      heroCoverStyle: ""
+    })
+    this.saveHeroCoverState({ heroCoverUrl: "" })
+    wx.showToast({ title: i18n.t("mine.coverRemoved"), icon: "none" })
   },
   openPicker(mode) {
     const m = mode === "teams" ? "teams" : "drivers"
