@@ -616,6 +616,8 @@ Page({
   applyI18n() {
     const dict = i18n.getDict()
     this.setData({ i18n: dict, locale: i18n.getLocale() })
+    this.refreshAuth()
+    this.refreshFollowTextsFromOptions()
     wx.setNavigationBarTitle({ title: dict.nav.mine })
   }
 })

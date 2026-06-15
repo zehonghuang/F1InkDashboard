@@ -3,132 +3,160 @@
     <view class="hero-bg hero-bg-fallback"></view>
     <view class="hero-bg-mask"></view>
 
-    <view class="hero-head">
-    </view>
-
     <view class="profile-card">
       <view class="profile">
-      <button
-        wx:if="{{isLoggedIn && canEditProfile}}"
-        class="profile-avatar avatar-btn"
-        open-type="chooseAvatar"
-        bindchooseavatar="onChooseAvatar"
-        loading="{{syncingProfile}}"
-      >
-        <image
-          wx:if="{{profile && profile.avatarUrl}}"
-          class="profile-avatar-img"
-          src="{{profile.avatarUrl}}"
-          mode="aspectFill"
-        />
-        <view wx:else class="avatar-placeholder">{{avatarText}}</view>
-      </button>
-      <view wx:else class="profile-avatar" bindtap="onAvatarTap">
-        <image
-          wx:if="{{profile && profile.avatarUrl}}"
-          class="profile-avatar-img"
-          src="{{profile.avatarUrl}}"
-          mode="aspectFill"
-        />
-        <view wx:else class="avatar-placeholder">{{avatarText}}</view>
-      </view>
-      <view class="profile-main">
-        <view class="profile-name">{{displayName}}</view>
-        <view class="profile-sub">
-          <text wx:if="{{isLoggedIn}}">{{i18n.mine.loggedIn}}</text>
-          <text wx:else>{{i18n.mine.guest}}</text>
+        <button
+          wx:if="{{isLoggedIn && canEditProfile}}"
+          class="profile-avatar avatar-btn"
+          open-type="chooseAvatar"
+          bindchooseavatar="onChooseAvatar"
+          loading="{{syncingProfile}}"
+        >
+          <image
+            wx:if="{{profile && profile.avatarUrl}}"
+            class="profile-avatar-img"
+            src="{{profile.avatarUrl}}"
+            mode="aspectFill"
+          />
+          <view wx:else class="avatar-placeholder">{{avatarText}}</view>
+        </button>
+        <view wx:else class="profile-avatar" bindtap="onAvatarTap">
+          <image
+            wx:if="{{profile && profile.avatarUrl}}"
+            class="profile-avatar-img"
+            src="{{profile.avatarUrl}}"
+            mode="aspectFill"
+          />
+          <view wx:else class="avatar-placeholder">{{avatarText}}</view>
         </view>
-        <input
-          wx:if="{{isLoggedIn && !hasNick}}"
-          class="nickname-input"
-          type="nickname"
-          placeholder="{{i18n.mine.nickPlaceholder}}"
-          value="{{nicknameDraft}}"
-          bindblur="onNicknameBlur"
-        />
+
+        <view class="profile-main">
+          <view class="profile-name">{{displayName}}</view>
+          <view class="profile-sub">
+            <text wx:if="{{isLoggedIn}}">{{i18n.mine.loggedIn}}</text>
+            <text wx:else>{{i18n.mine.guest}}</text>
+          </view>
+          <input
+            wx:if="{{isLoggedIn && !hasNick}}"
+            class="nickname-input"
+            type="nickname"
+            placeholder="{{i18n.mine.nickPlaceholder}}"
+            value="{{nicknameDraft}}"
+            bindblur="onNicknameBlur"
+          />
+        </view>
+
+        <view class="profile-actions">
+          <button
+            wx:if="{{!isLoggedIn}}"
+            class="btn btn-primary"
+            bindtap="onLogin"
+            loading="{{loadingLogin}}"
+          >
+            {{i18n.mine.wechatLogin}}
+          </button>
+          <button
+            wx:if="{{isLoggedIn}}"
+            class="btn btn-ghost"
+            bindtap="onBindDevice"
+            loading="{{bindingDevice}}"
+          >
+            {{i18n.mine.bindDevice}}
+          </button>
+        </view>
       </view>
-      <view class="profile-actions">
-        <button
-          wx:if="{{!isLoggedIn}}"
-          class="btn btn-primary"
-          bindtap="onLogin"
-          loading="{{loadingLogin}}"
-        >
-          {{i18n.mine.wechatLogin}}
-        </button>
-        <button
-          wx:if="{{isLoggedIn}}"
-          class="btn btn-ghost"
-          bindtap="onBindDevice"
-          loading="{{bindingDevice}}"
-        >
-          {{i18n.mine.bindDevice}}
-        </button>
+      <view wx:if="{{!isLoggedIn}}" class="hero-sync-hint">{{i18n.mine.syncHint}}</view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="follow-grid">
+      <view class="follow-card" bindtap="onTapItem" data-action="followDrivers">
+        <view class="follow-card-head">
+          <view class="follow-card-title">{{i18n.mine.followDrivers}}</view>
+          <view class="follow-card-count">{{followDrivers.length}}{{i18n.mine.peopleUnit}}</view>
+        </view>
+        <view class="follow-card-stack">
+          <view wx:if="{{followDriverThumbs.length}}" class="stack">
+            <block wx:for="{{followDriverThumbs}}" wx:key="key" wx:for-item="d" wx:for-index="idx">
+              <view class="stack-item" style="z-index: {{100-idx}}; border-color: {{d.color || 'rgba(255,255,255,0.18)'}};">
+                <image wx:if="{{d.url}}" class="stack-img" src="{{d.url}}" mode="aspectFill" />
+                <view wx:else class="stack-placeholder">{{d.text}}</view>
+              </view>
+            </block>
+            <view wx:if="{{followDriverMoreCount > 0}}" class="stack-more">+{{followDriverMoreCount}}</view>
+          </view>
+          <view wx:else class="follow-card-empty">{{i18n.mine.followToBuild}}</view>
+        </view>
+        <view class="follow-card-value">{{followDrivers.length ? followDriversText : i18n.mine.noDriverYet}}</view>
+      </view>
+
+      <view class="follow-card" bindtap="onTapItem" data-action="followTeams">
+        <view class="follow-card-head">
+          <view class="follow-card-title">{{i18n.mine.followTeams}}</view>
+          <view class="follow-card-count">{{followTeams.length}}{{i18n.mine.teamsUnit}}</view>
+        </view>
+        <view class="follow-card-stack">
+          <view wx:if="{{followTeamThumbs.length}}" class="stack">
+            <block wx:for="{{followTeamThumbs}}" wx:key="key" wx:for-item="t" wx:for-index="idx">
+              <view class="stack-item" style="z-index: {{100-idx}}; border-color: {{t.color || 'rgba(255,255,255,0.18)'}};">
+                <image wx:if="{{t.url}}" class="stack-img" src="{{t.url}}" mode="aspectFill" />
+                <view wx:else class="stack-placeholder">{{t.text}}</view>
+              </view>
+            </block>
+            <view wx:if="{{followTeamMoreCount > 0}}" class="stack-more">+{{followTeamMoreCount}}</view>
+          </view>
+          <view wx:else class="follow-card-empty">{{i18n.mine.followToBuild}}</view>
+        </view>
+        <view class="follow-card-value">{{followTeams.length ? followTeamsText : i18n.mine.noTeamYet}}</view>
       </view>
     </view>
+  </view>
 
-      <view class="hero-metrics">
-        <view class="metric" bindtap="onTapItem" data-action="followDrivers">
-          <view class="metric-label">{{i18n.mine.followDrivers}}</view>
-          <view class="metric-val">
-            <view wx:if="{{followDriverThumbs.length}}" class="stack">
-              <block wx:for="{{followDriverThumbs}}" wx:key="key" wx:for-item="d" wx:for-index="idx">
-                <view class="stack-item" style="z-index: {{100-idx}}; border-color: {{d.color || 'rgba(255,255,255,0.18)'}};">
-                  <image wx:if="{{d.url}}" class="stack-img" src="{{d.url}}" mode="aspectFill" />
-                  <view wx:else class="stack-placeholder">{{d.text}}</view>
-                </view>
-              </block>
-              <view wx:if="{{followDriverMoreCount>0}}" class="stack-more">+{{followDriverMoreCount}}</view>
-            </view>
-            <view wx:else class="metric-add">
-              <i-icon type="add" size="22" color="rgba(255,255,255,0.85)" />
-            </view>
-          </view>
+  <view class="section">
+    <view class="section-title">{{i18n.mine.quickActions}}</view>
+    <view class="action-list">
+      <view class="action-row" bindtap="onTapItem" data-action="standings">
+        <view class="action-main">
+          <view class="action-label">{{i18n.mine.standings}}</view>
+          <view class="action-sub">{{i18n.standings.title}}</view>
         </view>
+        <view class="action-side">
+          <view class="action-meta">{{prefSeason}}</view>
+          <view class="action-arrow">›</view>
+        </view>
+      </view>
 
-        <view class="metric" bindtap="onTapItem" data-action="followTeams">
-          <view class="metric-label">{{i18n.mine.followTeams}}</view>
-          <view class="metric-val">
-            <view wx:if="{{followTeamThumbs.length}}" class="stack">
-              <block wx:for="{{followTeamThumbs}}" wx:key="key" wx:for-item="t" wx:for-index="idx">
-                <view class="stack-item" style="z-index: {{100-idx}}; border-color: {{t.color || 'rgba(255,255,255,0.18)'}};">
-                  <image wx:if="{{t.url}}" class="stack-img" src="{{t.url}}" mode="aspectFill" />
-                  <view wx:else class="stack-placeholder">{{t.text}}</view>
-                </view>
-              </block>
-              <view wx:if="{{followTeamMoreCount>0}}" class="stack-more">+{{followTeamMoreCount}}</view>
-            </view>
-            <view wx:else class="metric-add">
-              <i-icon type="add" size="22" color="rgba(255,255,255,0.85)" />
-            </view>
-          </view>
+      <view class="divider"></view>
+
+      <view class="action-row" bindtap="onTapItem" data-action="shop">
+        <view class="action-main">
+          <view class="action-label">{{i18n.mine.shop}}</view>
+          <view class="action-sub">{{i18n.mine.shopHint}}</view>
+        </view>
+        <view class="action-side">
+          <view class="action-arrow">›</view>
         </view>
       </view>
     </view>
   </view>
 
-  <view wx:if="{{isLoggedIn}}" class="section">
-    <view class="row">
+  <view class="section">
+    <view class="section-title">{{i18n.mine.preferences}}</view>
+    <view class="row" bindtap="onChangeLanguage">
+      <view class="row-key">{{i18n.mine.language}}</view>
+      <view class="row-val">{{i18n.locale.name}}</view>
+    </view>
+    <view wx:if="{{isLoggedIn}}" class="divider"></view>
+    <view wx:if="{{isLoggedIn}}" class="row">
       <view class="row-key">{{i18n.mine.currentDeviceId}}</view>
       <view class="row-val">{{deviceId || "-"}}</view>
     </view>
   </view>
 
   <view class="section">
-    <view class="section-title">{{i18n.mine.more}}</view>
+    <view class="section-title">{{i18n.mine.comingNext}}</view>
     <view class="more-grid">
-      <view class="more-item" bindtap="onTapItem" data-action="standings">
-        <view class="more-icon">
-          <i-icon type="flag_fill" size="26" color="rgba(255,255,255,0.9)" />
-        </view>
-        <view class="more-text">{{i18n.mine.standings}}</view>
-      </view>
-      <view class="more-item" bindtap="onTapItem" data-action="shop">
-        <view class="more-icon">
-          <i-icon type="shop_fill" size="26" color="rgba(255,255,255,0.9)" />
-        </view>
-        <view class="more-text">{{i18n.mine.shop}}</view>
-      </view>
       <view class="more-item more-item-disabled" bindtap="onTapItem" data-action="soon_2">
         <view class="more-icon">...</view>
         <view class="more-text">{{i18n.common.comingSoon}}</view>
@@ -141,25 +169,6 @@
         <view class="more-icon">...</view>
         <view class="more-text">{{i18n.common.comingSoon}}</view>
       </view>
-      <view class="more-item more-item-disabled" bindtap="onTapItem" data-action="soon_5">
-        <view class="more-icon">...</view>
-        <view class="more-text">{{i18n.common.comingSoon}}</view>
-      </view>
-      <view class="more-item more-item-disabled" bindtap="onTapItem" data-action="soon_6">
-        <view class="more-icon">...</view>
-        <view class="more-text">{{i18n.common.comingSoon}}</view>
-      </view>
-      <view class="more-item more-item-disabled" bindtap="onTapItem" data-action="soon_7">
-        <view class="more-icon">...</view>
-        <view class="more-text">{{i18n.common.comingSoon}}</view>
-      </view>
-    </view>
-  </view>
-
-  <view class="section">
-    <view class="row" bindtap="onChangeLanguage">
-      <view class="row-key">{{i18n.mine.language}}</view>
-      <view class="row-val">{{i18n.locale.name}}</view>
     </view>
   </view>
 
@@ -177,7 +186,7 @@
       </view>
     </view>
     <view class="picker-list">
-      <block wx:if="{{pickerMode==='drivers'}}">
+      <block wx:if="{{pickerMode === 'drivers'}}">
         <block wx:for="{{driverOptions}}" wx:key="driver_number">
           <view class="card" style="{{item.cardStyle}}" bindtap="onTogglePickDriver" data-driver-number="{{item.driver_number}}">
             <view class="card-left">
@@ -197,7 +206,7 @@
         </block>
       </block>
 
-      <block wx:if="{{pickerMode==='teams'}}">
+      <block wx:if="{{pickerMode === 'teams'}}">
         <block wx:for="{{teamOptions}}" wx:key="team_key">
           <view class="card" style="{{item.cardStyle}}" bindtap="onTogglePickTeam" data-team-key="{{item.team_key}}">
             <view class="card-left">
