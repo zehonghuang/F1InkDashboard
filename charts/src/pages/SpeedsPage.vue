@@ -5,36 +5,40 @@
       <div class="session-title-sub">{{ titleSub }}</div>
     </div>
     <div class="card-title">速度</div>
-    <div v-if="!shareMode" class="controls">
-      <div class="control">
-        <div class="label">车手</div>
-        <Select v-model="driverNumber" filterable>
-          <Option v-for="d in drivers" :key="d.driver_number" :value="d.driver_number">{{ d.name_acronym || d.driver_number }}</Option>
-        </Select>
-      </div>
-      <div class="control">
-        <div class="label">Session Key</div>
-        <InputNumber v-model="sessionKey" :min="0" style="width: 100%" placeholder="留空=latest" />
-      </div>
-      <div class="control">
-        <div class="label">Lap 范围</div>
-        <Select v-model="lapThird">
-          <Option value="all">全部</Option>
-          <Option value="1">前 1/3</Option>
-          <Option value="2">中 1/3</Option>
-          <Option value="3">后 1/3</Option>
-        </Select>
-      </div>
-      <div class="control">
-        <div class="label">&nbsp;</div>
-        <Button type="primary" long :loading="loading" @click="load">加载</Button>
-      </div>
-      <div class="control">
-        <div class="label">&nbsp;</div>
-        <Button long :disabled="loading" @click="genLink">生成链接</Button>
+    <div v-if="!shareMode" class="controls-panel">
+      <div class="controls">
+        <div class="control">
+          <div class="label">车手</div>
+          <Select v-model="driverNumber" filterable>
+            <Option v-for="d in drivers" :key="d.driver_number" :value="d.driver_number">{{ d.name_acronym || d.driver_number }}</Option>
+          </Select>
+        </div>
+        <div class="control">
+          <div class="label">Session Key</div>
+          <InputNumber v-model="sessionKey" :min="0" style="width: 100%" placeholder="留空=latest" />
+        </div>
+        <div class="control">
+          <div class="label">Lap 范围</div>
+          <Select v-model="lapThird">
+            <Option value="all">全部</Option>
+            <Option value="1">前 1/3</Option>
+            <Option value="2">中 1/3</Option>
+            <Option value="3">后 1/3</Option>
+          </Select>
+        </div>
+        <div class="control">
+          <div class="label">&nbsp;</div>
+          <Button type="primary" long :loading="loading" @click="load">加载</Button>
+        </div>
+        <div class="control">
+          <div class="label">&nbsp;</div>
+          <Button long :disabled="loading" @click="genLink">生成链接</Button>
+        </div>
       </div>
     </div>
-    <div ref="chartEl" class="chart" />
+    <div class="chart-shell">
+      <div ref="chartEl" class="chart" />
+    </div>
     <div class="status">{{ status }}</div>
   </Card>
 </template>

@@ -5,31 +5,35 @@
       <div class="session-title-sub">{{ titleSub }}</div>
     </div>
     <div class="card-title">箱线图</div>
-    <div v-if="!shareMode" class="controls">
-      <div class="control">
-        <div class="label">Session Key</div>
-        <InputNumber v-model="sessionKey" :min="1" style="width: 100%" placeholder="必填" />
-      </div>
-      <div class="control control-wide">
-        <div class="label">车手</div>
-        <Select v-model="driverNumbers" multiple filterable>
-          <Option v-for="d in drivers" :key="d.driver_number" :value="d.driver_number">{{ d.name_acronym || d.driver_number }}</Option>
-        </Select>
-      </div>
-      <div class="control">
-        <div class="label">包含 pit out</div>
-        <Checkbox v-model="includePitOut">include</Checkbox>
-      </div>
-      <div class="control">
-        <div class="label">&nbsp;</div>
-        <Button type="primary" long :loading="loading" @click="load">加载</Button>
-      </div>
-      <div class="control">
-        <div class="label">&nbsp;</div>
-        <Button long :disabled="loading" @click="genLink">生成链接</Button>
+    <div v-if="!shareMode" class="controls-panel">
+      <div class="controls">
+        <div class="control">
+          <div class="label">Session Key</div>
+          <InputNumber v-model="sessionKey" :min="1" style="width: 100%" placeholder="必填" />
+        </div>
+        <div class="control control-wide">
+          <div class="label">车手</div>
+          <Select v-model="driverNumbers" multiple filterable>
+            <Option v-for="d in drivers" :key="d.driver_number" :value="d.driver_number">{{ d.name_acronym || d.driver_number }}</Option>
+          </Select>
+        </div>
+        <div class="control">
+          <div class="label">包含 pit out</div>
+          <Checkbox v-model="includePitOut">include</Checkbox>
+        </div>
+        <div class="control">
+          <div class="label">&nbsp;</div>
+          <Button type="primary" long :loading="loading" @click="load">加载</Button>
+        </div>
+        <div class="control">
+          <div class="label">&nbsp;</div>
+          <Button long :disabled="loading" @click="genLink">生成链接</Button>
+        </div>
       </div>
     </div>
-    <div ref="chartEl" class="chart chart-xl" />
+    <div class="chart-shell">
+      <div ref="chartEl" class="chart chart-xl" />
+    </div>
     <div class="status">{{ status }}</div>
   </Card>
 </template>

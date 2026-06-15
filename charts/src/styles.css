@@ -1,10 +1,11 @@
 :root {
   color-scheme: dark;
-  --bg: #000000;
+  --bg: #09090f;
   --fg: rgba(255, 255, 255, 0.92);
   --muted: rgba(255, 255, 255, 0.62);
   --border: rgba(255, 255, 255, 0.14);
   --panel: #000000;
+  --f1-red: #e10600;
 }
 
 html,
@@ -21,7 +22,9 @@ body {
 
 .page {
   min-height: 100%;
-  background: var(--bg);
+  background:
+    radial-gradient(circle at top, rgba(225, 6, 0, 0.14) 0, rgba(225, 6, 0, 0) 32%),
+    linear-gradient(180deg, #15151e 0%, #101018 56%, #09090f 100%);
 }
 
 .container {
@@ -57,6 +60,10 @@ body {
   gap: 10px;
   margin-top: 8px;
   flex-wrap: wrap;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(7, 7, 12, 0.88);
 }
 
 .nav a,
@@ -64,15 +71,24 @@ body {
   font-size: 12px;
   color: var(--muted);
   text-decoration: none;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
-  padding: 6px 10px;
-  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent;
+  padding: 8px 12px;
+  border-radius: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
 }
 
 .nav a:hover,
 .nav-link:hover {
   color: var(--fg);
+}
+
+.nav a.router-link-active,
+.nav-link.router-link-active {
+  background: linear-gradient(180deg, rgba(225, 6, 0, 0.2) 0%, rgba(225, 6, 0, 0.12) 100%);
+  box-shadow: inset 0 0 0 1px rgba(225, 6, 0, 0.22);
+  color: #ffffff;
 }
 
 .subtitle {
@@ -108,9 +124,19 @@ body {
   font-size: 14px;
   overflow: hidden;
   position: relative;
-  background: #000000;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(12, 12, 16, 0.94) 0%, rgba(7, 7, 10, 0.98) 100%);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+}
+
+.compare-telemetry-card {
+  border-radius: 20px;
+  border-color: rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top, rgba(225, 6, 0, 0.14) 0, rgba(225, 6, 0, 0) 32%),
+    linear-gradient(180deg, #15151e 0%, #101018 56%, #09090f 100%);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
 }
 
 .card-title {
@@ -137,6 +163,195 @@ body {
   color: var(--muted);
 }
 
+.telemetry-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(7, 7, 12, 0.88);
+}
+
+.telemetry-toolbar-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.telemetry-toolbar-kicker {
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.telemetry-toolbar-value {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.96);
+  font-size: 18px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.telemetry-toolbar-actions {
+  display: flex;
+  flex: none;
+  gap: 10px;
+}
+
+.telemetry-controls-panel {
+  margin-bottom: 12px;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(12, 12, 16, 0.94) 0%, rgba(7, 7, 10, 0.98) 100%);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+}
+
+.telemetry-controls {
+  margin-bottom: 0;
+}
+
+.telemetry-hint {
+  margin: 0 0 16px;
+  padding: 0 6px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 13px;
+}
+
+.telemetry-summary-panel {
+  margin: 0 0 18px;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(12, 12, 16, 0.94) 0%, rgba(7, 7, 10, 0.98) 100%);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+}
+
+.telemetry-summary-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.telemetry-summary-title {
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.telemetry-summary-compare {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+}
+
+.telemetry-sector-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+.telemetry-sector-card {
+  flex: 1;
+  min-width: 0;
+  padding: 16px 16px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.telemetry-sector-name {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.telemetry-sector-driver {
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 15px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.telemetry-sector-value {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.98);
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 900;
+}
+
+.telemetry-sector-label {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.telemetry-insight {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(225, 6, 0, 0.12);
+  background: linear-gradient(180deg, rgba(225, 6, 0, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.telemetry-insight-title {
+  color: #e10600;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.telemetry-insight-text {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.telemetry-chart-shell {
+  min-height: 520px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(10, 10, 14, 0.98) 0%, rgba(5, 5, 8, 1) 100%);
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+}
+
+.controls-panel {
+  margin: 0 0 12px;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(12, 12, 16, 0.94) 0%, rgba(7, 7, 10, 0.98) 100%);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+}
+
+.controls-panel .controls {
+  margin-bottom: 0;
+}
+
+.chart-shell {
+  min-height: 460px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(10, 10, 14, 0.98) 0%, rgba(5, 5, 8, 1) 100%);
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+}
+
 .chart {
   width: 100%;
   height: 460px;
@@ -150,11 +365,19 @@ body {
   height: 560px;
 }
 
+.chart-telemetry {
+  height: 560px;
+}
+
 .status {
   margin-top: 10px;
   font-size: 12px;
   color: var(--muted);
   word-break: break-all;
+}
+
+.status-error {
+  color: rgba(255, 120, 120, 0.92);
 }
 
 .ivu-card,
@@ -164,6 +387,10 @@ body {
 
 .ivu-card-body {
   padding: 14px 14px 12px;
+}
+
+.compare-telemetry-card .ivu-card-body {
+  padding: 18px 18px 16px;
 }
 
 .ivu-input,
@@ -186,6 +413,12 @@ body {
   color: var(--fg) !important;
 }
 
+.compare-telemetry-card .ivu-btn-primary {
+  background: rgba(225, 6, 0, 0.14) !important;
+  border-color: rgba(225, 6, 0, 0.24) !important;
+  color: #ffffff !important;
+}
+
 .ivu-btn-primary {
   background: rgba(255, 255, 255, 0.12) !important;
   border-color: rgba(255, 255, 255, 0.22) !important;
@@ -195,5 +428,60 @@ body {
 @media (max-width: 860px) {
   .controls {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .telemetry-toolbar,
+  .telemetry-summary-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .telemetry-toolbar-actions {
+    width: 100%;
+  }
+
+  .telemetry-toolbar-actions .ivu-btn {
+    flex: 1;
+  }
+
+  .telemetry-sector-grid {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .controls {
+    grid-template-columns: 1fr;
+  }
+
+  .control-wide {
+    grid-column: auto;
+  }
+
+  .session-title-main {
+    font-size: 26px;
+  }
+
+  .session-title-sub {
+    font-size: 16px;
+  }
+
+  .telemetry-controls-panel,
+  .telemetry-summary-panel {
+    padding: 18px;
+  }
+
+  .chart-telemetry,
+  .telemetry-chart-shell {
+    min-height: 460px;
+    height: 460px;
+  }
+
+  .controls-panel {
+    padding: 18px;
+  }
+
+  .chart-shell {
+    min-height: 460px;
   }
 }

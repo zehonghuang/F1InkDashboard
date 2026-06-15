@@ -367,13 +367,61 @@ export function renderSectorCompareChart(container, { series, metric }) {
   const m = String(metric || "").toLowerCase();
   const isPct = m === "throttle" || m === "brake";
   const yName = m === "speed" ? "km/h" : "%";
+  const safeSeries = Array.isArray(series) ? series : [];
+
+  const valueAtX = (pairs, x) => {
+    if (!Array.isArray(pairs) || !pairs.length || !Number.isFinite(x)) return null;
+    let left = 0;
+    let right = pairs.length - 1;
+    while (left < right) {
+      const mid = (left + right) >> 1;
+      const xm = Number(pairs[mid]?.[0]);
+      if (!Number.isFinite(xm)) {
+        right = mid > 0 ? mid - 1 : 0;
+        continue;
+      }
+      if (xm < x) left = mid + 1;
+      else right = mid;
+    }
+    const candidates = [left];
+    if (left - 1 >= 0) candidates.push(left - 1);
+    let bestIndex = candidates[0];
+    let bestDistance = Infinity;
+    for (const idx of candidates) {
+      const px = Number(pairs[idx]?.[0]);
+      const py = Number(pairs[idx]?.[1]);
+      if (!Number.isFinite(px) || !Number.isFinite(py)) continue;
+      const distance = Math.abs(px - x);
+      if (distance < bestDistance) {
+        bestIndex = idx;
+        bestDistance = distance;
+      }
+    }
+    const y = Number(pairs[bestIndex]?.[1]);
+    return Number.isFinite(y) ? y : null;
+  };
+
+  const buildGridX = (count) => {
+    const size = Number.isFinite(Number(count)) ? Math.max(60, Math.min(600, Math.floor(Number(count)))) : 240;
+    if (size <= 1) return [0, 3];
+    return Array.from({ length: size }, (_, index) => Math.round(((3 * index) / (size - 1)) * 10000) / 10000);
+  };
+
+  const resamplePairs = (pairs, gridX) => gridX.map((x) => [x, valueAtX(pairs, x)]);
+  const gridX = buildGridX(240);
+  const alignedSeries = safeSeries.map((item) => ({
+    ...item,
+    data: resamplePairs(item?.data || [], gridX)
+  }));
 
   const inst = initChart(container);
   inst.setOption({
     ...baseOption(),
-    grid: { left: 60, right: 24, top: 34, bottom: 46 },
+    backgroundColor: "#000000",
+    grid: { left: 18, right: 18, top: 52, bottom: 22, containLabel: true },
     tooltip: {
       ...axisPointerTooltip(),
+      confine: true,
       formatter: (params) => {
         const items = Array.isArray(params) ? params : [params];
         const p0 = items[0];
@@ -399,7 +447,12 @@ export function renderSectorCompareChart(container, { series, metric }) {
       type: "value",
       min: 0,
       max: 3,
+      axisLine: { lineStyle: { color: "rgba(255,255,255,0.18)", width: 1 } },
+      axisTick: { show: false },
+      splitLine: { show: false },
       axisLabel: {
+        color: "rgba(255,255,255,0.55)",
+        fontSize: 12,
         formatter: (v) => {
           const x = Number(v);
           if (x === 0) return "S1";
@@ -409,15 +462,38 @@ export function renderSectorCompareChart(container, { series, metric }) {
         }
       }
     },
-    yAxis: isPct ? { type: "value", min: 0, max: 100, name: yName } : { type: "value", name: yName, scale: true },
-    series: (Array.isArray(series) ? series : []).map((s) => ({
+    yAxis: isPct
+      ? {
+          type: "value",
+          min: 0,
+          max: 100,
+          name: yName,
+          nameTextStyle: { color: "rgba(255,255,255,0.42)", padding: [0, 0, 0, -4], fontSize: 11 },
+          axisLabel: { color: "rgba(255,255,255,0.55)", fontSize: 12 },
+          splitLine: { lineStyle: { color: "rgba(255,255,255,0.08)", width: 1 } },
+          minorTick: { show: true, splitNumber: 2, lineStyle: { color: "rgba(255,255,255,0.06)", width: 1 } },
+          minorSplitLine: { show: true, lineStyle: { color: "rgba(255,255,255,0.04)", width: 1 } },
+          axisLine: { show: false }
+        }
+      : {
+          type: "value",
+          name: yName,
+          scale: true,
+          nameTextStyle: { color: "rgba(255,255,255,0.42)", padding: [0, 0, 0, -2], fontSize: 11 },
+          axisLabel: { color: "rgba(255,255,255,0.55)", fontSize: 12 },
+          splitLine: { lineStyle: { color: "rgba(255,255,255,0.08)", width: 1 } },
+          minorTick: { show: true, splitNumber: 2, lineStyle: { color: "rgba(255,255,255,0.06)", width: 1 } },
+          minorSplitLine: { show: true, lineStyle: { color: "rgba(255,255,255,0.04)", width: 1 } },
+          axisLine: { show: false }
+        },
+    series: alignedSeries.map((s) => ({
       type: "line",
       name: s?.name || "",
       data: s?.data || [],
       showSymbol: false,
       smooth: false,
       emphasis: { focus: "series" },
-      lineStyle: { width: 1.8, color: s?.color || "#ffffff" },
+      lineStyle: { width: m === "speed" ? 1.6 : 1.5, color: s?.color || "#ffffff" },
       itemStyle: { color: s?.color || "#ffffff" },
       markLine: {
         silent: true,
