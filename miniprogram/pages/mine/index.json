@@ -3,5 +3,7 @@
     "i-icon": "/miniprogram_npm/iview-weapp/dist/icon/index"
   },
   "navigationBarTitleText": "我的",
-  "navigationStyle": "custom"
+  "navigationStyle": "custom",
+  "backgroundColor": "#15151E",
+  "backgroundTextStyle": "light"
 }

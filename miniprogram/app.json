@@ -11,6 +11,7 @@
     "pages/shop/index",
     "pages/shop-detail/index",
     "pages/mine/index",
+    "pages/image-crop/index",
     "pages/style-demo/index"
   ],
   "lazyCodeLoading": "requiredComponents",

@@ -1,0 +1,130 @@
+.crop-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #111118 0%, #09090f 100%);
+  color: #ffffff;
+}
+
+.crop-stage {
+  padding: 32rpx 16px 0;
+}
+
+.crop-frame {
+  position: relative;
+  margin: 0 auto;
+}
+
+.cropper {
+  border-radius: 20rpx;
+  overflow: hidden;
+}
+
+.crop-preview-mask {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.14) 36%, rgba(0, 0, 0, 0.32) 100%);
+  pointer-events: none;
+}
+
+.crop-preview-card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 18rpx 20rpx;
+  border-radius: 18rpx;
+  background: rgba(8, 8, 12, 0.48);
+  border: 1rpx solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12rpx);
+  pointer-events: none;
+}
+
+.crop-preview-avatar {
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1rpx solid rgba(255, 255, 255, 0.16);
+  flex: none;
+}
+
+.crop-preview-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.crop-preview-name {
+  width: 58%;
+  height: 22rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.crop-preview-sub {
+  margin-top: 14rpx;
+  width: 24%;
+  height: 16rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.crop-preview-btn {
+  width: 112rpx;
+  height: 56rpx;
+  border-radius: 14rpx;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1rpx solid rgba(255, 255, 255, 0.12);
+  flex: none;
+}
+
+.crop-outline {
+  position: absolute;
+  inset: 0;
+  border-radius: 20rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 1rpx rgba(225, 6, 0, 0.32) inset;
+  pointer-events: none;
+}
+
+.crop-controls {
+  padding: 32rpx 24rpx 48rpx;
+}
+
+.crop-title {
+  font-size: 34rpx;
+  font-weight: 800;
+}
+
+.crop-hint {
+  margin-top: 12rpx;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.crop-actions {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 28rpx;
+}
+
+.crop-btn {
+  flex: 1;
+  min-width: 0;
+  font-size: 24rpx;
+  line-height: 36rpx;
+  padding: 14rpx 18rpx;
+  border-radius: 14rpx;
+  font-weight: 700;
+}
+
+.crop-btn-ghost {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.92);
+  border: 1rpx solid rgba(255, 255, 255, 0.12);
+}
+
+.crop-btn-primary {
+  background: linear-gradient(180deg, #ff3a31 0%, #e10600 100%);
+  color: #ffffff;
+  border: 1rpx solid rgba(225, 6, 0, 0.5);
+}
