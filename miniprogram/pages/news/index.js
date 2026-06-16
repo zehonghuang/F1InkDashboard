@@ -6,6 +6,7 @@ const { fetchLatestCrawledSessionResults } = require("../../services/mpSessionRe
 const { createMotorsportLiveClient } = require("../../services/motorsportLiveWs")
 const { getAuthState } = require("../../services/authService")
 const i18n = require("../../services/i18n")
+const { applyTabBarEnterTransition, clearTabBarPageTransition } = require("../../services/tabBarTransition")
 
 const WELCOME_KEY = "news_welcome_shown_v1"
 const PREF_TEAMS_KEY = "pref_follow_teams"
@@ -380,7 +381,9 @@ Page({
     listTransformStyle: "",
     refreshing: false,
     pressPreview: null,
-    pressJiggleId: ""
+    pressJiggleId: "",
+    tabSwitchEntering: false,
+    tabSwitchLeaving: false
   },
   pad2(v) {
     const n = Math.max(0, Math.floor(Number(v) || 0))
@@ -670,9 +673,11 @@ Page({
     clearTimeout(this._suppressTapTimer)
     clearTimeout(this._pressPreviewHideTimer)
     clearTimeout(this._qualiHideTimer)
+    clearTabBarPageTransition(this)
   },
   onShow() {
     this.applyI18n()
+    applyTabBarEnterTransition(this)
     const isLoggedIn = this.syncAuthState()
     if (isLoggedIn) {
       this.connectMotorsportLiveWs()

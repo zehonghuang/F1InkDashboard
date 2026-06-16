@@ -1,3 +1,5 @@
+@import "../../styles/tab-page-transition.wxss";
+
 .page-root {
   height: 100vh;
   background:

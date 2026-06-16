@@ -1,4 +1,4 @@
-<view class="page-root">
+<view class="page-root {{ tabSwitchEntering ? 'tab-page-entering' : '' }} {{ tabSwitchLeaving ? 'tab-page-leaving' : '' }}">
   <view wx:if="{{ showWelcome && welcome }}" class="welcome" catchtap="onCloseWelcome" catchtouchmove="noop">
     <image class="welcome-image" src="{{ welcome.coverUrl }}" mode="aspectFill" />
     <view class="welcome-mask" />

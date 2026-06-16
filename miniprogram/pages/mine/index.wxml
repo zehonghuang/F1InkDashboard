@@ -1,4 +1,4 @@
-<view class="page has-tabbar mine">
+<view class="page has-tabbar mine {{ tabSwitchEntering ? 'tab-page-entering' : '' }} {{ tabSwitchLeaving ? 'tab-page-leaving' : '' }}">
   <view
     class="hero {{heroPullDistance > 0 ? 'hero-pulling' : ''}}"
     style="transform: translate3d(0, {{heroPullDistance}}px, 0); transition: {{heroPullAnimating ? 'transform 180ms ease' : 'none'}};"

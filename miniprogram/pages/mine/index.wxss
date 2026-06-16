@@ -1,3 +1,5 @@
+@import "../../styles/tab-page-transition.wxss";
+
 .section {
   margin-top: 22rpx;
   padding: 22rpx;
