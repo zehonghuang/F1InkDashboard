@@ -1,7 +1,6 @@
 const { getAuthState, loginWithWeChat, logout, fetchMe, bindDevice, uploadAvatar, updateNickName, setProfile } = require("../../services/authService")
 const { fetchPrefs, updatePrefs } = require("../../services/prefsService")
 const i18n = require("../../services/i18n")
-const { applyTabBarEnterTransition, clearTabBarPageTransition } = require("../../services/tabBarTransition")
 
 const STORAGE_KEYS = {
   season: "pref_season",
@@ -33,8 +32,6 @@ Page({
     canEditProfile: false,
     nicknameDraft: "",
     statusBarHeight: 0,
-    tabSwitchEntering: false,
-    tabSwitchLeaving: false,
     prefSeason: 2026,
     followDrivers: [],
     followDriversText: i18n.t("mine.notSet"),
@@ -75,7 +72,6 @@ Page({
   },
   onUnload() {
     if (this._offLocale) this._offLocale()
-    clearTabBarPageTransition(this)
   },
   onReady() {
     this.measureHeroRect()
@@ -100,7 +96,6 @@ Page({
         tb.setSelectedByRoute(this.route)
       }
     }
-    applyTabBarEnterTransition(this)
   },
   onPageScroll(e) {
     const top = e && Number.isFinite(e.scrollTop) ? e.scrollTop : Number((e && e.scrollTop) || 0)

@@ -1,4 +1,4 @@
-<view class="page has-tabbar {{ tabSwitchEntering ? 'tab-page-entering' : '' }} {{ tabSwitchLeaving ? 'tab-page-leaving' : '' }}">
+<view class="page has-tabbar">
   <view class="header" style="padding-top: calc({{ statusBarHeight }}px + 12rpx);">
     <view class="title">{{i18n.archive.headerTitle}}</view>
     <view class="subtitle">Telemetry • Analysis • Archive</view>

@@ -1,5 +1,4 @@
 const i18n = require("../../services/i18n")
-const { applyTabBarEnterTransition, clearTabBarPageTransition } = require("../../services/tabBarTransition")
 
 Page({
   data: {
@@ -8,8 +7,6 @@ Page({
     seasonOptions: [],
     seasonIndex: 0,
     statusBarHeight: 0,
-    tabSwitchEntering: false,
-    tabSwitchLeaving: false,
     selectedSeason: 2026,
     latestRace: null,
     completedCount: 0,
@@ -72,7 +69,6 @@ Page({
   },
   onUnload() {
     if (this._offLocale) this._offLocale()
-    clearTabBarPageTransition(this)
   },
   onPullDownRefresh() {
     this.loadArchive({ isPullDown: true })
@@ -85,7 +81,6 @@ Page({
       }
     }
     this.applyI18n()
-    applyTabBarEnterTransition(this)
   },
   applyI18n() {
     const dict = i18n.getDict()

@@ -3,6 +3,28 @@
   animation: tabPageFadeIn 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.tab-page-overlay {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9990;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(circle at top, rgba(225, 6, 0, 0.1) 0, rgba(225, 6, 0, 0) 32%),
+    linear-gradient(180deg, #15151e 0%, #101018 56%, #09090f 100%);
+}
+
+.tab-page-overlay-entering {
+  animation: tabPageOverlayFadeOut 220ms ease-out forwards;
+}
+
+.tab-page-overlay-leaving {
+  animation: tabPageOverlayFadeIn 140ms ease-out forwards;
+}
+
 .tab-page-leaving {
   pointer-events: none;
   will-change: opacity, transform;
@@ -30,5 +52,25 @@
   100% {
     opacity: 0;
     transform: translate3d(0, 10rpx, 0);
+  }
+}
+
+@keyframes tabPageOverlayFadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes tabPageOverlayFadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
   }
 }
