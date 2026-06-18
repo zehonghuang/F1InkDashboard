@@ -10,7 +10,7 @@
         wx:if="{{ viewerStackBottomImage && viewerStackBottomImage.src }}"
         class="detail-viewer-stack-card detail-viewer-stack-bottom"
         style="{{ viewerStackBottomImage.boxStyle }}{{ viewerStackBottomStyle }}"
-        catchtap="stopTap"
+        catchtap="onViewerTap"
       >
         <image
           class="detail-viewer-stack-image"
@@ -24,7 +24,7 @@
         wx:if="{{ viewerStackBackImage && viewerStackBackImage.src }}"
         class="detail-viewer-stack-card detail-viewer-stack-back"
         style="{{ viewerStackBackImage.boxStyle }}{{ viewerStackBackStyle }}"
-        catchtap="stopTap"
+        catchtap="onViewerTap"
       >
         <image
           class="detail-viewer-stack-image"
@@ -38,7 +38,7 @@
         wx:if="{{ viewerStackMidImage && viewerStackMidImage.src }}"
         class="detail-viewer-stack-card detail-viewer-stack-mid"
         style="{{ viewerStackMidImage.boxStyle }}{{ viewerStackMidStyle }}"
-        catchtap="stopTap"
+        catchtap="onViewerTap"
       >
         <image
           class="detail-viewer-stack-image"
@@ -49,9 +49,25 @@
         />
       </view>
       <view
+        wx:if="{{ viewerPrevImage && viewerPrevImage.src }}"
+        class="detail-viewer-prev"
+        style="{{ viewerPrevBoxStyle }}{{ viewerPrevStyle }}"
+        catchtap="onViewerTap"
+      >
+        <view class="detail-viewer-slide">
+          <image
+            class="detail-viewer-image"
+            src="{{ viewerPrevImage.src }}"
+            mode="aspectFit"
+            data-src="{{ viewerPrevImage.src }}"
+            bindload="onViewerImageLoad"
+          />
+        </view>
+      </view>
+      <view
         class="detail-viewer-front"
         style="{{ viewerFrontBoxStyle }}{{ viewerFrontStyle }}"
-        catchtap="stopTap"
+        catchtap="onViewerTap"
         catchtouchstart="onViewerTouchStart"
         catchtouchmove="onViewerTouchMove"
         catchtouchend="onViewerTouchEnd"
@@ -69,11 +85,11 @@
         </view>
       </view>
     </view>
-    <view class="detail-viewer-topbar">
+    <view class="detail-viewer-topbar {{ viewerUiVisible ? '' : 'detail-viewer-topbar-hidden' }}">
       <view class="detail-viewer-count">{{ viewerCountText }}</view>
       <view class="detail-viewer-close" bindtap="requestClose">×</view>
     </view>
-    <view wx:if="{{ viewerImages.length > 1 }}" class="detail-viewer-progress">
+    <view wx:if="{{ viewerImages.length > 1 }}" class="detail-viewer-progress {{ viewerUiVisible ? '' : 'detail-viewer-progress-hidden' }}">
       <view class="detail-viewer-progress-track">
         <view class="detail-viewer-progress-fill" style="{{ viewerProgressStyle }}" />
       </view>
