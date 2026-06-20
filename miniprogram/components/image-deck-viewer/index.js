@@ -1,17 +1,28 @@
-function normalizeGalleryIndex(index, total) {
-  const t = Math.max(0, Number(total) || 0)
-  if (!t) return 0
-  let i = Number(index) || 0
-  while (i < 0) i += t
-  return i % t
-}
-
 function lerp(a, b, t) {
   return a + (b - a) * t
 }
 
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v))
+}
+
+function resolveGalleryIndex(index, total, loop) {
+  const t = Math.max(0, Number(total) || 0)
+  if (!t) return 0
+  const i = Number(index) || 0
+  if (!loop) return clamp(i, 0, t - 1)
+  let n = i
+  while (n < 0) n += t
+  return n % t
+}
+
+function getGalleryImageAt(list, index, loop) {
+  const arr = Array.isArray(list) ? list : []
+  const total = arr.length
+  if (!total) return null
+  if (loop) return arr[resolveGalleryIndex(index, total, true)] || null
+  if (index < 0 || index >= total) return null
+  return arr[index] || null
 }
 
 function normalizeImages(images) {
@@ -29,8 +40,10 @@ const VIEWER_MOVE_FRAME_MS = 16
 const VIEWER_MOVE_EPSILON = 2
 const VIEWER_AXIS_LOCK_DISTANCE = 8
 const VIEWER_PREFETCH_OFFSETS = [0, 1, 2, -1]
-const VIEWER_RIGHT_DRAG_DAMPING = 0.35
-const VIEWER_RIGHT_DRAG_MAX_RATIO = 0.18
+const VIEWER_DRAG_MAX_RATIO = 0.92
+const VIEWER_EDGE_DAMPING = 0.35
+const VIEWER_EDGE_MAX_RATIO = 0.18
+const VIEWER_PREV_STACK_RETURN_PROGRESS = 0.78
 
 function fitViewerImageBox(meta, maxWidth, maxHeight) {
   const mw = Math.max(1, Number(maxWidth) || 320)
@@ -49,32 +62,31 @@ function buildViewerBoxStyle(meta, maxWidth, maxHeight) {
   return `width:${box.width}px;height:${box.height}px;`
 }
 
-function buildViewerStackSlots(images, activeIndex, imageMeta, maxWidth, maxHeight) {
+function buildViewerStackSlots(images, activeIndex, imageMeta, maxWidth, maxHeight, loop) {
   const list = normalizeImages(images)
-  const total = list.length
   const out = {
     mid: null,
     back: null,
     bottom: null
   }
-  if (total > 1) {
-    const mid = list[normalizeGalleryIndex(activeIndex + 1, total)]
+  const mid = getGalleryImageAt(list, activeIndex + 1, loop)
+  if (mid && mid.src) {
     out.mid = {
       src: mid.src,
       alt: mid.alt || "",
       boxStyle: buildViewerBoxStyle(imageMeta && imageMeta[mid.src], maxWidth, maxHeight)
     }
   }
-  if (total > 2) {
-    const back = list[normalizeGalleryIndex(activeIndex + 2, total)]
+  const back = getGalleryImageAt(list, activeIndex + 2, loop)
+  if (back && back.src) {
     out.back = {
       src: back.src,
       alt: back.alt || "",
       boxStyle: buildViewerBoxStyle(imageMeta && imageMeta[back.src], maxWidth, maxHeight)
     }
   }
-  if (total > 2) {
-    const bottom = list[normalizeGalleryIndex(activeIndex + 3, total)]
+  const bottom = getGalleryImageAt(list, activeIndex + 3, loop)
+  if (bottom && bottom.src) {
     out.bottom = {
       src: bottom.src,
       alt: bottom.alt || "",
@@ -84,16 +96,19 @@ function buildViewerStackSlots(images, activeIndex, imageMeta, maxWidth, maxHeig
   return out
 }
 
-function buildViewerDeck(images, activeIndex, imageMeta, maxWidth, maxHeight) {
+function buildViewerDeck(images, activeIndex, imageMeta, maxWidth, maxHeight, loop) {
   const list = normalizeImages(images)
   const total = list.length
-  const index = normalizeGalleryIndex(activeIndex, total)
+  const index = resolveGalleryIndex(activeIndex, total, loop)
   const frontImage = total ? list[index] : null
+  const prevImage = getGalleryImageAt(list, index - 1, loop)
   const progress = total ? `${((index + 1) / total) * 100}%` : "0%"
   return {
     frontImage,
     frontBoxStyle: frontImage ? buildViewerBoxStyle(imageMeta && imageMeta[frontImage.src], maxWidth, maxHeight) : "",
-    stackSlots: buildViewerStackSlots(list, index, imageMeta, maxWidth, maxHeight),
+    stackSlots: buildViewerStackSlots(list, index, imageMeta, maxWidth, maxHeight, loop),
+    prevImage,
+    prevBoxStyle: prevImage ? buildViewerBoxStyle(imageMeta && imageMeta[prevImage.src], maxWidth, maxHeight) : "",
     index,
     countText: `${index + 1} / ${total}`,
     progressStyle: `width:${progress};`
@@ -107,11 +122,15 @@ function buildViewerDragStyles({ dx, dy, width, direction, animated }) {
   const progress = clamp(Math.abs(x) / Math.max(90, w * 0.32), 0, 1)
   const nextProgress = direction === "next" ? progress : 0
   const prevProgress = direction === "prev" ? progress : 0
+  const stackFade = direction === "prev" ? lerp(1, 0.12, prevProgress) : 1
   const rotate = clamp(x / 18, -12, 12)
   const verticalOffset = clamp(y * 0.12, -10, 10)
   const transition = animated
     ? "transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease-out;"
     : "transition: none;"
+  const prevX = lerp(-42, 0, prevProgress)
+  const prevScale = lerp(0.98, 1, prevProgress)
+  const prevOpacity = lerp(0, 1, prevProgress)
   const midX = direction === "next"
     ? lerp(42, 0, nextProgress)
     : lerp(42, 50, prevProgress)
@@ -132,13 +151,13 @@ function buildViewerDragStyles({ dx, dy, width, direction, animated }) {
     : lerp(0.86, 0.9, prevProgress)
   const midOpacity = direction === "next"
     ? lerp(0.9, 1, nextProgress)
-    : lerp(0.9, 0.98, prevProgress)
+    : lerp(0.9, 0.98, prevProgress) * stackFade
   const backOpacity = direction === "next"
     ? lerp(0.8, 0.9, nextProgress)
-    : lerp(0.8, 0.9, prevProgress)
+    : lerp(0.8, 0.9, prevProgress) * stackFade
   const bottomOpacity = direction === "next"
     ? lerp(0.66, 0.78, nextProgress)
-    : lerp(0.66, 0.78, prevProgress)
+    : lerp(0.66, 0.78, prevProgress) * stackFade
   const midY = direction === "next"
     ? lerp(-48, -50, nextProgress)
     : lerp(-48, -48, prevProgress)
@@ -148,11 +167,16 @@ function buildViewerDragStyles({ dx, dy, width, direction, animated }) {
   const bottomY = direction === "next"
     ? lerp(-44, -46, nextProgress)
     : lerp(-44, -44, prevProgress)
+  const midZ = direction === "prev" ? 0 : 2
+  const backZ = direction === "prev" ? -1 : 1
+  const bottomZ = direction === "prev" ? -2 : 0
+  const prevZ = 2
   return {
     front: `transform: translate3d(${x}px, calc(-50% + ${verticalOffset}px), 0) rotate(${rotate}deg) scale(${lerp(1, 0.985, progress)}); ${transition}`,
-    mid: `transform: translate3d(${midX}rpx, ${midY}%, 0) scale(${midScale}); opacity: ${midOpacity}; ${transition}`,
-    back: `transform: translate3d(${backX}rpx, ${backY}%, 0) scale(${backScale}); opacity: ${backOpacity}; ${transition}`,
-    bottom: `transform: translate3d(${bottomX}rpx, ${bottomY}%, 0) scale(${bottomScale}); opacity: ${bottomOpacity}; ${transition}`
+    prev: `z-index:${prevZ}; transform: translate3d(${prevX}rpx, -50%, 0) scale(${prevScale}); opacity: ${prevOpacity}; ${transition}`,
+    mid: `z-index:${midZ}; transform: translate3d(${midX}rpx, ${midY}%, 0) scale(${midScale}); opacity: ${midOpacity}; ${transition}`,
+    back: `z-index:${backZ}; transform: translate3d(${backX}rpx, ${backY}%, 0) scale(${backScale}); opacity: ${backOpacity}; ${transition}`,
+    bottom: `z-index:${bottomZ}; transform: translate3d(${bottomX}rpx, ${bottomY}%, 0) scale(${bottomScale}); opacity: ${bottomOpacity}; ${transition}`
   }
 }
 
@@ -166,14 +190,14 @@ function buildViewerBaseStyles(width) {
   })
 }
 
-function buildViewerPrefetchImages(images, activeIndex) {
+function buildViewerPrefetchImages(images, activeIndex, loop) {
   const list = normalizeImages(images)
   const total = list.length
   if (total <= VIEWER_PREFETCH_OFFSETS.length) return list
   const out = []
   const seen = Object.create(null)
   for (const offset of VIEWER_PREFETCH_OFFSETS) {
-    const item = list[normalizeGalleryIndex(activeIndex + offset, total)]
+    const item = getGalleryImageAt(list, activeIndex + offset, loop)
     if (!item || !item.src || seen[item.src]) continue
     seen[item.src] = true
     out.push(item)
@@ -194,24 +218,32 @@ Component({
     initialIndex: {
       type: Number,
       value: 0
+    },
+    loop: {
+      type: Boolean,
+      value: false
     }
   },
   data: {
     rendered: false,
     active: false,
     viewerImages: [],
+    viewerPrevImage: null,
     viewerFrontImage: null,
+    viewerPrevBoxStyle: "",
     viewerFrontBoxStyle: "",
     viewerStackMidImage: null,
     viewerStackBackImage: null,
     viewerStackBottomImage: null,
     viewerIndex: 0,
+    viewerPrevStyle: "",
     viewerFrontStyle: "",
     viewerStackMidStyle: "",
     viewerStackBackStyle: "",
     viewerStackBottomStyle: "",
     viewerCountText: "",
-    viewerProgressStyle: "width:0%;"
+    viewerProgressStyle: "width:0%;",
+    viewerUiVisible: true
   },
   observers: {
     visible(v) {
@@ -279,6 +311,7 @@ Component({
       if (!styles) return
       const payload = {}
       const prev = this._lastViewerStyles || {}
+      if (styles.prev !== prev.prev) payload.viewerPrevStyle = styles.prev
       if (styles.front !== prev.front) payload.viewerFrontStyle = styles.front
       if (styles.mid !== prev.mid) payload.viewerStackMidStyle = styles.mid
       if (styles.back !== prev.back) payload.viewerStackBackStyle = styles.back
@@ -325,6 +358,8 @@ Component({
     },
     isViewerVisibleImage(src) {
       if (!src) return false
+      const prevImage = this.data.viewerPrevImage
+      if (prevImage && prevImage.src === src) return true
       const frontImage = this.data.viewerFrontImage
       if (frontImage && frontImage.src === src) return true
       return [
@@ -349,10 +384,13 @@ Component({
         this.data.viewerIndex,
         this._viewerImageMeta,
         this._viewerWidthPx,
-        this._viewerHeightPx
+        this._viewerHeightPx,
+        this.properties.loop
       )
       this.setData({
+        viewerPrevImage: deck.prevImage,
         viewerFrontImage: deck.frontImage,
+        viewerPrevBoxStyle: deck.prevBoxStyle,
         viewerFrontBoxStyle: deck.frontBoxStyle,
         viewerStackMidImage: deck.stackSlots.mid,
         viewerStackBackImage: deck.stackSlots.back,
@@ -372,25 +410,30 @@ Component({
         this.properties.initialIndex,
         this._viewerImageMeta,
         this._viewerWidthPx,
-        this._viewerHeightPx
+        this._viewerHeightPx,
+        this.properties.loop
       )
       const baseStyles = buildViewerBaseStyles(this._viewerWidthPx)
       this.syncViewerStyles(baseStyles)
       const nextData = {
         rendered: true,
         viewerImages: images,
+        viewerPrevImage: deck.prevImage,
         viewerFrontImage: deck.frontImage,
+        viewerPrevBoxStyle: deck.prevBoxStyle,
         viewerFrontBoxStyle: deck.frontBoxStyle,
         viewerStackMidImage: deck.stackSlots.mid,
         viewerStackBackImage: deck.stackSlots.back,
         viewerStackBottomImage: deck.stackSlots.bottom,
         viewerIndex: deck.index,
+        viewerPrevStyle: baseStyles.prev,
         viewerFrontStyle: baseStyles.front,
         viewerStackMidStyle: baseStyles.mid,
         viewerStackBackStyle: baseStyles.back,
         viewerStackBottomStyle: baseStyles.bottom,
         viewerCountText: deck.countText,
-        viewerProgressStyle: deck.progressStyle
+        viewerProgressStyle: deck.progressStyle,
+        viewerUiVisible: true
       }
       if (!this.data.rendered) {
         nextData.active = false
@@ -416,24 +459,106 @@ Component({
         this.setData({
           rendered: false,
           viewerImages: [],
+          viewerPrevImage: null,
           viewerFrontImage: null,
+          viewerPrevBoxStyle: "",
           viewerFrontBoxStyle: "",
           viewerStackMidImage: null,
           viewerStackBackImage: null,
           viewerStackBottomImage: null,
           viewerIndex: 0,
+          viewerPrevStyle: baseStyles.prev,
           viewerFrontStyle: baseStyles.front,
           viewerStackMidStyle: baseStyles.mid,
           viewerStackBackStyle: baseStyles.back,
           viewerStackBottomStyle: baseStyles.bottom,
           viewerCountText: "",
-          viewerProgressStyle: "width:0%;"
+          viewerProgressStyle: "width:0%;",
+          viewerUiVisible: true
         })
       }, 180)
     },
     stopTap() {},
+    onViewerTap() {
+      if (!this.data.rendered) return
+      const now = Date.now()
+      if (this._viewerLastDragAt && now - this._viewerLastDragAt < 260) return
+      const touch = this._viewerTouch
+      if (touch && touch.dragging) return
+      this.setData({ viewerUiVisible: !this.data.viewerUiVisible })
+    },
     requestClose() {
       this.triggerEvent("close")
+    },
+    canViewerSwipeDirection(direction) {
+      const dir = direction === "next" || direction === "prev" ? direction : ""
+      const total = (this.data.viewerImages || []).length
+      if (!dir || total <= 1) return false
+      if (this.properties.loop) return true
+      const idx = Math.max(0, Number(this.data.viewerIndex) || 0)
+      if (dir === "next") return idx < total - 1
+      return idx > 0
+    },
+    cleanupViewerDragState() {
+      this._viewerDragDirection = ""
+      this._viewerPrevStackStage = ""
+      this._viewerDeckSnapshot = null
+      this.refreshViewerDeck()
+    },
+    snapshotViewerDeck() {
+      const front = this.data.viewerFrontImage
+      if (!front || !front.src) return null
+      return {
+        frontImage: front,
+        frontBoxStyle: this.data.viewerFrontBoxStyle || "",
+        stackMidImage: this.data.viewerStackMidImage,
+        stackBackImage: this.data.viewerStackBackImage,
+        stackBottomImage: this.data.viewerStackBottomImage
+      }
+    },
+    applyViewerPrevStackStage(stage) {
+      if (stage === this._viewerPrevStackStage) return
+      const snap = this._viewerDeckSnapshot
+      if (!snap || !snap.frontImage || !snap.frontImage.src) return
+      if (stage === "deep") {
+        const bottom = {
+          src: snap.frontImage.src,
+          alt: snap.frontImage.alt || "",
+          boxStyle: snap.frontBoxStyle || ""
+        }
+        this._viewerPrevStackStage = stage
+        this.setData({ viewerStackBottomImage: bottom })
+        return
+      }
+      if (stage === "final") {
+        const mid = {
+          src: snap.frontImage.src,
+          alt: snap.frontImage.alt || "",
+          boxStyle: snap.frontBoxStyle || ""
+        }
+        this._viewerPrevStackStage = stage
+        this.setData({
+          viewerStackMidImage: mid,
+          viewerStackBackImage: snap.stackMidImage || null,
+          viewerStackBottomImage: snap.stackBackImage || null
+        })
+        return
+      }
+    },
+    syncViewerDragDirection(direction) {
+      const dir = direction === "next" || direction === "prev" ? direction : ""
+      if (dir === this._viewerDragDirection) return
+      const prevDir = this._viewerDragDirection
+      this._viewerDragDirection = dir
+      if (prevDir === "prev" && dir !== "prev") {
+        this._viewerPrevStackStage = ""
+        this._viewerDeckSnapshot = null
+        this.refreshViewerDeck()
+      }
+      if (dir === "prev" && !this._viewerDeckSnapshot) {
+        this._viewerDeckSnapshot = this.snapshotViewerDeck()
+        this._viewerPrevStackStage = ""
+      }
     },
     onViewerTouchStart(e) {
       if ((this.data.viewerImages || []).length <= 1) return
@@ -441,6 +566,9 @@ Component({
       if (!touch) return
       clearTimeout(this._swipeTimer)
       this.clearViewerDragFrame()
+      this._viewerDragDirection = ""
+      this._viewerPrevStackStage = ""
+      this._viewerDeckSnapshot = null
       const now = Date.now()
       this._viewerTouch = {
         startX: Number(touch.clientX || 0),
@@ -449,6 +577,7 @@ Component({
         dy: 0,
         dragging: true,
         axis: "",
+        moved: false,
         queuedDx: 0,
         queuedDy: 0,
         samples: [{
@@ -462,10 +591,19 @@ Component({
       if (!touch || !this._viewerTouch || !this._viewerTouch.dragging) return
       const rawDx = Number(touch.clientX || 0) - this._viewerTouch.startX
       const dy = Number(touch.clientY || 0) - this._viewerTouch.startY
-      const rightLimit = Math.max(24, this._viewerWidthPx * VIEWER_RIGHT_DRAG_MAX_RATIO)
-      const dx = rawDx > 0
-        ? Math.min(rawDx * VIEWER_RIGHT_DRAG_DAMPING, rightLimit)
-        : rawDx
+      const width = Math.max(1, Number(this._viewerWidthPx) || 320)
+      const maxDrag = Math.max(72, width * VIEWER_DRAG_MAX_RATIO)
+      let dx = clamp(rawDx, -maxDrag, maxDrag)
+      if (!this.properties.loop) {
+        const total = (this.data.viewerImages || []).length
+        const idx = Math.max(0, Number(this.data.viewerIndex) || 0)
+        const edgeLimit = Math.max(24, width * VIEWER_EDGE_MAX_RATIO)
+        if (total && idx <= 0 && rawDx > 0) {
+          dx = Math.min(rawDx * VIEWER_EDGE_DAMPING, edgeLimit)
+        } else if (total && idx >= total - 1 && rawDx < 0) {
+          dx = Math.max(rawDx * VIEWER_EDGE_DAMPING, -edgeLimit)
+        }
+      }
       this._viewerTouch.dx = dx
       this._viewerTouch.dy = dy
       if (!this._viewerTouch.axis) {
@@ -479,6 +617,7 @@ Component({
         this._viewerTouch.axis = "x"
       }
       if (this._viewerTouch.axis !== "x") return
+      if (Math.abs(rawDx) >= 2 || Math.abs(dy) >= 2) this._viewerTouch.moved = true
       const now = Date.now()
       const samples = this._viewerTouch.samples || []
       samples.push({
@@ -495,7 +634,13 @@ Component({
       }
       this._viewerTouch.queuedDx = dx
       this._viewerTouch.queuedDy = dy
-      const direction = dx < 0 ? "next" : ""
+      let direction = dx < 0 ? "next" : (dx > 0 ? "prev" : "")
+      if (direction && !this.canViewerSwipeDirection(direction)) direction = ""
+      this.syncViewerDragDirection(direction)
+      if (direction === "prev") {
+        const progress = clamp(Math.abs(dx) / Math.max(90, width * 0.32), 0, 1)
+        this.applyViewerPrevStackStage(progress >= VIEWER_PREV_STACK_RETURN_PROGRESS ? "final" : "deep")
+      }
       this.scheduleViewerDragUpdate({ dx, dy, direction })
     },
     onViewerTouchEnd() {
@@ -506,12 +651,18 @@ Component({
       const dx = Number(this._viewerTouch.dx || 0)
       const dy = Number(this._viewerTouch.dy || 0)
       const velocityX = this.getViewerSwipeVelocity()
-      const shouldSwipe = dx < 0 && (
-        Math.abs(dx) >= threshold || (Math.abs(dx) >= 24 && Math.abs(velocityX) >= 0.6)
+      const direction = dx < 0 ? "next" : (dx > 0 ? "prev" : "")
+      const shouldSwipe = this.canViewerSwipeDirection(direction) && (
+        Math.abs(dx) >= threshold ||
+        (
+          Math.abs(dx) >= 24 &&
+          (direction === "next" ? velocityX <= -0.6 : velocityX >= 0.6)
+        )
       )
-      const direction = "next"
       this._viewerTouch.dragging = false
       if (this._viewerTouch.axis && this._viewerTouch.axis !== "x") {
+        if (this._viewerDragDirection) this.cleanupViewerDragState()
+        if (this._viewerTouch.moved) this._viewerLastDragAt = Date.now()
         this._viewerTouch = null
         return
       }
@@ -525,6 +676,7 @@ Component({
         })
         this.syncViewerStyles(resetStyles)
         this.setData({
+          viewerPrevStyle: resetStyles.prev,
           viewerFrontStyle: resetStyles.front,
           viewerStackMidStyle: resetStyles.mid,
           viewerStackBackStyle: resetStyles.back,
@@ -534,15 +686,19 @@ Component({
           const baseStyles = buildViewerBaseStyles(width)
           this.syncViewerStyles(baseStyles)
           this.setData({
+            viewerPrevStyle: baseStyles.prev,
             viewerFrontStyle: baseStyles.front,
             viewerStackMidStyle: baseStyles.mid,
             viewerStackBackStyle: baseStyles.back,
             viewerStackBottomStyle: baseStyles.bottom
           })
+          if (this._viewerDragDirection) this.cleanupViewerDragState()
         }, 220)
+        if (this._viewerTouch.moved) this._viewerLastDragAt = Date.now()
         this._viewerTouch = null
         return
       }
+      if (direction === "prev") this.applyViewerPrevStackStage("final")
       const exitX = (direction === "next" ? -1 : 1) * (width * 1.18)
       const styles = buildViewerDragStyles({
         dx: exitX,
@@ -553,32 +709,39 @@ Component({
       })
       this.syncViewerStyles(styles)
       this.setData({
+        viewerPrevStyle: styles.prev,
         viewerFrontStyle: styles.front,
         viewerStackMidStyle: styles.mid,
         viewerStackBackStyle: styles.back,
         viewerStackBottomStyle: styles.bottom
       })
       this._swipeTimer = setTimeout(() => {
-        const nextIndex = normalizeGalleryIndex(
+        const total = (this.data.viewerImages || []).length
+        const nextIndex = resolveGalleryIndex(
           this.data.viewerIndex + (direction === "next" ? 1 : -1),
-          (this.data.viewerImages || []).length
+          total,
+          this.properties.loop
         )
         const deck = buildViewerDeck(
           this.data.viewerImages,
           nextIndex,
           this._viewerImageMeta,
           this._viewerWidthPx,
-          this._viewerHeightPx
+          this._viewerHeightPx,
+          this.properties.loop
         )
         const baseStyles = buildViewerBaseStyles(width)
         this.syncViewerStyles(baseStyles)
         this.setData({
+          viewerPrevImage: deck.prevImage,
           viewerFrontImage: deck.frontImage,
+          viewerPrevBoxStyle: deck.prevBoxStyle,
           viewerFrontBoxStyle: deck.frontBoxStyle,
           viewerStackMidImage: deck.stackSlots.mid,
           viewerStackBackImage: deck.stackSlots.back,
           viewerStackBottomImage: deck.stackSlots.bottom,
           viewerIndex: deck.index,
+          viewerPrevStyle: baseStyles.prev,
           viewerFrontStyle: baseStyles.front,
           viewerStackMidStyle: baseStyles.mid,
           viewerStackBackStyle: baseStyles.back,
@@ -587,6 +750,10 @@ Component({
           viewerProgressStyle: deck.progressStyle
         })
         this.ensureViewerImageMeta(this.data.viewerImages, deck.index)
+        this._viewerDragDirection = ""
+        this._viewerPrevStackStage = ""
+        this._viewerDeckSnapshot = null
+        if (this._viewerTouch && this._viewerTouch.moved) this._viewerLastDragAt = Date.now()
         this._viewerTouch = null
       }, 220)
     },
@@ -605,7 +772,7 @@ Component({
     },
     ensureViewerImageMeta(images, activeIndex) {
       this.hydrateViewerImageMeta(images)
-      const list = buildViewerPrefetchImages(images, activeIndex)
+      const list = buildViewerPrefetchImages(images, activeIndex, this.properties.loop)
       for (const it of list) {
         const src = it.src
         if (!src || this._viewerImageMeta[src]) continue
