@@ -2,6 +2,14 @@ const { buildChartsShareUrl } = require("../../services/chartsShare")
 const { getAuthState } = require("../../services/authService")
 const i18n = require("../../services/i18n")
 
+const CHART_GUIDE_STORAGE_KEY = "session_results_chart_guide_seen_v1"
+const SWIPE_THRESHOLD_PX = 56
+const SWIPE_MAX_VERTICAL_DELTA_PX = 42
+const TAB_TRANSITION_OFFSET_PX = 26
+const TAB_TRANSITION_DURATION_MS = 240
+const TELEMETRY_DRAG_MAX_PX = 34
+const TELEMETRY_DRAG_RESISTANCE = 0.22
+
 Page({
   data: {
     i18n: i18n.getDict(),
@@ -32,7 +40,278 @@ Page({
     showPicker: false,
     pickerMode: "",
     pickedDriverNumbers: [],
-    pickedMap: {}
+    pickedMap: {},
+    chartGuideVisible: false,
+    chartGuideTitle: "",
+    chartGuideText: "",
+    tabSwiperCurrent: 0,
+    tabSwiperHeightPx: 520,
+    telemetryPanels: {},
+    tabPanelAnimation: null,
+    tabMaskAnimation: null,
+    tabTransitionMaskClass: "",
+    tabIndicatorStyle: "opacity:0;",
+    telemetryDragStyle: "",
+    telemetryEdgeLeftStyle: "opacity:0;",
+    telemetryEdgeRightStyle: "opacity:0;"
+  },
+  scheduleTabIndicatorUpdate(immediate) {
+    if (this._tabIndicatorTimer) {
+      clearTimeout(this._tabIndicatorTimer)
+      this._tabIndicatorTimer = null
+    }
+    this._tabIndicatorTimer = setTimeout(() => {
+      this._tabIndicatorTimer = null
+      this.updateTabIndicator(immediate)
+    }, 16)
+  },
+  scheduleActivePanelMeasure() {
+    if (this._panelMeasureTimer) {
+      clearTimeout(this._panelMeasureTimer)
+      this._panelMeasureTimer = null
+    }
+    this._panelMeasureTimer = setTimeout(() => {
+      this._panelMeasureTimer = null
+      this.updateActivePanelHeight()
+    }, 32)
+  },
+  updateActivePanelHeight() {
+    const key = String(this.data.activeTabKey || "")
+    if (!key) return
+    const query = wx.createSelectorQuery().in(this)
+    query.select(`#tab-panel-${key}`).boundingClientRect()
+    query.exec((res) => {
+      const rect = res && res[0] ? res[0] : null
+      const h = rect && Number(rect.height)
+      if (Number.isFinite(h) && h > 0) {
+        const next = Math.max(320, Math.ceil(h))
+        if (next !== this.data.tabSwiperHeightPx) {
+          this.setData({ tabSwiperHeightPx: next })
+        }
+      }
+    })
+  },
+  updateTabIndicator(immediate) {
+    const tabs = Array.isArray(this.data.tabs) ? this.data.tabs : []
+    const activeIndex = this.getTabIndex(this.data.activeTabKey)
+    if (!tabs.length || activeIndex < 0) {
+      if (this.data.tabIndicatorStyle !== "opacity:0;") {
+        this.setData({ tabIndicatorStyle: "opacity:0;" })
+      }
+      return
+    }
+    const query = wx.createSelectorQuery().in(this)
+    query.select(".dp-tabs").boundingClientRect()
+    query.selectAll(".sr-tab-item").boundingClientRect()
+    query.exec((res) => {
+      const wrap = res && res[0] ? res[0] : null
+      const rects = res && Array.isArray(res[1]) ? res[1] : []
+      const rect = rects[activeIndex]
+      if (!wrap || !rect) return
+      const left = Math.max(0, Number(rect.left) - Number(wrap.left))
+      const width = Math.max(0, Number(rect.width) || 0)
+      const duration = immediate ? 0 : TAB_TRANSITION_DURATION_MS
+      const style = `opacity:1; width:${width}px; transform:translateX(${left}px); transition: transform ${duration}ms cubic-bezier(0.22, 1, 0.36, 1), width ${duration}ms cubic-bezier(0.22, 1, 0.36, 1), opacity 160ms ease;`
+      if (style !== this.data.tabIndicatorStyle) {
+        this.setData({ tabIndicatorStyle: style })
+      }
+    })
+  },
+  getTabIndex(tabKey) {
+    const key = String(tabKey || "")
+    const tabs = Array.isArray(this.data.tabs) ? this.data.tabs : []
+    return tabs.findIndex((tab) => tab && tab.key === key)
+  },
+  resolveTabDirection(nextKey) {
+    const nextIndex = this.getTabIndex(nextKey)
+    const currentIndex = this.getTabIndex(this.data.activeTabKey)
+    if (nextIndex < 0 || currentIndex < 0 || nextIndex === currentIndex) return 0
+    return nextIndex > currentIndex ? 1 : -1
+  },
+  playTabTransition(direction) {
+    const dir = Number(direction)
+    if (!dir || typeof wx.createAnimation !== "function") {
+      this.setData({ tabPanelAnimation: null, tabMaskAnimation: null, tabTransitionMaskClass: "" })
+      return
+    }
+    if (this._tabTransitionTimer) {
+      clearTimeout(this._tabTransitionTimer)
+      this._tabTransitionTimer = null
+    }
+    const offset = dir > 0 ? TAB_TRANSITION_OFFSET_PX : -TAB_TRANSITION_OFFSET_PX
+    const from = wx.createAnimation({ timingFunction: "linear" })
+    from.opacity(0.42).translateX(offset).scale(0.986, 0.986).step({ duration: 0 })
+    const maskFrom = wx.createAnimation({ timingFunction: "linear" })
+    maskFrom.opacity(0.18).step({ duration: 0 })
+    this.setData({
+      tabPanelAnimation: from.export(),
+      tabMaskAnimation: maskFrom.export(),
+      tabTransitionMaskClass: dir > 0 ? "tab-transition-mask-right" : "tab-transition-mask-left"
+    })
+    this._tabTransitionTimer = setTimeout(() => {
+      const to = wx.createAnimation({ timingFunction: "cubic-bezier(0.22, 1, 0.36, 1)" })
+      to.opacity(1).translateX(0).scale(1, 1).step({ duration: TAB_TRANSITION_DURATION_MS })
+      const maskTo = wx.createAnimation({ timingFunction: "ease-out" })
+      maskTo.opacity(0).step({ duration: TAB_TRANSITION_DURATION_MS + 40 })
+      this.setData({ tabPanelAnimation: to.export(), tabMaskAnimation: maskTo.export() })
+      this._tabTransitionTimer = null
+    }, 16)
+  },
+  isTelemetryTab(tabKey) {
+    const key = String(tabKey || "")
+    return key === "throttle" || key === "brake" || key === "speed"
+  },
+  canSwipeTelemetry(offset) {
+    const step = Number(offset)
+    if (!Number.isFinite(step) || !step) return false
+    const cur = String(this.data.activeTabKey || "")
+    const index = this.getTabIndex(cur)
+    const tabs = Array.isArray(this.data.tabs) ? this.data.tabs : []
+    if (index < 0) return false
+    const next = tabs[index + step]
+    return !!(next && next.key && this.isTelemetryTab(next.key))
+  },
+  switchTelemetryTabByOffset(offset) {
+    const step = Number(offset)
+    if (!Number.isFinite(step) || !step) return false
+    const cur = String(this.data.activeTabKey || "")
+    const index = this.getTabIndex(cur)
+    const tabs = Array.isArray(this.data.tabs) ? this.data.tabs : []
+    if (index < 0) return false
+    const next = tabs[index + step]
+    if (!next || !next.key || !this.isTelemetryTab(next.key)) return false
+    return this.switchToTab(next.key, { direction: step })
+  },
+  updateTelemetryEdgeStyles(dx) {
+    const cur = String(this.data.activeTabKey || "")
+    if (!this.isTelemetryTab(cur)) {
+      if (this.data.telemetryEdgeLeftStyle !== "opacity:0;" || this.data.telemetryEdgeRightStyle !== "opacity:0;") {
+        this.setData({ telemetryEdgeLeftStyle: "opacity:0;", telemetryEdgeRightStyle: "opacity:0;" })
+      }
+      return
+    }
+    const leftAvailable = this.canSwipeTelemetry(-1)
+    const rightAvailable = this.canSwipeTelemetry(1)
+    const drag = Number(dx)
+    const leftOpacity = leftAvailable && drag > 0 ? Math.min(0.2, drag / 180) : 0
+    const rightOpacity = rightAvailable && drag < 0 ? Math.min(0.2, Math.abs(drag) / 180) : 0
+    this.setData({
+      telemetryEdgeLeftStyle: `opacity:${leftOpacity.toFixed(3)};`,
+      telemetryEdgeRightStyle: `opacity:${rightOpacity.toFixed(3)};`
+    })
+  },
+  resetTelemetryDrag(animateBack) {
+    const style = animateBack
+      ? "transform: translate3d(0, 0, 0); transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease; opacity:1;"
+      : ""
+    const updates = {
+      telemetryDragStyle: style,
+      telemetryEdgeLeftStyle: "opacity:0;",
+      telemetryEdgeRightStyle: "opacity:0;"
+    }
+    this.setData(updates)
+    if (animateBack) {
+      if (this._telemetryDragResetTimer) {
+        clearTimeout(this._telemetryDragResetTimer)
+        this._telemetryDragResetTimer = null
+      }
+      this._telemetryDragResetTimer = setTimeout(() => {
+        this._telemetryDragResetTimer = null
+        this.setData({ telemetryDragStyle: "" })
+      }, 220)
+    }
+  },
+  getGuideCategory(tabKey) {
+    const key = String(tabKey || "")
+    if (key === "boxplot") return "boxplot"
+    if (key === "throttle" || key === "brake" || key === "speed") return "telemetry"
+    return ""
+  },
+  loadChartGuideSeenState() {
+    try {
+      const stored = wx.getStorageSync(CHART_GUIDE_STORAGE_KEY)
+      return stored && typeof stored === "object" ? stored : {}
+    } catch (e) {
+      return {}
+    }
+  },
+  persistChartGuideSeenState() {
+    try {
+      wx.setStorageSync(CHART_GUIDE_STORAGE_KEY, this._chartGuideSeen || {})
+    } catch (e) {}
+  },
+  getChartGuideMeta(tabKey) {
+    const category = this.getGuideCategory(tabKey)
+    if (!category) return null
+    const dict = i18n.getDict()
+    return category === "boxplot"
+      ? {
+          category,
+          title: dict.sessionResults.chartGuideTitle,
+          text: `${dict.sessionResults.chartGuideGesture} ${dict.sessionResults.chartGuideDivider} ${dict.sessionResults.chartGuideBoxplot}`
+        }
+      : {
+          category,
+          title: dict.sessionResults.chartGuideTitle,
+          text: `${dict.sessionResults.chartGuideGesture} ${dict.sessionResults.chartGuideDivider} ${dict.sessionResults.chartGuideTelemetry}`
+        }
+  },
+  refreshChartGuide(tabKey) {
+    const meta = this.getChartGuideMeta(tabKey)
+    if (!meta) {
+      if (this.data.chartGuideVisible || this.data.chartGuideTitle || this.data.chartGuideText) {
+        this.setData({ chartGuideVisible: false, chartGuideTitle: "", chartGuideText: "" })
+      }
+      return
+    }
+    const visible = !this._chartGuideSeen || this._chartGuideSeen[meta.category] !== "1"
+    this.setData({
+      chartGuideVisible: visible,
+      chartGuideTitle: meta.title,
+      chartGuideText: meta.text
+    })
+  },
+  markChartGuideSeen(tabKey) {
+    const category = this.getGuideCategory(tabKey)
+    if (!category) return
+    if (!this._chartGuideSeen) this._chartGuideSeen = {}
+    if (this._chartGuideSeen[category] === "1") return
+    this._chartGuideSeen[category] = "1"
+    this.persistChartGuideSeenState()
+  },
+  onDismissChartGuide() {
+    const key = String(this.data.activeTabKey || "")
+    this.markChartGuideSeen(key)
+    this.setData({ chartGuideVisible: false })
+  },
+  applyActiveTabState(nextKey) {
+    const key = String(nextKey || "")
+    this.scheduleTabIndicatorUpdate(false)
+    this.refreshChartGuide(key)
+    if (key === "boxplot") {
+      this.updateBoxplotHeight()
+      this.loadBoxplot()
+      this.scheduleActivePanelMeasure()
+      return
+    }
+    if (key === "throttle" || key === "brake" || key === "speed") {
+      this.updateTelemetryHeight()
+      const ready =
+        key === "throttle"
+          ? !!this.data.chartOptionThrottle
+          : key === "brake"
+            ? !!this.data.chartOptionBrake
+            : !!this.data.chartOptionSpeed
+      if (ready) {
+        this.syncTelemetryOption()
+        this.syncTelemetryInsights()
+        this.scheduleActivePanelMeasure()
+      } else {
+        this.loadTelemetry()
+      }
+      return
+    }
+    this.setData({ chartGuideVisible: false }, () => this.scheduleActivePanelMeasure())
   },
   ensureLoggedIn() {
     const s = getAuthState()
@@ -551,10 +830,17 @@ Page({
     const dict = i18n.getDict()
     const telemetryLapInfo = lapParts.length ? `${dict.sessionResults.fastestLap}：${lapParts.join(" / ")}` : dict.sessionResults.fastestLapCompare
     this.setData(
-      { chartOptionThrottle: optionThrottle, chartOptionBrake: optionBrake, chartOptionSpeed: optionSpeed, telemetryLapInfo },
+      {
+        chartOptionThrottle: optionThrottle,
+        chartOptionBrake: optionBrake,
+        chartOptionSpeed: optionSpeed,
+        telemetryPanels: this._telemetryAnalysisMap || {},
+        telemetryLapInfo
+      },
       () => {
         this.syncTelemetryOption()
         this.syncTelemetryInsights()
+        this.scheduleActivePanelMeasure()
       }
     )
   },
@@ -565,16 +851,18 @@ Page({
       chartOptionBrake: null,
       chartOptionSpeed: null,
       chartOptionTelemetry: null,
+      telemetryPanels: {},
       telemetryLapInfo: "",
       telemetrySectorCards: [],
       telemetryInsightTitle: "",
       telemetryInsightText: ""
-    })
+    }, () => this.scheduleActivePanelMeasure())
   },
   onLoad(options) {
     this._telemetryCache = Object.create(null)
     this._telemetryAnalysisMap = null
     this._boxplotRowsNormalized = null
+    this._chartGuideSeen = this.loadChartGuideSeenState()
     this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     const raceName = decodeURIComponent(options.raceName || "")
     const sessionCode = decodeURIComponent(options.sessionCode || "")
@@ -582,8 +870,12 @@ Page({
     const sessionKey = Number(options.sessionKey || 0)
     const tabs = this.buildTabs(sessionCode, sessionName)
     const activeTabKey = (tabs && tabs[0] && tabs[0].key) || "rank"
-    this.setData({ raceName, sessionName, sessionCode, sessionKey, tabs, activeTabKey }, () => {
+    const tabSwiperCurrent = Math.max(0, tabs.findIndex((t) => t && t.key === activeTabKey))
+    this.setData({ raceName, sessionName, sessionCode, sessionKey, tabs, activeTabKey, tabSwiperCurrent }, () => {
       this.applyI18n()
+      this.refreshChartGuide(activeTabKey)
+      this.scheduleTabIndicatorUpdate(true)
+      this.scheduleActivePanelMeasure()
       if (sessionName) {
         wx.setNavigationBarTitle({ title: sessionName })
       }
@@ -591,10 +883,28 @@ Page({
     })
   },
   onUnload() {
+    if (this._tabIndicatorTimer) {
+      clearTimeout(this._tabIndicatorTimer)
+      this._tabIndicatorTimer = null
+    }
+    if (this._panelMeasureTimer) {
+      clearTimeout(this._panelMeasureTimer)
+      this._panelMeasureTimer = null
+    }
+    if (this._tabTransitionTimer) {
+      clearTimeout(this._tabTransitionTimer)
+      this._tabTransitionTimer = null
+    }
+    if (this._telemetryDragResetTimer) {
+      clearTimeout(this._telemetryDragResetTimer)
+      this._telemetryDragResetTimer = null
+    }
     if (this._offLocale) this._offLocale()
   },
   onShow() {
     this.applyI18n()
+    this.scheduleTabIndicatorUpdate(true)
+    this.scheduleActivePanelMeasure()
     if (this.data.activeTabKey === "boxplot") {
       this.updateBoxplotHeight()
       return
@@ -655,6 +965,7 @@ Page({
             telemetrySelectedText: this.buildSelectedText(mapped, telemetrySelected)
           },
           () => {
+            this.scheduleActivePanelMeasure()
             if (this.data.activeTabKey === "boxplot") {
               this.loadBoxplot()
               return
@@ -695,31 +1006,106 @@ Page({
     const dict = i18n.getDict()
     return labels.length ? `${dict.sessionResults.comparePrefix}${labels.join(" / ")}` : dict.sessionResults.pickDriver
   },
+  switchToTab(key, opts) {
+    const nextKey = String(key || "")
+    if (!nextKey || nextKey === this.data.activeTabKey) return false
+    const nextIndex = this.getTabIndex(nextKey)
+    const updates = { activeTabKey: nextKey }
+    if (nextIndex >= 0) updates.tabSwiperCurrent = nextIndex
+    this.setData(updates, () => this.applyActiveTabState(nextKey))
+    return true
+  },
+  switchTabByOffset(offset) {
+    const step = Number(offset)
+    if (!Number.isFinite(step) || !step) return false
+    const tabs = Array.isArray(this.data.tabs) ? this.data.tabs : []
+    if (tabs.length < 2) return false
+    const cur = String(this.data.activeTabKey || "")
+    const index = tabs.findIndex((tab) => tab && tab.key === cur)
+    if (index < 0) return false
+    const next = tabs[index + step]
+    if (!next || !next.key) return false
+    return this.switchToTab(next.key, { direction: step })
+  },
   onTabTap(e) {
     const key = String((e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.tab) || "")
-    if (!key || key === this.data.activeTabKey) return
-    this.setData({ activeTabKey: key }, () => {
-      if (key === "boxplot") {
-        this.updateBoxplotHeight()
-        this.loadBoxplot()
-        return
-      }
-      if (key === "throttle" || key === "brake" || key === "speed") {
-        this.updateTelemetryHeight()
-        const ready =
-          key === "throttle"
-            ? !!this.data.chartOptionThrottle
-            : key === "brake"
-              ? !!this.data.chartOptionBrake
-              : !!this.data.chartOptionSpeed
-        if (ready) {
-          this.syncTelemetryOption()
-          this.syncTelemetryInsights()
-        } else {
-          this.loadTelemetry()
-        }
-      }
-    })
+    this.switchToTab(key)
+  },
+  onSwiperChange(e) {
+    const idx = Number((e && e.detail && e.detail.current) || 0)
+    const tabs = Array.isArray(this.data.tabs) ? this.data.tabs : []
+    const next = tabs[idx]
+    if (!next || !next.key) return
+    if (idx === this.data.tabSwiperCurrent && next.key === this.data.activeTabKey) {
+      this.scheduleActivePanelMeasure()
+      return
+    }
+    this.setData({ tabSwiperCurrent: idx, activeTabKey: next.key }, () => this.applyActiveTabState(next.key))
+  },
+  onSwiperAnimationFinish() {
+    this.scheduleActivePanelMeasure()
+  },
+  onChartTouchStart(e) {
+    if (this.data.showPicker) return
+    const touch = e && e.changedTouches && e.changedTouches[0]
+    if (!touch) return
+    this._chartTouchStart = { x: Number(touch.clientX) || 0, y: Number(touch.clientY) || 0 }
+    if (this._telemetryDragResetTimer) {
+      clearTimeout(this._telemetryDragResetTimer)
+      this._telemetryDragResetTimer = null
+    }
+    if (this.isTelemetryTab(this.data.activeTabKey) && this.data.telemetryDragStyle) {
+      this.setData({ telemetryDragStyle: "" })
+    }
+  },
+  onChartTouchMove(e) {
+    if (this.data.showPicker || !this._chartTouchStart) return
+    const touch = e && e.changedTouches && e.changedTouches[0]
+    if (!touch) return
+    const dxRaw = (Number(touch.clientX) || 0) - this._chartTouchStart.x
+    const dyRaw = (Number(touch.clientY) || 0) - this._chartTouchStart.y
+    if (!this.isTelemetryTab(this.data.activeTabKey)) return
+    if (Math.abs(dyRaw) > SWIPE_MAX_VERTICAL_DELTA_PX && Math.abs(dyRaw) > Math.abs(dxRaw)) {
+      this.resetTelemetryDrag(false)
+      return
+    }
+    const cur = String(this.data.activeTabKey || "")
+    const leftAvailable = this.canSwipeTelemetry(-1)
+    const rightAvailable = this.canSwipeTelemetry(1)
+    let drag = dxRaw * TELEMETRY_DRAG_RESISTANCE
+    if ((drag > 0 && !leftAvailable) || (drag < 0 && !rightAvailable)) {
+      drag *= 0.45
+    }
+    const clamped = Math.max(-TELEMETRY_DRAG_MAX_PX, Math.min(TELEMETRY_DRAG_MAX_PX, drag))
+    const opacity = 1 - Math.min(0.08, Math.abs(clamped) / 420)
+    this.setData({ telemetryDragStyle: `transform: translate3d(${clamped.toFixed(1)}px, 0, 0); opacity:${opacity.toFixed(3)};` })
+    this.updateTelemetryEdgeStyles(clamped)
+  },
+  onChartTouchEnd(e) {
+    if (this.data.showPicker || !this._chartTouchStart) return
+    const touch = e && e.changedTouches && e.changedTouches[0]
+    const start = this._chartTouchStart
+    this._chartTouchStart = null
+    if (!touch) return
+    const dx = (Number(touch.clientX) || 0) - start.x
+    const dy = (Number(touch.clientY) || 0) - start.y
+    const currentKey = String(this.data.activeTabKey || "")
+    const telemetryTab = this.isTelemetryTab(currentKey)
+    if (Math.abs(dx) < SWIPE_THRESHOLD_PX || Math.abs(dy) > SWIPE_MAX_VERTICAL_DELTA_PX) {
+      if (telemetryTab) this.resetTelemetryDrag(true)
+      return
+    }
+    const switched = telemetryTab
+      ? dx < 0
+        ? this.switchTelemetryTabByOffset(1)
+        : this.switchTelemetryTabByOffset(-1)
+      : dx < 0
+        ? this.switchTabByOffset(1)
+        : this.switchTabByOffset(-1)
+    if (telemetryTab) this.resetTelemetryDrag(true)
+    if (switched) {
+      this.markChartGuideSeen(currentKey)
+    }
   },
   onOpenPicker() {
     if (!this.ensureLoggedIn()) return
@@ -963,7 +1349,7 @@ Page({
         const opt = this.buildBoxplotOption(normalized)
         const boxplotSummaryCards = this.buildBoxplotSummaryCards(normalized)
         const boxplotHintText = i18n.getDict().sessionResults.boxplotSummaryDesc
-        this.setData({ chartOptionBoxplot: opt, boxplotSummaryCards, boxplotHintText })
+        this.setData({ chartOptionBoxplot: opt, boxplotSummaryCards, boxplotHintText }, () => this.scheduleActivePanelMeasure())
         done()
       },
       fail: () => {
@@ -1168,14 +1554,29 @@ Page({
     const cur = String(this.data.activeTabKey || "")
     const hasCur = (tabs || []).some((t) => t && t.key === cur)
     const activeTabKey = hasCur ? cur : (tabs[0] && tabs[0].key) || "rank"
+    const tabSwiperCurrent = Math.max(0, tabs.findIndex((t) => t && t.key === activeTabKey))
     const selectedDriverText = this.buildSelectedText(this.data.items, this.data.selectedDriverNumbers)
     const telemetrySelectedText = this.buildSelectedText(this.data.items, this.data.telemetryDriverNumbers)
-    const updates = { i18n: dict, tabs, activeTabKey, selectedDriverText, telemetrySelectedText, boxplotHintText: dict.sessionResults.boxplotSummaryDesc }
+    const guideMeta = this.getChartGuideMeta(activeTabKey)
+    const updates = {
+      i18n: dict,
+      tabs,
+      activeTabKey,
+      tabSwiperCurrent,
+      selectedDriverText,
+      telemetrySelectedText,
+      boxplotHintText: dict.sessionResults.boxplotSummaryDesc,
+      chartGuideTitle: guideMeta ? guideMeta.title : "",
+      chartGuideText: guideMeta ? guideMeta.text : "",
+      chartGuideVisible: guideMeta ? this._chartGuideSeen[guideMeta.category] !== "1" : false
+    }
     if (this._boxplotRowsNormalized && this._boxplotRowsNormalized.length) {
       updates.chartOptionBoxplot = this.buildBoxplotOption(this._boxplotRowsNormalized)
       updates.boxplotSummaryCards = this.buildBoxplotSummaryCards(this._boxplotRowsNormalized)
     }
     this.setData(updates)
+    this.scheduleTabIndicatorUpdate(true)
+    this.scheduleActivePanelMeasure()
     if (this.data.chartOptionThrottle || this.data.chartOptionBrake || this.data.chartOptionSpeed) {
       this.loadTelemetry()
     }

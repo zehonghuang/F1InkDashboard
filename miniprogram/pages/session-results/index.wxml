@@ -6,100 +6,151 @@
 
   <view class="tabs dp-tabs">
     <block wx:for="{{tabs}}" wx:key="key">
-      <view class="tab dp-tab {{activeTabKey===item.key?'tab-active dp-tab-active':''}}" data-tab="{{item.key}}" bindtap="onTabTap">{{item.label}}</view>
+      <view class="tab dp-tab sr-tab-item {{activeTabKey===item.key?'tab-active dp-tab-active':''}}" data-tab="{{item.key}}" bindtap="onTabTap">{{item.label}}</view>
     </block>
+    <view wx:if="{{tabs.length > 1}}" class="tab-indicator" style="{{tabIndicatorStyle}}"></view>
   </view>
 
-  <view wx:if="{{activeTabKey==='rank'}}" class="list dp-list">
-    <block wx:for="{{items}}" wx:key="driver_number">
-      <view class="card dp-card" style="{{item.cardStyle}}" bindtap="onDriverTap" data-driver-number="{{item.driver_number}}" data-driver-name="{{item.full_name || item.driver_name || ''}}">
-        <view class="card-left">
-          <image class="avatar" src="{{item.headshot_url}}" mode="aspectFit" wx:if="{{item.headshot_url}}" />
-        </view>
-        <view class="card-mid">
-          <view class="driver-row">
-            <view class="driver-no">#{{item.driver_number}}</view>
-            <view class="driver">{{item.full_name || item.driver_name || item.name_acronym || item.driver_number}}</view>
-          </view>
-          <view class="team">{{item.team_name || '-'}}</view>
-          <view class="lap">{{item.lap_time || '-'}}</view>
-        </view>
-        <view class="card-right">
-          <view class="pos">{{item.position || '-'}}</view>
-        </view>
-      </view>
-    </block>
-  </view>
+  <view class="tab-swiper-shell" style="height: {{tabSwiperHeightPx}}px;">
+    <swiper
+      class="tab-swiper"
+      current="{{tabSwiperCurrent}}"
+      duration="320"
+      easing-function="easeOutCubic"
+      skip-hidden-item-layout
+      bindchange="onSwiperChange"
+      bindanimationfinish="onSwiperAnimationFinish"
+    >
+      <block wx:for="{{tabs}}" wx:key="key">
+        <swiper-item>
+          <view class="tab-page" id="tab-panel-{{item.key}}">
+            <block wx:if="{{item.key==='rank'}}">
+              <view class="list dp-list">
+                <block wx:for="{{items}}" wx:key="driver_number">
+                  <view class="card dp-card" style="{{item.cardStyle}}" bindtap="onDriverTap" data-driver-number="{{item.driver_number}}" data-driver-name="{{item.full_name || item.driver_name || ''}}">
+                    <view class="card-left">
+                      <image class="avatar" src="{{item.headshot_url}}" mode="aspectFit" wx:if="{{item.headshot_url}}" />
+                    </view>
+                    <view class="card-mid">
+                      <view class="driver-row">
+                        <view class="driver-no">#{{item.driver_number}}</view>
+                        <view class="driver">{{item.full_name || item.driver_name || item.name_acronym || item.driver_number}}</view>
+                      </view>
+                      <view class="team">{{item.team_name || '-'}}</view>
+                      <view class="lap">{{item.lap_time || '-'}}</view>
+                    </view>
+                    <view class="card-right">
+                      <view class="pos">{{item.position || '-'}}</view>
+                    </view>
+                  </view>
+                </block>
+              </view>
+            </block>
 
-  <view wx:if="{{activeTabKey==='boxplot'}}" class="boxplot">
-    <view class="boxplot-bar dp-toolbar">
-      <view class="boxplot-selected dp-toolbar-text">{{selectedDriverText}}</view>
-      <view class="boxplot-btn dp-toolbar-btn" bindtap="onOpenPicker">{{i18n.sessionResults.pickDriver}}</view>
-    </view>
-    <view wx:if="{{boxplotSummaryCards.length || boxplotHintText}}" class="boxplot-summary dp-panel">
-      <view class="boxplot-summary-title">{{i18n.sessionResults.boxplotSummary}}</view>
-      <view wx:if="{{boxplotHintText}}" class="boxplot-summary-desc">{{boxplotHintText}}</view>
-      <view wx:if="{{boxplotSummaryCards.length}}" class="boxplot-summary-grid">
-        <block wx:for="{{boxplotSummaryCards}}" wx:key="key">
-          <view class="boxplot-summary-card" style="{{item.accentStyle}}">
-            <view class="boxplot-summary-metric">{{item.title}}</view>
-            <view class="boxplot-summary-driver">{{item.name}}</view>
-            <view class="boxplot-summary-value">{{item.value}}</view>
-            <view class="boxplot-summary-note">{{item.note}}</view>
-          </view>
-        </block>
-      </view>
-    </view>
-    <view class="boxplot-chart dp-chart-shell">
-      <ec-canvas
-        wx:if="{{!showPicker}}"
-        canvasId="boxplot_chart"
-        heightRpx="{{boxplotHeightRpx}}"
-        option="{{chartOptionBoxplot}}"
-      />
-    </view>
-    <view class="boxplot-share" bindtap="onCopyBoxplotLink">
-      <i-icon type="share" size="18" color="rgba(255,255,255,0.5)" />
-    </view>
-  </view>
+            <block wx:if="{{item.key==='boxplot'}}">
+              <view class="boxplot">
+                <view class="boxplot-bar dp-toolbar">
+                  <view class="boxplot-selected dp-toolbar-text">{{selectedDriverText}}</view>
+                  <view class="boxplot-btn dp-toolbar-btn" bindtap="onOpenPicker">{{i18n.sessionResults.pickDriver}}</view>
+                </view>
+                <view wx:if="{{activeTabKey==='boxplot' && chartGuideVisible && chartGuideText}}" class="chart-guide dp-panel">
+                  <view class="chart-guide-head">
+                    <view class="chart-guide-title">{{chartGuideTitle}}</view>
+                    <view class="chart-guide-close" bindtap="onDismissChartGuide">×</view>
+                  </view>
+                  <view class="chart-guide-text">{{chartGuideText}}</view>
+                </view>
+                <view wx:if="{{boxplotSummaryCards.length || boxplotHintText}}" class="boxplot-summary dp-panel">
+                  <view class="boxplot-summary-title">{{i18n.sessionResults.boxplotSummary}}</view>
+                  <view wx:if="{{boxplotHintText}}" class="boxplot-summary-desc">{{boxplotHintText}}</view>
+                  <view wx:if="{{boxplotSummaryCards.length}}" class="boxplot-summary-grid">
+                    <block wx:for="{{boxplotSummaryCards}}" wx:key="key">
+                      <view class="boxplot-summary-card" style="{{item.accentStyle}}">
+                        <view class="boxplot-summary-metric">{{item.title}}</view>
+                        <view class="boxplot-summary-driver">{{item.name}}</view>
+                        <view class="boxplot-summary-value">{{item.value}}</view>
+                        <view class="boxplot-summary-note">{{item.note}}</view>
+                      </view>
+                    </block>
+                  </view>
+                </view>
+                <view class="boxplot-chart dp-chart-shell">
+                  <ec-canvas
+                    wx:if="{{!showPicker}}"
+                    canvasId="boxplot_chart"
+                    heightRpx="{{boxplotHeightRpx}}"
+                    option="{{chartOptionBoxplot}}"
+                  />
+                </view>
+                <view class="boxplot-share" bindtap="onCopyBoxplotLink">
+                  <i-icon type="share" size="18" color="rgba(255,255,255,0.5)" />
+                </view>
+              </view>
+            </block>
 
-  <view wx:if="{{activeTabKey==='throttle' || activeTabKey==='brake' || activeTabKey==='speed'}}" class="telemetry">
-    <view class="telemetry-bar dp-toolbar">
-      <view class="telemetry-selected dp-toolbar-text">{{telemetrySelectedText}}</view>
-      <view class="telemetry-btn dp-toolbar-btn" bindtap="onOpenTelemetryPicker">{{i18n.sessionResults.pickDriver}}</view>
-    </view>
-    <view class="telemetry-hint">{{telemetryLapInfo}}</view>
-    <view wx:if="{{telemetrySectorCards.length || telemetryInsightText}}" class="telemetry-summary dp-panel">
-      <view class="telemetry-summary-head">
-        <view class="telemetry-summary-title">{{i18n.sessionResults.telemetrySummary}}</view>
-        <view wx:if="{{telemetryInsightTitle}}" class="telemetry-summary-compare">{{telemetryInsightTitle}}</view>
-      </view>
-      <view wx:if="{{telemetrySectorCards.length}}" class="telemetry-sector-grid">
-        <block wx:for="{{telemetrySectorCards}}" wx:key="sector">
-          <view class="telemetry-sector-card" style="{{item.accentStyle}}">
-            <view class="telemetry-sector-name">{{item.sector}}</view>
-            <view class="telemetry-sector-driver">{{item.label}}</view>
-            <view class="telemetry-sector-value">{{item.value}}</view>
-            <view class="telemetry-sector-label">{{item.metricLabel}}</view>
+            <block wx:if="{{item.key==='throttle' || item.key==='brake' || item.key==='speed'}}">
+              <view class="telemetry">
+                <view class="telemetry-bar dp-toolbar">
+                  <view class="telemetry-selected dp-toolbar-text">{{telemetrySelectedText}}</view>
+                  <view class="telemetry-btn dp-toolbar-btn" bindtap="onOpenTelemetryPicker">{{i18n.sessionResults.pickDriver}}</view>
+                </view>
+                <view wx:if="{{activeTabKey===item.key && chartGuideVisible && chartGuideText}}" class="chart-guide dp-panel">
+                  <view class="chart-guide-head">
+                    <view class="chart-guide-title">{{chartGuideTitle}}</view>
+                    <view class="chart-guide-close" bindtap="onDismissChartGuide">×</view>
+                  </view>
+                  <view class="chart-guide-text">{{chartGuideText}}</view>
+                </view>
+                <view class="telemetry-hint">{{telemetryLapInfo}}</view>
+                <view wx:if="{{(telemetryPanels[item.key] && telemetryPanels[item.key].sectorCards && telemetryPanels[item.key].sectorCards.length) || (telemetryPanels[item.key] && telemetryPanels[item.key].text)}}" class="telemetry-summary dp-panel">
+                  <view class="telemetry-summary-head">
+                    <view class="telemetry-summary-title">{{i18n.sessionResults.telemetrySummary}}</view>
+                    <view wx:if="{{telemetryPanels[item.key] && telemetryPanels[item.key].title}}" class="telemetry-summary-compare">{{telemetryPanels[item.key].title}}</view>
+                  </view>
+                  <view wx:if="{{telemetryPanels[item.key] && telemetryPanels[item.key].sectorCards && telemetryPanels[item.key].sectorCards.length}}" class="telemetry-sector-grid">
+                    <block wx:for="{{telemetryPanels[item.key].sectorCards}}" wx:key="sector">
+                      <view class="telemetry-sector-card" style="{{item.accentStyle}}">
+                        <view class="telemetry-sector-name">{{item.sector}}</view>
+                        <view class="telemetry-sector-driver">{{item.label}}</view>
+                        <view class="telemetry-sector-value">{{item.value}}</view>
+                        <view class="telemetry-sector-label">{{item.metricLabel}}</view>
+                      </view>
+                    </block>
+                  </view>
+                  <view wx:if="{{telemetryPanels[item.key] && telemetryPanels[item.key].text}}" class="telemetry-insight">
+                    <view class="telemetry-insight-title">{{i18n.sessionResults.telemetryInsight}}</view>
+                    <view class="telemetry-insight-text">{{telemetryPanels[item.key].text}}</view>
+                  </view>
+                </view>
+                <view class="telemetry-chart dp-chart-shell">
+                  <ec-canvas
+                    wx:if="{{!showPicker && item.key==='throttle'}}"
+                    canvasId="telemetry_chart_throttle"
+                    heightRpx="{{telemetryHeightRpx}}"
+                    option="{{chartOptionThrottle}}"
+                  />
+                  <ec-canvas
+                    wx:if="{{!showPicker && item.key==='brake'}}"
+                    canvasId="telemetry_chart_brake"
+                    heightRpx="{{telemetryHeightRpx}}"
+                    option="{{chartOptionBrake}}"
+                  />
+                  <ec-canvas
+                    wx:if="{{!showPicker && item.key==='speed'}}"
+                    canvasId="telemetry_chart_speed"
+                    heightRpx="{{telemetryHeightRpx}}"
+                    option="{{chartOptionSpeed}}"
+                  />
+                </view>
+                <view class="telemetry-share" bindtap="onCopyTelemetryLink">
+                  <i-icon type="share" size="18" color="rgba(255,255,255,0.5)" />
+                </view>
+              </view>
+            </block>
           </view>
-        </block>
-      </view>
-      <view wx:if="{{telemetryInsightText}}" class="telemetry-insight">
-        <view class="telemetry-insight-title">{{i18n.sessionResults.telemetryInsight}}</view>
-        <view class="telemetry-insight-text">{{telemetryInsightText}}</view>
-      </view>
-    </view>
-    <view class="telemetry-chart dp-chart-shell">
-      <ec-canvas
-        wx:if="{{!showPicker}}"
-        canvasId="telemetry_chart"
-        heightRpx="{{telemetryHeightRpx}}"
-        option="{{chartOptionTelemetry}}"
-      />
-    </view>
-    <view class="telemetry-share" bindtap="onCopyTelemetryLink">
-      <i-icon type="share" size="18" color="rgba(255,255,255,0.5)" />
-    </view>
+        </swiper-item>
+      </block>
+    </swiper>
   </view>
 
   <view wx:if="{{showPicker}}" class="picker-mask dp-dialog-mask" bindtap="onClosePicker"></view>
