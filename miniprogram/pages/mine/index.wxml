@@ -2,10 +2,10 @@
   <view
     class="hero {{heroPullDistance > 0 ? 'hero-pulling' : ''}}"
     style="transform: translate3d(0, {{heroPullDistance}}px, 0); transition: {{heroPullAnimating ? 'transform 180ms ease' : 'none'}};"
-    catchtouchstart="onHeroPullStart"
-    catchtouchmove="onHeroPullMove"
-    catchtouchend="onHeroPullEnd"
-    catchtouchcancel="onHeroPullEnd"
+    bindtouchstart="onHeroPullStart"
+    bindtouchmove="onHeroPullMove"
+    bindtouchend="onHeroPullEnd"
+    bindtouchcancel="onHeroPullEnd"
   >
     <view class="hero-cover-frame">
       <view class="hero-bg hero-bg-fallback"></view>
@@ -53,14 +53,6 @@
               <text wx:if="{{isLoggedIn}}">{{i18n.mine.loggedIn}}</text>
               <text wx:else>{{i18n.mine.guest}}</text>
             </view>
-            <input
-              wx:if="{{isLoggedIn && !hasNick}}"
-              class="nickname-input"
-              type="nickname"
-              placeholder="{{i18n.mine.nickPlaceholder}}"
-              value="{{nicknameDraft}}"
-              bindblur="onNicknameBlur"
-            />
           </view>
 
           <view class="profile-actions">
@@ -84,6 +76,38 @@
         </view>
         <view wx:if="{{!isLoggedIn}}" class="hero-sync-hint">{{i18n.mine.syncHint}}</view>
       </view>
+    </view>
+  </view>
+
+  <view wx:if="{{profileGuideVisible}}" class="section">
+    <view class="profile-guide profile-guide-standalone">
+      <view class="profile-guide-head">
+        <view class="profile-guide-title">{{profileGuideTitle}}</view>
+        <view class="profile-guide-badge">{{profileGuideDoneCount}}/{{profileGuideTotal}}</view>
+      </view>
+      <view class="profile-guide-desc">{{i18n.mine.profileGuideHint}}</view>
+      <view class="profile-guide-step">
+        <view class="profile-guide-step-main">
+          <view class="profile-guide-step-title">{{i18n.mine.profileGuideAvatar}}</view>
+          <view class="profile-guide-step-desc">{{hasAvatar ? i18n.mine.profileGuideDoneHint : i18n.mine.profileGuideAvatarHint}}</view>
+        </view>
+        <view class="profile-guide-step-status {{hasAvatar ? 'profile-guide-step-status-done' : ''}}">{{hasAvatar ? i18n.mine.profileGuideDone : i18n.mine.profileGuideTodo}}</view>
+      </view>
+      <view class="profile-guide-step">
+        <view class="profile-guide-step-main">
+          <view class="profile-guide-step-title">{{i18n.mine.profileGuideNickname}}</view>
+          <view class="profile-guide-step-desc">{{hasNick ? i18n.mine.profileGuideDoneHint : i18n.mine.profileGuideNicknameHint}}</view>
+        </view>
+        <view class="profile-guide-step-status {{hasNick ? 'profile-guide-step-status-done' : ''}}">{{hasNick ? i18n.mine.profileGuideDone : i18n.mine.profileGuideTodo}}</view>
+      </view>
+      <input
+        wx:if="{{isLoggedIn && !hasNick}}"
+        class="nickname-input"
+        type="nickname"
+        placeholder="{{i18n.mine.nickPlaceholder}}"
+        value="{{nicknameDraft}}"
+        bindblur="onNicknameBlur"
+      />
     </view>
   </view>
 

@@ -31,6 +31,10 @@ Page({
     hasNick: false,
     canEditProfile: false,
     nicknameDraft: "",
+    profileGuideVisible: false,
+    profileGuideDoneCount: 0,
+    profileGuideTotal: 2,
+    profileGuideTitle: "",
     statusBarHeight: 0,
     prefSeason: 2026,
     followDrivers: [],
@@ -329,6 +333,8 @@ Page({
     const hasAvatar = Boolean(avatarUrl)
     const hasNick = Boolean(String(name || "").trim() && name !== i18n.t("mine.guestName"))
     const canEditProfile = Boolean(s.isLoggedIn && !(hasAvatar && hasNick))
+    const profileGuideDoneCount = (hasAvatar ? 1 : 0) + (hasNick ? 1 : 0)
+    const profileGuideTotal = 2
     const avatarText = name ? String(name).slice(0, 1).toUpperCase() : "G"
     this.setData({
       isLoggedIn: s.isLoggedIn,
@@ -339,7 +345,11 @@ Page({
       hasAvatar,
       hasNick,
       canEditProfile,
-      nicknameDraft: hasNick ? String(name || "").trim() : ""
+      nicknameDraft: hasNick ? String(name || "").trim() : "",
+      profileGuideVisible: Boolean(s.isLoggedIn && canEditProfile),
+      profileGuideDoneCount,
+      profileGuideTotal,
+      profileGuideTitle: i18n.t("mine.profileGuideTitle", { done: profileGuideDoneCount, total: profileGuideTotal })
     })
   },
   onTapItem(e) {

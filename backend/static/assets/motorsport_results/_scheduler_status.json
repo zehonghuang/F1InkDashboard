@@ -13,38 +13,8 @@
   "status_file": "C:\\F1InkDashboard\\backend\\static\\assets\\motorsport_results\\_scheduler_status.json",
   "output_root": "C:\\F1InkDashboard\\backend\\static\\assets\\motorsport_results",
   "startup_run_attempted": true,
-  "last_tick_at_utc": "2026-06-20T01:39:17Z",
+  "last_tick_at_utc": "2026-06-21T17:27:38Z",
   "last_reason": "interval",
-  "last_run_started_at_utc": "2026-06-20T01:39:17Z",
-  "last_run_finished_at_utc": "2026-06-20T01:39:17Z",
-  "last_success_at_utc": "2026-06-14T16:17:23Z",
-  "last_event_name": "Barcelona Grand Prix",
-  "recent_runs": [
-    {
-      "started_at_utc": "2026-06-14T16:16:59Z",
-      "finished_at_utc": "2026-06-14T16:17:23Z",
-      "reason": "startup",
-      "event_name": "Barcelona Grand Prix",
-      "event_slug": "barcelona-gp",
-      "season": 2026,
-      "triggered_points": 5,
-      "written_sessions": [
-        "CQ",
-        "EL",
-        "FL",
-        "FP1",
-        "FP2",
-        "FP3",
-        "GRID",
-        "PT",
-        "Q1",
-        "Q2",
-        "Q3",
-        "RACE",
-        "TH"
-      ],
-      "ok": true,
-      "duration_ms": 23820
-    }
-  ]
+  "last_run_started_at_utc": "2026-06-21T17:27:38Z",
+  "last_run_finished_at_utc": "2026-06-21T17:27:38Z"
 }

@@ -101,6 +101,36 @@
   line-height: 34rpx;
 }
 
+.crop-zoom {
+  margin-top: 28rpx;
+  padding: 18rpx 18rpx 10rpx;
+  border-radius: 16rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.crop-zoom-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
+.crop-zoom-label {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.crop-zoom-value {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 22rpx;
+}
+
+.crop-zoom-slider {
+  margin-top: 6rpx;
+}
+
 .crop-actions {
   display: flex;
   gap: 12rpx;
