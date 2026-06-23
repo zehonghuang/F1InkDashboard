@@ -97,10 +97,9 @@
         wx:elif="{{ raceWeek && raceWeek.isRaceWeek && raceWeekSessionLabel && countdown }}"
         class="raceweek-countdown"
       >
-        <view class="raceweek-countdown-left">
+        <view class="raceweek-countdown-left {{ raceWeekShowFlag ? 'raceweek-countdown-left-flag-only' : '' }}">
           <block wx:if="{{ raceWeekShowFlag && raceWeek && raceWeek.race && raceWeek.race.flagUrl }}">
-            <image class="raceweek-countdown-flag" src="{{ raceWeek.race.flagUrl }}" mode="aspectFit" />
-            <text class="raceweek-countdown-session {{ raceWeekSessionLabelCompact ? 'raceweek-countdown-session-compact' : '' }}">{{ raceWeekSessionLabel }}</text>
+            <image class="raceweek-countdown-flag raceweek-countdown-flag-only" src="{{ raceWeek.race.flagUrl }}" mode="aspectFit" />
           </block>
           <block wx:else>
             <text class="raceweek-countdown-session {{ raceWeekSessionLabelCompact ? 'raceweek-countdown-session-compact' : '' }}">{{ raceWeekSessionLabel }}</text>

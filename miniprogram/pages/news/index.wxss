@@ -56,6 +56,13 @@
   gap: 6rpx;
 }
 
+.raceweek-countdown-left-flag-only {
+  min-width: 112rpx;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
 .raceweek-countdown-mid {
   width: 84rpx;
   flex: 0 0 84rpx;
@@ -88,6 +95,13 @@
   width: 44rpx;
   height: 30rpx;
   border-radius: 4rpx;
+}
+
+.raceweek-countdown-flag-only {
+  width: 112rpx;
+  height: 78rpx;
+  border-radius: 10rpx;
+  box-shadow: 0 10rpx 22rpx rgba(0, 0, 0, 0.28);
 }
 
 .raceweek-countdown-clock {
