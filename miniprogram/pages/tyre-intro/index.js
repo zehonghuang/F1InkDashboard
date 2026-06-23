@@ -202,6 +202,23 @@ Page({
     const index = e && e.currentTarget && e.currentTarget.dataset ? Number(e.currentTarget.dataset.index) : 0
     this.switchTyre(index)
   },
+  onShowcaseTouchStart(e) {
+    const touch = e && e.changedTouches && e.changedTouches[0]
+    this._showcaseTouchStartX = touch ? Number(touch.pageX || 0) : 0
+  },
+  onShowcaseTouchEnd(e) {
+    const touch = e && e.changedTouches && e.changedTouches[0]
+    const endX = touch ? Number(touch.pageX || 0) : 0
+    const startX = Number(this._showcaseTouchStartX || 0)
+    const deltaX = endX - startX
+    const tyres = Array.isArray(this.data.tyres) ? this.data.tyres : []
+    if (tyres.length < 2 || Math.abs(deltaX) < 36) return
+    if (deltaX < 0) {
+      this.switchTyre((this.data.activeIndex + 1) % tyres.length)
+      return
+    }
+    this.switchTyre((this.data.activeIndex - 1 + tyres.length) % tyres.length)
+  },
   onImageLoad(e) {
     this.setData({ heroImageError: false })
   },

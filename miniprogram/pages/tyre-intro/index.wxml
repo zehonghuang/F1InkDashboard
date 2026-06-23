@@ -17,7 +17,7 @@
       <view class="showcase-kicker">{{i18n.tyreIntro.pageTitle}}</view>
       <view class="showcase-badge" style="{{activeTyre.activeChipStyle}}">{{activeTyre.shortName}}</view>
     </view>
-    <view class="showcase-stage">
+    <view class="showcase-stage" bindtouchstart="onShowcaseTouchStart" bindtouchend="onShowcaseTouchEnd">
       <view class="showcase-glow" style="{{activeTyre.glowStyle}}"></view>
       <image
         wx:if="{{activeTyre.imageUrl}}"

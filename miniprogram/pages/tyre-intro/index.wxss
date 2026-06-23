@@ -137,6 +137,7 @@
   height: 420rpx;
   transform: translate(-50%, -50%);
   filter: blur(12rpx);
+  animation: showcaseGlowPulse 4.6s ease-in-out infinite;
 }
 
 .showcase-image {
@@ -145,6 +146,8 @@
   display: block;
   width: 430rpx;
   height: 430rpx;
+  transform-origin: center center;
+  animation: showcaseImageFloat 5.6s ease-in-out infinite;
 }
 
 .showcase-error {
@@ -162,12 +165,13 @@
 
 .selector-strip {
   margin-top: 28rpx;
+  margin-bottom: 12rpx;
   display: flex;
   gap: 12rpx;
   overflow-x: auto;
   white-space: nowrap;
   z-index: 3;
-  padding-top: 6rpx;
+  padding: 6rpx 12rpx 10rpx;
   box-sizing: border-box;
 }
 
@@ -183,6 +187,7 @@
 
 .selector-item-active {
   box-shadow: 0 0 0 2rpx rgba(255, 255, 255, 0.14), 0 10rpx 22rpx rgba(0, 0, 0, 0.22);
+  transform: scale(1.03);
 }
 
 .selector-name {
@@ -275,4 +280,31 @@
 
 .footer-card {
   margin-bottom: calc(env(safe-area-inset-bottom) + 24rpx);
+}
+
+@keyframes showcaseGlowPulse {
+  0% {
+    opacity: 0.42;
+    transform: translate(-50%, -50%) scale(0.94);
+  }
+  50% {
+    opacity: 0.82;
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+  100% {
+    opacity: 0.42;
+    transform: translate(-50%, -50%) scale(0.94);
+  }
+}
+
+@keyframes showcaseImageFloat {
+  0% {
+    transform: translateY(0) scale(1) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-10rpx) scale(1.02) rotate(1deg);
+  }
+  100% {
+    transform: translateY(0) scale(1) rotate(-1deg);
+  }
 }
