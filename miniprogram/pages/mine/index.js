@@ -359,6 +359,10 @@ Page({
       wx.navigateTo({ url: `/pages/standings/index?season=${season}` })
       return
     }
+    if (action === "tyreIntro") {
+      wx.navigateTo({ url: "/pages/tyre-intro/index" })
+      return
+    }
     if (action === "shop") {
       wx.navigateTo({ url: "/pages/shop/index" })
       return

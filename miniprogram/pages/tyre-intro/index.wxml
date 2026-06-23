@@ -1,0 +1,94 @@
+<view class="tyre-page" style="{{pageStyle}}">
+  <view class="page-noise"></view>
+
+  <view class="intro-card">
+    <view class="intro-eyebrow">{{i18n.tyreIntro.eyebrow}}</view>
+    <view class="intro-title">{{activeTyre.displayName}}</view>
+    <view class="intro-summary">{{activeTyre.summary}}</view>
+    <view class="intro-meta-row">
+      <view class="intro-chip" style="{{activeTyre.activeChipStyle}}">{{activeTyre.categoryLabel}}</view>
+      <view class="intro-chip intro-chip-muted">{{activeTyre.shortName}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{activeTyre}}" class="showcase-card">
+    <view class="showcase-rail" style="{{activeTyre.railStyle}}"></view>
+    <view class="showcase-head">
+      <view class="showcase-kicker">{{i18n.tyreIntro.pageTitle}}</view>
+      <view class="showcase-badge" style="{{activeTyre.activeChipStyle}}">{{activeTyre.shortName}}</view>
+    </view>
+    <view class="showcase-stage">
+      <view class="showcase-glow" style="{{activeTyre.glowStyle}}"></view>
+      <image
+        wx:if="{{activeTyre.imageUrl}}"
+        class="showcase-image"
+        src="{{activeTyre.imageUrl}}"
+        mode="aspectFit"
+        bindload="onImageLoad"
+        binderror="onImageError"
+      />
+    </view>
+    <view wx:if="{{heroImageError}}" class="showcase-error">主图加载失败</view>
+    <view class="showcase-caption">{{activeTyre.bestFor}}</view>
+  </view>
+
+  <view class="selector-strip">
+    <block wx:for="{{tyres}}" wx:key="key" wx:for-item="item" wx:for-index="index">
+      <view
+        class="selector-item {{activeIndex === index ? 'selector-item-active' : ''}}"
+        bindtap="onSelectTyre"
+        data-index="{{index}}"
+        style="{{activeIndex === index ? item.activeChipStyle : item.chipStyle}}"
+      >
+        <view class="selector-name">{{item.shortName}}</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="metrics-card">
+    <view class="section-head">
+      <view class="section-title">{{i18n.tyreIntro.metricsTitle}}</view>
+      <view class="section-caption">{{activeTyre.bestFor}}</view>
+    </view>
+
+    <view class="metric-row">
+      <view class="metric-label">{{i18n.tyreIntro.metricGrip}}</view>
+      <view class="metric-track" style="{{activeTyre.gaugeTrackStyle}}">
+        <view class="metric-fill" style="{{activeTyre.gripStyle}}"></view>
+      </view>
+      <view class="metric-value">{{activeTyre.metrics.grip}}</view>
+    </view>
+
+    <view class="metric-row">
+      <view class="metric-label">{{i18n.tyreIntro.metricDurability}}</view>
+      <view class="metric-track" style="{{activeTyre.gaugeTrackStyle}}">
+        <view class="metric-fill" style="{{activeTyre.durabilityStyle}}"></view>
+      </view>
+      <view class="metric-value">{{activeTyre.metrics.durability}}</view>
+    </view>
+
+    <view class="metric-row">
+      <view class="metric-label">{{i18n.tyreIntro.metricWarmup}}</view>
+      <view class="metric-track" style="{{activeTyre.gaugeTrackStyle}}">
+        <view class="metric-fill" style="{{activeTyre.warmupStyle}}"></view>
+      </view>
+      <view class="metric-value">{{activeTyre.metrics.warmup}}</view>
+    </view>
+  </view>
+
+  <view class="story-grid">
+    <view class="story-card">
+      <view class="story-kicker">{{i18n.tyreIntro.usageTitle}}</view>
+      <view class="story-text">{{activeTyre.usage}}</view>
+    </view>
+    <view class="story-card">
+      <view class="story-kicker">{{i18n.tyreIntro.strategyTitle}}</view>
+      <view class="story-text">{{activeTyre.note}}</view>
+    </view>
+  </view>
+
+  <view class="footer-card">
+    <view class="section-title">{{i18n.tyreIntro.footerTitle}}</view>
+    <view class="footer-text">{{i18n.tyreIntro.footerText}}</view>
+  </view>
+</view>

@@ -7,6 +7,7 @@
     "pages/race-sessions/index",
     "pages/session-results/index",
     "pages/driver/index",
+    "pages/tyre-intro/index",
     "pages/standings/index",
     "pages/shop/index",
     "pages/shop-detail/index",

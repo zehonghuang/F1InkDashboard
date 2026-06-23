@@ -171,6 +171,18 @@
 
       <view class="divider"></view>
 
+      <view class="action-row" bindtap="onTapItem" data-action="tyreIntro">
+        <view class="action-main">
+          <view class="action-label">{{i18n.mine.tyreIntro}}</view>
+          <view class="action-sub">{{i18n.mine.tyreIntroHint}}</view>
+        </view>
+        <view class="action-side">
+          <view class="action-arrow">›</view>
+        </view>
+      </view>
+
+      <view class="divider"></view>
+
       <view class="action-row" bindtap="onTapItem" data-action="shop">
         <view class="action-main">
           <view class="action-label">{{i18n.mine.shop}}</view>
