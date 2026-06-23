@@ -282,6 +282,26 @@
   margin-bottom: calc(env(safe-area-inset-bottom) + 24rpx);
 }
 
+.intro-card-animate {
+  animation: cardFadeUp 0.28s ease-out both;
+}
+
+.showcase-card-animate {
+  animation: cardScaleIn 0.36s ease-out both;
+}
+
+.metrics-card-animate {
+  animation: cardFadeUp 0.34s ease-out both;
+}
+
+.story-grid-animate {
+  animation: cardFadeUp 0.4s ease-out both;
+}
+
+.footer-card-animate {
+  animation: cardFadeUp 0.46s ease-out both;
+}
+
 @keyframes showcaseGlowPulse {
   0% {
     opacity: 0.42;
@@ -306,5 +326,27 @@
   }
   100% {
     transform: translateY(0) scale(1) rotate(-1deg);
+  }
+}
+
+@keyframes cardFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20rpx);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardScaleIn {
+  0% {
+    opacity: 0;
+    transform: translateY(24rpx) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }

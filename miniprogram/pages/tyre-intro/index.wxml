@@ -1,7 +1,7 @@
 <view class="tyre-page" style="{{pageStyle}}">
   <view class="page-noise"></view>
 
-  <view class="intro-card">
+  <view class="intro-card {{introAnimate ? 'intro-card-animate' : ''}}">
     <view class="intro-eyebrow">{{i18n.tyreIntro.eyebrow}}</view>
     <view class="intro-title">{{activeTyre.displayName}}</view>
     <view class="intro-summary">{{activeTyre.summary}}</view>
@@ -11,7 +11,7 @@
     </view>
   </view>
 
-  <view wx:if="{{activeTyre}}" class="showcase-card">
+  <view wx:if="{{activeTyre}}" class="showcase-card {{showcaseAnimate ? 'showcase-card-animate' : ''}}">
     <view class="showcase-rail" style="{{activeTyre.railStyle}}"></view>
     <view class="showcase-head">
       <view class="showcase-kicker">{{i18n.tyreIntro.pageTitle}}</view>
@@ -45,7 +45,7 @@
     </block>
   </view>
 
-  <view class="metrics-card">
+  <view class="metrics-card {{metricsAnimate ? 'metrics-card-animate' : ''}}">
     <view class="section-head">
       <view class="section-title">{{i18n.tyreIntro.metricsTitle}}</view>
       <view class="section-caption">{{activeTyre.bestFor}}</view>
@@ -76,7 +76,7 @@
     </view>
   </view>
 
-  <view class="story-grid">
+  <view class="story-grid {{storyAnimate ? 'story-grid-animate' : ''}}">
     <view class="story-card">
       <view class="story-kicker">{{i18n.tyreIntro.usageTitle}}</view>
       <view class="story-text">{{activeTyre.usage}}</view>
@@ -87,7 +87,7 @@
     </view>
   </view>
 
-  <view class="footer-card">
+  <view class="footer-card {{storyAnimate ? 'footer-card-animate' : ''}}">
     <view class="section-title">{{i18n.tyreIntro.footerTitle}}</view>
     <view class="footer-text">{{i18n.tyreIntro.footerText}}</view>
   </view>

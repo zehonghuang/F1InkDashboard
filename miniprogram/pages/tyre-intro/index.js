@@ -158,7 +158,11 @@ Page({
     activeIndex: 0,
     activeTyre: null,
     pageStyle: "",
-    heroImageError: false
+    heroImageError: false,
+    introAnimate: false,
+    showcaseAnimate: false,
+    metricsAnimate: false,
+    storyAnimate: false
   },
   onLoad(options) {
     const rawIndex = Number(options && options.index)
@@ -188,6 +192,7 @@ Page({
     try {
       wx.setNavigationBarTitle({ title: i18n.t("tyreIntro.pageTitle") })
     } catch (e) {}
+    this.triggerAnimations()
   },
   buildPageStyle(tyre) {
     if (!tyre) return ""
@@ -236,5 +241,23 @@ Page({
       pageStyle: this.buildPageStyle(activeTyre),
       heroImageError: false
     })
+    this.triggerAnimations()
+  },
+  triggerAnimations() {
+    if (this._animTimer) clearTimeout(this._animTimer)
+    this.setData({
+      introAnimate: false,
+      showcaseAnimate: false,
+      metricsAnimate: false,
+      storyAnimate: false
+    })
+    this._animTimer = setTimeout(() => {
+      this.setData({
+        introAnimate: true,
+        showcaseAnimate: true,
+        metricsAnimate: true,
+        storyAnimate: true
+      })
+    }, 20)
   }
 })
