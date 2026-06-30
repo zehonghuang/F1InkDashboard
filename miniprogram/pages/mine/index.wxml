@@ -157,41 +157,48 @@
 
   <view class="section">
     <view class="section-title">{{i18n.mine.quickActions}}</view>
-    <view class="action-list">
-      <view class="action-row" bindtap="onTapItem" data-action="standings">
-        <view class="action-main">
-          <view class="action-label">{{i18n.mine.standings}}</view>
-          <view class="action-sub">{{i18n.standings.title}}</view>
+    <view class="quick-grid">
+      <view class="quick-card" bindtap="onTapItem" data-action="standings">
+        <view class="quick-card-head">
+          <view class="quick-card-icon">PTS</view>
+          <view class="quick-card-badge">{{prefSeason}}</view>
         </view>
-        <view class="action-side">
-          <view class="action-meta">{{prefSeason}}</view>
-          <view class="action-arrow">›</view>
-        </view>
+        <view class="quick-card-title">{{i18n.mine.standings}}</view>
+        <view class="quick-card-desc">{{i18n.mine.standingsHint}}</view>
+        <view class="quick-card-link">查看</view>
       </view>
-
-      <view class="divider"></view>
-
-      <view class="action-row" bindtap="onTapItem" data-action="tyreIntro">
-        <view class="action-main">
-          <view class="action-label">{{i18n.mine.tyreIntro}}</view>
-          <view class="action-sub">{{i18n.mine.tyreIntroHint}}</view>
+      <view class="quick-card" bindtap="onTapItem" data-action="tyreIntro">
+        <view class="quick-card-head">
+          <view class="quick-card-icon quick-card-icon-image">
+            <image class="quick-card-icon-asset" src="/assets/icons/tyre-blue-icon.png" mode="aspectFit" />
+          </view>
+          <view class="quick-card-badge">Guide</view>
         </view>
-        <view class="action-side">
-          <view class="action-arrow">›</view>
-        </view>
+        <view class="quick-card-title">{{i18n.mine.tyreIntro}}</view>
+        <view class="quick-card-desc">{{i18n.mine.tyreIntroHint}}</view>
+        <view class="quick-card-link">进入</view>
       </view>
-
-      <view class="divider"></view>
-
-      <view class="action-row" bindtap="onTapItem" data-action="shop">
-        <view class="action-main">
-          <view class="action-label">{{i18n.mine.shop}}</view>
-          <view class="action-sub">{{i18n.mine.shopHint}}</view>
+      <view class="quick-card" bindtap="onTapItem" data-action="liveTiming">
+        <view class="quick-card-head">
+          <view class="quick-card-icon">LIVE</view>
+          <view class="quick-card-badge">WS</view>
         </view>
-        <view class="action-side">
-          <view class="action-arrow">›</view>
-        </view>
+        <view class="quick-card-title">{{i18n.mine.liveTiming}}</view>
+        <view class="quick-card-desc">{{i18n.mine.liveTimingHint}}</view>
+        <view class="quick-card-link">进入</view>
       </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">{{i18n.mine.shop}}</view>
+    <view class="shop-card" bindtap="onTapItem" data-action="shop">
+      <view class="shop-card-icon">SHOP</view>
+      <view class="shop-card-main">
+        <view class="shop-card-title">{{i18n.mine.shop}}</view>
+        <view class="shop-card-desc">{{i18n.mine.shopDesc}}</view>
+      </view>
+      <view class="shop-card-cta">{{i18n.mine.shopEnter}}</view>
     </view>
   </view>
 
@@ -205,24 +212,6 @@
     <view wx:if="{{isLoggedIn}}" class="row">
       <view class="row-key">{{i18n.mine.currentDeviceId}}</view>
       <view class="row-val">{{deviceId || "-"}}</view>
-    </view>
-  </view>
-
-  <view class="section">
-    <view class="section-title">{{i18n.mine.comingNext}}</view>
-    <view class="more-grid">
-      <view class="more-item more-item-disabled" bindtap="onTapItem" data-action="soon_2">
-        <view class="more-icon">...</view>
-        <view class="more-text">{{i18n.common.comingSoon}}</view>
-      </view>
-      <view class="more-item more-item-disabled" bindtap="onTapItem" data-action="soon_3">
-        <view class="more-icon">...</view>
-        <view class="more-text">{{i18n.common.comingSoon}}</view>
-      </view>
-      <view class="more-item more-item-disabled" bindtap="onTapItem" data-action="soon_4">
-        <view class="more-icon">...</view>
-        <view class="more-text">{{i18n.common.comingSoon}}</view>
-      </view>
     </view>
   </view>
 

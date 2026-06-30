@@ -425,6 +425,98 @@
   padding: 12rpx 0;
 }
 
+.more-item-feature {
+  padding: 16rpx 12rpx 8rpx;
+  box-sizing: border-box;
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+}
+
+.quick-card {
+  min-width: 0;
+  min-height: 220rpx;
+  padding: 20rpx 18rpx 18rpx;
+  border-radius: 20rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top right, rgba(225, 6, 0, 0.12) 0, rgba(225, 6, 0, 0) 40%),
+    linear-gradient(180deg, rgba(14, 16, 22, 0.98) 0%, rgba(8, 8, 12, 0.98) 100%);
+  box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+}
+
+.quick-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
+.quick-card-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1rpx solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 24rpx;
+  font-weight: 900;
+  letter-spacing: 1rpx;
+}
+
+.quick-card-icon-image {
+  overflow: hidden;
+}
+
+.quick-card-icon-asset {
+  width: 62rpx;
+  height: 62rpx;
+  display: block;
+}
+
+.quick-card-badge {
+  flex: none;
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 20rpx;
+  line-height: 1;
+}
+
+.quick-card-title {
+  margin-top: 18rpx;
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.quick-card-desc {
+  margin-top: 10rpx;
+  min-height: 60rpx;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 21rpx;
+  line-height: 30rpx;
+}
+
+.quick-card-link {
+  margin-top: auto;
+  padding-top: 18rpx;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
 .more-icon {
   width: 72rpx;
   height: 72rpx;
@@ -439,11 +531,31 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
+.more-icon-image-wrap {
+  overflow: hidden;
+}
+
+.more-icon-image {
+  width: 64rpx;
+  height: 64rpx;
+  display: block;
+}
+
 .more-text {
   margin-top: 12rpx;
   font-size: 22rpx;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.78);
+  text-align: center;
+}
+
+.more-subtext {
+  margin-top: 8rpx;
+  max-width: 220rpx;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 20rpx;
+  line-height: 28rpx;
+  text-align: center;
 }
 
 .more-item-disabled .more-icon {
@@ -469,6 +581,62 @@
 
 .row-val {
   color: rgba(255, 255, 255, 0.64);
+}
+
+.shop-card {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  padding: 20rpx;
+  border-radius: 18rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top left, rgba(46, 232, 216, 0.14) 0, rgba(46, 232, 216, 0) 40%),
+    linear-gradient(180deg, rgba(14, 16, 22, 0.96) 0%, rgba(8, 8, 12, 0.98) 100%);
+}
+
+.shop-card-icon {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1rpx solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 20rpx;
+  font-weight: 900;
+  letter-spacing: 1rpx;
+}
+
+.shop-card-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.shop-card-title {
+  color: #ffffff;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.shop-card-desc {
+  margin-top: 8rpx;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 22rpx;
+  line-height: 30rpx;
+}
+
+.shop-card-cta {
+  flex: none;
+  padding: 12rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1rpx solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 22rpx;
+  font-weight: 700;
 }
 
 .action-list {

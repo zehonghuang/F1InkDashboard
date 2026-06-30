@@ -1,0 +1,100 @@
+<view class="page">
+  <view wx:if="{{pinnedRaceControl}}" class="headline-layer">
+    <view
+      class="headline-banner headline-banner-{{pinnedRaceControl.tone}}"
+      style="transform: translateY({{pinnedRaceControlOffsetY}}px); opacity: {{pinnedRaceControlOpacity}}; transition: {{pinnedRaceControlTransition}};"
+      catchtouchstart="onPinnedRaceControlTouchStart"
+      catchtouchmove="onPinnedRaceControlTouchMove"
+      catchtouchend="onPinnedRaceControlTouchEnd"
+      catchtouchcancel="onPinnedRaceControlTouchEnd"
+    >
+      <view class="headline-banner__top">
+        <view class="headline-banner__flag">{{pinnedRaceControl.flag}}</view>
+        <view class="headline-banner__top-right">
+          <view class="headline-banner__time">{{pinnedRaceControl.time}}</view>
+          <view class="headline-banner__close" bindtap="onPinnedRaceControlClose">×</view>
+        </view>
+      </view>
+      <view class="headline-banner__title">{{pinnedRaceControl.title}}</view>
+      <view class="headline-banner__message">{{pinnedRaceControl.message}}</view>
+    </view>
+  </view>
+
+  <view class="hero">
+    <view class="hero-head">
+      <view>
+        <view class="hero-eyebrow">{{i18n.liveTiming.liveEyebrow}}</view>
+        <view class="hero-title">{{sessionTitle}}</view>
+        <view class="hero-subtitle">{{sessionSubtitle}}</view>
+      </view>
+      <view class="hero-clock">{{trackTime}}</view>
+    </view>
+
+    <view class="hero-meta">
+      <view class="hero-status hero-status-{{trackStatusTone}}">{{trackStatusLabel}}</view>
+      <view class="hero-updated">{{i18n.liveTiming.updatedAt}} {{updatedAt}}</view>
+    </view>
+
+    <view class="badge-row">
+      <block wx:for="{{connectionBadges}}" wx:key="label">
+        <view class="badge">
+          <view class="badge-label">{{item.label}}</view>
+          <view class="badge-value badge-value-{{item.tone}}">{{item.value}}</view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view wx:if="{{error}}" class="error-card">{{error}}</view>
+
+  <view class="weather-grid">
+    <block wx:for="{{weatherCards}}" wx:key="label">
+      <view class="weather-card">
+        <view class="weather-label">{{item.label}}</view>
+        <view class="weather-value">{{item.value}}<text wx:if="{{item.suffix}}" class="weather-suffix"> {{item.suffix}}</text></view>
+      </view>
+    </block>
+  </view>
+
+  <view class="panel">
+    <view class="panel-title">{{i18n.liveTiming.topTower}}</view>
+    <ms-live-standings-table
+      title=""
+      rows="{{liveRows}}"
+      maxRows="0"
+      dense
+      bodyHeightRpx="520"
+    />
+  </view>
+
+  <view class="panel">
+    <view class="panel-title">{{i18n.liveTiming.fullTower}}</view>
+    <ms-qualifying-table
+      title=""
+      rows="{{qualifyingRows}}"
+      maxRows="0"
+      dense
+      bodyHeightRpx="920"
+      baseUrl="{{''}}"
+    />
+  </view>
+
+  <view class="panel">
+    <view class="panel-title">{{i18n.liveTiming.raceControl}}</view>
+    <view wx:if="{{raceControlMessages.length}}" class="feed-list">
+      <block wx:for="{{raceControlMessages}}" wx:key="id">
+        <view class="feed-item">
+          <view class="feed-top">
+            <view class="feed-flag feed-flag-{{item.tone}}">{{item.flag}}</view>
+            <view class="feed-time">{{item.time}}</view>
+          </view>
+          <view class="feed-title">{{item.title}}</view>
+          <view class="feed-message">{{item.message}}</view>
+        </view>
+      </block>
+    </view>
+    <view wx:else class="empty-card">{{i18n.liveTiming.noRaceControl}}</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading-card">{{i18n.liveTiming.loading}}</view>
+</view>

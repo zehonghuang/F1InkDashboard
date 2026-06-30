@@ -352,6 +352,50 @@ Page({
       profileGuideTitle: i18n.t("mine.profileGuideTitle", { done: profileGuideDoneCount, total: profileGuideTotal })
     })
   },
+  getShopMiniProgramConfig() {
+    try {
+      const app = getApp()
+      const cfg = (app && app.globalData && app.globalData.shopMiniProgram) || {}
+      const envVersion = String(cfg.envVersion || "release").trim()
+      return {
+        appId: String(cfg.appId || "").trim(),
+        path: String(cfg.path || "").trim(),
+        envVersion: /^(develop|trial|release)$/.test(envVersion) ? envVersion : "release"
+      }
+    } catch (e) {
+      return {
+        appId: "",
+        path: "",
+        envVersion: "release"
+      }
+    }
+  },
+  openWeChatShop() {
+    if (typeof wx.navigateToMiniProgram !== "function") {
+      wx.showToast({ title: i18n.t("mine.shopOpenFailed"), icon: "none" })
+      return
+    }
+    const cfg = this.getShopMiniProgramConfig()
+    if (!cfg.appId) {
+      wx.showToast({ title: i18n.t("mine.shopConfigMissing"), icon: "none" })
+      return
+    }
+    const payload = {
+      appId: cfg.appId,
+      envVersion: cfg.envVersion,
+      success: () => {},
+      fail: (err) => {
+        const msg = String((err && err.errMsg) || "")
+        if (/cancel/i.test(msg)) return
+        try {
+          console.log("[mine] open WeChat shop failed", err)
+        } catch (e) {}
+        wx.showToast({ title: i18n.t("mine.shopOpenFailed"), icon: "none" })
+      }
+    }
+    if (cfg.path) payload.path = cfg.path
+    wx.navigateToMiniProgram(payload)
+  },
   onTapItem(e) {
     const action = e && e.currentTarget && e.currentTarget.dataset ? e.currentTarget.dataset.action : ""
     if (action === "standings") {
@@ -363,8 +407,12 @@ Page({
       wx.navigateTo({ url: "/pages/tyre-intro/index" })
       return
     }
+    if (action === "liveTiming") {
+      wx.navigateTo({ url: "/pages/live-timing/index" })
+      return
+    }
     if (action === "shop") {
-      wx.navigateTo({ url: "/pages/shop/index" })
+      this.openWeChatShop()
       return
     }
     if (String(action || "").startsWith("soon")) {

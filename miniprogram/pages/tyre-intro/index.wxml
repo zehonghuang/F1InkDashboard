@@ -12,11 +12,6 @@
   </view>
 
   <view wx:if="{{activeTyre}}" class="showcase-card {{showcaseAnimate ? 'showcase-card-animate' : ''}}">
-    <view class="showcase-rail" style="{{activeTyre.railStyle}}"></view>
-    <view class="showcase-head">
-      <view class="showcase-kicker">{{i18n.tyreIntro.pageTitle}}</view>
-      <view class="showcase-badge" style="{{activeTyre.activeChipStyle}}">{{activeTyre.shortName}}</view>
-    </view>
     <view class="showcase-stage" bindtouchstart="onShowcaseTouchStart" bindtouchend="onShowcaseTouchEnd">
       <view class="showcase-glow" style="{{activeTyre.glowStyle}}"></view>
       <image
@@ -29,7 +24,6 @@
       />
     </view>
     <view wx:if="{{heroImageError}}" class="showcase-error">主图加载失败</view>
-    <view class="showcase-caption">{{activeTyre.bestFor}}</view>
   </view>
 
   <view class="selector-strip">

@@ -22,6 +22,11 @@ if (-not $env:TOINC_F1_MYSQL_CHARSET) { $env:TOINC_F1_MYSQL_CHARSET = "utf8mb4" 
 
 if (-not $env:OPENF1_SCHEDULER_ENABLED) { $env:OPENF1_SCHEDULER_ENABLED = "true" }
 
+
+if (-not $env:MOTORSPORT_LIVE_ENABLED) { $env:MOTORSPORT_LIVE_ENABLED = "true" }
+if (-not $env:F1_LIVE_TIMING_ENABLED) { $env:F1_LIVE_TIMING_ENABLED = "true" }
+
+
 if ($BackendBin) {
     & $BackendBin
     exit $LASTEXITCODE

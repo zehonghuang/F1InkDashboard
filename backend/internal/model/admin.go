@@ -1,5 +1,7 @@
 package model
 
+import "toinc_f1_backend/internal/f1livetiming"
+
 type AdminUserBrief struct {
 	ID        int64  `json:"id"`
 	OpenID    string `json:"openid,omitempty"`
@@ -88,4 +90,10 @@ type AdminMotorsportLiveStandingsResponse struct {
 	SessionTitle  string                       `json:"session_title,omitempty"`
 	FetchedAtUTC  string                       `json:"fetched_at_utc,omitempty"`
 	Rows          []AdminMotorsportStandingRow `json:"rows"`
+}
+
+type AdminF1LiveTimingResponse struct {
+	Ok             bool                  `json:"ok"`
+	GeneratedAtUTC string                `json:"generated_at_utc,omitempty"`
+	Status         f1livetiming.Snapshot `json:"status"`
 }

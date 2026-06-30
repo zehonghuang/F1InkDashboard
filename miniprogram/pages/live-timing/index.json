@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "Live Timing",
+  "backgroundColor": "#15151E",
+  "backgroundTextStyle": "light",
+  "usingComponents": {
+    "ms-qualifying-table": "/components/ms-qualifying-table/index",
+    "ms-live-standings-table": "/components/ms-live-standings-table/index"
+  }
+}

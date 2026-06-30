@@ -466,6 +466,30 @@ func (m *Manager) resolveActiveTarget(now time.Time) (*liveTarget, error) {
 
 	targetRow := rows[targetIndex]
 	targetID := seedID + (targetIndex - anchorIndex)
+	if calibration != nil && calibration.AnchorSessionKey > 0 && calibration.Season > 0 && targetRow.Year == calibration.Season {
+		seasonRows, err := m.loadSeasonScheduleRows(calibration.Season)
+		if err != nil {
+			return nil, err
+		}
+		seasonAnchorIndex := findScheduleIndexBySessionKey(seasonRows, calibration.AnchorSessionKey)
+		seasonTargetIndex := findScheduleIndexBySessionKey(seasonRows, targetRow.SessionKey)
+		if seasonAnchorIndex >= 0 && seasonTargetIndex >= 0 {
+			targetID = seedID + (seasonTargetIndex - seasonAnchorIndex)
+			calibration.MatchedSessionKey = seasonRows[seasonAnchorIndex].SessionKey
+			calibration.MatchedMeetingKey = seasonRows[seasonAnchorIndex].MeetingKey
+			calibration.MatchedSessionName = firstNonEmptyLocal(ptrString(seasonRows[seasonAnchorIndex].SessionType), ptrString(seasonRows[seasonAnchorIndex].SessionName))
+			calibration.MatchedStartAtUTC = seasonRows[seasonAnchorIndex].DateStartUTC.UTC().Format(time.RFC3339Nano)
+			calibration.Note = fmt.Sprintf(
+				"seed %d calibrated from anchor session_key %d to target session_key %d via full %d season schedule order (delta=%+d)",
+				seedID,
+				calibration.AnchorSessionKey,
+				targetRow.SessionKey,
+				calibration.Season,
+				seasonTargetIndex-seasonAnchorIndex,
+			)
+			m.updateSeedCalibration(calibration)
+		}
+	}
 	if targetID <= 0 {
 		return nil, fmt.Errorf("invalid_live_timing_id: %d", targetID)
 	}
@@ -523,6 +547,40 @@ func (m *Manager) loadScheduleRows(now time.Time) ([]scheduleRow, error) {
 	return rows, nil
 }
 
+func (m *Manager) loadSeasonScheduleRows(season int) ([]scheduleRow, error) {
+	if season <= 0 {
+		return nil, nil
+	}
+	var rows []scheduleRow
+	err := m.db.Raw(
+		`
+        SELECT
+          s.session_key,
+          s.year,
+          s.meeting_key,
+          COALESCE(m.meeting_name, s.location) AS meeting_name,
+          COALESCE(m.location, s.location) AS location,
+          COALESCE(m.country_name, s.country_name) AS country_name,
+          COALESCE(m.circuit_short_name, s.circuit_short_name) AS circuit_short_name,
+          s.date_start_utc,
+          s.date_end_utc,
+          s.session_name,
+          s.session_type
+        FROM openf1_sessions s
+        LEFT JOIN openf1_meetings m ON m.meeting_key = s.meeting_key
+        WHERE s.is_cancelled IS NOT TRUE
+          AND s.year = ?
+          AND s.date_start_utc IS NOT NULL
+        ORDER BY s.date_start_utc ASC, s.session_key ASC
+    `,
+		season,
+	).Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
+
 func (m *Manager) updateSeedCalibration(cal *SeedCalibration) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -571,6 +629,18 @@ func findSeedCalibration(seedID int, rows []scheduleRow) (*SeedCalibration, int)
 		return cal, index
 	}
 	return cal, -1
+}
+
+func findScheduleIndexBySessionKey(rows []scheduleRow, sessionKey int) int {
+	if sessionKey <= 0 {
+		return -1
+	}
+	for index, row := range rows {
+		if row.SessionKey == sessionKey {
+			return index
+		}
+	}
+	return -1
 }
 
 func selectAnchorRow(rows []scheduleRow, now time.Time, before time.Duration) int {

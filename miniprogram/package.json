@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "type": "commonjs",
   "scripts": {
-    "prepare:mp": "node scripts/prepare-mp.js"
+    "prepare:mp": "node scripts/prepare-mp.js",
+    "build:tyre-icon": "node scripts/build-tyre-icon.js"
   },
   "dependencies": {
     "echarts": "^5.3.3",

@@ -55,14 +55,14 @@
 
 .mslt-data-row.mslt-row-rise {
   z-index: 3;
-  background: rgba(45, 212, 191, 0.1);
-  box-shadow: 0 8rpx 24rpx rgba(45, 212, 191, 0.14);
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.18), rgba(255, 255, 255, 0.05));
+  box-shadow: 0 12rpx 28rpx rgba(34, 197, 94, 0.2);
 }
 
 .mslt-data-row.mslt-row-fall {
   z-index: 3;
-  background: rgba(248, 113, 113, 0.08);
-  box-shadow: 0 8rpx 24rpx rgba(248, 113, 113, 0.12);
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.16), rgba(255, 255, 255, 0.05));
+  box-shadow: 0 12rpx 28rpx rgba(239, 68, 68, 0.18);
 }
 
 .mslt-head {
@@ -93,6 +93,13 @@
 
 .mslt-c-pos {
   width: 88rpx;
+}
+
+.mslt-pos-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
 }
 
 .mslt-c-driver {
@@ -126,6 +133,42 @@
   justify-content: center;
   font-weight: 800;
   margin: 0 auto;
+  transition: background-color 220ms ease, color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+
+.mslt-pos-box.mslt-move-up {
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.92), rgba(22, 163, 74, 0.92));
+  color: #ecfdf5;
+  box-shadow: 0 8rpx 18rpx rgba(34, 197, 94, 0.26);
+}
+
+.mslt-pos-box.mslt-move-down {
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.92), rgba(220, 38, 38, 0.92));
+  color: #fef2f2;
+  box-shadow: 0 8rpx 18rpx rgba(239, 68, 68, 0.22);
+}
+
+.mslt-move-pill {
+  min-width: 42rpx;
+  height: 24rpx;
+  padding: 0 8rpx;
+  border-radius: 999rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14rpx;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.mslt-move-pill.mslt-move-up {
+  background: rgba(34, 197, 94, 0.18);
+  color: #86efac;
+}
+
+.mslt-move-pill.mslt-move-down {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
 }
 
 .mslt-driver-wrap {

@@ -10,6 +10,7 @@ import NotFoundPage from '@/pages/NotFoundPage.vue'
 import SettingsPage from '@/pages/SettingsPage.vue'
 import UserDetailPage from '@/pages/UserDetailPage.vue'
 import UsersListPage from '@/pages/UsersListPage.vue'
+import F1LiveTimingDemoPage from '@/pages/F1LiveTimingDemoPage.vue'
 import MotorsportQualifyingDemoPage from '@/pages/MotorsportQualifyingDemoPage.vue'
 import MotorsportLiveStandingsDemoPage from '@/pages/MotorsportLiveStandingsDemoPage.vue'
 
@@ -83,6 +84,12 @@ const routes: RouteRecordRaw[] = [
         name: 'motorsport-live-demo',
         component: MotorsportLiveStandingsDemoPage,
         meta: { title: 'Live Standings Demo' },
+      },
+      {
+        path: 'f1-live-timing-demo',
+        name: 'f1-live-timing-demo',
+        component: F1LiveTimingDemoPage,
+        meta: { title: 'F1 Live Timing Demo' },
       },
     ],
   },

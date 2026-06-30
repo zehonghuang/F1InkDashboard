@@ -1,0 +1,348 @@
+.page {
+  min-height: 100vh;
+  padding: 24rpx;
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at top, rgba(54, 113, 198, 0.22), transparent 34%),
+    linear-gradient(180deg, #090b10 0%, #15151e 100%);
+}
+
+.headline-layer {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 16rpx);
+  left: 24rpx;
+  right: 24rpx;
+  z-index: 80;
+  pointer-events: auto;
+}
+
+.headline-banner {
+  padding: 20rpx 22rpx;
+  border-radius: 22rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(20, 24, 34, 0.98), rgba(13, 16, 24, 0.96));
+  box-shadow: 0 20rpx 48rpx rgba(0, 0, 0, 0.28);
+}
+
+.headline-banner-yellow {
+  box-shadow: inset 6rpx 0 0 #facc15, 0 20rpx 48rpx rgba(0, 0, 0, 0.28);
+}
+
+.headline-banner-red {
+  box-shadow: inset 6rpx 0 0 #ef4444, 0 20rpx 48rpx rgba(0, 0, 0, 0.28);
+}
+
+.headline-banner-green {
+  box-shadow: inset 6rpx 0 0 #22c55e, 0 20rpx 48rpx rgba(0, 0, 0, 0.28);
+}
+
+.headline-banner-neutral {
+  box-shadow: inset 6rpx 0 0 #64748b, 0 20rpx 48rpx rgba(0, 0, 0, 0.28);
+}
+
+.headline-banner__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
+.headline-banner__top-right {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.headline-banner__flag {
+  padding: 6rpx 12rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  font-size: 18rpx;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.headline-banner__time {
+  color: rgba(148, 163, 184, 0.84);
+  font-size: 18rpx;
+}
+
+.headline-banner__close {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(226, 232, 240, 0.9);
+  font-size: 30rpx;
+  line-height: 44rpx;
+  text-align: center;
+  font-weight: 500;
+}
+
+.headline-banner__title {
+  margin-top: 10rpx;
+  color: #ffffff;
+  font-size: 28rpx;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.headline-banner__message {
+  margin-top: 8rpx;
+  color: rgba(226, 232, 240, 0.88);
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+
+.hero {
+  padding: 28rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(180deg, rgba(16, 20, 30, 0.95), rgba(12, 15, 24, 0.96));
+  box-shadow: 0 24rpx 64rpx rgba(0, 0, 0, 0.32);
+}
+
+.hero-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24rpx;
+}
+
+.hero-eyebrow {
+  color: rgba(148, 163, 184, 0.9);
+  font-size: 20rpx;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.hero-title {
+  margin-top: 10rpx;
+  color: #ffffff;
+  font-size: 42rpx;
+  line-height: 1.12;
+  font-weight: 800;
+}
+
+.hero-subtitle {
+  margin-top: 10rpx;
+  color: rgba(226, 232, 240, 0.76);
+  font-size: 24rpx;
+  line-height: 1.4;
+}
+
+.hero-clock {
+  flex: none;
+  color: #ffffff;
+  font-size: 38rpx;
+  line-height: 1;
+  font-weight: 800;
+  font-family: Formula1, sans-serif;
+}
+
+.hero-meta {
+  margin-top: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  flex-wrap: wrap;
+}
+
+.hero-status {
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.hero-status-green {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.16);
+}
+
+.hero-status-yellow {
+  color: #fde68a;
+  background: rgba(250, 204, 21, 0.16);
+}
+
+.hero-status-red {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.18);
+}
+
+.hero-status-neutral {
+  color: #e2e8f0;
+  background: rgba(148, 163, 184, 0.16);
+}
+
+.hero-updated {
+  color: rgba(148, 163, 184, 0.84);
+  font-size: 22rpx;
+}
+
+.badge-row {
+  margin-top: 22rpx;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.badge {
+  padding: 14rpx 16rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.badge-label {
+  color: rgba(148, 163, 184, 0.9);
+  font-size: 18rpx;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.badge-value {
+  margin-top: 8rpx;
+  color: #f8fafc;
+  font-size: 24rpx;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.badge-value-green {
+  color: #86efac;
+}
+
+.badge-value-yellow {
+  color: #fde68a;
+}
+
+.weather-grid {
+  margin-top: 24rpx;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.weather-card {
+  padding: 18rpx 20rpx;
+  border-radius: 20rpx;
+  background: rgba(10, 13, 20, 0.82);
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+}
+
+.weather-label {
+  color: rgba(148, 163, 184, 0.9);
+  font-size: 18rpx;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.weather-value {
+  margin-top: 10rpx;
+  color: #ffffff;
+  font-size: 30rpx;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.weather-suffix {
+  color: rgba(148, 163, 184, 0.92);
+  font-size: 20rpx;
+  font-weight: 600;
+}
+
+.panel {
+  margin-top: 24rpx;
+}
+
+.panel-title {
+  margin: 0 8rpx 12rpx;
+  color: rgba(226, 232, 240, 0.92);
+  font-size: 24rpx;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.feed-item {
+  padding: 18rpx 20rpx;
+  border-radius: 18rpx;
+  background: rgba(10, 13, 20, 0.82);
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+}
+
+.feed-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12rpx;
+  align-items: center;
+}
+
+.feed-flag {
+  padding: 6rpx 12rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+  font-size: 18rpx;
+  font-weight: 800;
+}
+
+.feed-flag-yellow {
+  background: rgba(250, 204, 21, 0.18);
+  color: #fde68a;
+}
+
+.feed-flag-red {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+}
+
+.feed-flag-green {
+  background: rgba(34, 197, 94, 0.18);
+  color: #86efac;
+}
+
+.feed-time {
+  color: rgba(148, 163, 184, 0.84);
+  font-size: 18rpx;
+}
+
+.feed-title {
+  margin-top: 10rpx;
+  color: #ffffff;
+  font-size: 24rpx;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.feed-message {
+  margin-top: 8rpx;
+  color: rgba(226, 232, 240, 0.82);
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+
+.error-card,
+.empty-card,
+.loading-card {
+  margin-top: 24rpx;
+  padding: 18rpx 20rpx;
+  border-radius: 18rpx;
+  background: rgba(15, 23, 42, 0.7);
+  color: rgba(226, 232, 240, 0.88);
+  font-size: 22rpx;
+}
+
+.error-card {
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.35);
+}

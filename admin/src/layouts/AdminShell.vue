@@ -11,6 +11,7 @@ const activeName = computed(() => {
   if (n.startsWith('devices')) return 'devices'
   if (n.startsWith('users')) return 'users'
   if (n.startsWith('settings')) return 'settings'
+  if (n.startsWith('f1-live-timing-demo')) return 'f1-live-timing-demo'
   if (n.startsWith('motorsport-live-demo')) return 'motorsport-live-demo'
   if (n.startsWith('motorsport-demo')) return 'motorsport-demo'
   return 'dashboard'
@@ -32,6 +33,9 @@ function onSelect(name: string) {
       return
     case 'settings':
       router.push({ name: 'settings' })
+      return
+    case 'f1-live-timing-demo':
+      router.push({ name: 'f1-live-timing-demo' })
       return
     case 'motorsport-demo':
       router.push({ name: 'motorsport-demo' })
@@ -68,6 +72,7 @@ function onSelect(name: string) {
         <MenuItem name="devices">设备</MenuItem>
         <MenuItem name="users">用户</MenuItem>
         <MenuItem name="settings">设置</MenuItem>
+        <MenuItem name="f1-live-timing-demo">F1 Live Timing Demo</MenuItem>
         <MenuItem name="motorsport-demo">样式 Demo</MenuItem>
         <MenuItem name="motorsport-live-demo">Live Standings Demo</MenuItem>
       </Menu>

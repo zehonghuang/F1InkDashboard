@@ -69,6 +69,11 @@ type Config struct {
 	OpenF1SchedulerMaxReqPerMin   int
 	OpenF1SchedulerQuiet          bool
 
+	F1LiveTimingEnabled          bool
+	F1LiveTimingGraphQLEndpoint  string
+	F1LiveTimingPollIntervalMS   int
+	F1LiveTimingRequestTimeoutMS int
+
 	MotorsportLiveEnabled              bool
 	MotorsportLiveWSURL                string
 	MotorsportLiveOrigin               string
@@ -125,6 +130,11 @@ func FromEnv() Config {
 		OpenF1SchedulerMaxReqPerSec:   getenvInt("OPENF1_SCHEDULER_MAX_REQ_PER_SEC", 3),
 		OpenF1SchedulerMaxReqPerMin:   getenvInt("OPENF1_SCHEDULER_MAX_REQ_PER_MIN", 30),
 		OpenF1SchedulerQuiet:          getenvBool("OPENF1_SCHEDULER_QUIET", true),
+
+		F1LiveTimingEnabled:          getenvBool("F1_LIVE_TIMING_ENABLED", true),
+		F1LiveTimingGraphQLEndpoint:  getenvTrim("F1_LIVE_TIMING_GRAPHQL_ENDPOINT", "http://localhost:10457/api/graphql"),
+		F1LiveTimingPollIntervalMS:   getenvInt("F1_LIVE_TIMING_POLL_INTERVAL_MS", 100),
+		F1LiveTimingRequestTimeoutMS: getenvInt("F1_LIVE_TIMING_REQUEST_TIMEOUT_MS", 2000),
 
 		MotorsportLiveEnabled:              getenvBool("MOTORSPORT_LIVE_ENABLED", true),
 		MotorsportLiveWSURL:                getenvTrim("MOTORSPORT_LIVE_WS_URL", "wss://livetiming.motorsport.com:8080/782178-full/"),

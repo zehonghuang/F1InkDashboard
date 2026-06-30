@@ -4,6 +4,7 @@ import (
 	"toinc_f1_backend/internal/cache"
 	"toinc_f1_backend/internal/config"
 	"toinc_f1_backend/internal/db"
+	"toinc_f1_backend/internal/f1livetiming"
 	"toinc_f1_backend/internal/httpserver/handlers"
 	"toinc_f1_backend/internal/motorsportlive"
 	"toinc_f1_backend/internal/openf1scheduler"
@@ -28,11 +29,15 @@ type Server struct {
 	EchoHub           *ws.Hub
 	NewsHub           *ws.Hub
 	OpenF1Hub         *ws.Hub
+	F1LiveTimingHub   *ws.Hub
+	F1LiveTiming      *f1livetiming.Manager
 	MotorsportLiveHub *ws.Hub
 	MotorsportLive    *motorsportlive.Manager
 }
 
 func New(cfg config.Config, database *db.DB) *Server {
+	f1LiveTimingHub := ws.NewHub()
+	f1LiveTimingMgr := f1livetiming.New(cfg, f1LiveTimingHub)
 	motorsportLiveHub := ws.NewHub()
 	motorsportLiveMgr := motorsportlive.New(cfg, gormOrNil(database), motorsportLiveHub)
 	s := &Server{
@@ -44,10 +49,13 @@ func New(cfg config.Config, database *db.DB) *Server {
 		EchoHub:           ws.NewHub(),
 		NewsHub:           ws.NewHub(),
 		OpenF1Hub:         ws.NewHub(),
+		F1LiveTimingHub:   f1LiveTimingHub,
+		F1LiveTiming:      f1LiveTimingMgr,
 		MotorsportLiveHub: motorsportLiveHub,
 		MotorsportLive:    motorsportLiveMgr,
 	}
 	s.TeamCache.Start()
+	s.F1LiveTiming.Start()
 	s.MotorsportLive.Start()
 
 	s.Router.Use(gin.Recovery())
@@ -82,6 +90,8 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/ws/openf1", handlers.WsOpenF1(cfg, s.OpenF1Hub))
 	s.Router.GET("/ws/openf1/raw", handlers.WsOpenF1(cfg, s.OpenF1Hub))
 	s.Router.GET("/ws/openf1/ingest", handlers.OpenF1IngestWS(cfg, s.OpenF1Hub))
+	s.Router.GET("/ws/f1/live-timing", handlers.WsF1LiveTiming(cfg, s.F1LiveTiming, s.F1LiveTimingHub))
+	s.Router.GET("/ws/mp/f1/live-timing", handlers.WsMpF1LiveTiming(s.F1LiveTiming, s.F1LiveTimingHub))
 	s.Router.GET("/ws/motorsport/live", handlers.WsMotorsportLive(s.MotorsportLive, s.MotorsportLiveHub))
 
 	s.Router.GET("/api/v1/pages", handlers.Pages(cfg, gormOrNil(database), s.Cache, cfg.StaticDir))
@@ -99,6 +109,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/mp/race-sessions", handlers.MpRaceSessions(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/session-results", handlers.MpSessionResults(gormOrNil(database), s.TeamCache))
 	s.Router.GET("/api/v1/mp/session-results/latest-crawled", handlers.MpSessionResultsLatestCrawled(cfg, s.TeamCache))
+	s.Router.GET("/api/v1/mp/f1/live-timing", handlers.MpF1LiveTiming(s.F1LiveTiming))
 	s.Router.GET("/api/v1/mp/motorsport/live", handlers.MpMotorsportLive(s.MotorsportLive))
 	s.Router.GET("/api/v1/mp/standings", handlers.MpStandings(gormOrNil(database), s.TeamCache))
 	s.Router.GET("/api/v1/mp/telemetry/controls", handlers.MpTelemetryControls(gormOrNil(database)))
@@ -109,6 +120,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 
 	s.Router.GET("/api/v1/admin/devices", handlers.AdminDevicesList(cfg, gormOrNil(database)))
 	s.Router.GET("/api/v1/admin/devices/:device_id", handlers.AdminDeviceDetail(cfg, gormOrNil(database)))
+	s.Router.GET("/api/v1/admin/f1/live-timing", handlers.AdminF1LiveTiming(cfg, s.F1LiveTiming))
 	s.Router.GET("/api/v1/admin/mp/users", handlers.AdminUsersList(cfg, gormOrNil(database)))
 	s.Router.GET("/api/v1/admin/mp/users/:user_id", handlers.AdminUserDetail(cfg, gormOrNil(database)))
 	s.Router.GET("/api/v1/admin/motorsport/live-standings", handlers.AdminMotorsportLiveStandings(cfg))

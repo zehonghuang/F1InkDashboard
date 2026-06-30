@@ -17,7 +17,10 @@
         <block wx:for="{{displayRows}}" wx:key="rowKey">
           <view class="mslt-row mslt-data-row {{item.animClass}}" style="{{item.animStyle}}">
             <view class="mslt-cell mslt-c-pos">
-              <view class="mslt-pos-box">{{item.position}}</view>
+              <view class="mslt-pos-stack">
+                <view class="mslt-pos-box {{item.moveClass}}">{{item.position}}</view>
+                <view wx:if="{{item.moveText}}" class="mslt-move-pill {{item.moveClass}}">{{item.moveText}}</view>
+              </view>
             </view>
 
             <view class="mslt-cell mslt-c-driver">

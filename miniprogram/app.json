@@ -13,7 +13,8 @@
     "pages/shop-detail/index",
     "pages/mine/index",
     "pages/image-crop/index",
-    "pages/style-demo/index"
+    "pages/style-demo/index",
+    "pages/live-timing/index"
   ],
   "lazyCodeLoading": "requiredComponents",
   "window": {
@@ -50,5 +51,6 @@
       }
     ]
   },
+  "navigateToMiniProgramAppIdList": [],
   "sitemapLocation": "sitemap.json"
 }

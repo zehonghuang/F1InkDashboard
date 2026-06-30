@@ -31,6 +31,14 @@ const router = useRouter()
     </Card>
 
     <Card class="col-span-12 lg:col-span-4">
+      <template #title>F1 Live Timing Demo</template>
+      <div class="text-sm text-zinc-700">通过后端 100ms 轮询 GraphQL，本页实时预览组装后的 live timing 榜单。</div>
+      <div class="mt-3">
+        <Button type="primary" @click="router.push({ name: 'f1-live-timing-demo' })">进入</Button>
+      </div>
+    </Card>
+
+    <Card class="col-span-12 lg:col-span-4">
       <template #title>Live Standings Demo</template>
       <div class="text-sm text-zinc-700">抓取 Motorsport live-text 页里的实时榜单并在 admin 中预览。</div>
       <div class="mt-3">

@@ -13,6 +13,8 @@ Component({
     attached() {
       this._rowLayoutMap = {}
       this._reorderTimer = null
+      this._isAnimating = false
+      this._pendingDisplayRows = null
     },
     detached() {
       clearTimeout(this._reorderTimer)
@@ -41,13 +43,23 @@ Component({
         row.rowKey = buildRowKey(row, idx)
         row.animStyle = ''
         row.animClass = ''
+        row.moveClass = ''
+        row.moveText = ''
         return row
       })
+      if (this._isAnimating) {
+        this._pendingDisplayRows = displayRows
+        return
+      }
       this.applyDisplayRows(displayRows)
     },
   },
   methods: {
     applyDisplayRows(nextRows) {
+      if (this._isAnimating) {
+        this._pendingDisplayRows = nextRows
+        return
+      }
       const prevRows = Array.isArray(this.data.displayRows) ? this.data.displayRows : []
       const prevLayoutMap = this._rowLayoutMap || {}
       const hasPrevLayout = Object.keys(prevLayoutMap).length > 0
@@ -85,21 +97,31 @@ Component({
               return row
             }
             const animClass = deltaY > 0 ? 'mslt-row-rise' : 'mslt-row-fall'
+            const moveCount = Math.abs(prevIndex - nextIndex)
+            const moveClass = deltaY > 0 ? 'mslt-move-up' : 'mslt-move-down'
+            const moveText = deltaY > 0 ? `▲${moveCount}` : `▼${moveCount}`
             return Object.assign({}, row, {
               animClass,
+              moveClass,
+              moveText,
               animStyle: `transform: translateY(${deltaY}px) scale(0.985); opacity: 0.92;`,
             })
           })
 
           const shouldAnimate = animatedRows.some((row) => row.animStyle)
-          if (!shouldAnimate) return
+          if (!shouldAnimate) {
+            this.flushPendingDisplayRows()
+            return
+          }
+
+          this._isAnimating = true
 
           this.setData({ displayRows: animatedRows }, () => {
             wx.nextTick(() => {
               const settledRows = this.data.displayRows.map((row) => {
                 if (!row.animStyle) return row
                 return Object.assign({}, row, {
-                  animStyle: 'transform: translateY(0) scale(1); opacity: 1; transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease-out, box-shadow 360ms ease-out, background-color 360ms ease-out;',
+                  animStyle: 'transform: translateY(0) scale(1); opacity: 1; transition: transform 620ms cubic-bezier(0.22, 1, 0.36, 1), opacity 320ms ease-out, box-shadow 620ms ease-out, background-color 620ms ease-out;',
                 })
               })
 
@@ -108,18 +130,26 @@ Component({
               this._reorderTimer = setTimeout(() => {
                 const clearedRows = this.data.displayRows.map((row) => {
                   if (!row.animStyle) return row
-                  return Object.assign({}, row, { animStyle: '', animClass: '' })
+                  return Object.assign({}, row, { animStyle: '', animClass: '', moveClass: '', moveText: '' })
                 })
                 this.setData({ displayRows: clearedRows }, () => {
                   this.measureRowLayout((layoutMap) => {
                     this._rowLayoutMap = layoutMap
+                    this._isAnimating = false
+                    this.flushPendingDisplayRows()
                   })
                 })
-              }, 420)
+              }, 760)
             })
           })
         })
       })
+    },
+    flushPendingDisplayRows() {
+      const pending = this._pendingDisplayRows
+      if (!pending || this._isAnimating) return
+      this._pendingDisplayRows = null
+      this.applyDisplayRows(pending)
     },
     measureRowLayout(done) {
       wx.nextTick(() => {

@@ -77,6 +77,12 @@ App({
     apiBase: "",
     formula1Loaded: false,
     newsDataSource: "backend",
+    // Fill the real WeChat Store mini program target here when it's ready.
+    shopMiniProgram: {
+      appId: "",
+      path: "",
+      envVersion: "release"
+    },
     envVersion: "",
     tweakA: null,
     tweakAEffective: false

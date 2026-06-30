@@ -90,6 +90,118 @@ export type AdminMotorsportLiveStandingsResponse = {
   rows: AdminMotorsportStandingRow[]
 }
 
+export type AdminF1LiveTimingClock = {
+  paused: boolean
+  system_time?: string
+  track_time?: string
+  live_timing_start_time?: string
+}
+
+export type AdminF1LiveTimingSession = {
+  meeting_key?: number
+  meeting_name?: string
+  official_name?: string
+  location?: string
+  country_code?: string
+  country_name?: string
+  circuit?: string
+  session_key?: number
+  session_type?: string
+  session_number?: number
+  session_name?: string
+  status?: string
+  start_date?: string
+  end_date?: string
+  gmt_offset?: string
+}
+
+export type AdminF1LiveTimingTrackStatus = {
+  code?: string
+  message?: string
+}
+
+export type AdminF1LiveTimingWeather = {
+  air_temp?: string
+  track_temp?: string
+  humidity?: string
+  pressure?: string
+  rainfall?: string
+  wind_direction?: string
+  wind_speed?: string
+}
+
+export type AdminF1LiveTimingRaceControlMessage = {
+  utc?: string
+  category?: string
+  title?: string
+  message?: string
+  flag?: string
+  status?: string
+  mode?: string
+  scope?: string
+  sector?: number
+  racing_number?: string
+}
+
+export type AdminF1LiveTimingRow = {
+  position: number
+  line?: number
+  racing_number?: string
+  tla?: string
+  driver: string
+  team?: string
+  team_color?: string
+  interval?: string
+  gap?: string
+  best_lap?: string
+  last_lap?: string
+  tyre?: string
+  tyre_age_laps?: number
+  is_new_tyre?: boolean
+  laps?: number
+  pit_count?: number
+  in_pit?: boolean
+  pit_out?: boolean
+  stopped?: boolean
+  retired?: boolean
+  knocked_out?: boolean
+  taken_chequered?: boolean
+  show_position?: boolean
+  status_code?: number
+  sectors?: string[]
+  sector_colors?: string[]
+  sector_segment_colors?: string[][]
+  current_lap_fastest?: boolean
+  personal_best_lap?: boolean
+}
+
+export type AdminF1LiveTimingSnapshot = {
+  enabled: boolean
+  running: boolean
+  connected: boolean
+  endpoint: string
+  poll_interval_ms: number
+  request_timeout_ms: number
+  seq: number
+  last_polled_at_utc?: string
+  last_updated_at_utc?: string
+  last_error?: string
+  query_latency_ms?: number
+  clock?: AdminF1LiveTimingClock
+  session?: AdminF1LiveTimingSession
+  track_status?: AdminF1LiveTimingTrackStatus
+  weather?: AdminF1LiveTimingWeather
+  race_control_messages?: AdminF1LiveTimingRaceControlMessage[]
+  rows: AdminF1LiveTimingRow[]
+}
+
+export type AdminF1LiveTimingResponse = {
+  ok: boolean
+  error?: string
+  generated_at_utc?: string
+  status: AdminF1LiveTimingSnapshot
+}
+
 export async function fetchAdminDevices(params: { page?: number; pageSize?: number; q?: string }) {
   const qs = new URLSearchParams()
   qs.set('page', String(params.page || 1))
@@ -132,6 +244,13 @@ export async function fetchAdminMotorsportLiveStandings(params?: { sourceUrl?: s
   const suffix = qs.toString()
   const url = withToken(`/api/v1/admin/motorsport/live-standings${suffix ? `?${suffix}` : ''}`)
   const res = await fetchJSON<AdminMotorsportLiveStandingsResponse>(url)
+  if (!res.ok) throw new Error(res.error || 'backend_error')
+  return res
+}
+
+export async function fetchAdminF1LiveTiming() {
+  const url = withToken('/api/v1/admin/f1/live-timing')
+  const res = await fetchJSON<AdminF1LiveTimingResponse>(url)
   if (!res.ok) throw new Error(res.error || 'backend_error')
   return res
 }
