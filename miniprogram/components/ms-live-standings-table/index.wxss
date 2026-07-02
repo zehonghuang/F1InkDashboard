@@ -46,6 +46,7 @@
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12rpx;
   overflow: hidden;
+  transition: background-color 620ms ease, box-shadow 620ms ease, transform 620ms ease;
 }
 
 .mslt-data-row {
@@ -55,14 +56,14 @@
 
 .mslt-data-row.mslt-row-rise {
   z-index: 3;
-  background: linear-gradient(90deg, rgba(34, 197, 94, 0.18), rgba(255, 255, 255, 0.05));
-  box-shadow: 0 12rpx 28rpx rgba(34, 197, 94, 0.2);
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.12), rgba(255, 255, 255, 0.05));
+  box-shadow: 0 10rpx 24rpx rgba(34, 197, 94, 0.14);
 }
 
 .mslt-data-row.mslt-row-fall {
   z-index: 3;
-  background: linear-gradient(90deg, rgba(239, 68, 68, 0.16), rgba(255, 255, 255, 0.05));
-  box-shadow: 0 12rpx 28rpx rgba(239, 68, 68, 0.18);
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.11), rgba(255, 255, 255, 0.05));
+  box-shadow: 0 10rpx 24rpx rgba(239, 68, 68, 0.12);
 }
 
 .mslt-head {
@@ -95,13 +96,6 @@
   width: 88rpx;
 }
 
-.mslt-pos-stack {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4rpx;
-}
-
 .mslt-c-driver {
   width: 214rpx;
   text-align: left;
@@ -128,47 +122,27 @@
   height: 38rpx;
   border-radius: 10rpx;
   background: rgba(15, 23, 42, 0.85);
+  border: 1rpx solid rgba(255, 255, 255, 0.06);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
   margin: 0 auto;
-  transition: background-color 220ms ease, color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+  transition: background-color 620ms ease, color 620ms ease, box-shadow 620ms ease, border-color 620ms ease, transform 620ms ease;
 }
 
 .mslt-pos-box.mslt-move-up {
-  background: linear-gradient(180deg, rgba(34, 197, 94, 0.92), rgba(22, 163, 74, 0.92));
-  color: #ecfdf5;
-  box-shadow: 0 8rpx 18rpx rgba(34, 197, 94, 0.26);
+  background: rgba(34, 197, 94, 0.14);
+  border-color: rgba(34, 197, 94, 0.55);
+  color: #bbf7d0;
+  box-shadow: inset 0 0 0 1rpx rgba(34, 197, 94, 0.18), 0 6rpx 14rpx rgba(34, 197, 94, 0.14);
 }
 
 .mslt-pos-box.mslt-move-down {
-  background: linear-gradient(180deg, rgba(239, 68, 68, 0.92), rgba(220, 38, 38, 0.92));
-  color: #fef2f2;
-  box-shadow: 0 8rpx 18rpx rgba(239, 68, 68, 0.22);
-}
-
-.mslt-move-pill {
-  min-width: 42rpx;
-  height: 24rpx;
-  padding: 0 8rpx;
-  border-radius: 999rpx;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14rpx;
-  line-height: 1;
-  font-weight: 800;
-}
-
-.mslt-move-pill.mslt-move-up {
-  background: rgba(34, 197, 94, 0.18);
-  color: #86efac;
-}
-
-.mslt-move-pill.mslt-move-down {
-  background: rgba(239, 68, 68, 0.18);
-  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.52);
+  color: #fecaca;
+  box-shadow: inset 0 0 0 1rpx rgba(239, 68, 68, 0.16), 0 6rpx 14rpx rgba(239, 68, 68, 0.12);
 }
 
 .mslt-driver-wrap {

@@ -24,15 +24,16 @@
     <view class="hero-head">
       <view>
         <view class="hero-eyebrow">{{i18n.liveTiming.liveEyebrow}}</view>
-        <view class="hero-title">{{sessionTitle}}</view>
+        <view class="hero-title-row">
+          <image wx:if="{{countryFlagSrc}}" class="hero-flag" src="{{countryFlagSrc}}" mode="aspectFill" />
+          <view class="hero-title">{{sessionTitle}}</view>
+        </view>
         <view class="hero-subtitle">{{sessionSubtitle}}</view>
       </view>
-      <view class="hero-clock">{{trackTime}}</view>
     </view>
 
     <view class="hero-meta">
       <view class="hero-status hero-status-{{trackStatusTone}}">{{trackStatusLabel}}</view>
-      <view class="hero-updated">{{i18n.liveTiming.updatedAt}} {{updatedAt}}</view>
     </view>
 
     <view class="badge-row">

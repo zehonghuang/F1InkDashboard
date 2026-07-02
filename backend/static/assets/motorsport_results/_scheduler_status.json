@@ -13,8 +13,8 @@
   "status_file": "C:\\F1InkDashboard\\backend\\static\\assets\\motorsport_results\\_scheduler_status.json",
   "output_root": "C:\\F1InkDashboard\\backend\\static\\assets\\motorsport_results",
   "startup_run_attempted": true,
-  "last_tick_at_utc": "2026-06-30T12:50:18Z",
+  "last_tick_at_utc": "2026-07-02T15:52:24Z",
   "last_reason": "interval",
-  "last_run_started_at_utc": "2026-06-30T12:50:18Z",
-  "last_run_finished_at_utc": "2026-06-30T12:50:18Z"
+  "last_run_started_at_utc": "2026-07-02T15:52:24Z",
+  "last_run_finished_at_utc": "2026-07-02T15:52:24Z"
 }

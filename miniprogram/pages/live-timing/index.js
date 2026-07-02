@@ -119,6 +119,41 @@ function buildTrackStatus(snapshot) {
   return { label: message, tone }
 }
 
+function normalizeCountryCode(session) {
+  const raw = firstNonEmpty(session && session.country_code).toUpperCase()
+  if (!raw) return ""
+  const aliases = {
+    ARE: "AE",
+    AUT: "AT",
+    AUS: "AU",
+    AZE: "AZ",
+    BEL: "BE",
+    BHR: "BH",
+    BRA: "BR",
+    CAN: "CA",
+    CHN: "CN",
+    ESP: "ES",
+    GBR: "GB",
+    HUN: "HU",
+    ITA: "IT",
+    JPN: "JP",
+    MCO: "MC",
+    MEX: "MX",
+    NLD: "NL",
+    QAT: "QA",
+    SAU: "SA",
+    SGP: "SG",
+    USA: "US",
+  }
+  if (raw.length === 2) return raw
+  return aliases[raw] || ""
+}
+
+function getCountryFlagSrc(session) {
+  const code = normalizeCountryCode(session)
+  return code ? `../../assets/flags/${code}.png` : ""
+}
+
 function buildConnectionBadges(snapshot, wsState) {
   return [
     { label: "Backend", value: snapshot && snapshot.connected ? "Connected" : "Offline", tone: snapshot && snapshot.connected ? "green" : "neutral" },
@@ -155,6 +190,7 @@ Page({
     wsState: "idle",
     sessionTitle: "--",
     sessionSubtitle: "--",
+    countryFlagSrc: "",
     trackTime: "--",
     updatedAt: "--",
     trackStatusLabel: "Unknown",
@@ -391,6 +427,7 @@ Page({
     this.setData({
       sessionTitle: firstNonEmpty(session.meeting_name, session.location, this.data.i18n.liveTiming.pageTitle),
       sessionSubtitle: [firstNonEmpty(session.session_name), firstNonEmpty(session.status)].filter(Boolean).join(" · ") || "--",
+      countryFlagSrc: getCountryFlagSrc(session),
       trackTime: formatTrackTime(snapshot && snapshot.clock && snapshot.clock.track_time),
       updatedAt: formatStamp(snapshot && snapshot.last_updated_at_utc),
       trackStatusLabel: trackStatus.label,
