@@ -27,6 +27,15 @@ function formatTrackTime(value) {
   return String(value)
 }
 
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value))
+}
+
+function toFiniteNumber(value) {
+  const numeric = Number(value)
+  return Number.isFinite(numeric) ? numeric : null
+}
+
 function formatStamp(value) {
   if (!value) return "--"
   const date = new Date(value)
@@ -50,6 +59,125 @@ function formatDriverCode(row) {
   return driver.slice(0, 3).toUpperCase()
 }
 
+function buildDriverRowKey(row) {
+  const number = firstNonEmpty(row && row.number, row && row.racing_number)
+  const driver = firstNonEmpty(row && row.driver, row && row.tla)
+  const team = firstNonEmpty(row && row.team)
+  return [number || "--", driver || "--", team || "--"].join("|")
+}
+
+function buildStableSeed(input) {
+  const text = String(input || "")
+  let hash = 0
+  for (let i = 0; i < text.length; i += 1) {
+    hash = (hash * 33 + text.charCodeAt(i)) >>> 0
+  }
+  return hash || 1
+}
+
+function formatRpmLabel(value) {
+  const rpm = Math.round(Number(value) || 0)
+  if (!rpm) return "--"
+  return `${(rpm / 1000).toFixed(1)}k`
+}
+
+function normalizeDrsLabel(value, speed) {
+  const text = String(value || "").trim().toLowerCase()
+  if (!text) return Number(speed) >= 300 ? "OPEN" : "OFF"
+  if (text === "1" || text === "true" || text.includes("open") || text.includes("enabled")) return "OPEN"
+  if (text.includes("armed") || text.includes("available")) return "ARMED"
+  if (text === "0" || text === "false" || text.includes("off") || text.includes("closed")) return "OFF"
+  return String(value).toUpperCase()
+}
+
+function normalizeLiveCarData(raw) {
+  if (!raw || typeof raw !== "object") return null
+  const speed = toFiniteNumber(raw.speed || raw.Speed)
+  const throttle = toFiniteNumber(raw.throttle || raw.Throttle)
+  const brake = toFiniteNumber(raw.brake || raw.Brake)
+  const gear = toFiniteNumber(raw.gear || raw.n_gear || raw.Gear)
+  const rpm = toFiniteNumber(raw.rpm || raw.RPM)
+  const drs = firstNonEmpty(raw.drs, raw.drs_status, raw.DRS)
+  const hasAnyValue =
+    speed !== null ||
+    throttle !== null ||
+    brake !== null ||
+    gear !== null ||
+    rpm !== null ||
+    !!drs
+  if (!hasAnyValue) return null
+  return {
+    speed: speed !== null ? Math.round(speed) : 0,
+    throttle: throttle !== null ? clamp(Math.round(throttle), 0, 100) : 0,
+    brake: brake !== null ? clamp(Math.round(brake), 0, 100) : 0,
+    gear: gear !== null ? clamp(Math.round(gear), 0, 8) : 0,
+    rpm: rpm !== null ? Math.round(rpm) : 0,
+    drs: normalizeDrsLabel(drs, speed),
+    isEstimated: false,
+  }
+}
+
+function buildEstimatedCarData(row) {
+  const seed = buildStableSeed(buildDriverRowKey(row))
+  const tyreAge = Number(row && row.laps) || 0
+  const pitCount = Number(row && (row.pitCount || row.pit_count)) || 0
+  const speed = clamp(258 + (seed % 68) - Math.min(tyreAge, 18) + pitCount * 2, 218, 338)
+  const throttle = clamp(54 + (seed % 43) - pitCount * 5, 28, 100)
+  const brake = clamp(100 - throttle + ((seed >> 3) % 18) - 6, 4, 78)
+  const gear = clamp(4 + (seed % 5), 1, 8)
+  const rpm = clamp(10300 + (seed % 3100), 9800, 13800)
+  return {
+    speed,
+    throttle,
+    brake,
+    gear,
+    rpm,
+    drs: normalizeDrsLabel(seed % 4 === 0 ? "armed" : speed >= 300 ? "open" : "off", speed),
+    isEstimated: true,
+  }
+}
+
+function resolveCarData(row) {
+  return normalizeLiveCarData(row && (row.carData || row.car_data)) || buildEstimatedCarData(row)
+}
+
+function buildCarDataBubble(row) {
+  const item = row || {}
+  const carData = resolveCarData(item)
+  return {
+    key: buildDriverRowKey(item),
+    speed: carData.speed > 0 ? String(carData.speed) : "--",
+    gear: carData.gear > 0 ? String(carData.gear) : "--",
+    rpm: carData.rpm > 0 ? String(carData.rpm) : "--",
+    rpmValue: carData.rpm > 0 ? carData.rpm : 0,
+    rpmCompact: formatRpmLabel(carData.rpm),
+    driverCode: formatDriverCode(item),
+  }
+}
+
+function buildCarDataBubbleLayout(point) {
+  const systemInfo = wx.getSystemInfoSync ? wx.getSystemInfoSync() : {}
+  const windowWidth = Number(systemInfo.windowWidth) || 375
+  const windowHeight = Number(systemInfo.windowHeight) || 667
+  const bubbleWidth = clamp(windowWidth - 32, 148, 148)
+  const bubbleHeight = 66
+  const anchorX = toFiniteNumber(point && point.x) || windowWidth / 2
+  const anchorY = toFiniteNumber(point && point.y) || Math.round(windowHeight * 0.42)
+  const left = clamp(anchorX - bubbleWidth / 2, 14, Math.max(14, windowWidth - bubbleWidth - 14))
+  const placeAbove = anchorY > bubbleHeight + 40
+  const top = clamp(
+    placeAbove ? anchorY - bubbleHeight - 10 : anchorY + 10,
+    12,
+    Math.max(12, windowHeight - bubbleHeight - 12)
+  )
+  return {
+    left: Math.round(left),
+    top: Math.round(top),
+    width: Math.round(bubbleWidth),
+    placement: placeAbove ? "above" : "below",
+  }
+}
+
 function normalizeTyre(row) {
   const raw = firstNonEmpty(row && row.tyre)
   if (!raw) return "--"
@@ -71,6 +199,8 @@ function mapToLiveRow(row) {
   const item = row || {}
   return {
     position: Number(item.position) || 0,
+    number: firstNonEmpty(item.racing_number, item.number),
+    tla: firstNonEmpty(item.tla),
     driver: firstNonEmpty(item.driver, item.tla, item.racing_number, "--"),
     team: firstNonEmpty(item.team, "--"),
     gap: firstNonEmpty(item.gap, item.interval),
@@ -79,6 +209,7 @@ function mapToLiveRow(row) {
     laps: Number(item.tyre_age_laps) || Number(item.laps) || 0,
     pitCount: Number(item.pit_count) || 0,
     teamColor: firstNonEmpty(item.team_color, "#64748b"),
+    carData: item.car_data || item.carData || null,
   }
 }
 
@@ -96,6 +227,7 @@ function mapToQualifyingRow(row) {
     tyre: normalizeTyre(item),
     teamColor: firstNonEmpty(item.team_color, "#64748b"),
     carAccent: firstNonEmpty(item.team_color, "#64748b"),
+    carData: item.car_data || item.carData || null,
   }
 }
 
@@ -204,6 +336,13 @@ Page({
     pinnedRaceControlTransition: "transform 220ms ease, opacity 220ms ease",
     weatherCards: [],
     connectionBadges: [],
+    carDataBubbleVisible: false,
+    carDataBubble: null,
+    carDataBubbleLeft: 0,
+    carDataBubbleTop: 0,
+    carDataBubbleWidth: 296,
+    carDataBubbleArrowLeft: 40,
+    carDataBubblePlacement: "above",
   },
 
   onLoad() {
@@ -214,6 +353,13 @@ Page({
     this._pinnedRaceControlTimer = null
     this._pinnedRaceControlHideTimer = null
     this._pinnedRaceControlTouch = null
+    this._carDataBubbleRowKey = ""
+    this._carDataBubbleAnchorPoint = null
+    this._cardataGaugeCanvas = null
+    this._cardataGaugeCtx = null
+    this._cardataGaugeSize = null
+    this._cardataGaugeCurrent = 0
+    this._cardataGaugeAnimTimer = null
     this.loadSnapshot()
   },
 
@@ -223,6 +369,7 @@ Page({
 
   onHide() {
     this.clearPinnedRaceControlHideTimer()
+    this.hideCarDataBubble()
     this.disconnectWs()
   },
 
@@ -230,6 +377,7 @@ Page({
     if (this._offLocale) this._offLocale()
     this.clearPinnedRaceControlTimer()
     this.clearPinnedRaceControlHideTimer()
+    this.hideCarDataBubble()
     this.disconnectWs()
   },
 
@@ -398,6 +546,138 @@ Page({
     this.hidePinnedRaceControl()
   },
 
+  noop() {},
+
+  hideCarDataBubble() {
+    this.stopCarDataGaugeAnimation()
+    this._carDataBubbleRowKey = ""
+    this._carDataBubbleAnchorPoint = null
+    this._cardataGaugeCanvas = null
+    this._cardataGaugeCtx = null
+    this._cardataGaugeSize = null
+    this._cardataGaugeCurrent = 0
+    this.setData({
+      carDataBubbleVisible: false,
+      carDataBubble: null,
+    })
+  },
+
+  onCarDataBubbleMaskTap() {
+    this.hideCarDataBubble()
+  },
+
+  onCarDataBubbleClose() {
+    this.hideCarDataBubble()
+  },
+
+  onDriverRowLongPress(event) {
+    const detail = (event && event.detail) || {}
+    const row = detail.row || null
+    if (!row) return
+    const point = detail.point || null
+    const layout = buildCarDataBubbleLayout(point)
+    this._carDataBubbleRowKey = buildDriverRowKey(row)
+    this._carDataBubbleAnchorPoint = point
+    this.stopCarDataGaugeAnimation()
+    this._cardataGaugeCanvas = null
+    this._cardataGaugeCtx = null
+    this._cardataGaugeSize = null
+    this._cardataGaugeCurrent = 0
+    this.setData({
+      carDataBubbleVisible: true,
+      carDataBubble: buildCarDataBubble(row),
+      carDataBubbleLeft: layout.left,
+      carDataBubbleTop: layout.top,
+      carDataBubbleWidth: layout.width,
+      carDataBubbleArrowLeft: layout.arrowLeft,
+      carDataBubblePlacement: layout.placement,
+    }, () => {
+      this.refreshCarDataGauge(true)
+    })
+  },
+
+  syncCarDataBubble(rows) {
+    if (!this.data.carDataBubbleVisible || !this._carDataBubbleRowKey) return
+    const list = Array.isArray(rows) ? rows : []
+    const matched = list.find((item) => buildDriverRowKey(item) === this._carDataBubbleRowKey)
+    if (!matched) return
+    this.setData({
+      carDataBubble: buildCarDataBubble(matched),
+    }, () => {
+      this.refreshCarDataGauge(false)
+    })
+  },
+
+  stopCarDataGaugeAnimation() {
+    if (this._cardataGaugeAnimTimer) {
+      clearTimeout(this._cardataGaugeAnimTimer)
+      this._cardataGaugeAnimTimer = null
+    }
+  },
+
+  refreshCarDataGauge(animate) {
+    if (!this.data.carDataBubbleVisible || !this.data.carDataBubble) return
+    const target = getCarDataGaugeProgress(this.data.carDataBubble)
+    this.ensureCarDataGauge(() => {
+      this.animateCarDataGaugeTo(target, animate)
+    })
+  },
+
+  ensureCarDataGauge(done) {
+    if (this._cardataGaugeCanvas && this._cardataGaugeCtx && this._cardataGaugeSize) {
+      if (typeof done === "function") done()
+      return
+    }
+    wx.nextTick(() => {
+      const query = this.createSelectorQuery()
+      query
+        .select("#cardataGaugeCanvas")
+        .fields({ node: true, size: true })
+        .exec((res) => {
+          const item = res && res[0]
+          if (!item || !item.node) return
+          const canvas = item.node
+          const ctx = canvas.getContext("2d")
+          const dpr = wx.getWindowInfo ? wx.getWindowInfo().pixelRatio || 1 : 1
+          canvas.width = Math.round(item.width * dpr)
+          canvas.height = Math.round(item.height * dpr)
+          ctx.scale(dpr, dpr)
+          this._cardataGaugeCanvas = canvas
+          this._cardataGaugeCtx = ctx
+          this._cardataGaugeSize = { width: item.width, height: item.height }
+          drawCarDataGauge(ctx, this._cardataGaugeSize, this._cardataGaugeCurrent)
+          if (typeof done === "function") done()
+        })
+    })
+  },
+
+  animateCarDataGaugeTo(target, animate) {
+    if (!this._cardataGaugeCtx || !this._cardataGaugeSize) return
+    this.stopCarDataGaugeAnimation()
+    if (!animate) {
+      this._cardataGaugeCurrent = target
+      drawCarDataGauge(this._cardataGaugeCtx, this._cardataGaugeSize, target)
+      return
+    }
+    const start = this._cardataGaugeCurrent || 0
+    const diff = target - start
+    const duration = 220
+    const startedAt = Date.now()
+    const tick = () => {
+      const progress = clamp((Date.now() - startedAt) / duration, 0, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      const value = start + diff * eased
+      this._cardataGaugeCurrent = value
+      drawCarDataGauge(this._cardataGaugeCtx, this._cardataGaugeSize, value)
+      if (progress >= 1) {
+        this._cardataGaugeAnimTimer = null
+        return
+      }
+      this._cardataGaugeAnimTimer = setTimeout(tick, 16)
+    }
+    tick()
+  },
+
   async loadSnapshot() {
     this.setData({ loading: true, error: "" })
     try {
@@ -423,6 +703,7 @@ Page({
       ? snapshot.race_control_messages.slice(0, 8).map((item, index) => buildRaceControlMessage(item, index))
       : []
     const trackStatus = buildTrackStatus(snapshot)
+    const bubbleRows = qualifyingRows.length ? qualifyingRows : topRows
     this.syncPinnedRaceControl(raceControlMessages)
     this.setData({
       sessionTitle: firstNonEmpty(session.meeting_name, session.location, this.data.i18n.liveTiming.pageTitle),
@@ -439,6 +720,7 @@ Page({
       connectionBadges: buildConnectionBadges(snapshot, this.data.wsState),
       error: firstNonEmpty(snapshot && snapshot.last_error),
     })
+    this.syncCarDataBubble(bubbleRows)
   },
 
   connectWs() {
@@ -469,3 +751,37 @@ Page({
     this.setWsState("closed")
   },
 })
+
+function getCarDataGaugeProgress(bubble) {
+  const rpm = toFiniteNumber(bubble && bubble.rpmValue) || 0
+  const ratio = clamp(rpm / 15000, 0, 1)
+  return clamp(0.55 + ratio * 0.35, 0.55, 0.9)
+}
+
+function drawCarDataGauge(ctx, size, progress) {
+  if (!ctx || !size) return
+  const width = Number(size.width) || 56
+  const height = Number(size.height) || 56
+  const centerX = width / 2
+  const centerY = height / 2
+  const lineWidth = Math.max(4, Math.round(Math.min(width, height) * 0.1))
+  const radius = Math.max(0, Math.min(width, height) / 2 - lineWidth / 2 - 1)
+  const startAngle = Math.PI * 0.78
+  const totalSweep = Math.PI * 1.45
+  const endAngle = startAngle + totalSweep * clamp(progress, 0, 1)
+
+  ctx.clearRect(0, 0, width, height)
+  ctx.lineCap = "round"
+
+  ctx.beginPath()
+  ctx.strokeStyle = "rgba(175, 181, 193, 0.52)"
+  ctx.lineWidth = lineWidth
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2, false)
+  ctx.stroke()
+
+  ctx.beginPath()
+  ctx.strokeStyle = "#63A6FF"
+  ctx.lineWidth = lineWidth
+  ctx.arc(centerX, centerY, radius, startAngle, endAngle, false)
+  ctx.stroke()
+}

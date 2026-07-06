@@ -30,6 +30,7 @@ const liveTimingQuery = `query {
     SessionStatus
     TimingData
     TimingAppData
+    CarData
     DriverList
     TrackStatus
     WeatherData
@@ -111,35 +112,45 @@ type RaceControlMessage struct {
 }
 
 type StandingRow struct {
-	Position            int        `json:"position"`
-	Line                int        `json:"line,omitempty"`
-	RacingNumber        string     `json:"racing_number,omitempty"`
-	TLA                 string     `json:"tla,omitempty"`
-	Driver              string     `json:"driver"`
-	Team                string     `json:"team,omitempty"`
-	TeamColor           string     `json:"team_color,omitempty"`
-	Interval            string     `json:"interval,omitempty"`
-	Gap                 string     `json:"gap,omitempty"`
-	BestLap             string     `json:"best_lap,omitempty"`
-	LastLap             string     `json:"last_lap,omitempty"`
-	Tyre                string     `json:"tyre,omitempty"`
-	TyreAgeLaps         int        `json:"tyre_age_laps,omitempty"`
-	IsNewTyre           bool       `json:"is_new_tyre,omitempty"`
-	Laps                int        `json:"laps,omitempty"`
-	PitCount            int        `json:"pit_count,omitempty"`
-	InPit               bool       `json:"in_pit,omitempty"`
-	PitOut              bool       `json:"pit_out,omitempty"`
-	Stopped             bool       `json:"stopped,omitempty"`
-	Retired             bool       `json:"retired,omitempty"`
-	KnockedOut          bool       `json:"knocked_out,omitempty"`
-	TakenChequered      bool       `json:"taken_chequered,omitempty"`
-	ShowPosition        bool       `json:"show_position"`
-	StatusCode          int        `json:"status_code,omitempty"`
-	Sectors             []string   `json:"sectors,omitempty"`
-	SectorColors        []string   `json:"sector_colors,omitempty"`
-	SectorSegmentColors [][]string `json:"sector_segment_colors,omitempty"`
-	CurrentLapFastest   bool       `json:"current_lap_fastest,omitempty"`
-	PersonalBestLap     bool       `json:"personal_best_lap,omitempty"`
+	Position            int          `json:"position"`
+	Line                int          `json:"line,omitempty"`
+	RacingNumber        string       `json:"racing_number,omitempty"`
+	TLA                 string       `json:"tla,omitempty"`
+	Driver              string       `json:"driver"`
+	Team                string       `json:"team,omitempty"`
+	TeamColor           string       `json:"team_color,omitempty"`
+	Interval            string       `json:"interval,omitempty"`
+	Gap                 string       `json:"gap,omitempty"`
+	BestLap             string       `json:"best_lap,omitempty"`
+	LastLap             string       `json:"last_lap,omitempty"`
+	Tyre                string       `json:"tyre,omitempty"`
+	TyreAgeLaps         int          `json:"tyre_age_laps,omitempty"`
+	IsNewTyre           bool         `json:"is_new_tyre,omitempty"`
+	Laps                int          `json:"laps,omitempty"`
+	PitCount            int          `json:"pit_count,omitempty"`
+	InPit               bool         `json:"in_pit,omitempty"`
+	PitOut              bool         `json:"pit_out,omitempty"`
+	Stopped             bool         `json:"stopped,omitempty"`
+	Retired             bool         `json:"retired,omitempty"`
+	KnockedOut          bool         `json:"knocked_out,omitempty"`
+	TakenChequered      bool         `json:"taken_chequered,omitempty"`
+	ShowPosition        bool         `json:"show_position"`
+	StatusCode          int          `json:"status_code,omitempty"`
+	Sectors             []string     `json:"sectors,omitempty"`
+	SectorColors        []string     `json:"sector_colors,omitempty"`
+	SectorSegmentColors [][]string   `json:"sector_segment_colors,omitempty"`
+	CurrentLapFastest   bool         `json:"current_lap_fastest,omitempty"`
+	PersonalBestLap     bool         `json:"personal_best_lap,omitempty"`
+	CarData             *LiveCarData `json:"car_data,omitempty"`
+}
+
+type LiveCarData struct {
+	UpdatedAtUTC string `json:"updated_at_utc,omitempty"`
+	RPM          int    `json:"rpm,omitempty"`
+	Speed        int    `json:"speed,omitempty"`
+	Gear         int    `json:"gear,omitempty"`
+	Throttle     int    `json:"throttle,omitempty"`
+	Brake        int    `json:"brake,omitempty"`
 }
 
 type Manager struct {
@@ -183,6 +194,7 @@ type StatePayload struct {
 	SessionStatus       SessionStatusPayload       `json:"SessionStatus"`
 	TimingData          TimingDataPayload          `json:"TimingData"`
 	TimingAppData       TimingAppDataPayload       `json:"TimingAppData"`
+	CarData             CarDataPayload             `json:"CarData"`
 	DriverList          map[string]DriverPayload   `json:"DriverList"`
 	TrackStatus         TrackStatusPayload         `json:"TrackStatus"`
 	WeatherData         WeatherPayload             `json:"WeatherData"`
@@ -270,6 +282,19 @@ type TimingAppLinePayload struct {
 	Line         int            `json:"Line"`
 	RacingNumber string         `json:"RacingNumber"`
 	Stints       []StintPayload `json:"Stints"`
+}
+
+type CarDataPayload struct {
+	Entries []CarDataEntryPayload `json:"Entries"`
+}
+
+type CarDataEntryPayload struct {
+	Utc  string                       `json:"Utc"`
+	Cars map[string]CarDataCarPayload `json:"Cars"`
+}
+
+type CarDataCarPayload struct {
+	Channels map[string]int `json:"Channels"`
 }
 
 type StintPayload struct {
@@ -454,7 +479,7 @@ func (m *Manager) pollOnce() error {
 
 func (m *Manager) buildSnapshot(payload graphQLResponse, latency time.Duration) Snapshot {
 	state := payload.Data.F1LiveTimingState
-	rows := buildRows(state.TimingData.Lines, state.TimingAppData.Lines, state.DriverList)
+	rows := buildRows(state.TimingData.Lines, state.TimingAppData.Lines, state.DriverList, buildLatestCarDataMap(state.CarData.Entries))
 	rcMessages := buildRaceControlMessages(state.RaceControlMessages.Messages)
 	seq := m.seq.Add(1)
 	return Snapshot{
@@ -574,7 +599,7 @@ func buildRaceControlMessages(in []RaceControlMessagePayload) []RaceControlMessa
 	return out
 }
 
-func buildRows(timing map[string]TimingLinePayload, app map[string]TimingAppLinePayload, drivers map[string]DriverPayload) []StandingRow {
+func buildRows(timing map[string]TimingLinePayload, app map[string]TimingAppLinePayload, drivers map[string]DriverPayload, carDataByNumber map[string]*LiveCarData) []StandingRow {
 	out := make([]StandingRow, 0, len(timing))
 	for key, line := range timing {
 		driver := drivers[key]
@@ -628,6 +653,7 @@ func buildRows(timing map[string]TimingLinePayload, app map[string]TimingAppLine
 			SectorSegmentColors: sectorSegmentColors,
 			CurrentLapFastest:   line.LastLapTime.OverallFastest,
 			PersonalBestLap:     line.LastLapTime.PersonalFastest,
+			CarData:             cloneLiveCarData(carDataByNumber[firstNonEmpty(line.RacingNumber, driver.RacingNumber, key)]),
 		}
 		if row.Position == 0 {
 			row.Position = row.Line
@@ -644,6 +670,37 @@ func buildRows(timing map[string]TimingLinePayload, app map[string]TimingAppLine
 		return out[i].Line < out[j].Line
 	})
 	return out
+}
+
+func buildLatestCarDataMap(entries []CarDataEntryPayload) map[string]*LiveCarData {
+	if len(entries) == 0 {
+		return map[string]*LiveCarData{}
+	}
+	out := make(map[string]*LiveCarData, len(entries))
+	for _, entry := range entries {
+		for racingNumber, car := range entry.Cars {
+			if strings.TrimSpace(racingNumber) == "" {
+				continue
+			}
+			out[racingNumber] = &LiveCarData{
+				UpdatedAtUTC: entry.Utc,
+				RPM:          car.Channels["0"],
+				Speed:        car.Channels["2"],
+				Gear:         car.Channels["3"],
+				Throttle:     car.Channels["4"],
+				Brake:        car.Channels["5"],
+			}
+		}
+	}
+	return out
+}
+
+func cloneLiveCarData(src *LiveCarData) *LiveCarData {
+	if src == nil {
+		return nil
+	}
+	cp := *src
+	return &cp
 }
 
 func currentTyre(stints []StintPayload) (string, int, bool) {

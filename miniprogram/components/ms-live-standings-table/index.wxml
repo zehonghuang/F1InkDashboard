@@ -15,7 +15,7 @@
         </view>
 
         <block wx:for="{{displayRows}}" wx:key="rowKey">
-          <view class="mslt-row mslt-data-row {{item.animClass}}" style="{{item.animStyle}}">
+          <view class="mslt-row mslt-data-row {{item.animClass}}" style="{{item.animStyle}}" data-index="{{index}}" bindlongpress="onRowLongPress">
             <view class="mslt-cell mslt-c-pos">
               <view class="mslt-pos-box {{item.moveClass}}">{{item.position}}</view>
             </view>

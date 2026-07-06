@@ -34,6 +34,8 @@ Component({
         }
         row.tyreParts = tyreParts.length ? tyreParts : [{ text: '--', primary: false }]
         row.position = Number(row.position || row.pos || idx + 1)
+        row.number = String(row.number || row.racing_number || '')
+        row.tla = String(row.tla || '')
         row.teamColor = String(row.teamColor || row.team_color || '#64748b')
         row.driver = String(row.driver || '-')
         row.driverShort = formatDriverName(row.driver)
@@ -180,6 +182,16 @@ Component({
         })
       })
     },
+    onRowLongPress(event) {
+      const index = Number(event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.index)
+      const rows = Array.isArray(this.data.displayRows) ? this.data.displayRows : []
+      const row = Number.isFinite(index) ? rows[index] : null
+      if (!row) return
+      this.triggerEvent("rowlongpress", {
+        row,
+        point: extractTouchPoint(event),
+      })
+    },
   },
 })
 
@@ -200,4 +212,16 @@ function buildRowKey(row, idx) {
   const number = String(row.number || '').trim()
   const fallback = String(row.driverShort || row.position || idx).trim()
   return [driver, team, number || fallback].join('|')
+}
+
+function extractTouchPoint(event) {
+  const touch =
+    (event && event.changedTouches && event.changedTouches[0]) ||
+    (event && event.touches && event.touches[0]) ||
+    null
+  if (!touch) return null
+  return {
+    x: Number(touch.clientX) || 0,
+    y: Number(touch.clientY) || 0,
+  }
 }

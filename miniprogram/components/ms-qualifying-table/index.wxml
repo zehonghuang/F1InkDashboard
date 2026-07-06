@@ -18,7 +18,7 @@
       </view>
 
       <block wx:for="{{displayRows}}" wx:key="pos">
-        <view class="msqt-row">
+        <view class="msqt-row" data-index="{{index}}" bindlongpress="onRowLongPress">
           <view class="msqt-cell msqt-c-cla">
             <view class="msqt-cla">{{item.pos}}</view>
           </view>

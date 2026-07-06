@@ -20,6 +20,31 @@
     </view>
   </view>
 
+  <view wx:if="{{carDataBubbleVisible && carDataBubble}}" class="cardata-layer" catchtap="onCarDataBubbleMaskTap" catchtouchmove="noop">
+    <view class="cardata-scrim"></view>
+    <view
+      class="cardata-bubble cardata-bubble-{{carDataBubblePlacement}}"
+      style="left: {{carDataBubbleLeft}}px; top: {{carDataBubbleTop}}px; width: {{carDataBubbleWidth}}px;"
+      catchtap="noop"
+    >
+      <view class="cardata-dashboard">
+        <view class="cardata-dial-stack">
+          <view class="cardata-dial">
+            <canvas id="cardataGaugeCanvas" type="2d" class="cardata-dial-canvas"></canvas>
+            <view class="cardata-dial-core">
+              <view class="cardata-dial-gear">{{carDataBubble.gear}}</view>
+            </view>
+          </view>
+          <view class="cardata-rpm">{{carDataBubble.rpm}}</view>
+        </view>
+        <view class="cardata-speed-block">
+          <view class="cardata-speed-value">{{carDataBubble.speed}}</view>
+          <view class="cardata-speed-unit">km/h</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <view class="hero">
     <view class="hero-head">
       <view>
@@ -59,12 +84,14 @@
 
   <view class="panel">
     <view class="panel-title">{{i18n.liveTiming.topTower}}</view>
+    <view class="panel-hint">长按车手行查看 Car Data</view>
     <ms-live-standings-table
       title=""
       rows="{{liveRows}}"
       maxRows="0"
       dense
       bodyHeightRpx="520"
+      bindrowlongpress="onDriverRowLongPress"
     />
   </view>
 
@@ -77,6 +104,7 @@
       dense
       bodyHeightRpx="920"
       baseUrl="{{''}}"
+      bindrowlongpress="onDriverRowLongPress"
     />
   </view>
 

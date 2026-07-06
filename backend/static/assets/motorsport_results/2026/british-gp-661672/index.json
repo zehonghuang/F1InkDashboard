@@ -1,0 +1,124 @@
+{
+  "ok": true,
+  "season": 2026,
+  "event_name": "British Grand Prix",
+  "event_slug": "british-gp-661672",
+  "event_key": "british-gp-661672",
+  "results_url": "https://www.motorsport.com/f1/results/2026/british-gp-661672/",
+  "page_title": "Formula 1 2026 British GP",
+  "crawled_at": "2026-07-05T15:03:53.101422+00:00",
+  "sessions": [
+    {
+      "session_code": "CQ",
+      "session_title": "CQ",
+      "session_url": "https://www.motorsport.com/f1/results/2026/british-gp-661672/?st=CQ",
+      "file": "british-gp-661672_cq.json",
+      "row_count": 22,
+      "content_hash": "80cf9a8cf9cee3a59eae36f35bf7cb5ae4817b5ff3e6ae4947d49bf83145b75e"
+    },
+    {
+      "session_code": "CSQ",
+      "session_title": "CSQ",
+      "session_url": "https://www.motorsport.com/f1/results/2026/british-gp-661672/?st=CSQ",
+      "file": "british-gp-661672_csq.json",
+      "row_count": 22,
+      "content_hash": "8f4b69b3b3f2eaa7b7b5e67bc1833ab91f3763014a7079850183c126c8b45951"
+    },
+    {
+      "session_code": "EL",
+      "session_title": "EL",
+      "session_url": "https://www.motorsport.com/f1/results/2026/british-gp-661672/?st=EL",
+      "file": "british-gp-661672_el.json",
+      "row_count": 22,
+      "content_hash": "39691a0a811407b3302b1e300a941cb39d69d12b538857272b798d015ac880d8"
+    },
+    {
+      "session_code": "FP1",
+      "session_title": "FP1",
+      "session_url": "https://www.motorsport.com/f1/results/2026/british-gp-661672/?st=FP1",
+      "file": "british-gp-661672_fp1.json",
+      "row_count": 22,
+      "content_hash": "4b9a0d3bbcad846e164c90f0aa029c4b6669ca159f773af8ffd521199d58c78f"
+    },
+    {
+      "session_code": "GRID",
+      "session_title": "GRID",
+      "session_url": "https://www.motorsport.com/f1/results/2026/british-gp-661672/?st=GRID",
+      "file": "british-gp-661672_grid.json",
+      "row_count": 22,
+      "content_hash": "fc7c307d5d86c9df0bb1dbf6f98e068a86429d73a73febf788e166a66ac74538"
+    },
+    {
+      "session_code": "Q1",
+      "session_title": "Q1",
+      "session_url": "https://www.motorsport.com/f1/results/2026/british-gp-661672/?st=Q1",
+      "file": "british-gp-661672_q1.json",
+      "row_count": 22,
+      "content_hash": "87c815e5a8e8d452640063189b6af839565200a54872f048e9b1b16b4288e2a4"
+    },
+    {
+      "session_code": "Q2",
+      "session_title": "Q2",
+      "session_url": "https://www.motorsport.com/f1/results/2026/british-gp-661672/?st=Q2",
+      "file": "british-gp-661672_q2.json",
+      "row_count": 16,
+      "content_hash": "d33949b1fda7838309274870efd3df4bfd7582d4cff9c6e0189b1987569aa418"
+    },
+    {
+      "session_code": "Q3",
+      "session_title": "Q3",
+      "session_url": "https://www.motorsport.com/f1/results/2026/british-gp-661672/?st=Q3",
+      "file": "british-gp-661672_q3.json",
+      "row_count": 10,
+      "content_hash": "c55fa7cd8e827d0b46e9b81c4288f44d1848bbc07d1ca6a70182df7a268dc4df"
+    },
+    {
+      "session_code": "SPR",
+      "session_title": "SPR",
+      "session_url": "https://www.motorsport.com/f1/results/2026/british-gp-661672/?st=SPR",
+      "file": "british-gp-661672_spr.json",
+      "row_count": 22,
+      "content_hash": "2bea63462da8c2affe8b0f7f2b9fb8f59caf7711211a4c4a60848662e916bedb"
+    },
+    {
+      "session_code": "SPR FL",
+      "session_title": "SPR FL",
+      "session_url": "https://www.motorsport.com/f1/results/2026/british-gp-661672/?st=SPR+FL",
+      "file": "british-gp-661672_spr fl.json",
+      "row_count": 22,
+      "content_hash": "794464dc08762bd1a99f564054958ede427f2e0b74db0c44018056e8e951bd24"
+    },
+    {
+      "session_code": "SPR GRID",
+      "session_title": "SPR GRID",
+      "session_url": "https://www.motorsport.com/f1/results/2026/british-gp-661672/?st=SPR+GRID",
+      "file": "british-gp-661672_spr grid.json",
+      "row_count": 22,
+      "content_hash": "4f3366917c1164a4c305188448ec365f560e64c7f47df3ce23af2fc01019d4bf"
+    },
+    {
+      "session_code": "SQ1",
+      "session_title": "SQ1",
+      "session_url": "https://www.motorsport.com/f1/results/2026/british-gp-661672/?st=SQ1",
+      "file": "british-gp-661672_sq1.json",
+      "row_count": 22,
+      "content_hash": "f6dcfcd4278e944d031d4e0b934c8dd1d0da8b152a0240a3b98f27d8457db809"
+    },
+    {
+      "session_code": "SQ2",
+      "session_title": "SQ2",
+      "session_url": "https://www.motorsport.com/f1/results/2026/british-gp-661672/?st=SQ2",
+      "file": "british-gp-661672_sq2.json",
+      "row_count": 16,
+      "content_hash": "d1a8c6a30d54fb7f126ca252cd591a47986cc5e260fc6d03cc7985156cec1725"
+    },
+    {
+      "session_code": "SQ3",
+      "session_title": "SQ3",
+      "session_url": "https://www.motorsport.com/f1/results/2026/british-gp-661672/?st=SQ3",
+      "file": "british-gp-661672_sq3.json",
+      "row_count": 10,
+      "content_hash": "bccb8ea0f75f8ff50fce107d00edbf872ed333821e2c192dc7cfe949ee82fdc3"
+    }
+  ]
+}

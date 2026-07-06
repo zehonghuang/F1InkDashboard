@@ -122,5 +122,28 @@ Component({
       this.setData({ displayRows: slice })
     },
   },
-  methods: {},
+  methods: {
+    onRowLongPress(event) {
+      const index = Number(event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.index)
+      const rows = Array.isArray(this.data.displayRows) ? this.data.displayRows : []
+      const row = Number.isFinite(index) ? rows[index] : null
+      if (!row) return
+      this.triggerEvent("rowlongpress", {
+        row,
+        point: extractTouchPoint(event),
+      })
+    },
+  },
 })
+
+function extractTouchPoint(event) {
+  const touch =
+    (event && event.changedTouches && event.changedTouches[0]) ||
+    (event && event.touches && event.touches[0]) ||
+    null
+  if (!touch) return null
+  return {
+    x: Number(touch.clientX) || 0,
+    y: Number(touch.clientY) || 0,
+  }
+}
