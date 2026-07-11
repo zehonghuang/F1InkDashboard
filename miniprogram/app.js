@@ -1,4 +1,5 @@
 const i18n = require("./services/i18n")
+const { DEFAULT_WECHAT_STORE_CONFIG } = require("./services/wechatStore")
 
 App({
   onLaunch() {
@@ -77,12 +78,7 @@ App({
     apiBase: "",
     formula1Loaded: false,
     newsDataSource: "backend",
-    // Fill the real WeChat Store mini program target here when it's ready.
-    shopMiniProgram: {
-      appId: "",
-      path: "",
-      envVersion: "release"
-    },
+    shopMiniProgram: Object.assign({}, DEFAULT_WECHAT_STORE_CONFIG),
     envVersion: "",
     tweakA: null,
     tweakAEffective: false

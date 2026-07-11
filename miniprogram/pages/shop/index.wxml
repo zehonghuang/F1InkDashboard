@@ -1,24 +1,23 @@
 <view class="page">
-  <view class="header">
+  <view class="hero-card">
+    <view class="hero-eyebrow">WECHAT STORE</view>
     <view class="title">{{i18n.shop.pageTitle}}</view>
-    <view class="subtitle">{{i18n.shop.uiOnly}}</view>
+    <view class="subtitle">{{i18n.shop.connected}}</view>
+    <view wx:if="{{storeAppId}}" class="meta-row">
+      <view class="meta-label">{{i18n.shop.appIdLabel}}</view>
+      <view class="meta-value">{{storeAppId}}</view>
+    </view>
+    <button class="open-btn" bindtap="onTapOpenStore">{{i18n.shop.openStore}}</button>
   </view>
 
-  <view wx:if="{{!items.length}}" class="empty">{{i18n.shop.empty}}</view>
+  <view class="info-card">
+    <view class="info-title">{{i18n.shop.howItWorksTitle}}</view>
+    <view class="info-text">{{i18n.shop.howItWorksDesc}}</view>
+  </view>
 
-  <view class="list">
-    <block wx:for="{{items}}" wx:key="id">
-      <view class="card" bindtap="onTapItem" data-id="{{item.id}}">
-        <view class="card-mid">
-          <view class="name">{{item.title}}</view>
-          <view wx:if="{{item.subtitle}}" class="sub">{{item.subtitle}}</view>
-        </view>
-        <view class="card-right">
-          <view class="price">{{item.priceText}}</view>
-          <view class="chev">›</view>
-        </view>
-      </view>
-    </block>
+  <view class="info-card">
+    <view class="info-title">{{i18n.shop.tipTitle}}</view>
+    <view class="info-text">{{i18n.shop.tipDesc}}</view>
   </view>
 </view>
 

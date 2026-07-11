@@ -15,6 +15,8 @@ npm install
    - 对比：全局性能对比入口
    - 我的：个人配置入口（占位）
 
+4. 微信小店跳转配置统一放在 `services/wechatStore.js`，当前已接入的目标 `appId` 为 `wx09ead34ea6955f43`。如果后续要直达店铺活动页或商品详情页，可继续补 `path`。
+
 ## UI 框架
 
 使用 `iview-weapp`（iViewUI 的小程序组件库）。页面的 `usingComponents` 指向 `miniprogram_npm/iview-weapp/dist/...`。

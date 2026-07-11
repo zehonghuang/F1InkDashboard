@@ -293,7 +293,14 @@ const ZH_CN = {
     price: "价格",
     buy: "购买",
     empty: "暂无商品",
-    uiOnly: "仅 UI，无后端"
+    uiOnly: "仅 UI，无后端",
+    connected: "已接入微信小店，点击下方按钮直接跳转到店铺主页。",
+    openStore: "进入微信小店",
+    appIdLabel: "店铺 AppID",
+    howItWorksTitle: "当前接入方式",
+    howItWorksDesc: "这里不再做本地假下单，统一通过微信原生能力跳转到店铺小程序，商品浏览、下单和支付都在微信小店内完成。",
+    tipTitle: "后续可继续补强",
+    tipDesc: "如果你后面给我店铺落地页 path 或具体商品 path，我可以继续把入口改成直达指定会场或指定商品。"
   },
   standings: {
     title: "赛季积分",
@@ -604,7 +611,14 @@ const EN_US = {
     price: "Price",
     buy: "Buy",
     empty: "No products",
-    uiOnly: "UI only, no backend"
+    uiOnly: "UI only, no backend",
+    connected: "The WeChat Store is now connected. Use the button below to open the store home directly.",
+    openStore: "Open WeChat Store",
+    appIdLabel: "Store AppID",
+    howItWorksTitle: "How it works",
+    howItWorksDesc: "This page now hands off to the native WeChat Store mini program instead of a local mock checkout flow. Browsing, ordering and payment stay inside the store.",
+    tipTitle: "Next step",
+    tipDesc: "If you share a landing path or product path later, I can wire this entry straight to a specific campaign page or product detail."
   },
   standings: {
     title: "Standings",
