@@ -190,16 +190,12 @@
     </view>
   </view>
 
-  <view class="section">
-    <view class="section-title">{{i18n.mine.shop}}</view>
-    <view class="shop-card" bindtap="onTapItem" data-action="shop">
-      <view class="shop-card-icon">SHOP</view>
-      <view class="shop-card-main">
-        <view class="shop-card-title">{{i18n.mine.shop}}</view>
-        <view class="shop-card-desc">{{i18n.mine.shopDesc}}</view>
-      </view>
-      <view class="shop-card-cta">{{i18n.mine.shopEnter}}</view>
-    </view>
+  <view wx:if="{{storeAppId}}" class="shop-direct-card">
+    <store-home appid="{{storeAppId}}"></store-home>
+  </view>
+  <view wx:else class="shop-inline-empty">
+    <view class="shop-inline-empty-title">{{i18n.shop.configMissingTitle}}</view>
+    <view class="shop-inline-empty-desc">{{i18n.shop.configMissingDesc}}</view>
   </view>
 
   <view class="section">

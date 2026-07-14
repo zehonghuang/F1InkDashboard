@@ -1,7 +1,7 @@
 const { getAuthState, loginWithWeChat, logout, fetchMe, bindDevice, uploadAvatar, updateNickName, setProfile } = require("../../services/authService")
 const { fetchPrefs, updatePrefs } = require("../../services/prefsService")
 const i18n = require("../../services/i18n")
-const { openWeChatStore } = require("../../services/wechatStore")
+const { getWeChatStoreConfig } = require("../../services/wechatStore")
 
 const STORAGE_KEYS = {
   season: "pref_season",
@@ -61,7 +61,8 @@ Page({
     pickedSnapshot: {},
     driverOptions: [],
     teamOptions: [],
-    syncingPrefs: false
+    syncingPrefs: false,
+    storeAppId: ""
   },
   onLoad() {
     this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
@@ -71,6 +72,7 @@ Page({
       this.setData({ statusBarHeight: h })
     } catch (e) {}
     this.applyI18n()
+    this.syncStoreConfig()
     this.loadHeroCover()
     this.loadPreferences()
     this.refreshAuth()
@@ -83,6 +85,7 @@ Page({
   },
   onShow() {
     this.applyI18n()
+    this.syncStoreConfig()
     this.refreshAuth()
     this.loadPreferences()
     this.measureHeroRect()
@@ -105,6 +108,11 @@ Page({
   onPageScroll(e) {
     const top = e && Number.isFinite(e.scrollTop) ? e.scrollTop : Number((e && e.scrollTop) || 0)
     this.setData({ pageScrollTop: top > 0 ? top : 0 })
+  },
+  syncStoreConfig() {
+    const cfg = getWeChatStoreConfig()
+    const appId = String(cfg.appId || "").trim()
+    this.setData({ storeAppId: appId })
   },
   async syncPrefsFromBackend(opts) {
     if (this.data.syncingPrefs) return
@@ -354,7 +362,7 @@ Page({
     })
   },
   openWeChatShop() {
-    openWeChatStore()
+    wx.navigateTo({ url: "/pages/shop/index" })
   },
   onTapItem(e) {
     const action = e && e.currentTarget && e.currentTarget.dataset ? e.currentTarget.dataset.action : ""

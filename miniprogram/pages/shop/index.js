@@ -1,10 +1,11 @@
 const i18n = require("../../services/i18n")
-const { getWeChatStoreConfig, openWeChatStore } = require("../../services/wechatStore")
+const { getWeChatStoreConfig } = require("../../services/wechatStore")
 
 Page({
   data: {
     i18n: i18n.getDict(),
-    storeAppId: ""
+    storeAppId: "",
+    maskedStoreAppId: ""
   },
   onLoad() {
     this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
@@ -30,12 +31,9 @@ Page({
   syncStoreConfig() {
     const cfg = getWeChatStoreConfig()
     const appId = String(cfg.appId || "").trim()
-    const maskedAppId =
+    const maskedStoreAppId =
       appId && appId.length > 10 ? `${appId.slice(0, 8)}...${appId.slice(-4)}` : appId
-    this.setData({ storeAppId: maskedAppId })
-  },
-  onTapOpenStore() {
-    openWeChatStore()
+    this.setData({ storeAppId: appId, maskedStoreAppId })
   },
   applyI18n() {
     const dict = i18n.getDict()

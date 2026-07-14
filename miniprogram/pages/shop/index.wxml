@@ -2,17 +2,20 @@
   <view class="hero-card">
     <view class="hero-eyebrow">WECHAT STORE</view>
     <view class="title">{{i18n.shop.pageTitle}}</view>
-    <view class="subtitle">{{i18n.shop.connected}}</view>
-    <view wx:if="{{storeAppId}}" class="meta-row">
+    <view class="subtitle">{{i18n.shop.embeddedDesc}}</view>
+    <view wx:if="{{maskedStoreAppId}}" class="meta-row">
       <view class="meta-label">{{i18n.shop.appIdLabel}}</view>
-      <view class="meta-value">{{storeAppId}}</view>
+      <view class="meta-value">{{maskedStoreAppId}}</view>
     </view>
-    <button class="open-btn" bindtap="onTapOpenStore">{{i18n.shop.openStore}}</button>
   </view>
 
-  <view class="info-card">
-    <view class="info-title">{{i18n.shop.howItWorksTitle}}</view>
-    <view class="info-text">{{i18n.shop.howItWorksDesc}}</view>
+  <view wx:if="{{storeAppId}}" class="embed-card">
+    <store-home appid="{{storeAppId}}"></store-home>
+  </view>
+
+  <view wx:else class="info-card">
+    <view class="info-title">{{i18n.shop.configMissingTitle}}</view>
+    <view class="info-text">{{i18n.shop.configMissingDesc}}</view>
   </view>
 
   <view class="info-card">

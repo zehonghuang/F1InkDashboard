@@ -1,6 +1,5 @@
 const i18n = require("../../services/i18n")
 const { getProduct } = require("../../services/shopMock")
-const { openWeChatStore } = require("../../services/wechatStore")
 
 function formatPriceCny(v) {
   const n = Number(v)
@@ -27,7 +26,7 @@ Page({
     this.applyI18n()
   },
   onTapBuy() {
-    openWeChatStore()
+    wx.navigateTo({ url: "/pages/shop/index" })
   },
   applyI18n() {
     const dict = i18n.getDict()

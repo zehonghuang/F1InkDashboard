@@ -1,4 +1,5 @@
 .hero-card,
+.embed-card,
 .info-card {
   display: flex;
   flex-direction: column;
@@ -11,6 +12,12 @@
 
 .info-card {
   margin-top: 16rpx;
+}
+
+.embed-card {
+  margin-top: 16rpx;
+  padding: 0;
+  overflow: hidden;
 }
 
 .hero-eyebrow {
@@ -52,18 +59,9 @@
   color: rgba(255, 255, 255, 0.92);
 }
 
-.open-btn {
-  margin-top: 8rpx;
+store-home {
+  display: block;
   width: 100%;
-  border-radius: 999rpx;
-  background: linear-gradient(135deg, #ff5a36, #ff2a68);
-  color: #ffffff;
-  font-size: 28rpx;
-  font-weight: 900;
-}
-
-.open-btn::after {
-  border: none;
 }
 
 .info-title {

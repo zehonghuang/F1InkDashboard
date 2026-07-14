@@ -294,13 +294,12 @@ const ZH_CN = {
     buy: "购买",
     empty: "暂无商品",
     uiOnly: "仅 UI，无后端",
-    connected: "已接入微信小店，点击下方按钮直接跳转到店铺主页。",
-    openStore: "进入微信小店",
+    embeddedDesc: "当前页面直接内嵌微信小店首页，用户会留在你的小程序内浏览和交易。",
     appIdLabel: "店铺 AppID",
-    howItWorksTitle: "当前接入方式",
-    howItWorksDesc: "这里不再做本地假下单，统一通过微信原生能力跳转到店铺小程序，商品浏览、下单和支付都在微信小店内完成。",
+    configMissingTitle: "小店配置缺失",
+    configMissingDesc: "当前没有读取到微信小店 appId，补齐配置后这里会直接渲染 store-home 组件。",
     tipTitle: "后续可继续补强",
-    tipDesc: "如果你后面给我店铺落地页 path 或具体商品 path，我可以继续把入口改成直达指定会场或指定商品。"
+    tipDesc: "如果你后面还要补商品卡、优惠券或订单详情，我可以继续接 store-product、store-coupon 和订单能力。"
   },
   standings: {
     title: "赛季积分",
@@ -612,13 +611,12 @@ const EN_US = {
     buy: "Buy",
     empty: "No products",
     uiOnly: "UI only, no backend",
-    connected: "The WeChat Store is now connected. Use the button below to open the store home directly.",
-    openStore: "Open WeChat Store",
+    embeddedDesc: "This page now embeds the WeChat Store home directly so users stay inside your mini program while browsing and buying.",
     appIdLabel: "Store AppID",
-    howItWorksTitle: "How it works",
-    howItWorksDesc: "This page now hands off to the native WeChat Store mini program instead of a local mock checkout flow. Browsing, ordering and payment stay inside the store.",
+    configMissingTitle: "Store config missing",
+    configMissingDesc: "No WeChat Store appId is available right now. Once configured, this page renders the `store-home` component directly.",
     tipTitle: "Next step",
-    tipDesc: "If you share a landing path or product path later, I can wire this entry straight to a specific campaign page or product detail."
+    tipDesc: "If you want product cards, coupons or order details next, I can wire `store-product`, `store-coupon` and related store APIs as well."
   },
   standings: {
     title: "Standings",
