@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"toinc_f1_backend/internal/config"
+	"toinc_f1_backend/internal/meetingwindow"
 	"toinc_f1_backend/internal/ws"
 
 	"gorm.io/gorm"
@@ -166,19 +167,18 @@ type LiveCarData struct {
 }
 
 type Manager struct {
-	cfg            config.Config
-	db             *gorm.DB
-	client         *http.Client
-	ctx            context.Context
-	cancel         context.CancelFunc
-	started        atomic.Bool
-	running        atomic.Bool
-	seq            atomic.Int64
-	hub            *ws.Hub
-	scheduleActive atomic.Bool
-	scheduleCh     chan bool
-	mu             sync.RWMutex
-	snapshot       Snapshot
+	cfg           config.Config
+	db            *gorm.DB
+	client        *http.Client
+	ctx           context.Context
+	cancel        context.CancelFunc
+	started       atomic.Bool
+	running       atomic.Bool
+	seq           atomic.Int64
+	hub           *ws.Hub
+	meetingWindow *meetingwindow.Watcher
+	mu            sync.RWMutex
+	snapshot      Snapshot
 }
 
 type graphQLRequest struct {
@@ -362,30 +362,36 @@ type RaceControlMessagePayload struct {
 func New(cfg config.Config, db *gorm.DB, hub *ws.Hub) *Manager {
 	ctx, cancel := context.WithCancel(context.Background())
 	timeout := time.Duration(maxInt(cfg.F1LiveTimingRequestTimeoutMS, 2000)) * time.Millisecond
-	scheduleEnabled := cfg.F1LiveTimingScheduleEnabled && db != nil
 	m := &Manager{
 		cfg: cfg,
 		db:  db,
 		client: &http.Client{
 			Timeout: timeout,
 		},
-		ctx:        ctx,
-		cancel:     cancel,
-		hub:        hub,
-		scheduleCh: make(chan bool, 1),
+		ctx:    ctx,
+		cancel: cancel,
+		hub:    hub,
 		snapshot: Snapshot{
 			Enabled:             cfg.F1LiveTimingEnabled,
 			Endpoint:            strings.TrimSpace(cfg.F1LiveTimingGraphQLEndpoint),
 			PollIntervalMS:      maxInt(cfg.F1LiveTimingPollIntervalMS, 100),
 			RequestTimeoutMS:    maxInt(cfg.F1LiveTimingRequestTimeoutMS, 2000),
-			ScheduleEnabled:     scheduleEnabled,
-			ScheduleActive:      !scheduleEnabled,
+			ScheduleEnabled:     false,
+			ScheduleActive:      true,
 			ScheduleStartBefore: maxInt(0, cfg.F1LiveTimingScheduleStartBeforeMin),
 			ScheduleStopAfter:   maxInt(0, cfg.F1LiveTimingScheduleStopAfterMin),
 			Rows:                []StandingRow{},
 		},
 	}
-	m.scheduleActive.Store(!scheduleEnabled)
+	if cfg.F1LiveTimingScheduleEnabled && db != nil {
+		m.meetingWindow = meetingwindow.New(
+			db,
+			true,
+			cfg.F1LiveTimingScheduleIntervalSec,
+			cfg.F1LiveTimingScheduleStartBeforeMin,
+			cfg.F1LiveTimingScheduleStopAfterMin,
+		)
+	}
 	return m
 }
 
@@ -397,17 +403,18 @@ func (m *Manager) Start() {
 		return
 	}
 	m.running.Store(true)
-	if m.cfg.F1LiveTimingScheduleEnabled && m.db != nil {
-		_ = m.refreshSchedule(time.Now().UTC())
-		go m.scheduleLoop()
-	} else {
-		m.scheduleActive.Store(true)
+	if m.meetingWindow != nil {
+		m.meetingWindow.Start()
+		m.applyMeetingWindow(m.meetingWindow.Snapshot())
 	}
 	go m.run()
 }
 
 func (m *Manager) Stop() {
 	m.running.Store(false)
+	if m.meetingWindow != nil {
+		m.meetingWindow.Stop()
+	}
 	m.cancel()
 }
 
@@ -442,7 +449,7 @@ func (m *Manager) run() {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
-	if m.scheduleActive.Load() {
+	if m.Snapshot().ScheduleActive {
 		if err := m.pollOnce(); err != nil {
 			log.Printf("f1livetiming initial poll error: %v", err)
 		}
@@ -451,15 +458,17 @@ func (m *Manager) run() {
 		select {
 		case <-m.ctx.Done():
 			return
-		case active := <-m.scheduleCh:
-			if !active {
+		case st := <-m.meetingWindowC():
+			m.applyMeetingWindow(st)
+			m.broadcastSnapshot()
+			if !st.Active {
 				continue
 			}
 			if err := m.pollOnce(); err != nil {
 				log.Printf("f1livetiming poll error: %v", err)
 			}
 		case <-ticker.C:
-			if !m.scheduleActive.Load() {
+			if !m.Snapshot().ScheduleActive {
 				continue
 			}
 			if err := m.pollOnce(); err != nil {
@@ -508,148 +517,33 @@ func (m *Manager) broadcastSnapshot() {
 	})
 }
 
-func (m *Manager) signalSchedule(active bool) {
-	select {
-	case m.scheduleCh <- active:
-		return
-	default:
-	}
-	select {
-	case <-m.scheduleCh:
-	default:
-	}
-	select {
-	case m.scheduleCh <- active:
-	default:
-	}
-}
-
-type meetingScheduleRow struct {
-	MeetingKey   int        `gorm:"column:meeting_key"`
-	MeetingName  *string    `gorm:"column:meeting_name"`
-	OfficialName *string    `gorm:"column:meeting_official_name"`
-	DateStartUTC time.Time  `gorm:"column:date_start_utc"`
-	DateEndUTC   *time.Time `gorm:"column:date_end_utc"`
-	IsCancelled  *bool      `gorm:"column:is_cancelled"`
-}
-
-func (m *Manager) scheduleLoop() {
-	sec := maxInt(5, m.cfg.F1LiveTimingScheduleIntervalSec)
-	tk := time.NewTicker(time.Duration(sec) * time.Second)
-	defer tk.Stop()
-	for {
-		select {
-		case <-m.ctx.Done():
-			return
-		case <-tk.C:
-			_ = m.refreshSchedule(time.Now().UTC())
-		}
-	}
-}
-
-func (m *Manager) refreshSchedule(now time.Time) error {
-	scheduleEnabled := m.cfg.F1LiveTimingScheduleEnabled && m.db != nil
-	if !scheduleEnabled {
-		prev := m.scheduleActive.Load()
-		if !prev {
-			m.scheduleActive.Store(true)
-			m.signalSchedule(true)
-		}
-		m.mu.Lock()
-		m.snapshot.ScheduleEnabled = false
-		m.snapshot.ScheduleActive = true
-		m.snapshot.ScheduleStartBefore = maxInt(0, m.cfg.F1LiveTimingScheduleStartBeforeMin)
-		m.snapshot.ScheduleStopAfter = maxInt(0, m.cfg.F1LiveTimingScheduleStopAfterMin)
-		m.snapshot.ScheduleMeetingKey = 0
-		m.snapshot.ScheduleMeetingName = ""
-		m.snapshot.ScheduleWindowStart = ""
-		m.snapshot.ScheduleWindowEnd = ""
-		m.snapshot.ScheduleCheckedAt = now.UTC().Format(time.RFC3339Nano)
-		m.snapshot.ScheduleError = ""
-		m.mu.Unlock()
+func (m *Manager) meetingWindowC() <-chan meetingwindow.State {
+	if m.meetingWindow == nil {
 		return nil
 	}
+	return m.meetingWindow.C()
+}
 
-	before := time.Duration(maxInt(0, m.cfg.F1LiveTimingScheduleStartBeforeMin)) * time.Minute
-	after := time.Duration(maxInt(0, m.cfg.F1LiveTimingScheduleStopAfterMin)) * time.Minute
-	var row meetingScheduleRow
-	err := m.db.Raw(
-		`
-        SELECT
-          meeting_key,
-          meeting_name,
-          meeting_official_name,
-          date_start_utc,
-          date_end_utc,
-          is_cancelled
-        FROM openf1_meetings
-        WHERE is_cancelled IS NOT TRUE
-          AND date_start_utc IS NOT NULL
-          AND date_start_utc <= ?
-          AND (date_end_utc IS NULL OR date_end_utc >= ?)
-        ORDER BY date_start_utc DESC
-        LIMIT 1
-    `,
-		now.Add(before),
-		now.Add(-after),
-	).Scan(&row).Error
-	if err != nil {
-		m.mu.Lock()
-		m.snapshot.ScheduleEnabled = true
-		m.snapshot.ScheduleCheckedAt = now.UTC().Format(time.RFC3339Nano)
-		m.snapshot.ScheduleError = err.Error()
-		m.mu.Unlock()
-		return err
-	}
-
-	active := row.MeetingKey > 0
-	meetingName := strings.TrimSpace(firstNonEmpty(ptrString(row.OfficialName), ptrString(row.MeetingName)))
-	if meetingName == "" && row.MeetingKey > 0 {
-		meetingName = fmt.Sprintf("meeting-%d", row.MeetingKey)
-	}
-	windowStart := ""
-	windowEnd := ""
-	if row.MeetingKey > 0 {
-		windowStart = row.DateStartUTC.Add(-before).UTC().Format(time.RFC3339Nano)
-		if row.DateEndUTC != nil {
-			windowEnd = row.DateEndUTC.Add(after).UTC().Format(time.RFC3339Nano)
-		}
-	}
-
-	prevActive := m.scheduleActive.Load()
-	if active != prevActive {
-		m.scheduleActive.Store(active)
-		m.signalSchedule(active)
-	}
-
+func (m *Manager) applyMeetingWindow(st meetingwindow.State) {
 	m.mu.Lock()
-	changed := m.snapshot.ScheduleActive != active ||
-		m.snapshot.ScheduleMeetingKey != row.MeetingKey ||
-		m.snapshot.ScheduleMeetingName != meetingName ||
-		m.snapshot.ScheduleWindowStart != windowStart ||
-		m.snapshot.ScheduleWindowEnd != windowEnd ||
-		m.snapshot.ScheduleError != ""
-	m.snapshot.ScheduleEnabled = true
-	m.snapshot.ScheduleActive = active
-	m.snapshot.ScheduleStartBefore = maxInt(0, m.cfg.F1LiveTimingScheduleStartBeforeMin)
-	m.snapshot.ScheduleStopAfter = maxInt(0, m.cfg.F1LiveTimingScheduleStopAfterMin)
-	m.snapshot.ScheduleMeetingKey = row.MeetingKey
-	m.snapshot.ScheduleMeetingName = meetingName
-	m.snapshot.ScheduleWindowStart = windowStart
-	m.snapshot.ScheduleWindowEnd = windowEnd
-	m.snapshot.ScheduleCheckedAt = now.UTC().Format(time.RFC3339Nano)
-	m.snapshot.ScheduleError = ""
-	if active != prevActive && !active {
+	defer m.mu.Unlock()
+	m.snapshot.Enabled = m.cfg.F1LiveTimingEnabled
+	m.snapshot.Running = m.running.Load()
+	m.snapshot.ScheduleEnabled = st.Enabled
+	m.snapshot.ScheduleActive = st.Active
+	m.snapshot.ScheduleStartBefore = st.StartBeforeMin
+	m.snapshot.ScheduleStopAfter = st.StopAfterMin
+	m.snapshot.ScheduleMeetingKey = st.MeetingKey
+	m.snapshot.ScheduleMeetingName = st.MeetingName
+	m.snapshot.ScheduleWindowStart = st.WindowStartAtUTC
+	m.snapshot.ScheduleWindowEnd = st.WindowEndAtUTC
+	m.snapshot.ScheduleCheckedAt = st.CheckedAtUTC
+	m.snapshot.ScheduleError = st.Error
+	if !st.Active {
 		m.snapshot.Connected = false
 		m.snapshot.LastError = ""
 		m.snapshot.QueryLatencyMS = 0
 	}
-	m.mu.Unlock()
-
-	if changed {
-		m.broadcastSnapshot()
-	}
-	return nil
 }
 
 func (m *Manager) pollOnce() error {
