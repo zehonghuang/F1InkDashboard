@@ -37,7 +37,7 @@ type Server struct {
 
 func New(cfg config.Config, database *db.DB) *Server {
 	f1LiveTimingHub := ws.NewHub()
-	f1LiveTimingMgr := f1livetiming.New(cfg, f1LiveTimingHub)
+	f1LiveTimingMgr := f1livetiming.New(cfg, gormOrNil(database), f1LiveTimingHub)
 	motorsportLiveHub := ws.NewHub()
 	motorsportLiveMgr := motorsportlive.New(cfg, gormOrNil(database), motorsportLiveHub)
 	s := &Server{

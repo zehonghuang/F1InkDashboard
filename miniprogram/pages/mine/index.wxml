@@ -190,12 +190,24 @@
     </view>
   </view>
 
-  <view wx:if="{{storeAppId}}" class="shop-direct-card">
-    <store-home appid="{{storeAppId}}"></store-home>
-  </view>
-  <view wx:else class="shop-inline-empty">
-    <view class="shop-inline-empty-title">{{i18n.shop.configMissingTitle}}</view>
-    <view class="shop-inline-empty-desc">{{i18n.shop.configMissingDesc}}</view>
+  <view class="section shop-section">
+    <view class="shop-inline-head">
+      <view class="shop-inline-head-main">
+        <view class="shop-inline-eyebrow">WECHAT STORE</view>
+        <view class="shop-inline-title">{{i18n.mine.shop}}</view>
+        <view class="shop-inline-desc">{{i18n.mine.shopDesc}}</view>
+      </view>
+      <view class="shop-inline-pill">SHOP</view>
+    </view>
+    <view wx:if="{{storeAppId}}" class="shop-inline-shell">
+      <view class="shop-inline-embed">
+        <store-home appid="{{storeAppId}}"></store-home>
+      </view>
+    </view>
+    <view wx:else class="shop-inline-empty">
+      <view class="shop-inline-empty-title">{{i18n.shop.configMissingTitle}}</view>
+      <view class="shop-inline-empty-desc">{{i18n.shop.configMissingDesc}}</view>
+    </view>
   </view>
 
   <view class="section">

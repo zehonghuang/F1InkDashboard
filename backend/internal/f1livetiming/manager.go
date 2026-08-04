@@ -16,6 +16,8 @@ import (
 
 	"toinc_f1_backend/internal/config"
 	"toinc_f1_backend/internal/ws"
+
+	"gorm.io/gorm"
 )
 
 const liveTimingQuery = `query {
@@ -45,6 +47,16 @@ type Snapshot struct {
 	Endpoint            string               `json:"endpoint"`
 	PollIntervalMS      int                  `json:"poll_interval_ms"`
 	RequestTimeoutMS    int                  `json:"request_timeout_ms"`
+	ScheduleEnabled     bool                 `json:"schedule_enabled"`
+	ScheduleActive      bool                 `json:"schedule_active"`
+	ScheduleStartBefore int                  `json:"schedule_start_before_min"`
+	ScheduleStopAfter   int                  `json:"schedule_stop_after_min"`
+	ScheduleMeetingKey  int                  `json:"schedule_meeting_key,omitempty"`
+	ScheduleMeetingName string               `json:"schedule_meeting_name,omitempty"`
+	ScheduleWindowStart string               `json:"schedule_window_start_utc,omitempty"`
+	ScheduleWindowEnd   string               `json:"schedule_window_end_utc,omitempty"`
+	ScheduleCheckedAt   string               `json:"schedule_checked_at_utc,omitempty"`
+	ScheduleError       string               `json:"schedule_error,omitempty"`
 	Seq                 int64                `json:"seq"`
 	LastPolledAtUTC     string               `json:"last_polled_at_utc,omitempty"`
 	LastUpdatedAtUTC    string               `json:"last_updated_at_utc,omitempty"`
@@ -154,16 +166,19 @@ type LiveCarData struct {
 }
 
 type Manager struct {
-	cfg      config.Config
-	client   *http.Client
-	ctx      context.Context
-	cancel   context.CancelFunc
-	started  atomic.Bool
-	running  atomic.Bool
-	seq      atomic.Int64
-	hub      *ws.Hub
-	mu       sync.RWMutex
-	snapshot Snapshot
+	cfg            config.Config
+	db             *gorm.DB
+	client         *http.Client
+	ctx            context.Context
+	cancel         context.CancelFunc
+	started        atomic.Bool
+	running        atomic.Bool
+	seq            atomic.Int64
+	hub            *ws.Hub
+	scheduleActive atomic.Bool
+	scheduleCh     chan bool
+	mu             sync.RWMutex
+	snapshot       Snapshot
 }
 
 type graphQLRequest struct {
@@ -344,25 +359,34 @@ type RaceControlMessagePayload struct {
 	RacingNumber string `json:"RacingNumber"`
 }
 
-func New(cfg config.Config, hub *ws.Hub) *Manager {
+func New(cfg config.Config, db *gorm.DB, hub *ws.Hub) *Manager {
 	ctx, cancel := context.WithCancel(context.Background())
 	timeout := time.Duration(maxInt(cfg.F1LiveTimingRequestTimeoutMS, 2000)) * time.Millisecond
-	return &Manager{
+	scheduleEnabled := cfg.F1LiveTimingScheduleEnabled && db != nil
+	m := &Manager{
 		cfg: cfg,
+		db:  db,
 		client: &http.Client{
 			Timeout: timeout,
 		},
-		ctx:    ctx,
-		cancel: cancel,
-		hub:    hub,
+		ctx:        ctx,
+		cancel:     cancel,
+		hub:        hub,
+		scheduleCh: make(chan bool, 1),
 		snapshot: Snapshot{
-			Enabled:          cfg.F1LiveTimingEnabled,
-			Endpoint:         strings.TrimSpace(cfg.F1LiveTimingGraphQLEndpoint),
-			PollIntervalMS:   maxInt(cfg.F1LiveTimingPollIntervalMS, 100),
-			RequestTimeoutMS: maxInt(cfg.F1LiveTimingRequestTimeoutMS, 2000),
-			Rows:             []StandingRow{},
+			Enabled:             cfg.F1LiveTimingEnabled,
+			Endpoint:            strings.TrimSpace(cfg.F1LiveTimingGraphQLEndpoint),
+			PollIntervalMS:      maxInt(cfg.F1LiveTimingPollIntervalMS, 100),
+			RequestTimeoutMS:    maxInt(cfg.F1LiveTimingRequestTimeoutMS, 2000),
+			ScheduleEnabled:     scheduleEnabled,
+			ScheduleActive:      !scheduleEnabled,
+			ScheduleStartBefore: maxInt(0, cfg.F1LiveTimingScheduleStartBeforeMin),
+			ScheduleStopAfter:   maxInt(0, cfg.F1LiveTimingScheduleStopAfterMin),
+			Rows:                []StandingRow{},
 		},
 	}
+	m.scheduleActive.Store(!scheduleEnabled)
+	return m
 }
 
 func (m *Manager) Start() {
@@ -373,6 +397,12 @@ func (m *Manager) Start() {
 		return
 	}
 	m.running.Store(true)
+	if m.cfg.F1LiveTimingScheduleEnabled && m.db != nil {
+		_ = m.refreshSchedule(time.Now().UTC())
+		go m.scheduleLoop()
+	} else {
+		m.scheduleActive.Store(true)
+	}
 	go m.run()
 }
 
@@ -412,19 +442,214 @@ func (m *Manager) run() {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
-	if err := m.pollOnce(); err != nil {
-		log.Printf("f1livetiming initial poll error: %v", err)
+	if m.scheduleActive.Load() {
+		if err := m.pollOnce(); err != nil {
+			log.Printf("f1livetiming initial poll error: %v", err)
+		}
 	}
 	for {
 		select {
 		case <-m.ctx.Done():
 			return
+		case active := <-m.scheduleCh:
+			if !active {
+				continue
+			}
+			if err := m.pollOnce(); err != nil {
+				log.Printf("f1livetiming poll error: %v", err)
+			}
 		case <-ticker.C:
+			if !m.scheduleActive.Load() {
+				continue
+			}
 			if err := m.pollOnce(); err != nil {
 				log.Printf("f1livetiming poll error: %v", err)
 			}
 		}
 	}
+}
+
+type scheduleFields struct {
+	ScheduleEnabled     bool
+	ScheduleActive      bool
+	ScheduleStartBefore int
+	ScheduleStopAfter   int
+	ScheduleMeetingKey  int
+	ScheduleMeetingName string
+	ScheduleWindowStart string
+	ScheduleWindowEnd   string
+	ScheduleCheckedAt   string
+	ScheduleError       string
+}
+
+func (m *Manager) currentScheduleFields() scheduleFields {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return scheduleFields{
+		ScheduleEnabled:     m.snapshot.ScheduleEnabled,
+		ScheduleActive:      m.snapshot.ScheduleActive,
+		ScheduleStartBefore: m.snapshot.ScheduleStartBefore,
+		ScheduleStopAfter:   m.snapshot.ScheduleStopAfter,
+		ScheduleMeetingKey:  m.snapshot.ScheduleMeetingKey,
+		ScheduleMeetingName: m.snapshot.ScheduleMeetingName,
+		ScheduleWindowStart: m.snapshot.ScheduleWindowStart,
+		ScheduleWindowEnd:   m.snapshot.ScheduleWindowEnd,
+		ScheduleCheckedAt:   m.snapshot.ScheduleCheckedAt,
+		ScheduleError:       m.snapshot.ScheduleError,
+	}
+}
+
+func (m *Manager) broadcastSnapshot() {
+	snap := m.Snapshot()
+	_ = m.hub.BroadcastJSON(map[string]any{
+		"type":   "snapshot",
+		"source": "f1_live_timing",
+		"status": snap,
+	})
+}
+
+func (m *Manager) signalSchedule(active bool) {
+	select {
+	case m.scheduleCh <- active:
+		return
+	default:
+	}
+	select {
+	case <-m.scheduleCh:
+	default:
+	}
+	select {
+	case m.scheduleCh <- active:
+	default:
+	}
+}
+
+type meetingScheduleRow struct {
+	MeetingKey   int        `gorm:"column:meeting_key"`
+	MeetingName  *string    `gorm:"column:meeting_name"`
+	OfficialName *string    `gorm:"column:meeting_official_name"`
+	DateStartUTC time.Time  `gorm:"column:date_start_utc"`
+	DateEndUTC   *time.Time `gorm:"column:date_end_utc"`
+	IsCancelled  *bool      `gorm:"column:is_cancelled"`
+}
+
+func (m *Manager) scheduleLoop() {
+	sec := maxInt(5, m.cfg.F1LiveTimingScheduleIntervalSec)
+	tk := time.NewTicker(time.Duration(sec) * time.Second)
+	defer tk.Stop()
+	for {
+		select {
+		case <-m.ctx.Done():
+			return
+		case <-tk.C:
+			_ = m.refreshSchedule(time.Now().UTC())
+		}
+	}
+}
+
+func (m *Manager) refreshSchedule(now time.Time) error {
+	scheduleEnabled := m.cfg.F1LiveTimingScheduleEnabled && m.db != nil
+	if !scheduleEnabled {
+		prev := m.scheduleActive.Load()
+		if !prev {
+			m.scheduleActive.Store(true)
+			m.signalSchedule(true)
+		}
+		m.mu.Lock()
+		m.snapshot.ScheduleEnabled = false
+		m.snapshot.ScheduleActive = true
+		m.snapshot.ScheduleStartBefore = maxInt(0, m.cfg.F1LiveTimingScheduleStartBeforeMin)
+		m.snapshot.ScheduleStopAfter = maxInt(0, m.cfg.F1LiveTimingScheduleStopAfterMin)
+		m.snapshot.ScheduleMeetingKey = 0
+		m.snapshot.ScheduleMeetingName = ""
+		m.snapshot.ScheduleWindowStart = ""
+		m.snapshot.ScheduleWindowEnd = ""
+		m.snapshot.ScheduleCheckedAt = now.UTC().Format(time.RFC3339Nano)
+		m.snapshot.ScheduleError = ""
+		m.mu.Unlock()
+		return nil
+	}
+
+	before := time.Duration(maxInt(0, m.cfg.F1LiveTimingScheduleStartBeforeMin)) * time.Minute
+	after := time.Duration(maxInt(0, m.cfg.F1LiveTimingScheduleStopAfterMin)) * time.Minute
+	var row meetingScheduleRow
+	err := m.db.Raw(
+		`
+        SELECT
+          meeting_key,
+          meeting_name,
+          meeting_official_name,
+          date_start_utc,
+          date_end_utc,
+          is_cancelled
+        FROM openf1_meetings
+        WHERE is_cancelled IS NOT TRUE
+          AND date_start_utc IS NOT NULL
+          AND date_start_utc <= ?
+          AND (date_end_utc IS NULL OR date_end_utc >= ?)
+        ORDER BY date_start_utc DESC
+        LIMIT 1
+    `,
+		now.Add(before),
+		now.Add(-after),
+	).Scan(&row).Error
+	if err != nil {
+		m.mu.Lock()
+		m.snapshot.ScheduleEnabled = true
+		m.snapshot.ScheduleCheckedAt = now.UTC().Format(time.RFC3339Nano)
+		m.snapshot.ScheduleError = err.Error()
+		m.mu.Unlock()
+		return err
+	}
+
+	active := row.MeetingKey > 0
+	meetingName := strings.TrimSpace(firstNonEmpty(ptrString(row.OfficialName), ptrString(row.MeetingName)))
+	if meetingName == "" && row.MeetingKey > 0 {
+		meetingName = fmt.Sprintf("meeting-%d", row.MeetingKey)
+	}
+	windowStart := ""
+	windowEnd := ""
+	if row.MeetingKey > 0 {
+		windowStart = row.DateStartUTC.Add(-before).UTC().Format(time.RFC3339Nano)
+		if row.DateEndUTC != nil {
+			windowEnd = row.DateEndUTC.Add(after).UTC().Format(time.RFC3339Nano)
+		}
+	}
+
+	prevActive := m.scheduleActive.Load()
+	if active != prevActive {
+		m.scheduleActive.Store(active)
+		m.signalSchedule(active)
+	}
+
+	m.mu.Lock()
+	changed := m.snapshot.ScheduleActive != active ||
+		m.snapshot.ScheduleMeetingKey != row.MeetingKey ||
+		m.snapshot.ScheduleMeetingName != meetingName ||
+		m.snapshot.ScheduleWindowStart != windowStart ||
+		m.snapshot.ScheduleWindowEnd != windowEnd ||
+		m.snapshot.ScheduleError != ""
+	m.snapshot.ScheduleEnabled = true
+	m.snapshot.ScheduleActive = active
+	m.snapshot.ScheduleStartBefore = maxInt(0, m.cfg.F1LiveTimingScheduleStartBeforeMin)
+	m.snapshot.ScheduleStopAfter = maxInt(0, m.cfg.F1LiveTimingScheduleStopAfterMin)
+	m.snapshot.ScheduleMeetingKey = row.MeetingKey
+	m.snapshot.ScheduleMeetingName = meetingName
+	m.snapshot.ScheduleWindowStart = windowStart
+	m.snapshot.ScheduleWindowEnd = windowEnd
+	m.snapshot.ScheduleCheckedAt = now.UTC().Format(time.RFC3339Nano)
+	m.snapshot.ScheduleError = ""
+	if active != prevActive && !active {
+		m.snapshot.Connected = false
+		m.snapshot.LastError = ""
+		m.snapshot.QueryLatencyMS = 0
+	}
+	m.mu.Unlock()
+
+	if changed {
+		m.broadcastSnapshot()
+	}
+	return nil
 }
 
 func (m *Manager) pollOnce() error {
@@ -478,6 +703,7 @@ func (m *Manager) pollOnce() error {
 }
 
 func (m *Manager) buildSnapshot(payload graphQLResponse, latency time.Duration) Snapshot {
+	sf := m.currentScheduleFields()
 	state := payload.Data.F1LiveTimingState
 	rows := buildRows(state.TimingData.Lines, state.TimingAppData.Lines, state.DriverList, buildLatestCarDataMap(state.CarData.Entries))
 	rcMessages := buildRaceControlMessages(state.RaceControlMessages.Messages)
@@ -489,6 +715,16 @@ func (m *Manager) buildSnapshot(payload graphQLResponse, latency time.Duration) 
 		Endpoint:            strings.TrimSpace(m.cfg.F1LiveTimingGraphQLEndpoint),
 		PollIntervalMS:      maxInt(m.cfg.F1LiveTimingPollIntervalMS, 100),
 		RequestTimeoutMS:    maxInt(m.cfg.F1LiveTimingRequestTimeoutMS, 2000),
+		ScheduleEnabled:     sf.ScheduleEnabled,
+		ScheduleActive:      sf.ScheduleActive,
+		ScheduleStartBefore: sf.ScheduleStartBefore,
+		ScheduleStopAfter:   sf.ScheduleStopAfter,
+		ScheduleMeetingKey:  sf.ScheduleMeetingKey,
+		ScheduleMeetingName: sf.ScheduleMeetingName,
+		ScheduleWindowStart: sf.ScheduleWindowStart,
+		ScheduleWindowEnd:   sf.ScheduleWindowEnd,
+		ScheduleCheckedAt:   sf.ScheduleCheckedAt,
+		ScheduleError:       sf.ScheduleError,
 		Seq:                 seq,
 		LastPolledAtUTC:     time.Now().UTC().Format(time.RFC3339Nano),
 		LastUpdatedAtUTC:    time.Now().UTC().Format(time.RFC3339Nano),
@@ -784,6 +1020,13 @@ func firstNonEmpty(values ...string) string {
 		}
 	}
 	return ""
+}
+
+func ptrString(v *string) string {
+	if v == nil {
+		return ""
+	}
+	return strings.TrimSpace(*v)
 }
 
 func maxInt(a, b int) int {
