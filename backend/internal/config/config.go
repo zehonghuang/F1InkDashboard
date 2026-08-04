@@ -69,22 +69,26 @@ type Config struct {
 	OpenF1SchedulerMaxReqPerMin   int
 	OpenF1SchedulerQuiet          bool
 
-	F1LiveTimingEnabled          bool
-	F1LiveTimingGraphQLEndpoint  string
-	F1LiveTimingPollIntervalMS   int
-	F1LiveTimingRequestTimeoutMS int
-	F1LiveTimingScheduleEnabled          bool
-	F1LiveTimingScheduleStartBeforeMin   int
-	F1LiveTimingScheduleStopAfterMin     int
-	F1LiveTimingScheduleIntervalSec      int
+	F1LiveTimingEnabled                bool
+	F1LiveTimingGraphQLEndpoint        string
+	F1LiveTimingPollIntervalMS         int
+	F1LiveTimingRequestTimeoutMS       int
+	F1LiveTimingScheduleEnabled        bool
+	F1LiveTimingScheduleStartBeforeMin int
+	F1LiveTimingScheduleStopAfterMin   int
+	F1LiveTimingScheduleIntervalSec    int
 
-	MotorsportLiveEnabled              bool
-	MotorsportLiveWSURL                string
-	MotorsportLiveOrigin               string
-	MotorsportLiveUserAgent            string
-	MotorsportLiveRecentLimit          int
-	MotorsportLiveConnectBeforeMin     int
-	MotorsportLiveReconnectIntervalSec int
+	MotorsportLiveEnabled                bool
+	MotorsportLiveWSURL                  string
+	MotorsportLiveOrigin                 string
+	MotorsportLiveUserAgent              string
+	MotorsportLiveRecentLimit            int
+	MotorsportLiveConnectBeforeMin       int
+	MotorsportLiveReconnectIntervalSec   int
+	MotorsportLiveScheduleEnabled        bool
+	MotorsportLiveScheduleStartBeforeMin int
+	MotorsportLiveScheduleStopAfterMin   int
+	MotorsportLiveScheduleIntervalSec    int
 
 	MotorsportResultsSchedulerEnabled       bool
 	MotorsportResultsSchedulerIntervalSec   int
@@ -135,22 +139,26 @@ func FromEnv() Config {
 		OpenF1SchedulerMaxReqPerMin:   getenvInt("OPENF1_SCHEDULER_MAX_REQ_PER_MIN", 30),
 		OpenF1SchedulerQuiet:          getenvBool("OPENF1_SCHEDULER_QUIET", true),
 
-		F1LiveTimingEnabled:          getenvBool("F1_LIVE_TIMING_ENABLED", true),
-		F1LiveTimingGraphQLEndpoint:  getenvTrim("F1_LIVE_TIMING_GRAPHQL_ENDPOINT", "http://localhost:10457/api/graphql"),
-		F1LiveTimingPollIntervalMS:   getenvInt("F1_LIVE_TIMING_POLL_INTERVAL_MS", 100),
-		F1LiveTimingRequestTimeoutMS: getenvInt("F1_LIVE_TIMING_REQUEST_TIMEOUT_MS", 2000),
+		F1LiveTimingEnabled:                getenvBool("F1_LIVE_TIMING_ENABLED", true),
+		F1LiveTimingGraphQLEndpoint:        getenvTrim("F1_LIVE_TIMING_GRAPHQL_ENDPOINT", "http://localhost:10457/api/graphql"),
+		F1LiveTimingPollIntervalMS:         getenvInt("F1_LIVE_TIMING_POLL_INTERVAL_MS", 100),
+		F1LiveTimingRequestTimeoutMS:       getenvInt("F1_LIVE_TIMING_REQUEST_TIMEOUT_MS", 2000),
 		F1LiveTimingScheduleEnabled:        getenvBool("F1_LIVE_TIMING_SCHEDULE_ENABLED", true),
 		F1LiveTimingScheduleStartBeforeMin: getenvInt("F1_LIVE_TIMING_SCHEDULE_START_BEFORE_MIN", 30),
 		F1LiveTimingScheduleStopAfterMin:   getenvInt("F1_LIVE_TIMING_SCHEDULE_STOP_AFTER_MIN", 60),
 		F1LiveTimingScheduleIntervalSec:    getenvInt("F1_LIVE_TIMING_SCHEDULE_INTERVAL_SEC", 30),
 
-		MotorsportLiveEnabled:              getenvBool("MOTORSPORT_LIVE_ENABLED", true),
-		MotorsportLiveWSURL:                getenvTrim("MOTORSPORT_LIVE_WS_URL", "wss://livetiming.motorsport.com:8080/782178-full/"),
-		MotorsportLiveOrigin:               getenvTrim("MOTORSPORT_LIVE_ORIGIN", "https://www.motorsport.com"),
-		MotorsportLiveUserAgent:            getenvTrim("MOTORSPORT_LIVE_USER_AGENT", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"),
-		MotorsportLiveRecentLimit:          getenvInt("MOTORSPORT_LIVE_RECENT_LIMIT", 20),
-		MotorsportLiveConnectBeforeMin:     getenvInt("MOTORSPORT_LIVE_CONNECT_BEFORE_MIN", 30),
-		MotorsportLiveReconnectIntervalSec: getenvInt("MOTORSPORT_LIVE_RECONNECT_INTERVAL_SEC", 120),
+		MotorsportLiveEnabled:                getenvBool("MOTORSPORT_LIVE_ENABLED", true),
+		MotorsportLiveWSURL:                  getenvTrim("MOTORSPORT_LIVE_WS_URL", "wss://livetiming.motorsport.com:8080/782178-full/"),
+		MotorsportLiveOrigin:                 getenvTrim("MOTORSPORT_LIVE_ORIGIN", "https://www.motorsport.com"),
+		MotorsportLiveUserAgent:              getenvTrim("MOTORSPORT_LIVE_USER_AGENT", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"),
+		MotorsportLiveRecentLimit:            getenvInt("MOTORSPORT_LIVE_RECENT_LIMIT", 20),
+		MotorsportLiveConnectBeforeMin:       getenvInt("MOTORSPORT_LIVE_CONNECT_BEFORE_MIN", 30),
+		MotorsportLiveReconnectIntervalSec:   getenvInt("MOTORSPORT_LIVE_RECONNECT_INTERVAL_SEC", 120),
+		MotorsportLiveScheduleEnabled:        getenvBool("MOTORSPORT_LIVE_SCHEDULE_ENABLED", true),
+		MotorsportLiveScheduleStartBeforeMin: getenvInt("MOTORSPORT_LIVE_SCHEDULE_START_BEFORE_MIN", 30),
+		MotorsportLiveScheduleStopAfterMin:   getenvInt("MOTORSPORT_LIVE_SCHEDULE_STOP_AFTER_MIN", 60),
+		MotorsportLiveScheduleIntervalSec:    getenvInt("MOTORSPORT_LIVE_SCHEDULE_INTERVAL_SEC", 30),
 
 		MotorsportResultsSchedulerEnabled:       getenvBool("MOTORSPORT_RESULTS_SCHEDULER_ENABLED", false),
 		MotorsportResultsSchedulerIntervalSec:   getenvInt("MOTORSPORT_RESULTS_SCHEDULER_INTERVAL_SEC", 60),

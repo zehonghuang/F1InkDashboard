@@ -354,6 +354,38 @@ def normalize_session_code(value: str) -> str:
     return aliases.get(text, text)
 
 
+def session_key(code: str) -> str:
+    return re.sub(r"[^A-Z0-9]+", "", collapse_ws(code).upper())
+
+
+def session_priority(code: str) -> tuple[int, str]:
+    key = session_key(code)
+    order = {
+        "EL": 10,
+        "CQ": 20,
+        "FP0": 100,
+        "FP1": 110,
+        "FP2": 120,
+        "FP3": 130,
+        "SQ": 200,
+        "SQ1": 210,
+        "SQ2": 220,
+        "SQ3": 230,
+        "SPR": 240,
+        "SPRINT": 240,
+        "Q": 300,
+        "Q1": 310,
+        "Q2": 320,
+        "Q3": 330,
+        "GRID": 380,
+        "FL": 390,
+        "PT": 395,
+        "TH": 398,
+        "RACE": 400,
+    }
+    return order.get(key, 1000), key
+
+
 def extract_season_results_links(html: str, season: int) -> list[dict[str, str]]:
     parser = AnchorCollector()
     parser.feed(html)
@@ -660,9 +692,8 @@ def crawl_event_sessions(
     out_dir = output_root / str(season) / event_key
     ensure_dir(out_dir)
 
-    written_codes: list[str] = []
-    session_index: list[dict[str, Any]] = []
-    for code, session_url in sorted(session_links.items()):
+    fetched: list[tuple[str, str, dict[str, Any]]] = []
+    for code, session_url in session_links.items():
         session_title, headers, rows = parse_session_table(client.fetch_text(session_url))
         session_title = clean_session_title(session_title, code)
         payload = {
@@ -682,7 +713,21 @@ def crawl_event_sessions(
             "rows": rows,
         }
         payload["content_hash"] = hash_payload({"headers": headers, "rows": rows})
-        file_name = f"{event_slug}_{code.lower()}.json"
+        fetched.append((code, session_url, payload))
+
+    fetched.sort(
+        key=lambda item: (
+            0 if int(item[2].get("row_count") or 0) <= 0 else 1,
+            session_priority(item[0])[0],
+            session_priority(item[0])[1],
+        )
+    )
+
+    written_codes: list[str] = []
+    session_index: list[dict[str, Any]] = []
+    for code, session_url, payload in fetched:
+        file_key = slugify(code).replace("-", "_")
+        file_name = f"{event_slug}_{file_key}.json"
         json_dump(out_dir / file_name, payload)
         written_codes.append(code)
         session_index.append(
@@ -691,7 +736,7 @@ def crawl_event_sessions(
                 "session_title": payload["session_title"],
                 "session_url": session_url,
                 "file": file_name,
-                "row_count": len(rows),
+                "row_count": int(payload.get("row_count") or 0),
                 "content_hash": payload["content_hash"],
             }
         )

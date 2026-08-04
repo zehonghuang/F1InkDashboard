@@ -130,6 +130,28 @@ func MpSessionResultsLatestCrawled(cfg config.Config, tdCache *teamdrivercache.M
 			title += " Results"
 		}
 		shouldDisplay, hideAfterUTC := shouldDisplayLatestCrawledResults(payload)
+		if !shouldDisplay {
+			c.JSON(http.StatusOK, gin.H{
+				"ok":                  true,
+				"generated_at_utc":    time.Now().UTC().Format(time.RFC3339Nano),
+				"source":              "motorsport",
+				"season":              payload.Season,
+				"event_name":          payload.EventName,
+				"event_slug":          payload.EventSlug,
+				"session_code":        payload.SessionCode,
+				"session_title":       payload.SessionTitle,
+				"title":               title,
+				"crawled_at":          payload.CrawledAt,
+				"should_display":      false,
+				"hide_after_utc":      hideAfterUTC,
+				"selected_file":       filepath.Base(sessionPath),
+				"index_file":          filepath.Base(indexPath),
+				"row_count":           0,
+				"discovered_row_count": sessionMeta.RowCount,
+				"rows":                []mpLatestCrawledSessionRow{},
+			})
+			return
+		}
 
 		c.JSON(http.StatusOK, gin.H{
 			"ok":                  true,
@@ -198,10 +220,22 @@ func findLatestMotorsportIndex(outputRoot string) (string, mpCrawledResultsIndex
 		}
 		return candidates[i].mod.After(candidates[j].mod)
 	})
-	if err := readJSONFile(candidates[0].path, &out); err != nil {
-		return "", out, err
+	for _, it := range candidates {
+		var tmp mpCrawledResultsIndex
+		if err := readJSONFile(it.path, &tmp); err != nil {
+			continue
+		}
+		crawledAt, ok := parseTimeLoose(tmp.CrawledAt)
+		if !ok {
+			continue
+		}
+		if time.Now().UTC().Sub(crawledAt) > 24*time.Hour {
+			continue
+		}
+		out = tmp
+		return it.path, out, nil
 	}
-	return candidates[0].path, out, nil
+	return "", mpCrawledResultsIndex{}, nil
 }
 
 func findLatestMotorsportSession(eventDir string, idx mpCrawledResultsIndex) (mpCrawledResultsIndexSession, string, error) {
@@ -256,13 +290,9 @@ func readJSONFile(path string, dst interface{}) error {
 }
 
 func shouldDisplayLatestCrawledResults(payload mpCrawledSessionPayload) (bool, string) {
-	code := strings.ToUpper(strings.TrimSpace(payload.SessionCode))
-	if code != "RACE" {
-		return true, ""
-	}
 	crawledAt, ok := parseTimeLoose(payload.CrawledAt)
 	if !ok {
-		return true, ""
+		return false, ""
 	}
 	hideAfter := crawledAt.Add(24 * time.Hour).UTC()
 	return time.Now().UTC().Before(hideAfter), hideAfter.Format(time.RFC3339)

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"toinc_f1_backend/internal/config"
+	"toinc_f1_backend/internal/meetingwindow"
 	"toinc_f1_backend/internal/model"
 	"toinc_f1_backend/internal/ws"
 
@@ -41,6 +42,14 @@ type Snapshot struct {
 	Origin             string           `json:"origin"`
 	RecentLimit        int              `json:"recent_limit"`
 	ConnectBeforeMin   int              `json:"connect_before_min"`
+	ScheduleEnabled    bool             `json:"schedule_enabled"`
+	ScheduleActive     bool             `json:"schedule_active"`
+	ScheduleMeetingKey int              `json:"schedule_meeting_key,omitempty"`
+	ScheduleMeeting    string           `json:"schedule_meeting_name,omitempty"`
+	ScheduleWindowFrom string           `json:"schedule_window_start_utc,omitempty"`
+	ScheduleWindowTo   string           `json:"schedule_window_end_utc,omitempty"`
+	ScheduleCheckedAt  string           `json:"schedule_checked_at_utc,omitempty"`
+	ScheduleError      string           `json:"schedule_error,omitempty"`
 	CurrentSessionKey  int              `json:"current_session_key,omitempty"`
 	CurrentSessionName string           `json:"current_session_name,omitempty"`
 	CurrentSessionCode string           `json:"current_session_code,omitempty"`
@@ -65,6 +74,7 @@ type Manager struct {
 	running            atomic.Bool
 	seq                atomic.Int64
 	hub                *ws.Hub
+	meetingWindow      *meetingwindow.Watcher
 	mu                 sync.RWMutex
 	connected          bool
 	activeWSURL        string
@@ -125,7 +135,7 @@ type SeedCalibration struct {
 
 func New(cfg config.Config, db *gorm.DB, hub *ws.Hub) *Manager {
 	ctx, cancel := context.WithCancel(context.Background())
-	return &Manager{
+	m := &Manager{
 		cfg: cfg,
 		db:  db,
 		dialer: websocket.Dialer{
@@ -138,6 +148,16 @@ func New(cfg config.Config, db *gorm.DB, hub *ws.Hub) *Manager {
 		hub:    hub,
 		recent: make([]CachedMessage, 0, maxInt(1, cfg.MotorsportLiveRecentLimit)),
 	}
+	if cfg.MotorsportLiveScheduleEnabled && db != nil {
+		m.meetingWindow = meetingwindow.New(
+			db,
+			true,
+			cfg.MotorsportLiveScheduleIntervalSec,
+			cfg.MotorsportLiveScheduleStartBeforeMin,
+			cfg.MotorsportLiveScheduleStopAfterMin,
+		)
+	}
+	return m
 }
 
 func (m *Manager) Start() {
@@ -148,11 +168,17 @@ func (m *Manager) Start() {
 		return
 	}
 	m.running.Store(true)
+	if m.meetingWindow != nil {
+		m.meetingWindow.Start()
+	}
 	go m.run()
 }
 
 func (m *Manager) Stop() {
 	m.running.Store(false)
+	if m.meetingWindow != nil {
+		m.meetingWindow.Stop()
+	}
 	m.cancel()
 }
 
@@ -182,6 +208,7 @@ func (m *Manager) Snapshot() Snapshot {
 		seedCalibration = &cp
 	}
 
+	mw := m.meetingWindowSnapshot()
 	return Snapshot{
 		Enabled:            m.cfg.MotorsportLiveEnabled,
 		Running:            m.running.Load(),
@@ -192,6 +219,14 @@ func (m *Manager) Snapshot() Snapshot {
 		Origin:             strings.TrimSpace(m.cfg.MotorsportLiveOrigin),
 		RecentLimit:        maxInt(1, m.cfg.MotorsportLiveRecentLimit),
 		ConnectBeforeMin:   maxInt(1, m.cfg.MotorsportLiveConnectBeforeMin),
+		ScheduleEnabled:    mw.Enabled,
+		ScheduleActive:     mw.Active,
+		ScheduleMeetingKey: mw.MeetingKey,
+		ScheduleMeeting:    mw.MeetingName,
+		ScheduleWindowFrom: mw.WindowStartAtUTC,
+		ScheduleWindowTo:   mw.WindowEndAtUTC,
+		ScheduleCheckedAt:  mw.CheckedAtUTC,
+		ScheduleError:      mw.Error,
 		CurrentSessionKey:  m.currentSessionKey,
 		CurrentSessionName: m.currentSessionName,
 		CurrentSessionCode: m.currentSessionCode,
@@ -213,6 +248,23 @@ func (m *Manager) run() {
 		case <-m.ctx.Done():
 			return
 		default:
+		}
+
+		select {
+		case st := <-m.meetingWindowC():
+			_ = st
+		default:
+		}
+
+		if !m.meetingWindowSnapshot().Active {
+			m.setIdle(nil)
+			select {
+			case <-m.ctx.Done():
+				return
+			case <-m.meetingWindowC():
+			case <-time.After(15 * time.Second):
+			}
+			continue
 		}
 
 		target, err := m.resolveActiveTarget(time.Now().UTC())
@@ -256,6 +308,20 @@ func (m *Manager) run() {
 	}
 }
 
+func (m *Manager) meetingWindowC() <-chan meetingwindow.State {
+	if m.meetingWindow == nil {
+		return nil
+	}
+	return m.meetingWindow.C()
+}
+
+func (m *Manager) meetingWindowSnapshot() meetingwindow.State {
+	if m.meetingWindow == nil {
+		return meetingwindow.State{Enabled: false, Active: true}
+	}
+	return m.meetingWindow.Snapshot()
+}
+
 func (m *Manager) connectAndRead(target *liveTarget) error {
 	_jsii := http.Header{}
 	_jsii.Set("Origin", strings.TrimSpace(m.cfg.MotorsportLiveOrigin))
@@ -289,6 +355,10 @@ func (m *Manager) connectAndRead(target *liveTarget) error {
 	)
 
 	for {
+		if !m.meetingWindowSnapshot().Active {
+			log.Printf("motorsportlive stop due to meeting window: session_key=%d", target.SessionKey)
+			return nil
+		}
 		now := time.Now().UTC()
 		if now.After(target.DateEndUTC) {
 			log.Printf("motorsportlive stop after session end: session_key=%d", target.SessionKey)
