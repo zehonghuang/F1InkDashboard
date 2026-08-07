@@ -3,7 +3,13 @@ import vue from "@vitejs/plugin-vue";
 
 export default defineConfig({
   base: "/charts/",
-  plugins: [vue()],
+  plugins: [vue({
+    template: {
+      compilerOptions: {
+        isCustomElement: (tag) => tag.startsWith("globe-")
+      }
+    }
+  })],
   server: {
     port: 5173,
     allowedHosts: ["winpc-f1.normal-person.icu"],
