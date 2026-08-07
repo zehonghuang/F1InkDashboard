@@ -180,16 +180,65 @@ function downloadBuffer(url) {
   });
 }
 
+const IVIEW_COMPONENT_FILES = ['index.js', 'index.json', 'index.wxml', 'index.wxss'];
+
+async function ensureIviewWeappPkg(pkgRoot) {
+  const pkgJsonPath = path.join(pkgRoot, 'package.json');
+  if (!fs.existsSync(pkgJsonPath)) return;
+  const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
+  let changed = false;
+  if (pkg.main) {
+    delete pkg.main;
+    changed = true;
+  }
+  const appJsPath = path.join(pkgRoot, 'app.js');
+  if (!fs.existsSync(appJsPath)) {
+    fs.writeFileSync(appJsPath, '// empty entry stub for iview-weapp\n');
+  }
+  const indexJsPath = path.join(pkgRoot, 'index.js');
+  if (!fs.existsSync(indexJsPath)) {
+    fs.writeFileSync(indexJsPath, 'module.exports = {};\n');
+  }
+  if (changed) {
+    fs.writeFileSync(pkgJsonPath, JSON.stringify(pkg, null, 2) + '\n');
+  }
+}
+
+async function ensureIviewWeappDist(pkgRoot, components) {
+  const srcDist = path.join(pkgRoot, 'dist');
+  ensureDirSync(srcDist);
+  const baseUrl = 'https://raw.githubusercontent.com/TalkingData/iview-weapp/master/dist';
+  for (const c of components) {
+    const compDir = path.join(srcDist, c);
+    const marker = path.join(compDir, 'index.wxml');
+    if (fs.existsSync(marker)) continue;
+    ensureDirSync(compDir);
+    console.log(`[prepare-mp] downloading iview-weapp/${c} ...`);
+    for (const f of IVIEW_COMPONENT_FILES) {
+      const url = `${baseUrl}/${c}/${f}`;
+      const dst = path.join(compDir, f);
+      try {
+        const buf = await downloadBuffer(url);
+        fs.writeFileSync(dst, buf);
+      } catch (e) {
+        console.warn(`[prepare-mp] download failed: ${url}`);
+        if (!fs.existsSync(dst)) {
+          if (f.endsWith('.json')) fs.writeFileSync(dst, '{\n  "component": true\n}\n');
+          else if (f.endsWith('.js')) fs.writeFileSync(dst, 'Component({});\n');
+          else if (f.endsWith('.wxml')) fs.writeFileSync(dst, '');
+          else if (f.endsWith('.wxss')) fs.writeFileSync(dst, '');
+        }
+      }
+    }
+  }
+}
+
 async function main() {
   const pkgRoot = path.join(projectRoot, 'node_modules', 'iview-weapp');
   const srcDist = path.join(pkgRoot, 'dist');
   const outPkgRoot = path.join(projectRoot, 'miniprogram_npm', 'iview-weapp');
   const outDist = path.join(outPkgRoot, 'dist');
   const repoRoot = path.resolve(projectRoot, '..');
-
-  if (!fs.existsSync(srcDist)) {
-    throw new Error(`iview-weapp dist not found: ${srcDist}`);
-  }
 
   const components = [
     'panel',
@@ -205,6 +254,13 @@ async function main() {
     'badge'
   ];
 
+  await ensureIviewWeappPkg(pkgRoot);
+  await ensureIviewWeappDist(pkgRoot, components);
+
+  if (!fs.existsSync(srcDist)) {
+    throw new Error(`iview-weapp dist not found: ${srcDist}`);
+  }
+
   ensureDirSync(outDist);
   for (const c of components) {
     copyDirSync(path.join(srcDist, c), path.join(outDist, c));
@@ -213,7 +269,17 @@ async function main() {
   const pkgJsonSrc = path.join(pkgRoot, 'package.json');
   const pkgJsonDst = path.join(outPkgRoot, 'package.json');
   ensureDirSync(path.dirname(pkgJsonDst));
-  fs.copyFileSync(pkgJsonSrc, pkgJsonDst);
+  const pkg = JSON.parse(fs.readFileSync(pkgJsonSrc, 'utf8'));
+  delete pkg.main;
+  delete pkg.scripts;
+  delete pkg.devDependencies;
+  pkg.miniprogram = 'dist';
+  fs.writeFileSync(pkgJsonDst, JSON.stringify(pkg, null, 2) + '\n');
+
+  const outIndexJs = path.join(outPkgRoot, 'index.js');
+  if (!fs.existsSync(outIndexJs)) {
+    fs.writeFileSync(outIndexJs, 'module.exports = {};\n');
+  }
 
   const iconsDir = path.join(projectRoot, 'assets', 'tabbar');
   writePngIcon(path.join(iconsDir, 'archive.png'), 'archive', false);

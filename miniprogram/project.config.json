@@ -5,7 +5,7 @@
   "projectname": "toinc_f1_miniprogram",
   "miniprogramRoot": "./",
   "setting": {
-    "useCompilerModule": false,
+    "useCompilerModule": true,
     "babelSetting": {
       "ignore": [],
       "disablePlugins": [],
@@ -23,15 +23,20 @@
     "uglifyFileName": false,
     "uploadWithSourceMap": true,
     "enhance": true,
-    "packNpmManually": false,
-    "packNpmRelationList": [],
+    "packNpmManually": true,
+    "packNpmRelationList": [
+      {
+        "packageJsonPath": "./package.json",
+        "miniprogramNpmDistDir": "./"
+      }
+    ],
     "localPlugins": false,
     "disableUseStrict": false,
     "checkSiteMap": false,
     "useCompilerPlugins": false,
     "condition": false,
-    "swc": false,
-    "disableSWC": true
+    "swc": true,
+    "disableSWC": false
   },
   "simulatorPluginLibVersion": {},
   "packOptions": {
