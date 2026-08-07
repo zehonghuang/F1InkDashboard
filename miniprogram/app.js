@@ -12,7 +12,7 @@ App({
       this.globalData.locale = i18n.getSystemLocale()
     }
 
-    const defaultApiBase = "https://winpc-f1.normal-person.icu"
+    const defaultApiBase = "https://f1ink.normal-person.icu"
     this.globalData.apiBase = defaultApiBase.replace(/\/+$/, "")
 
     try {
