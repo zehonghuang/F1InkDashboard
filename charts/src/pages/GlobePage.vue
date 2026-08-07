@@ -1,40 +1,131 @@
 <template>
   <div class="page">
     <HeaderBar :showNav="true" />
-    <div class="container">
-      <div class="card globe-card">
-        <div class="card-title-row">
-          <div class="card-title">Requests by Country</div>
-          <div class="card-more">⋯</div>
+    <div class="container globe-page">
+      <section class="card hero-card">
+        <div class="hero-topline">
+          <div class="hero-kicker">F1 GLOBAL TELEMETRY</div>
+          <div class="hero-state">LIVE FEED</div>
         </div>
-        <div class="globe-layout">
-          <div class="globe-side">
-            <DotGlobe :size="340" :dotCount="2200" :rotateSpeed="0.0032" />
-          </div>
-          <div class="list-side">
-            <ul class="country-list">
-              <li v-for="(c, i) in countries" :key="c.name" class="country-row">
-                <div class="country-name">{{ c.name }}</div>
-                <div class="country-bar-track">
-                  <div class="country-bar-fill" :style="{ width: c.pct + '%' }" />
-                </div>
-                <div class="country-value">{{ c.value }}</div>
-              </li>
-            </ul>
-          </div>
+        <div class="session-title hero-title">
+          <div class="session-title-main">Race Control Globe</div>
+          <div class="session-title-sub">将原来的 Cloudflare 风格地球改成更像赛事转播中心的黑红 HUD 视觉</div>
         </div>
-      </div>
 
-      <div class="small-grid">
-        <div class="card">
-          <div class="card-subtitle">较小尺寸（260px）</div>
-          <DotGlobe :size="260" :dotCount="1700" :rotateSpeed="0.005" />
+        <div class="hero-grid">
+          <div class="globe-panel">
+            <div class="globe-panel-sheen"></div>
+            <div class="globe-panel-frame frame-top"></div>
+            <div class="globe-panel-frame frame-bottom"></div>
+            <div class="globe-caption">Trackside Network</div>
+            <DotGlobe
+              :size="390"
+              :dotCount="1700"
+              :landExtraRatio="0.38"
+              :rotateSpeed="0.0036"
+              atmosphereColor="#6c1418"
+              globeColor="#040506"
+              globeEmissive="#070203"
+              globeSpecular="#5c1518"
+              ringColor="#ff2d20"
+              highlightColor="#7d1b20"
+            />
+            <div class="globe-callout callout-left">
+              <span class="callout-label">Sector Sync</span>
+              <span class="callout-value">99.2%</span>
+            </div>
+            <div class="globe-callout callout-right">
+              <span class="callout-label">Latency</span>
+              <span class="callout-value">14 ms</span>
+            </div>
+            <div class="globe-callout callout-bottom">
+              <span class="callout-label">Live Mesh</span>
+              <span class="callout-value">24 circuits</span>
+            </div>
+          </div>
+
+          <div class="side-panel">
+            <div class="metric-grid">
+              <div v-for="item in stats" :key="item.label" class="metric-card">
+                <div class="metric-label">{{ item.label }}</div>
+                <div class="metric-value">{{ item.value }}</div>
+                <div class="metric-sub">{{ item.sub }}</div>
+              </div>
+            </div>
+
+            <div class="rank-panel">
+              <div class="panel-header">
+                <div class="panel-title">Hot Regions</div>
+                <div class="panel-tag">Race Week</div>
+              </div>
+              <ul class="country-list">
+                <li v-for="c in countries" :key="c.name" class="country-row">
+                  <div class="country-rank">P{{ c.rank }}</div>
+                  <div class="country-main">
+                    <div class="country-name">{{ c.name }}</div>
+                    <div class="country-meta">{{ c.code }} · {{ c.note }}</div>
+                  </div>
+                  <div class="country-bar-track">
+                    <div class="country-bar-fill" :style="{ width: c.pct + '%' }" />
+                  </div>
+                  <div class="country-value">{{ c.value }}</div>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
-        <div class="card">
-          <div class="card-subtitle">大尺寸（440px）</div>
-          <DotGlobe :size="440" :dotCount="3000" :rotateSpeed="0.0022" />
+      </section>
+
+      <section class="lower-grid">
+        <div class="card support-card">
+          <div class="support-topline">
+            <div class="panel-title">Relay View</div>
+            <div class="panel-tag">Backup Feed</div>
+          </div>
+          <div class="support-body">
+            <DotGlobe
+              :size="220"
+              :dotCount="980"
+              :landExtraRatio="0.32"
+              :rotateSpeed="0.0052"
+              atmosphereColor="#5e1216"
+              globeColor="#050608"
+              globeEmissive="#070203"
+              globeSpecular="#541114"
+              ringColor="#ff4c3a"
+              highlightColor="#70181d"
+            />
+            <div class="support-text">
+              <div class="support-title">Regional Backup Mesh</div>
+              <div class="support-copy">用次级信道模拟赛道到控制台的备用链路，颜色保持红橙白的赛事氛围。</div>
+              <div class="signal-list">
+                <div class="signal-row"><span>Marshal Uplink</span><strong>Stable</strong></div>
+                <div class="signal-row"><span>Timing Bus</span><strong>14.8 ms</strong></div>
+                <div class="signal-row"><span>Broadcast Sync</span><strong>Green</strong></div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+
+        <div class="card support-card">
+          <div class="support-topline">
+            <div class="panel-title">Pulse Matrix</div>
+            <div class="panel-tag">HUD</div>
+          </div>
+          <div class="pulse-grid">
+            <div v-for="item in pulses" :key="item.label" class="pulse-card">
+              <div class="pulse-label">{{ item.label }}</div>
+              <div class="pulse-value">{{ item.value }}</div>
+              <div class="pulse-trend" :class="item.tone">{{ item.trend }}</div>
+            </div>
+          </div>
+          <div class="legend-row">
+            <span class="legend-chip chip-red">Primary circuit</span>
+            <span class="legend-chip chip-amber">Relay path</span>
+            <span class="legend-chip chip-white">Broadcast mirror</span>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 </template>
@@ -43,176 +134,480 @@
 import HeaderBar from "../widgets/HeaderBar.vue";
 import DotGlobe from "../components/DotGlobe.vue";
 
-const countries = [
-  { name: "China", value: 122 },
-  { name: "United States", value: 59 },
-  { name: "Netherlands", value: 37 },
-  { name: "Germany", value: 33 },
-  { name: "Luxembourg", value: 25 },
-  { name: "Canada", value: 14 },
-  { name: "France", value: 9 },
-  { name: "Sweden", value: 4 },
-  { name: "Finland", value: 3 },
-  { name: "Australia", value: 3 },
-  { name: "Japan", value: 2 },
-  { name: "Singapore", value: 2 },
-  { name: "Brazil", value: 1 },
-  { name: "India", value: 1 }
+const rawCountries = [
+  { name: "United Kingdom", code: "SIL", note: "Broadcast control", value: 128 },
+  { name: "Italy", code: "MON", note: "Trackside uplink", value: 102 },
+  { name: "United States", code: "MIA", note: "Fan telemetry", value: 87 },
+  { name: "Netherlands", code: "ZAN", note: "Timing mirror", value: 71 },
+  { name: "Japan", code: "SUZ", note: "Overnight sync", value: 58 },
+  { name: "Singapore", code: "SGP", note: "Night race feed", value: 44 },
+  { name: "Australia", code: "MEL", note: "Morning relay", value: 39 },
+  { name: "Canada", code: "MON", note: "Marshal channel", value: 33 }
 ];
-const max = Math.max(...countries.map(c => c.value));
-countries.forEach(c => (c.pct = Math.round((c.value / max) * 100)));
+
+const stats = [
+  { label: "Linked Circuits", value: "24", sub: "calendar ready" },
+  { label: "Global Pulses", value: "1.28M", sub: "last 60 min" },
+  { label: "Sync Delta", value: "14 ms", sub: "edge to control" },
+  { label: "Red Flag Risk", value: "Low", sub: "network stable" }
+];
+
+const pulses = [
+  { label: "Sector 1", value: "98.7%", trend: "+0.6% sync", tone: "tone-up" },
+  { label: "Sector 2", value: "96.4%", trend: "relay load", tone: "tone-warn" },
+  { label: "Sector 3", value: "99.1%", trend: "clean feed", tone: "tone-up" },
+  { label: "Pit Wall", value: "12 ms", trend: "round trip", tone: "tone-neutral" }
+];
+
+const max = Math.max(...rawCountries.map(c => c.value));
+const countries = rawCountries.map((country, index) => ({
+  ...country,
+  rank: index + 1,
+  pct: Math.round((country.value / max) * 100)
+}));
 </script>
 
 <style scoped>
-.card {
-  background: #ffffff;
-  color: #111827;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  padding: 16px 18px 14px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+.globe-page {
+  padding-top: 8px;
 }
-.card-title-row {
+
+.card {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top right, rgba(255, 76, 76, 0.08), transparent 30%),
+    linear-gradient(180deg, rgba(14, 15, 20, 0.98), rgba(4, 5, 9, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  color: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+}
+
+.hero-card {
+  padding: 22px 22px 20px;
+}
+
+.hero-topline,
+.support-topline,
+.panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
-}
-.card-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #4b5563;
-  letter-spacing: 0.2px;
-}
-.card-more {
-  color: #6b7280;
-  font-size: 18px;
-  line-height: 1;
-  padding: 0 6px;
-  cursor: pointer;
-  user-select: none;
-}
-.card-subtitle {
-  font-size: 12px;
-  color: #6b7280;
-  margin-bottom: 4px;
-  padding: 0 6px;
+  gap: 12px;
 }
 
-.globe-card {
-  padding: 16px 14px 14px 10px;
+.hero-topline {
+  margin-bottom: 16px;
 }
-.globe-layout {
+
+.hero-kicker,
+.panel-tag,
+.hero-state,
+.globe-caption {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 11px;
+}
+
+.hero-kicker,
+.panel-title,
+.globe-caption {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.hero-state,
+.panel-tag {
+  color: #ff7d73;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 91, 87, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 91, 87, 0.08);
+}
+
+.hero-title {
+  margin: 0 0 18px;
+}
+
+.hero-title :deep(.session-title-main) {
+  font-size: 38px;
+  letter-spacing: 0.02em;
+}
+
+.hero-title :deep(.session-title-sub) {
+  max-width: 760px;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.hero-grid {
   display: grid;
-  grid-template-columns: 380px 1fr;
-  gap: 10px;
-  align-items: stretch;
+  grid-template-columns: minmax(360px, 430px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
 }
-.globe-side {
-  border-right: 1px solid rgba(0, 0, 0, 0.06);
-  padding-right: 10px;
+
+.globe-panel {
+  position: relative;
+  min-height: 470px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.05), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 28px 18px 22px;
 }
-.list-side {
-  padding-left: 6px;
-  max-height: 420px;
-  overflow-y: auto;
-  padding-right: 8px;
+
+.globe-panel-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(130deg, rgba(255, 255, 255, 0.08), transparent 35%, transparent 70%, rgba(255, 91, 87, 0.04));
+  pointer-events: none;
 }
-.list-side::-webkit-scrollbar {
-  width: 8px;
+
+.globe-panel-frame {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 91, 87, 0.55), transparent);
 }
-.list-side::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.18);
-  border-radius: 4px;
+
+.frame-top {
+  top: 18px;
 }
-.list-side::-webkit-scrollbar-track {
-  background: transparent;
+
+.frame-bottom {
+  bottom: 18px;
+}
+
+.globe-caption {
+  position: absolute;
+  top: 22px;
+  left: 24px;
+}
+
+.globe-callout {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: rgba(8, 10, 16, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.callout-left {
+  left: 18px;
+  top: 96px;
+}
+
+.callout-right {
+  right: 18px;
+  top: 136px;
+}
+
+.callout-bottom {
+  bottom: 24px;
+  right: 24px;
+}
+
+.callout-label,
+.country-meta,
+.metric-sub,
+.support-copy,
+.pulse-trend {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 12px;
+}
+
+.callout-value,
+.metric-value,
+.country-value,
+.pulse-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.side-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.metric-card,
+.rank-panel,
+.support-card,
+.pulse-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+}
+
+.metric-card {
+  padding: 14px 16px;
+}
+
+.metric-label,
+.pulse-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.48);
+  margin-bottom: 10px;
+}
+
+.metric-value {
+  font-size: 28px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.rank-panel,
+.support-card {
+  padding: 16px;
 }
 
 .country-list {
   list-style: none;
   margin: 0;
-  padding: 6px 4px 0;
+  padding: 12px 0 0;
 }
+
 .country-row {
   display: grid;
-  grid-template-columns: 150px 1fr 52px;
+  grid-template-columns: 42px minmax(120px, 1.2fr) minmax(120px, 1fr) 56px;
   align-items: center;
   gap: 14px;
-  padding: 10px 2px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
+
 .country-row:last-child {
   border-bottom: none;
 }
+
+.country-rank {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ff8f86;
+}
+
+.country-main {
+  min-width: 0;
+}
+
 .country-name {
   font-size: 14px;
-  font-weight: 500;
-  color: #111827;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 4px;
 }
+
 .country-bar-track {
   position: relative;
   height: 8px;
-  background: #e5e7eb;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   overflow: hidden;
 }
+
 .country-bar-fill {
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
-  background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+  background: linear-gradient(90deg, #7a0c10, #ff3b30 55%, #ffd2ca);
   border-radius: 999px;
   transition: width 400ms ease;
-}
-.country-value {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  font-size: 14px;
-  color: #111827;
+  box-shadow: 0 0 16px rgba(255, 91, 87, 0.45);
 }
 
-.small-grid {
+.country-value {
+  text-align: right;
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.lower-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 18px;
+  margin-top: 18px;
 }
-.small-grid .card {
-  margin-bottom: 0;
+
+.support-card {
+  padding: 16px;
+}
+
+.support-body {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 18px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.support-text {
+  display: grid;
+  gap: 10px;
+}
+
+.support-title {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.signal-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.signal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.signal-row strong {
+  color: #ffffff;
+}
+
+.pulse-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.pulse-card {
+  padding: 14px 16px;
+}
+
+.pulse-value {
+  font-size: 30px;
+  margin-bottom: 8px;
+}
+
+.tone-up {
+  color: #7df0aa;
+}
+
+.tone-warn {
+  color: #ffb15a;
+}
+
+.tone-neutral {
+  color: rgba(255, 255, 255, 0.64);
+}
+
+.legend-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.chip-red::before,
+.chip-amber::before,
+.chip-white::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.chip-red::before {
+  background: #ff4d4f;
+}
+
+.chip-amber::before {
+  background: #ffb15a;
+}
+
+.chip-white::before {
+  background: #fff2ef;
 }
 
 @media (max-width: 900px) {
-  .globe-layout {
+  .hero-grid,
+  .support-body,
+  .lower-grid {
     grid-template-columns: 1fr;
   }
-  .globe-side {
-    border-right: none;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    padding-right: 0;
-    padding-bottom: 10px;
+
+  .metric-grid,
+  .pulse-grid {
+    grid-template-columns: 1fr 1fr;
   }
-  .list-side {
-    padding-left: 4px;
-    padding-top: 8px;
-  }
-  .small-grid {
-    grid-template-columns: 1fr;
+
+  .globe-panel {
+    min-height: 430px;
   }
 }
 
 @media (max-width: 560px) {
-  .country-row {
-    grid-template-columns: 110px 1fr 44px;
-    gap: 10px;
+  .hero-card {
+    padding: 18px 16px 16px;
   }
-  .country-name {
-    font-size: 13px;
+
+  .hero-title :deep(.session-title-main) {
+    font-size: 30px;
+  }
+
+  .metric-grid,
+  .pulse-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .country-row {
+    grid-template-columns: 34px 1fr;
+    gap: 10px;
+    align-items: start;
+  }
+
+  .country-bar-track,
+  .country-value {
+    grid-column: 2;
+  }
+
+  .globe-callout {
+    padding: 8px 10px;
+  }
+
+  .callout-left,
+  .callout-right,
+  .callout-bottom {
+    position: static;
+    margin-top: 10px;
   }
 }
 </style>
