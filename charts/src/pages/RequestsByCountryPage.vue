@@ -1,54 +1,93 @@
 <template>
   <div class="page requests-shell">
+    <HeaderBar :showNav="true" />
     <div class="container requests-page">
-      <section class="shell-head">
-        <div>
-          <div class="shell-breadcrumb">Analytics / Dashboards</div>
-          <h1 class="page-title">Requests by Country</h1>
-          <p class="page-copy">English traffic grouped by visitor country.</p>
+      <section class="card hero-card">
+        <div class="hero-topline">
+          <div class="hero-kicker">F1 NETWORK INTEL</div>
+          <div class="hero-state">ENGLISH FEED</div>
         </div>
-        <div class="range-pill">Last 24 hours</div>
-      </section>
 
-      <section class="cf-card">
-        <div class="card-head">
-          <div class="card-title-wrap">
-            <div class="card-title">Requests by Country</div>
+        <div class="session-title hero-title">
+          <div class="session-title-main">Requests by Country</div>
+          <div class="session-title-sub">English traffic grouped by visitor country, reframed as a pit wall telemetry board.</div>
+        </div>
+
+        <div class="metric-grid">
+          <div v-for="item in summaryCards" :key="item.label" class="metric-card">
+            <div class="metric-label">{{ item.label }}</div>
+            <div class="metric-value">{{ item.value }}</div>
+            <div class="metric-sub">{{ item.sub }}</div>
           </div>
-          <button class="card-menu" type="button" aria-label="Chart actions">
-            <span></span>
-          </button>
         </div>
 
-        <div class="card-body">
-          <div class="globe-col">
-            <div class="globe-frame">
-              <CloudflareCountryGlobe :size="283" :items="globeItems" />
+        <div class="analytics-card">
+          <div class="card-head">
+            <div class="card-title-wrap">
+              <div class="card-title">Trackside Distribution</div>
+              <div class="card-subtitle">Live country ranking for English traffic</div>
             </div>
+            <div class="range-pill">Last 24 Hours</div>
           </div>
 
-          <div class="rank-col">
-            <div class="rank-scroll">
-              <div v-for="item in countries" :key="item.code" class="rank-row">
-                <div class="rank-name">{{ item.name }}</div>
-                <div class="rank-bar-wrap">
-                  <div class="rank-bar-track">
-                    <div class="rank-bar-fill" :style="{ width: item.pct + '%' }"></div>
+          <div class="card-body">
+            <div class="globe-col">
+              <div class="globe-panel">
+                <div class="globe-panel-sheen"></div>
+                <div class="globe-panel-frame frame-top"></div>
+                <div class="globe-panel-frame frame-bottom"></div>
+                <div class="globe-caption">Global Traffic Mesh</div>
+                <div class="globe-frame">
+                  <CloudflareCountryGlobe :size="283" :items="globeItems" />
+                </div>
+                <div class="globe-callout callout-left">
+                  <span class="callout-label">Leader</span>
+                  <span class="callout-value">{{ topCountry.name }}</span>
+                </div>
+                <div class="globe-callout callout-right">
+                  <span class="callout-label">Share</span>
+                  <span class="callout-value">{{ leaderShare }}%</span>
+                </div>
+                <div class="globe-callout callout-bottom">
+                  <span class="callout-label">Countries</span>
+                  <span class="callout-value">{{ countries.length }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="rank-col">
+              <div class="rank-panel">
+                <div class="panel-header">
+                  <div class="panel-title">Country Order</div>
+                  <div class="panel-tag">Race Window</div>
+                </div>
+
+                <div class="rank-scroll">
+                  <div v-for="item in countries" :key="item.code" class="rank-row">
+                    <div class="rank-position">P{{ item.rank }}</div>
+                    <div class="rank-main">
+                      <div class="rank-name">{{ item.name }}</div>
+                      <div class="rank-meta">{{ item.code }} · English traffic</div>
+                    </div>
+                    <div class="rank-bar-wrap">
+                      <div class="rank-bar-track">
+                        <div class="rank-bar-fill" :style="{ width: item.pct + '%' }"></div>
+                      </div>
+                    </div>
+                    <div class="rank-value">{{ item.value }}</div>
                   </div>
                 </div>
-                <div class="rank-value">{{ item.value }}</div>
               </div>
             </div>
           </div>
         </div>
       </section>
-
-      <div class="summary-row">Total Requests {{ formattedTotal }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
+import HeaderBar from "../widgets/HeaderBar.vue";
 import CloudflareCountryGlobe from "../components/CloudflareCountryGlobe.vue";
 
 const rawCountries = [
@@ -75,160 +114,239 @@ const rawCountries = [
 const maxValue = Math.max(...rawCountries.map((item) => item.value));
 const totalValue = rawCountries.reduce((sum, item) => sum + item.value, 0);
 
-const countries = rawCountries.map((item) => ({
+const countries = rawCountries.map((item, index) => ({
   ...item,
+  rank: index + 1,
   pct: Math.max(1, Math.round((item.value / maxValue) * 100))
 }));
 
 const globeItems = countries.map(({ code, name, value }) => ({ code, name, value }));
+const topCountry = countries[0];
+const leaderShare = Math.round((topCountry.value / totalValue) * 100);
 
 const formattedTotal = new Intl.NumberFormat("en-US", {
   notation: "compact",
   maximumFractionDigits: 2
 }).format(totalValue);
+
+const summaryCards = [
+  { label: "Total Requests", value: formattedTotal, sub: "English feed volume" },
+  { label: "Top Country", value: topCountry.code, sub: `${topCountry.name} leads the grid` },
+  { label: "Leader Share", value: `${leaderShare}%`, sub: "of all tracked requests" },
+  { label: "Countries Tracked", value: String(countries.length), sub: "active telemetry regions" }
+];
 </script>
 
 <style scoped>
 .requests-shell {
-  min-height: 100vh;
   background:
-    radial-gradient(circle at top, rgba(245, 248, 255, 0.95), rgba(238, 243, 252, 0.88) 30%, rgba(232, 238, 248, 0.96) 100%);
+    radial-gradient(circle at top center, rgba(255, 76, 76, 0.12), transparent 28%),
+    linear-gradient(180deg, #090a0d 0%, #040507 48%, #020203 100%);
 }
 
 .requests-page {
-  max-width: 700px;
-  padding-top: 32px;
-  padding-bottom: 56px;
+  padding-top: 8px;
+  padding-bottom: 28px;
 }
 
-.shell-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18px;
-  margin-bottom: 20px;
-}
-
-.shell-breadcrumb {
-  margin-bottom: 8px;
-  color: rgba(83, 92, 112, 0.72);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.page-title {
-  margin: 0;
-  color: #202939;
-  font-size: 30px;
-  line-height: 1.12;
-  letter-spacing: -0.02em;
-}
-
-.page-copy {
-  margin: 8px 0 0;
-  color: rgba(81, 91, 108, 0.82);
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.range-pill {
-  flex: none;
-  margin-top: 2px;
-  padding: 7px 12px;
-  border: 1px solid rgba(176, 186, 204, 0.72);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
-  color: #3a4355;
-  font-size: 12px;
-  font-weight: 600;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
-}
-
-.cf-card {
-  width: min(100%, 567px);
-  background: #ffffff;
-  border: 0.67px solid rgba(37, 39, 45, 0.1);
-  border-radius: 20px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+.card {
+  position: relative;
   overflow: hidden;
+  background:
+    radial-gradient(circle at top right, rgba(255, 76, 76, 0.08), transparent 30%),
+    linear-gradient(180deg, rgba(14, 15, 20, 0.98), rgba(4, 5, 9, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  color: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
 }
 
-.card-head {
+.hero-card {
+  padding: 22px 22px 20px;
+}
+
+.hero-topline,
+.card-head,
+.panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px 2px;
+}
+
+.hero-topline {
+  margin-bottom: 16px;
+}
+
+.hero-kicker,
+.hero-state,
+.panel-tag,
+.globe-caption {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 11px;
+}
+
+.hero-kicker,
+.panel-title,
+.globe-caption,
+.card-title {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.hero-state,
+.panel-tag,
+.range-pill {
+  color: #ff7d73;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 91, 87, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 91, 87, 0.08);
+}
+
+.hero-title {
+  margin: 0 0 18px;
+}
+
+.hero-title :deep(.session-title-main) {
+  font-size: 38px;
+  letter-spacing: 0.02em;
+}
+
+.hero-title :deep(.session-title-sub) {
+  max-width: 760px;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.metric-card,
+.analytics-card,
+.rank-panel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+}
+
+.metric-card {
+  padding: 14px 16px;
+}
+
+.metric-label,
+.callout-label,
+.rank-meta {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 12px;
+}
+
+.metric-label {
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.metric-value,
+.callout-value,
+.rank-value,
+.rank-position {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-value {
+  font-size: 28px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.metric-sub {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 12px;
+}
+
+.analytics-card {
+  padding: 16px;
+}
+
+.card-head {
+  margin-bottom: 14px;
 }
 
 .card-title-wrap {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .card-title {
-  color: #525c6b;
   font-size: 12px;
   font-weight: 600;
   line-height: 16px;
 }
 
-.card-menu {
-  width: 28px;
-  height: 28px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: #ffffff;
-  cursor: pointer;
-  position: relative;
-}
-
-.card-menu:hover {
-  border-color: #d9e0eb;
-  background: #f8fafc;
-}
-
-.card-menu span,
-.card-menu span::before,
-.card-menu span::after {
-  position: absolute;
-  left: 50%;
-  width: 4px;
-  height: 4px;
-  background: rgba(57, 66, 82, 0.88);
-  border-radius: 999px;
-  transform: translateX(-50%);
-  content: "";
-}
-
-.card-menu span {
-  top: 11px;
-}
-
-.card-menu span::before {
-  top: 6px;
-}
-
-.card-menu span::after {
-  top: 12px;
+.card-subtitle {
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 12px;
 }
 
 .card-body {
   display: grid;
-  grid-template-columns: 283px minmax(0, 1fr);
-  min-height: 329px;
+  grid-template-columns: minmax(320px, 360px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
 }
 
-.globe-col {
+.globe-col,
+.rank-col {
+  min-width: 0;
+}
+
+.globe-panel {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 329px;
-  padding: 23px 0;
+  min-height: 372px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.05), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  padding: 28px 18px 22px;
+}
+
+.globe-panel-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(130deg, rgba(255, 255, 255, 0.08), transparent 35%, transparent 70%, rgba(255, 91, 87, 0.04));
+  pointer-events: none;
+}
+
+.globe-panel-frame {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 91, 87, 0.55), transparent);
+}
+
+.frame-top {
+  top: 18px;
+}
+
+.frame-bottom {
+  bottom: 18px;
+}
+
+.globe-caption {
+  position: absolute;
+  top: 22px;
+  left: 24px;
 }
 
 .globe-frame {
@@ -238,33 +356,79 @@ const formattedTotal = new Intl.NumberFormat("en-US", {
   overflow: hidden;
 }
 
-.rank-col {
-  min-width: 0;
-  overflow: hidden;
+.globe-callout {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: rgba(8, 10, 16, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.callout-left {
+  left: 18px;
+  top: 96px;
+}
+
+.callout-right {
+  right: 18px;
+  top: 136px;
+}
+
+.callout-bottom {
+  bottom: 24px;
+  right: 24px;
+}
+
+.rank-panel {
+  height: 100%;
+  padding: 16px;
+}
+
+.panel-title {
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .rank-scroll {
-  height: 329px;
+  max-height: 340px;
   overflow-y: auto;
-  padding: 4px 0 0;
+  padding-top: 12px;
 }
 
 .rank-row {
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr) 64px;
+  grid-template-columns: 42px minmax(120px, 1.2fr) minmax(120px, 1fr) 56px;
   align-items: center;
-  gap: 12px;
-  min-height: 32px;
-  padding: 6px 16px;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.rank-row:last-child {
+  border-bottom: none;
+}
+
+.rank-position {
+  font-size: 13px;
+  color: #ff8f86;
+}
+
+.rank-main {
+  min-width: 0;
 }
 
 .rank-name {
   overflow: hidden;
-  color: #243041;
-  font-size: 12px;
-  font-weight: 500;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
   white-space: nowrap;
   text-overflow: ellipsis;
+  margin-bottom: 4px;
 }
 
 .rank-bar-wrap {
@@ -273,72 +437,73 @@ const formattedTotal = new Intl.NumberFormat("en-US", {
 }
 
 .rank-bar-track {
+  position: relative;
   width: 100%;
-  height: 4px;
-  background: #e8edf5;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   overflow: hidden;
 }
 
 .rank-bar-fill {
-  height: 100%;
+  position: absolute;
+  inset: 0 auto 0 0;
   min-width: 1px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #86a4ff 0%, #4f63ff 100%);
+  background: linear-gradient(90deg, #7a0c10, #ff3b30 55%, #ffd2ca);
+  box-shadow: 0 0 16px rgba(255, 91, 87, 0.45);
 }
 
 .rank-value {
-  color: #3b4658;
-  font-size: 12px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  color: #ffffff;
+  font-size: 14px;
   text-align: right;
 }
 
-.summary-row {
-  margin-top: 12px;
-  color: #4b5565;
-  font-size: 12px;
-}
-
-@media (max-width: 560px) {
-  .shell-head {
-    flex-direction: column;
-    align-items: flex-start;
+@media (max-width: 900px) {
+  .metric-grid,
+  .card-body {
+    grid-template-columns: 1fr 1fr;
   }
 
   .card-body {
     grid-template-columns: 1fr;
   }
-
-  .globe-col {
-    min-height: 300px;
-    padding: 16px 0 0;
-  }
-
-  .rank-scroll {
-    height: auto;
-    max-height: 420px;
-  }
 }
 
-@media (max-width: 640px) {
-  .page-title {
-    font-size: 26px;
+@media (max-width: 560px) {
+  .hero-card {
+    padding: 18px 16px 16px;
   }
 
-  .cf-card {
-    width: 100%;
+  .hero-title :deep(.session-title-main) {
+    font-size: 30px;
   }
 
-  .globe-col {
-    padding: 8px 0 0;
+  .metric-grid {
+    grid-template-columns: 1fr;
   }
 
   .rank-row {
-    grid-template-columns: minmax(0, 96px) minmax(0, 1fr) 44px;
+    grid-template-columns: 34px 1fr;
     gap: 10px;
-    padding: 3px 12px;
+    align-items: start;
+  }
+
+  .rank-bar-wrap,
+  .rank-value {
+    grid-column: 2;
+  }
+
+  .globe-callout {
+    padding: 8px 10px;
+  }
+
+  .callout-left,
+  .callout-right,
+  .callout-bottom {
+    position: static;
+    margin-top: 10px;
   }
 }
 </style>

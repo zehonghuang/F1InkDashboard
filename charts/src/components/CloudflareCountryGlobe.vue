@@ -58,8 +58,8 @@ const ISO_NUMERIC_BY_ALPHA2 = {
   US: "840"
 };
 
-const BASE_LAND_FILLS = ["#e3eeff", "#cfe1ff", "#b7d1ff", "#9ec0ff"];
-const HIGHLIGHT_FILLS = ["#cfe3ff", "#b5d2ff", "#95bcff", "#75a4ff", "#588bff", "#3e74ff", "#245bf0"];
+const BASE_LAND_FILLS = ["#22070b", "#371014", "#54161a", "#702126"];
+const HIGHLIGHT_FILLS = ["#5d1519", "#7d181d", "#a41d22", "#ca2528", "#ef3935", "#ff654e", "#ffd2c4"];
 
 function normalizeItems(items) {
   return (Array.isArray(items) ? items : [])
@@ -229,8 +229,8 @@ function generateTexture(items, features, countryIndex) {
 
   features.forEach((feature) => {
     const base = baseLandColor(feature);
-    const lighter = interpolateStops(["#f2f7ff", base], 0.28);
-    const deeper = interpolateStops([base, "#76a4ff"], 0.92);
+    const lighter = interpolateStops(["#5c1b20", base], 0.22);
+    const deeper = interpolateStops([base, "#120204"], 0.88);
     fillFeatureGradient(
       ctx,
       path,
@@ -251,12 +251,12 @@ function generateTexture(items, features, countryIndex) {
       const feature = countryIndex.get(ISO_NUMERIC_BY_ALPHA2[item.code]);
       if (!feature) return;
       const t = Math.pow((item.value - minValue) / span, 0.8);
-      const light = interpolateStops(["#eef5ff", interpolatePalette(t)], 0.18);
+      const light = interpolateStops(["#7e2328", interpolatePalette(t)], 0.2);
       const main = interpolatePalette(t);
-      const deep = interpolateStops([main, "#1548dc"], 0.82);
-      const lightAlpha = 0.28 + t * 0.12;
-      const mainAlpha = 0.5 + t * 0.18;
-      const deepAlpha = 0.72 + t * 0.18;
+      const deep = interpolateStops([main, "#170204"], 0.84);
+      const lightAlpha = 0.28 + t * 0.14;
+      const mainAlpha = 0.52 + t * 0.18;
+      const deepAlpha = 0.74 + t * 0.16;
       fillFeatureGradient(
         ctx,
         path,
@@ -273,7 +273,7 @@ function generateTexture(items, features, countryIndex) {
   ctx.save();
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
-  ctx.strokeStyle = withAlpha("#a7b8d7", 0.42);
+  ctx.strokeStyle = withAlpha("#8a3435", 0.42);
   ctx.lineWidth = 0.96;
   features.forEach((feature) => {
     ctx.beginPath();
@@ -287,7 +287,7 @@ function generateTexture(items, features, countryIndex) {
     if (!feature) return;
     ctx.beginPath();
     path(feature);
-    ctx.strokeStyle = withAlpha("#ffffff", 0.76);
+    ctx.strokeStyle = withAlpha("#ffe7df", 0.88);
     ctx.lineWidth = 1.12;
     ctx.stroke();
   });
@@ -442,28 +442,28 @@ onBeforeUnmount(() => {
   inset: 12px;
   background:
     radial-gradient(circle at 50% 68%,
-      rgba(255, 255, 255, 0.995) 0 34%,
-      rgba(255, 255, 255, 0.985) 50%,
-      rgba(247, 249, 252, 0.94) 66%,
-      rgba(229, 234, 241, 0.8) 82%,
-      rgba(208, 214, 223, 0.58) 92%,
+      rgba(36, 6, 8, 0.98) 0 28%,
+      rgba(54, 11, 14, 0.96) 46%,
+      rgba(91, 19, 23, 0.92) 64%,
+      rgba(132, 28, 30, 0.72) 80%,
+      rgba(255, 95, 74, 0.18) 92%,
       rgba(255, 255, 255, 0) 100%),
     radial-gradient(ellipse at 50% 14%,
-      rgba(193, 200, 212, 0.44) 0,
-      rgba(220, 226, 235, 0.22) 24%,
+      rgba(255, 167, 150, 0.16) 0,
+      rgba(168, 33, 39, 0.12) 24%,
       rgba(255, 255, 255, 0) 54%),
     radial-gradient(ellipse at 50% 118%,
-      rgba(187, 194, 205, 0.18) 0,
-      rgba(214, 219, 228, 0.1) 24%,
+      rgba(128, 20, 24, 0.22) 0,
+      rgba(66, 11, 14, 0.14) 24%,
       rgba(255, 255, 255, 0) 48%),
     linear-gradient(180deg,
-      rgba(221, 226, 234, 0.18) 0%,
+      rgba(255, 210, 196, 0.1) 0%,
       rgba(255, 255, 255, 0) 22%,
       rgba(255, 255, 255, 0) 68%,
-      rgba(212, 218, 226, 0.14) 100%);
+      rgba(126, 20, 24, 0.14) 100%);
   box-shadow:
-    inset 0 -28px 40px rgba(204, 210, 220, 0.22),
-    inset 0 14px 20px rgba(255, 255, 255, 0.24);
+    inset 0 -28px 40px rgba(35, 4, 7, 0.4),
+    inset 0 14px 20px rgba(255, 175, 160, 0.08);
 }
 
 .cf-country-globe__tone--shell {
@@ -471,15 +471,15 @@ onBeforeUnmount(() => {
   inset: 0;
   background:
     radial-gradient(circle at 50% 45%,
-      rgba(255, 255, 255, 0) 0 88.1%,
-      rgba(255, 255, 255, 1) 88.7%,
-      rgba(255, 255, 255, 1) 89.5%,
-      rgba(255, 255, 255, 0) 89.9%),
+      rgba(255, 255, 255, 0) 0 88.2%,
+      rgba(255, 226, 218, 0.94) 88.8%,
+      rgba(255, 194, 181, 0.82) 89.45%,
+      rgba(255, 255, 255, 0) 89.95%),
     radial-gradient(circle at 50% 45%,
-      rgba(255, 255, 255, 0) 0 90.1%,
-      rgba(200, 206, 216, 0.7) 90.5%,
-      rgba(181, 188, 199, 0.76) 91.1%,
-      rgba(255, 255, 255, 0) 91.5%),
+      rgba(255, 255, 255, 0) 0 90.15%,
+      rgba(229, 56, 51, 0.64) 90.55%,
+      rgba(120, 18, 21, 0.78) 91.08%,
+      rgba(255, 255, 255, 0) 91.58%),
     radial-gradient(circle at 50% 45%,
       rgba(255, 255, 255, 0) 0 91.8%,
       rgba(255, 255, 255, 0) 100%);
