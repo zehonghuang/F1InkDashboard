@@ -9,7 +9,7 @@
         </div>
         <div class="session-title hero-title">
           <div class="session-title-main">Race Control Globe</div>
-          <div class="session-title-sub">将原来的 Cloudflare 风格地球改成更像赛事转播中心的黑红 HUD 视觉</div>
+          <div class="session-title-sub">用黑红碳纤维质感强化赛历热点区域，并支持鼠标拖拽查看全球赛道网络。</div>
         </div>
 
         <div class="hero-grid">
@@ -23,12 +23,12 @@
               :dotCount="1700"
               :landExtraRatio="0.38"
               :rotateSpeed="0.0036"
-              atmosphereColor="#6c1418"
-              globeColor="#040506"
-              globeEmissive="#070203"
-              globeSpecular="#5c1518"
-              ringColor="#ff2d20"
-              highlightColor="#7d1b20"
+              atmosphereColor="#a61218"
+              globeColor="#050607"
+              globeEmissive="#140204"
+              globeSpecular="#ffb4aa"
+              ringColor="#ff3b30"
+              highlightColor="#fff1ee"
             />
             <div class="globe-callout callout-left">
               <span class="callout-label">Sector Sync</span>
@@ -88,12 +88,12 @@
               :dotCount="980"
               :landExtraRatio="0.32"
               :rotateSpeed="0.0052"
-              atmosphereColor="#5e1216"
+              atmosphereColor="#861016"
               globeColor="#050608"
-              globeEmissive="#070203"
-              globeSpecular="#541114"
-              ringColor="#ff4c3a"
-              highlightColor="#70181d"
+              globeEmissive="#110204"
+              globeSpecular="#ff9b8d"
+              ringColor="#ff5a44"
+              highlightColor="#ffe7e2"
             />
             <div class="support-text">
               <div class="support-title">Regional Backup Mesh</div>
