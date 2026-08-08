@@ -22,80 +22,25 @@
         </div>
 
         <div class="calendar-main">
-          <div class="broadcast-stage">
+          <div class="calendar-globe-card">
             <div class="calendar-panel-header">
               <div>
-                <div class="panel-eyebrow">Broadcast Cluster</div>
-                <div class="panel-heading">Season Host Board</div>
+                <div class="panel-eyebrow">Host Countries</div>
+                <div class="panel-heading">Season Country Globe</div>
               </div>
-              <div class="panel-chip">{{ primaryRegionLabel }}</div>
+              <div class="panel-chip">{{ countryGroups.length }} Countries</div>
             </div>
 
-            <div class="broadcast-stage-inner">
-              <svg class="broadcast-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                <g v-for="node in broadcastNodes" :key="node.country.code">
-                  <line
-                    class="broadcast-line"
-                    :class="{ 'is-active': node.country.code === activeCountryCode, 'is-selected': node.country.code === selectedCountryCode }"
-                    :x1="node.dot.x"
-                    :y1="node.dot.y"
-                    :x2="broadcastHub.x"
-                    :y2="broadcastHub.y"
-                  />
-                  <line
-                    class="broadcast-line"
-                    :class="{ 'is-active': node.country.code === activeCountryCode, 'is-selected': node.country.code === selectedCountryCode }"
-                    :x1="broadcastHub.x"
-                    :y1="broadcastHub.y"
-                    :x2="node.panel.x"
-                    :y2="node.panel.y"
-                  />
-                </g>
-              </svg>
-
-              <div class="broadcast-globe-zone">
-                <CountryGlobe
-                  class="broadcast-globe"
-                  :size="440"
-                  :highlighted-countries="globeHighlights"
-                  :active-code="activeCountryCode"
-                  :selected-code="selectedCountryCode"
-                  @hover-country="handleHoverCountry"
-                  @select-country="handleSelectCountry"
-                />
-                <div class="broadcast-hub" :style="{ left: `${broadcastHub.x}%`, top: `${broadcastHub.y}%` }"></div>
-                <button
-                  v-for="node in broadcastNodes"
-                  :key="`dot-${node.country.code}`"
-                  type="button"
-                  class="broadcast-dot"
-                  :class="{ 'is-active': node.country.code === activeCountryCode, 'is-selected': node.country.code === selectedCountryCode }"
-                  :style="{ left: `${node.dot.x}%`, top: `${node.dot.y}%` }"
-                  @mouseenter="handleHoverCountry(node.country.code)"
-                  @mouseleave="handleHoverCountry('')"
-                  @click="handleSelectCountry(node.country.code)"
-                >
-                  <span></span>
-                </button>
-              </div>
-
-              <div class="broadcast-panel">
-                <div class="broadcast-panel-frame"></div>
-                <div class="broadcast-panel-list">
-                  <button
-                    v-for="node in broadcastNodes"
-                    :key="`row-${node.country.code}`"
-                    type="button"
-                    class="broadcast-country-row"
-                    :class="{ 'is-active': node.country.code === activeCountryCode, 'is-selected': node.country.code === selectedCountryCode }"
-                    @mouseenter="handleHoverCountry(node.country.code)"
-                    @mouseleave="handleHoverCountry('')"
-                    @click="handleSelectCountry(node.country.code)"
-                  >
-                    {{ node.country.name.toUpperCase() }}
-                  </button>
-                </div>
-              </div>
+            <div class="calendar-globe-wrap">
+              <CountryGlobe
+                class="calendar-globe"
+                :size="420"
+                :highlighted-countries="globeHighlights"
+                :active-code="activeCountryCode"
+                :selected-code="selectedCountryCode"
+                @hover-country="handleHoverCountry"
+                @select-country="handleSelectCountry"
+              />
             </div>
 
             <div class="calendar-callouts">
@@ -111,6 +56,38 @@
                 <div class="callout-label">Primary Venue</div>
                 <div class="callout-value">{{ focusedCountry.circuits[0].circuit }}</div>
               </div>
+            </div>
+          </div>
+
+          <div class="calendar-country-card">
+            <div class="calendar-panel-header">
+              <div>
+                <div class="panel-eyebrow">Country Stack</div>
+                <div class="panel-heading">Season Hosts</div>
+              </div>
+              <div class="panel-chip">Click To Lock</div>
+            </div>
+
+            <div class="country-list">
+              <button
+                v-for="country in countryGroups"
+                :key="country.code"
+                type="button"
+                class="country-row"
+                :class="{ 'is-active': country.code === activeCountryCode, 'is-selected': country.code === selectedCountryCode }"
+                @mouseenter="handleHoverCountry(country.code)"
+                @mouseleave="handleHoverCountry('')"
+                @click="handleSelectCountry(country.code)"
+              >
+                <div class="country-row-main">
+                  <div class="country-row-name">{{ country.name }}</div>
+                  <div class="country-row-meta">{{ country.region }} · {{ country.circuits.length }} circuit<span v-if="country.circuits.length > 1">s</span></div>
+                </div>
+                <div class="country-row-values">
+                  <div class="country-row-pill">{{ country.highlightValue }}</div>
+                  <div class="country-row-track">{{ country.circuits[0].grandPrix }}</div>
+                </div>
+              </button>
             </div>
           </div>
         </div>
@@ -521,71 +498,6 @@ const calendarCircuits = [
 const defaultCountryCode = "AU";
 const hoveredCountryCode = ref("");
 const selectedCountryCode = ref(defaultCountryCode);
-const REGION_LAYOUTS = {
-  Asia: {
-    hub: { x: 36, y: 61 },
-    dots: [
-      { x: 16, y: 34 },
-      { x: 27, y: 24 },
-      { x: 23, y: 50 },
-      { x: 20, y: 78 }
-    ]
-  },
-  Oceania: {
-    hub: { x: 34, y: 65 },
-    dots: [
-      { x: 24, y: 83 },
-      { x: 18, y: 56 },
-      { x: 30, y: 32 },
-      { x: 22, y: 20 }
-    ]
-  },
-  Europe: {
-    hub: { x: 34, y: 46 },
-    dots: [
-      { x: 18, y: 22 },
-      { x: 26, y: 28 },
-      { x: 30, y: 40 },
-      { x: 20, y: 52 }
-    ]
-  },
-  "North America": {
-    hub: { x: 30, y: 50 },
-    dots: [
-      { x: 14, y: 30 },
-      { x: 18, y: 42 },
-      { x: 16, y: 58 },
-      { x: 22, y: 72 }
-    ]
-  },
-  "South America": {
-    hub: { x: 28, y: 58 },
-    dots: [
-      { x: 18, y: 56 },
-      { x: 18, y: 72 },
-      { x: 24, y: 36 },
-      { x: 14, y: 28 }
-    ]
-  },
-  "Middle East": {
-    hub: { x: 36, y: 53 },
-    dots: [
-      { x: 24, y: 34 },
-      { x: 30, y: 46 },
-      { x: 26, y: 64 },
-      { x: 20, y: 76 }
-    ]
-  },
-  Default: {
-    hub: { x: 33, y: 54 },
-    dots: [
-      { x: 18, y: 28 },
-      { x: 24, y: 42 },
-      { x: 22, y: 58 },
-      { x: 18, y: 74 }
-    ]
-  }
-};
 
 const countryGroups = computed(() => {
   const grouped = new Map();
@@ -617,24 +529,6 @@ const globeHighlights = computed(() =>
     value: country.highlightValue
   }))
 );
-const primaryRegionLabel = computed(() => primaryRegion(focusedCountry.value.region));
-const broadcastHub = computed(() => (REGION_LAYOUTS[primaryRegionLabel.value] || REGION_LAYOUTS.Default).hub);
-const focusCountries = computed(() => {
-  const focus = focusedCountry.value;
-  const region = primaryRegion(focus.region);
-  const sameRegion = countryGroups.value.filter((country) => country.code !== focus.code && primaryRegion(country.region) === region);
-  const fallback = countryGroups.value.filter((country) => country.code !== focus.code && primaryRegion(country.region) !== region);
-  return [focus, ...sameRegion, ...fallback].slice(0, 4);
-});
-const broadcastNodes = computed(() => {
-  const layout = REGION_LAYOUTS[primaryRegionLabel.value] || REGION_LAYOUTS.Default;
-  const panelY = [27, 42, 57, 72];
-  return focusCountries.value.map((country, index) => ({
-    country,
-    dot: layout.dots[index] || REGION_LAYOUTS.Default.dots[index],
-    panel: { x: 76, y: panelY[index] || 72 }
-  }));
-});
 
 const summaryCards = computed(() => [
   {
@@ -661,10 +555,6 @@ const summaryCards = computed(() => [
 
 function normalizeCode(code) {
   return String(code || "").toUpperCase();
-}
-
-function primaryRegion(region) {
-  return String(region || "").split("/")[0].trim();
 }
 
 function handleHoverCountry(code) {
@@ -766,7 +656,8 @@ function handleSelectCountry(code) {
 }
 
 .calendar-metric,
-.broadcast-stage,
+.calendar-globe-card,
+.calendar-country-card,
 .track-card {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
@@ -779,6 +670,7 @@ function handleSelectCountry(code) {
 
 .calendar-metric-label,
 .callout-label,
+.country-row-meta,
 .track-meta-label {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.58);
@@ -792,7 +684,8 @@ function handleSelectCountry(code) {
 
 .calendar-metric-value,
 .callout-value,
-.track-summary-value {
+.track-summary-value,
+.country-row-pill {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -809,10 +702,13 @@ function handleSelectCountry(code) {
 }
 
 .calendar-main {
-  display: block;
+  display: grid;
+  grid-template-columns: minmax(420px, 1fr) minmax(300px, 360px);
+  gap: 18px;
 }
 
-.broadcast-stage,
+.calendar-globe-card,
+.calendar-country-card,
 .track-info-card {
   padding: 16px;
 }
@@ -824,201 +720,26 @@ function handleSelectCountry(code) {
   color: #ffffff;
 }
 
-.broadcast-stage {
-  padding: 16px;
-}
-
-.broadcast-stage-inner {
-  position: relative;
-  min-height: 540px;
+.calendar-globe-wrap {
+  display: grid;
+  place-items: center;
+  min-height: 468px;
   margin-top: 14px;
-  overflow: hidden;
   border-radius: 22px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background:
-    radial-gradient(circle at 22% 16%, rgba(255, 255, 255, 0.14), transparent 24%),
-    radial-gradient(circle at 18% 82%, rgba(255, 255, 255, 0.08), transparent 18%),
-    linear-gradient(90deg, rgba(0, 14, 38, 0.94), rgba(2, 6, 20, 0.96) 62%, rgba(4, 4, 10, 0.98));
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.04), transparent 46%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
 }
 
-.broadcast-globe-zone {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 58%;
-  display: grid;
-  place-items: center;
-}
-
-.broadcast-globe {
-  --country-globe-land-1: #285e1f;
-  --country-globe-land-2: #3c7e25;
-  --country-globe-land-3: #5a982f;
-  --country-globe-land-4: #7aaf3f;
-  --country-globe-highlight-1: #d88917;
-  --country-globe-highlight-2: #e29b17;
-  --country-globe-highlight-3: #edaa10;
-  --country-globe-highlight-4: #f7b806;
+.calendar-globe {
+  --country-globe-highlight-4: #c70905;
   --country-globe-highlight-5: #e10600;
   --country-globe-highlight-6: #ff5d46;
   --country-globe-highlight-7: #ffd0c8;
-  --country-globe-land-blend-light: #94c06c;
-  --country-globe-land-blend-dark: #1f4b1f;
-  --country-globe-stroke-base: #9dd6ff;
-  --country-globe-stroke-highlight: #e10600;
-  --country-globe-highlight-blend-light: #ffd06b;
-  --country-globe-highlight-blend-dark: #8b5a04;
-  --country-globe-active-fill-1: #ffb18e;
+  --country-globe-active-fill-1: #ff9a84;
   --country-globe-active-fill-2: #e10600;
-  --country-globe-active-fill-3: #6a0807;
-  --country-globe-core-gradient:
-    radial-gradient(circle at 50% 48%,
-      rgba(14, 109, 191, 0.92) 0 34%,
-      rgba(11, 92, 170, 0.96) 52%,
-      rgba(7, 64, 128, 0.86) 72%,
-      rgba(155, 212, 255, 0.32) 90%,
-      rgba(255, 255, 255, 0) 100%),
-    radial-gradient(circle at 42% 18%,
-      rgba(182, 235, 255, 0.26) 0,
-      rgba(182, 235, 255, 0.08) 28%,
-      rgba(255, 255, 255, 0) 58%),
-    linear-gradient(180deg,
-      rgba(214, 245, 255, 0.08) 0%,
-      rgba(255, 255, 255, 0) 22%,
-      rgba(0, 18, 50, 0.1) 100%);
-  --country-globe-core-shadow:
-    inset 0 -36px 54px rgba(0, 26, 56, 0.34),
-    inset 0 14px 20px rgba(255, 255, 255, 0.08);
-  --country-globe-shell-gradient:
-    radial-gradient(circle at 50% 45%,
-      rgba(255, 255, 255, 0) 0 88.1%,
-      rgba(207, 235, 255, 0.82) 88.72%,
-      rgba(155, 214, 255, 0.54) 89.35%,
-      rgba(255, 255, 255, 0) 89.92%),
-    radial-gradient(circle at 50% 45%,
-      rgba(255, 255, 255, 0) 0 90.15%,
-      rgba(255, 255, 255, 0.16) 90.5%,
-      rgba(142, 203, 255, 0.16) 91.02%,
-      rgba(255, 255, 255, 0) 91.56%);
-  filter: drop-shadow(0 22px 30px rgba(0, 0, 0, 0.28));
-}
-
-.broadcast-lines {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.broadcast-line {
-  stroke: rgba(255, 255, 255, 0.82);
-  stroke-width: 0.5;
-  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.24));
-}
-
-.broadcast-line.is-active,
-.broadcast-line.is-selected {
-  stroke: rgba(255, 205, 198, 0.98);
-  stroke-width: 0.65;
-}
-
-.broadcast-hub,
-.broadcast-dot {
-  position: absolute;
-  z-index: 3;
-  transform: translate(-50%, -50%);
-}
-
-.broadcast-hub {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.18), 0 0 12px rgba(255, 255, 255, 0.46);
-}
-
-.broadcast-dot {
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-}
-
-.broadcast-dot span {
-  display: block;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.72);
-}
-
-.broadcast-dot::after {
-  content: "";
-  position: absolute;
-  inset: 7px;
-  border-radius: 50%;
-  background: #ffffff;
-}
-
-.broadcast-dot.is-active span,
-.broadcast-dot.is-selected span {
-  box-shadow: inset 0 0 0 2px rgba(255, 210, 203, 0.86);
-}
-
-.broadcast-dot.is-active::after,
-.broadcast-dot.is-selected::after {
-  background: #e10600;
-}
-
-.broadcast-panel {
-  position: absolute;
-  top: 16%;
-  right: 5%;
-  width: 34%;
-  min-height: 300px;
-  z-index: 2;
-  padding: 18px 22px;
-  border: 1px solid rgba(225, 6, 0, 0.46);
-  background: linear-gradient(180deg, rgba(1, 3, 16, 0.96), rgba(3, 5, 24, 0.98));
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.26);
-}
-
-.broadcast-panel-frame {
-  position: absolute;
-  inset: 0;
-  border: 1px solid rgba(255, 200, 192, 0.18);
-  pointer-events: none;
-}
-
-.broadcast-panel-list {
-  display: grid;
-  gap: 16px;
-}
-
-.broadcast-country-row {
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.96);
-  font-size: clamp(24px, 3vw, 40px);
-  font-weight: 900;
-  line-height: 1.02;
-  letter-spacing: 0.08em;
-  text-align: left;
-  text-transform: uppercase;
-  cursor: pointer;
-  font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.08);
-}
-
-.broadcast-country-row.is-active,
-.broadcast-country-row.is-selected {
-  color: #e10600;
-  text-shadow: 0 0 12px rgba(225, 6, 0, 0.24);
+  --country-globe-active-fill-3: #4f0908;
 }
 
 .calendar-callouts {
@@ -1041,10 +762,75 @@ function handleSelectCountry(code) {
   color: #ffffff;
 }
 
+.country-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.country-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.country-row:hover,
+.country-row.is-active {
+  border-color: rgba(225, 6, 0, 0.34);
+  background: rgba(225, 6, 0, 0.08);
+}
+
+.country-row.is-selected {
+  border-color: rgba(225, 6, 0, 0.44);
+  background: rgba(225, 6, 0, 0.12);
+}
+
+.country-row-main {
+  min-width: 0;
+}
+
+.country-row-name,
 .track-circuit {
   font-size: 16px;
   font-weight: 700;
   color: #ffffff;
+}
+
+.country-row-meta,
+.country-row-track {
+  margin-top: 4px;
+}
+
+.country-row-values {
+  text-align: right;
+}
+
+.country-row-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffd9d2;
+}
+
+.country-row-track {
+  max-width: 140px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.62);
 }
 
 .track-info-card {
@@ -1134,33 +920,13 @@ function handleSelectCountry(code) {
 }
 
 @media (max-width: 980px) {
+  .calendar-main,
   .track-grid {
     grid-template-columns: 1fr;
   }
 
-  .broadcast-stage-inner {
-    min-height: 760px;
-  }
-
-  .broadcast-globe-zone {
-    position: relative;
-    inset: auto;
-    width: 100%;
-    min-height: 360px;
-  }
-
-  .broadcast-panel {
-    position: relative;
-    top: auto;
-    right: auto;
-    width: auto;
-    margin: 0 16px 18px;
-  }
-
-  .broadcast-lines,
-  .broadcast-dot,
-  .broadcast-hub {
-    display: none;
+  .calendar-country-card {
+    order: 2;
   }
 }
 
@@ -1173,10 +939,6 @@ function handleSelectCountry(code) {
 
   .calendar-title :deep(.session-title-main) {
     font-size: 30px;
-  }
-
-  .broadcast-country-row {
-    font-size: 24px;
   }
 }
 </style>
