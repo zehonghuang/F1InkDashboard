@@ -41,6 +41,39 @@
                 @hover-country="handleHoverCountry"
                 @select-country="handleSelectCountry"
               />
+
+              <div class="globe-broadcast-overlay">
+                <svg class="globe-broadcast-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                  <polyline
+                    class="globe-broadcast-line globe-broadcast-line--main"
+                    :points="broadcastMainLine"
+                  />
+                  <polyline
+                    v-for="(points, index) in broadcastItemLines"
+                    :key="`line-${index}`"
+                    class="globe-broadcast-line"
+                    :class="{ 'is-active': index === activeFloatingIndex }"
+                    :points="points"
+                  />
+                </svg>
+
+                <div class="globe-broadcast-window" :style="broadcastWindowStyle">
+                  <div class="globe-broadcast-window-inner">
+                    <button
+                      v-for="(item, index) in floatingWindowItems"
+                      :key="item.key"
+                      type="button"
+                      class="globe-broadcast-row"
+                      :class="{ 'is-active': item.isActive }"
+                      @mouseenter="handleHoverCountry(item.code)"
+                      @mouseleave="handleHoverCountry('')"
+                      @click="handleSelectCountry(item.code)"
+                    >
+                      {{ item.label }}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div class="calendar-callouts">
@@ -523,12 +556,97 @@ const countryGroups = computed(() => {
 const countryByCode = computed(() => new Map(countryGroups.value.map((country) => [country.code, country])));
 const activeCountryCode = computed(() => hoveredCountryCode.value || selectedCountryCode.value || defaultCountryCode);
 const focusedCountry = computed(() => countryByCode.value.get(activeCountryCode.value) || countryGroups.value[0]);
+const focusRegion = computed(() => regionKey(focusedCountry.value.region));
 const globeHighlights = computed(() =>
   countryGroups.value.map((country) => ({
     code: country.code,
     value: country.highlightValue
   }))
 );
+const FLOATING_LAYOUTS = {
+  Oceania: { anchor: { x: 72, y: 70 }, elbow: { x: 85, y: 70 }, window: { left: 77, top: 18, width: 20, height: 34 } },
+  Asia: { anchor: { x: 78, y: 46 }, elbow: { x: 86, y: 46 }, window: { left: 77, top: 12, width: 20, height: 34 } },
+  Europe: { anchor: { x: 70, y: 30 }, elbow: { x: 84, y: 30 }, window: { left: 76, top: 10, width: 21, height: 34 } },
+  "North America": { anchor: { x: 72, y: 34 }, elbow: { x: 85, y: 34 }, window: { left: 77, top: 10, width: 20, height: 34 } },
+  "South America": { anchor: { x: 76, y: 62 }, elbow: { x: 87, y: 62 }, window: { left: 77, top: 18, width: 20, height: 34 } },
+  "Middle East": { anchor: { x: 73, y: 42 }, elbow: { x: 86, y: 42 }, window: { left: 77, top: 12, width: 20, height: 34 } },
+  Default: { anchor: { x: 74, y: 48 }, elbow: { x: 86, y: 48 }, window: { left: 77, top: 14, width: 20, height: 34 } }
+};
+const floatingLayout = computed(() => FLOATING_LAYOUTS[focusRegion.value] || FLOATING_LAYOUTS.Default);
+const activeFloatingIndex = computed(() => Math.max(0, floatingWindowItems.value.findIndex((item) => item.isActive)));
+const broadcastWindowStyle = computed(() => {
+  const { left, top, width, height } = floatingLayout.value.window;
+  return {
+    left: `${left}%`,
+    top: `${top}%`,
+    width: `${width}%`,
+    minHeight: `${height}%`
+  };
+});
+const broadcastMainLine = computed(() => {
+  const { anchor, elbow, window } = floatingLayout.value;
+  const entryY = window.top + 5;
+  return `${anchor.x},${anchor.y} ${elbow.x},${elbow.y} ${elbow.x},${entryY} ${window.left},${entryY}`;
+});
+const floatingWindowItems = computed(() => {
+  const focus = focusedCountry.value;
+  const sameRegionCountries = countryGroups.value
+    .filter((country) => country.code !== focus.code && regionKey(country.region) === focusRegion.value)
+    .slice(0, 2)
+    .map((country) => ({
+      key: `country-${country.code}`,
+      label: country.name.toUpperCase(),
+      code: country.code,
+      isActive: false
+    }));
+  const focusCities = focus.circuits
+    .map((circuit) => ({
+      key: `city-${circuit.id}`,
+      label: circuit.city.toUpperCase(),
+      code: focus.code,
+      isActive: false
+    }))
+    .slice(0, 2);
+  const fallbackCountries = countryGroups.value
+    .filter((country) => country.code !== focus.code && regionKey(country.region) !== focusRegion.value)
+    .slice(0, 3)
+    .map((country) => ({
+      key: `fallback-${country.code}`,
+      label: country.name.toUpperCase(),
+      code: country.code,
+      isActive: false
+    }));
+
+  const ordered = [
+    ...focusCities,
+    ...sameRegionCountries,
+    {
+      key: `focus-${focus.code}`,
+      label: focus.name.toUpperCase(),
+      code: focus.code,
+      isActive: true
+    },
+    ...fallbackCountries
+  ];
+
+  const deduped = [];
+  const seen = new Set();
+  ordered.forEach((item) => {
+    if (seen.has(item.label)) return;
+    seen.add(item.label);
+    deduped.push(item);
+  });
+  return deduped.slice(0, 6);
+});
+const broadcastItemLines = computed(() => {
+  const { elbow, window } = floatingLayout.value;
+  const rowTop = window.top + 5;
+  const rowStep = 5.2;
+  return floatingWindowItems.value.map((_, index) => {
+    const y = rowTop + index * rowStep;
+    return `${elbow.x},${y} ${window.left},${y}`;
+  });
+});
 
 const summaryCards = computed(() => [
   {
@@ -555,6 +673,10 @@ const summaryCards = computed(() => [
 
 function normalizeCode(code) {
   return String(code || "").toUpperCase();
+}
+
+function regionKey(region) {
+  return String(region || "").split("/")[0].trim();
 }
 
 function handleHoverCountry(code) {
@@ -721,6 +843,7 @@ function handleSelectCountry(code) {
 }
 
 .calendar-globe-wrap {
+  position: relative;
   display: grid;
   place-items: center;
   min-height: 468px;
@@ -740,6 +863,75 @@ function handleSelectCountry(code) {
   --country-globe-active-fill-1: #ff9a84;
   --country-globe-active-fill-2: #e10600;
   --country-globe-active-fill-3: #4f0908;
+}
+
+.globe-broadcast-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.globe-broadcast-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.globe-broadcast-line {
+  fill: none;
+  stroke: rgba(255, 98, 91, 0.82);
+  stroke-width: 0.45;
+}
+
+.globe-broadcast-line--main {
+  stroke-width: 0.7;
+}
+
+.globe-broadcast-line.is-active {
+  stroke: rgba(255, 230, 225, 0.96);
+}
+
+.globe-broadcast-window {
+  position: absolute;
+  pointer-events: auto;
+  padding: 10px;
+}
+
+.globe-broadcast-window-inner {
+  height: 100%;
+  padding: 18px 18px 20px;
+  clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%, 0 16%);
+  border: 1px solid rgba(255, 160, 154, 0.46);
+  background:
+    linear-gradient(180deg, rgba(2, 4, 14, 0.97), rgba(1, 3, 12, 0.98));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 80, 74, 0.14),
+    0 12px 28px rgba(0, 0, 0, 0.26);
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.globe-broadcast-row {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.96);
+  text-align: left;
+  text-transform: uppercase;
+  font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: clamp(18px, 2vw, 28px);
+  font-weight: 900;
+  line-height: 1.04;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.globe-broadcast-row.is-active {
+  color: #e10600;
+  text-shadow: 0 0 10px rgba(225, 6, 0, 0.16);
 }
 
 .calendar-callouts {
@@ -928,6 +1120,12 @@ function handleSelectCountry(code) {
   .calendar-country-card {
     order: 2;
   }
+
+  .globe-broadcast-window {
+    left: 68% !important;
+    top: 12% !important;
+    width: 26% !important;
+  }
 }
 
 @media (max-width: 760px) {
@@ -939,6 +1137,14 @@ function handleSelectCountry(code) {
 
   .calendar-title :deep(.session-title-main) {
     font-size: 30px;
+  }
+
+  .globe-broadcast-window {
+    display: none;
+  }
+
+  .globe-broadcast-lines {
+    display: none;
   }
 }
 </style>
