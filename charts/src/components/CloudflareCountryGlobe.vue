@@ -111,6 +111,12 @@ function interpolateStops(stops, t) {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
+function colorWithAlpha(color, alpha) {
+  const [r, g, b] = parseColor(color);
+  const normalizedAlpha = Math.max(0, Math.min(1, alpha));
+  return `rgba(${r}, ${g}, ${b}, ${normalizedAlpha})`;
+}
+
 function baseLandColor(featureObject) {
   const [lon, lat] = geoCentroid(featureObject);
   const latMix = (lat + 60) / 150;
@@ -225,7 +231,17 @@ function generateTexture(items, features, countryIndex) {
     const base = baseLandColor(feature);
     const lighter = interpolateStops(["#f2f7ff", base], 0.28);
     const deeper = interpolateStops([base, "#76a4ff"], 0.92);
-    fillFeatureGradient(ctx, path, feature, [lighter, base, deeper], "vertical");
+    fillFeatureGradient(
+      ctx,
+      path,
+      feature,
+      [
+        colorWithAlpha(lighter, 0.18),
+        colorWithAlpha(base, 0.32),
+        colorWithAlpha(deeper, 0.48)
+      ],
+      "vertical"
+    );
   });
 
   normalizedItems
@@ -238,13 +254,26 @@ function generateTexture(items, features, countryIndex) {
       const light = interpolateStops(["#eef5ff", interpolatePalette(t)], 0.18);
       const main = interpolatePalette(t);
       const deep = interpolateStops([main, "#1548dc"], 0.82);
-      fillFeatureGradient(ctx, path, feature, [light, main, deep], "diagonal");
+      const lightAlpha = 0.28 + t * 0.12;
+      const mainAlpha = 0.5 + t * 0.18;
+      const deepAlpha = 0.72 + t * 0.18;
+      fillFeatureGradient(
+        ctx,
+        path,
+        feature,
+        [
+          colorWithAlpha(light, lightAlpha),
+          colorWithAlpha(main, mainAlpha),
+          colorWithAlpha(deep, deepAlpha)
+        ],
+        "diagonal"
+      );
     });
 
   ctx.save();
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
-  ctx.strokeStyle = withAlpha("#a7b8d7", 0.64);
+  ctx.strokeStyle = withAlpha("#a7b8d7", 0.42);
   ctx.lineWidth = 0.96;
   features.forEach((feature) => {
     ctx.beginPath();
@@ -258,7 +287,7 @@ function generateTexture(items, features, countryIndex) {
     if (!feature) return;
     ctx.beginPath();
     path(feature);
-    ctx.strokeStyle = withAlpha("#ffffff", 0.98);
+    ctx.strokeStyle = withAlpha("#ffffff", 0.76);
     ctx.lineWidth = 1.12;
     ctx.stroke();
   });
@@ -306,15 +335,6 @@ async function setupGlobe() {
   scene.add(globeGroup);
 
   texture = generateTexture(normalizedItems, features, countryIndex);
-
-  const sphereGeometry = new THREE.SphereGeometry(1.62, 96, 96);
-  const sphereMaterial = new THREE.MeshBasicMaterial({
-    color: "#ffffff",
-    transparent: true,
-    opacity: 1
-  });
-  globeMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
-  globeGroup.add(globeMesh);
 
   const landMaterial = new THREE.MeshBasicMaterial({
     color: "#ffffff",
@@ -405,6 +425,7 @@ onBeforeUnmount(() => {
 .cf-country-globe__canvas-host {
   position: absolute;
   inset: 0;
+  z-index: 2;
   border-radius: 50%;
   overflow: hidden;
 }
@@ -417,29 +438,50 @@ onBeforeUnmount(() => {
 }
 
 .cf-country-globe__tone--core {
-  inset: 16px;
+  z-index: 1;
+  inset: 12px;
   background:
-    radial-gradient(circle at 48.5% 43%, rgba(255, 255, 255, 0.92) 0 42%, rgba(251, 252, 255, 0.8) 58%, rgba(243, 246, 251, 0.34) 76%, rgba(255, 255, 255, 0.1) 90%, rgba(255, 255, 255, 0) 100%);
+    radial-gradient(circle at 50% 68%,
+      rgba(255, 255, 255, 0.995) 0 34%,
+      rgba(255, 255, 255, 0.985) 50%,
+      rgba(247, 249, 252, 0.94) 66%,
+      rgba(229, 234, 241, 0.8) 82%,
+      rgba(208, 214, 223, 0.58) 92%,
+      rgba(255, 255, 255, 0) 100%),
+    radial-gradient(ellipse at 50% 14%,
+      rgba(193, 200, 212, 0.44) 0,
+      rgba(220, 226, 235, 0.22) 24%,
+      rgba(255, 255, 255, 0) 54%),
+    radial-gradient(ellipse at 50% 118%,
+      rgba(187, 194, 205, 0.18) 0,
+      rgba(214, 219, 228, 0.1) 24%,
+      rgba(255, 255, 255, 0) 48%),
+    linear-gradient(180deg,
+      rgba(221, 226, 234, 0.18) 0%,
+      rgba(255, 255, 255, 0) 22%,
+      rgba(255, 255, 255, 0) 68%,
+      rgba(212, 218, 226, 0.14) 100%);
   box-shadow:
-    inset 0 -16px 22px rgba(240, 243, 248, 0.18),
-    inset 0 12px 16px rgba(255, 255, 255, 0.22);
+    inset 0 -28px 40px rgba(204, 210, 220, 0.22),
+    inset 0 14px 20px rgba(255, 255, 255, 0.24);
 }
 
 .cf-country-globe__tone--shell {
+  z-index: 3;
   inset: 0;
   background:
     radial-gradient(circle at 50% 45%,
-      rgba(255, 255, 255, 0) 0 74%,
-      rgba(255, 255, 255, 0.98) 80.5%,
-      rgba(255, 255, 255, 1) 89.8%,
-      rgba(255, 255, 255, 0) 91.1%),
+      rgba(255, 255, 255, 0) 0 88.1%,
+      rgba(255, 255, 255, 1) 88.7%,
+      rgba(255, 255, 255, 1) 89.5%,
+      rgba(255, 255, 255, 0) 89.9%),
     radial-gradient(circle at 50% 45%,
-      rgba(255, 255, 255, 0) 0 91.2%,
-      rgba(255, 255, 255, 0.82) 92.1%,
-      rgba(255, 255, 255, 0.92) 93.2%,
-      rgba(255, 255, 255, 0) 94.4%),
+      rgba(255, 255, 255, 0) 0 90.1%,
+      rgba(200, 206, 216, 0.7) 90.5%,
+      rgba(181, 188, 199, 0.76) 91.1%,
+      rgba(255, 255, 255, 0) 91.5%),
     radial-gradient(circle at 50% 45%,
-      rgba(255, 255, 255, 0) 0 95%,
+      rgba(255, 255, 255, 0) 0 91.8%,
       rgba(255, 255, 255, 0) 100%);
 }
 
