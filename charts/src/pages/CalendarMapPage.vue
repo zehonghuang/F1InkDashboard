@@ -62,10 +62,83 @@
           <div class="calendar-country-card">
             <div class="calendar-panel-header">
               <div>
-                <div class="panel-eyebrow">Country Stack</div>
-                <div class="panel-heading">Season Hosts</div>
+                <div class="panel-eyebrow">Signal Board</div>
+                <div class="panel-heading">{{ primaryCircuit.grandPrix }}</div>
               </div>
-              <div class="panel-chip">Click To Lock</div>
+              <div class="panel-chip">{{ primaryCircuit.circuit }}</div>
+            </div>
+
+            <div class="signal-board">
+              <svg class="signal-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <line x1="-4" y1="18" x2="14" y2="18" class="signal-line signal-line--lead" />
+                <line x1="14" y1="18" x2="14" y2="82" class="signal-line" />
+                <line x1="14" y1="22" x2="32" y2="22" class="signal-line" />
+                <line x1="14" y1="40" x2="32" y2="40" class="signal-line" />
+                <line x1="14" y1="58" x2="32" y2="58" class="signal-line" />
+                <line x1="14" y1="76" x2="58" y2="76" class="signal-line" />
+                <line x1="58" y1="76" x2="58" y2="28" class="signal-line" />
+                <line x1="58" y1="28" x2="72" y2="28" class="signal-line signal-line--focus" />
+                <circle cx="14" cy="18" r="1.8" class="signal-node" />
+                <circle cx="14" cy="22" r="1.1" class="signal-node signal-node--small" />
+                <circle cx="14" cy="40" r="1.1" class="signal-node signal-node--small" />
+                <circle cx="14" cy="58" r="1.1" class="signal-node signal-node--small" />
+                <circle cx="58" cy="76" r="1.3" class="signal-node" />
+                <circle cx="72" cy="28" r="1.8" class="signal-node signal-node--focus" />
+              </svg>
+
+              <div class="signal-meta">
+                <div class="signal-item">
+                  <span class="signal-label">Country</span>
+                  <strong>{{ focusedCountry.name }}</strong>
+                </div>
+                <div class="signal-item">
+                  <span class="signal-label">City</span>
+                  <strong>{{ primaryCircuit.city }}</strong>
+                </div>
+                <div class="signal-item">
+                  <span class="signal-label">Profile</span>
+                  <strong>{{ primaryCircuit.profile }}</strong>
+                </div>
+              </div>
+
+              <div class="signal-track-card">
+                <div class="signal-track-top">
+                  <div class="signal-track-title">{{ primaryCircuit.circuit }}</div>
+                  <div class="signal-track-type">{{ primaryCircuit.type }}</div>
+                </div>
+
+                <div class="signal-track-map">
+                  <svg viewBox="0 0 220 132" aria-hidden="true">
+                    <defs>
+                      <linearGradient id="signal-track-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#ffffff" />
+                        <stop offset="60%" stop-color="#ffe2db" />
+                        <stop offset="100%" stop-color="#e10600" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      :d="primaryCircuit.path"
+                      transform="translate(20 16) scale(1.1)"
+                      stroke="rgba(255,255,255,0.12)"
+                      stroke-width="18"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      fill="none"
+                    />
+                    <path
+                      :d="primaryCircuit.path"
+                      transform="translate(20 16) scale(1.1)"
+                      stroke="url(#signal-track-gradient)"
+                      stroke-width="8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      fill="none"
+                    />
+                  </svg>
+                </div>
+
+                <div class="signal-track-copy">{{ primaryCircuit.signature }}</div>
+              </div>
             </div>
 
             <div class="country-list">
@@ -523,6 +596,7 @@ const countryGroups = computed(() => {
 const countryByCode = computed(() => new Map(countryGroups.value.map((country) => [country.code, country])));
 const activeCountryCode = computed(() => hoveredCountryCode.value || selectedCountryCode.value || defaultCountryCode);
 const focusedCountry = computed(() => countryByCode.value.get(activeCountryCode.value) || countryGroups.value[0]);
+const primaryCircuit = computed(() => focusedCountry.value.circuits[0]);
 const globeHighlights = computed(() =>
   countryGroups.value.map((country) => ({
     code: country.code,
@@ -762,10 +836,145 @@ function handleSelectCountry(code) {
   color: #ffffff;
 }
 
+.signal-board {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(136px, 0.8fr) minmax(0, 1.2fr);
+  gap: 18px;
+  margin-top: 14px;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.06), transparent 36%),
+    linear-gradient(180deg, rgba(7, 10, 16, 0.96), rgba(4, 6, 12, 0.98));
+}
+
+.signal-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.signal-line {
+  stroke: rgba(255, 255, 255, 0.72);
+  stroke-width: 0.42;
+}
+
+.signal-line--lead {
+  stroke-width: 0.62;
+}
+
+.signal-line--focus {
+  stroke: rgba(255, 226, 220, 0.96);
+  stroke-width: 0.58;
+}
+
+.signal-node {
+  fill: #ffffff;
+}
+
+.signal-node--small {
+  fill: rgba(255, 255, 255, 0.86);
+}
+
+.signal-node--focus {
+  fill: #e10600;
+}
+
+.signal-meta,
+.signal-track-card {
+  position: relative;
+  z-index: 1;
+}
+
+.signal-meta {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding-top: 6px;
+}
+
+.signal-item {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.signal-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.signal-item strong,
+.signal-track-title {
+  color: #ffffff;
+}
+
+.signal-track-card {
+  padding: 14px;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at top left, rgba(225, 6, 0, 0.08), transparent 38%),
+    rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.signal-track-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.signal-track-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.signal-track-type {
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.signal-track-map {
+  margin-top: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)),
+    rgba(2, 4, 8, 0.92);
+}
+
+.signal-track-map svg {
+  display: block;
+  width: 100%;
+  height: 188px;
+}
+
+.signal-track-copy {
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .country-list {
   display: grid;
   gap: 10px;
-  margin-top: 14px;
+  margin-top: 16px;
 }
 
 .country-row {
@@ -921,7 +1130,8 @@ function handleSelectCountry(code) {
 
 @media (max-width: 980px) {
   .calendar-main,
-  .track-grid {
+  .track-grid,
+  .signal-board {
     grid-template-columns: 1fr;
   }
 
@@ -935,6 +1145,10 @@ function handleSelectCountry(code) {
   .calendar-callouts,
   .track-country-summary {
     grid-template-columns: 1fr;
+  }
+
+  .signal-board {
+    padding: 14px;
   }
 
   .calendar-title :deep(.session-title-main) {
