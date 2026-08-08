@@ -59,7 +59,7 @@ const ISO_NUMERIC_BY_ALPHA2 = {
 };
 
 const BASE_LAND_FILLS = ["#171013", "#211217", "#2c151b", "#381920"];
-const HIGHLIGHT_FILLS = ["#5a2024", "#752327", "#94292c", "#bb3032", "#de3b39", "#ff5a48", "#ffd4ca"];
+const HIGHLIGHT_FILLS = ["#651816", "#86120f", "#a90d09", "#c80904", "#e10600", "#ff3b30", "#ffc1b6"];
 
 function normalizeItems(items) {
   return (Array.isArray(items) ? items : [])
@@ -251,9 +251,9 @@ function generateTexture(items, features, countryIndex) {
       const feature = countryIndex.get(ISO_NUMERIC_BY_ALPHA2[item.code]);
       if (!feature) return;
       const t = Math.pow((item.value - minValue) / span, 0.8);
-      const light = interpolateStops(["#5d272b", interpolatePalette(t)], 0.18);
+      const light = interpolateStops(["#741714", interpolatePalette(t)], 0.18);
       const main = interpolatePalette(t);
-      const deep = interpolateStops([main, "#120709"], 0.8);
+      const deep = interpolateStops([main, "#220606"], 0.8);
       const lightAlpha = 0.18 + t * 0.08;
       const mainAlpha = 0.34 + t * 0.14;
       const deepAlpha = 0.5 + t * 0.16;
@@ -287,7 +287,7 @@ function generateTexture(items, features, countryIndex) {
     if (!feature) return;
     ctx.beginPath();
     path(feature);
-    ctx.strokeStyle = withAlpha("#f0b8ab", 0.76);
+    ctx.strokeStyle = withAlpha("#e10600", 0.82);
     ctx.lineWidth = 1;
     ctx.stroke();
   });
