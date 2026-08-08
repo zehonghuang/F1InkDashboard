@@ -1,5 +1,13 @@
 <template>
-  <div class="globe-wrap" ref="wrapRef" :style="{ width: size + 'px', height: size + 'px' }"></div>
+  <div
+    class="globe-wrap"
+    ref="wrapRef"
+    :style="{
+      width: size + 'px',
+      height: size + 'px',
+      '--canvas-radius': roundCanvas ? '50%' : '0px'
+    }"
+  ></div>
 </template>
 
 <script setup>
@@ -20,11 +28,29 @@ const props = defineProps({
   globeEmissive: { type: String, default: "#020304" },
   globeSpecular: { type: String, default: "#d6dce8" },
   ringColor: { type: String, default: "#ff4d4f" },
-  highlightColor: { type: String, default: "#eef3ff" }
+  highlightColor: { type: String, default: "#eef3ff" },
+  neutralLandColor: { type: String, default: "rgba(188, 26, 33, 1)" },
+  hotspotColorMin: { type: String, default: "#ff9b8d" },
+  hotspotColorMax: { type: String, default: "#fff1ee" },
+  showPolygons: { type: Boolean, default: true },
+  showContinentPolygons: { type: Boolean, default: true },
+  showCountryPolygons: { type: Boolean, default: true },
+  showTelemetryAccents: { type: Boolean, default: true },
+  autoRotate: { type: Boolean, default: true },
+  cameraLat: { type: Number, default: 14 },
+  cameraLng: { type: Number, default: 262 },
+  cameraAltitude: { type: Number, default: 2.35 },
+  surfaceMode: { type: String, default: "points" },
+  roundCanvas: { type: Boolean, default: true },
+  countryValues: {
+    type: Array,
+    default: () => []
+  }
 });
 
 const wrapRef = ref(null);
 let globeInstance = null;
+let disposableResources = [];
 
 const phi = Math.PI * (3 - Math.sqrt(5));
 
@@ -123,14 +149,27 @@ const CONTINENT_GROUPS = [
 ];
 
 const COUNTRY_BLOCKS = [
-  { name: "United States", color: "rgba(255, 82, 58, 1)", latMin: 24, latMax: 49, lngMin: -125, lngMax: -66 },
-  { name: "Canada", color: "rgba(255, 108, 76, 1)", latMin: 49, latMax: 71, lngMin: -141, lngMax: -60 },
-  { name: "United Kingdom", color: "rgba(255, 226, 218, 1)", latMin: 49, latMax: 60, lngMin: -8, lngMax: 2.5 },
-  { name: "Netherlands", color: "rgba(255, 188, 172, 1)", latMin: 50.5, latMax: 54, lngMin: 3, lngMax: 7.5 },
-  { name: "Italy", color: "rgba(255, 68, 48, 1)", latMin: 37, latMax: 47, lngMin: 6, lngMax: 18.8 },
-  { name: "Japan", color: "rgba(255, 132, 90, 1)", latMin: 30, latMax: 46.5, lngMin: 129, lngMax: 146 },
-  { name: "Singapore", color: "rgba(255, 244, 238, 1)", latMin: 1, latMax: 2.2, lngMin: 103.4, lngMax: 104.2 },
-  { name: "Australia", color: "rgba(255, 100, 68, 1)", latMin: -44, latMax: -11, lngMin: 113, lngMax: 154 }
+  { code: "SG", name: "Singapore", color: "rgba(255, 244, 238, 1)", latMin: 1, latMax: 2.2, lngMin: 103.4, lngMax: 104.2 },
+  { code: "HK", name: "Hong Kong", color: "rgba(255, 214, 204, 1)", latMin: 22.1, latMax: 22.6, lngMin: 113.8, lngMax: 114.4 },
+  { code: "NL", name: "Netherlands", color: "rgba(255, 188, 172, 1)", latMin: 50.5, latMax: 54, lngMin: 3, lngMax: 7.5 },
+  { code: "CH", name: "Switzerland", color: "rgba(255, 201, 184, 1)", latMin: 45.8, latMax: 47.9, lngMin: 5.9, lngMax: 10.7 },
+  { code: "IE", name: "Ireland", color: "rgba(255, 186, 168, 1)", latMin: 51.3, latMax: 55.5, lngMin: -10.8, lngMax: -5.2 },
+  { code: "HR", name: "Croatia", color: "rgba(255, 170, 150, 1)", latMin: 42.4, latMax: 46.6, lngMin: 13.4, lngMax: 19.5 },
+  { code: "AT", name: "Austria", color: "rgba(255, 176, 160, 1)", latMin: 46.3, latMax: 49.1, lngMin: 9.2, lngMax: 17.2 },
+  { code: "GB", name: "United Kingdom", color: "rgba(255, 226, 218, 1)", latMin: 49, latMax: 60, lngMin: -8, lngMax: 2.5 },
+  { code: "SE", name: "Sweden", color: "rgba(255, 182, 164, 1)", latMin: 55.2, latMax: 69.2, lngMin: 11, lngMax: 24 },
+  { code: "FI", name: "Finland", color: "rgba(255, 178, 162, 1)", latMin: 59.7, latMax: 70.1, lngMin: 20, lngMax: 31.6 },
+  { code: "DE", name: "Germany", color: "rgba(255, 162, 138, 1)", latMin: 47.2, latMax: 55.1, lngMin: 5.7, lngMax: 15.2 },
+  { code: "FR", name: "France", color: "rgba(255, 150, 128, 1)", latMin: 42.3, latMax: 51.2, lngMin: -5.3, lngMax: 8.5 },
+  { code: "IT", name: "Italy", color: "rgba(255, 68, 48, 1)", latMin: 37, latMax: 47, lngMin: 6, lngMax: 18.8 },
+  { code: "UA", name: "Ukraine", color: "rgba(255, 158, 136, 1)", latMin: 44, latMax: 52.5, lngMin: 22, lngMax: 40.3 },
+  { code: "MA", name: "Morocco", color: "rgba(255, 144, 118, 1)", latMin: 27.5, latMax: 35.9, lngMin: -13.5, lngMax: -1 },
+  { code: "JP", name: "Japan", color: "rgba(255, 132, 90, 1)", latMin: 30, latMax: 46.5, lngMin: 129, lngMax: 146 },
+  { code: "US", name: "United States", color: "rgba(255, 82, 58, 1)", latMin: 24, latMax: 49, lngMin: -125, lngMax: -66 },
+  { code: "CA", name: "Canada", color: "rgba(255, 108, 76, 1)", latMin: 49, latMax: 71, lngMin: -141, lngMax: -60 },
+  { code: "CN", name: "China", color: "rgba(255, 120, 84, 1)", latMin: 18, latMax: 53.6, lngMin: 73.5, lngMax: 134.8 },
+  { code: "BR", name: "Brazil", color: "rgba(255, 138, 106, 1)", latMin: -33.8, latMax: 5.2, lngMin: -74, lngMax: -34 },
+  { code: "AU", name: "Australia", color: "rgba(255, 100, 68, 1)", latMin: -44, latMax: -11, lngMin: 113, lngMax: 154 }
 ];
 
 const COUNTRY_POLYGONS = [
@@ -417,31 +456,236 @@ function darkenRgba(color, alpha = 0.42) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+function parseColorToRgb(color) {
+  if (!color) return null;
+  const rgbaMatch = color.match(/rgba?\(([^)]+)\)/);
+  if (rgbaMatch) {
+    const parts = rgbaMatch[1].split(",").map((x) => Number(x.trim()));
+    return { r: parts[0], g: parts[1], b: parts[2] };
+  }
+  const hex = color.trim().replace("#", "");
+  if (hex.length === 3) {
+    return {
+      r: parseInt(hex[0] + hex[0], 16),
+      g: parseInt(hex[1] + hex[1], 16),
+      b: parseInt(hex[2] + hex[2], 16)
+    };
+  }
+  if (hex.length === 6) {
+    return {
+      r: parseInt(hex.slice(0, 2), 16),
+      g: parseInt(hex.slice(2, 4), 16),
+      b: parseInt(hex.slice(4, 6), 16)
+    };
+  }
+  return null;
+}
+
 function withAlpha(color, alpha) {
-  const match = color.match(/rgba?\(([^)]+)\)/);
-  if (!match) return color;
-  const parts = match[1].split(",").map((x) => x.trim());
-  return `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${alpha})`;
+  const rgb = parseColorToRgb(color);
+  if (!rgb) return color;
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+}
+
+function interpolateColor(colorA, colorB, t) {
+  const a = parseColorToRgb(colorA);
+  const b = parseColorToRgb(colorB);
+  if (!a || !b) return colorB;
+  const mix = Math.max(0, Math.min(1, t));
+  const r = Math.round(a.r + (b.r - a.r) * mix);
+  const g = Math.round(a.g + (b.g - a.g) * mix);
+  const bVal = Math.round(a.b + (b.b - a.b) * mix);
+  return `rgb(${r}, ${g}, ${bVal})`;
+}
+
+function normalizeCountryValues(items) {
+  const normalized = Array.isArray(items) ? items : [];
+  const valueMap = new Map();
+  const values = [];
+  for (const item of normalized) {
+    if (!item) continue;
+    const value = Number(item.value);
+    if (!Number.isFinite(value)) continue;
+    values.push(value);
+    if (item.code) valueMap.set(String(item.code).toUpperCase(), value);
+    if (item.name) valueMap.set(String(item.name).toLowerCase(), value);
+  }
+  const min = values.length ? Math.min(...values) : 0;
+  const max = values.length ? Math.max(...values) : 0;
+  return { valueMap, min, max };
+}
+
+function projectLng(lng, width) {
+  return (lng + 180) * (width / 360);
+}
+
+function projectLat(lat, height) {
+  return (90 - lat) * (height / 180);
+}
+
+function tracePolygonPath(ctx, polygon, width, height) {
+  polygon.forEach(([lng, lat], index) => {
+    const x = projectLng(lng, width);
+    const y = projectLat(lat, height);
+    if (index === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+}
+
+function createSurfaceTexture(countryValueState) {
+  const width = 2048;
+  const height = 1024;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+
+  ctx.fillStyle = props.globeColor;
+  ctx.fillRect(0, 0, width, height);
+
+  const oceanShade = ctx.createLinearGradient(0, 0, 0, height);
+  oceanShade.addColorStop(0, withAlpha("#ffffff", 0.24));
+  oceanShade.addColorStop(0.45, withAlpha("#ffffff", 0.02));
+  oceanShade.addColorStop(1, withAlpha("#8fa3d9", 0.08));
+  ctx.fillStyle = oceanShade;
+  ctx.fillRect(0, 0, width, height);
+
+  CONTINENT_GROUPS.forEach((continent, index) => {
+    const tint = 0.04 + index * 0.035;
+    ctx.beginPath();
+    continent.polygonIndexes.forEach((polygonIndex) => {
+      tracePolygonPath(ctx, CONTINENTS[polygonIndex], width, height);
+    });
+    ctx.fillStyle = interpolateColor(props.neutralLandColor, "#ffffff", tint);
+    ctx.fill();
+  });
+
+  ctx.save();
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  CONTINENT_GROUPS.forEach((continent, index) => {
+    ctx.beginPath();
+    continent.polygonIndexes.forEach((polygonIndex) => {
+      tracePolygonPath(ctx, CONTINENTS[polygonIndex], width, height);
+    });
+    ctx.lineWidth = index < 4 ? 2.4 : 2;
+    ctx.strokeStyle = withAlpha("#ffffff", 0.42);
+    ctx.stroke();
+  });
+  ctx.restore();
+
+  ctx.fillStyle = withAlpha(props.neutralLandColor, 0.92);
+  for (const [lng, lat] of ISLANDS_BONUS) {
+    ctx.beginPath();
+    ctx.arc(projectLng(lng, width), projectLat(lat, height), 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const highlightedCountries = COUNTRY_BLOCKS
+    .map((country) => {
+      const value = countryValueState.valueMap.get(country.code)
+        ?? countryValueState.valueMap.get(country.name.toLowerCase());
+      if (!Number.isFinite(value)) return null;
+      const span = countryValueState.max - countryValueState.min || 1;
+      const normalized = span === 0 ? 1 : (value - countryValueState.min) / span;
+      return { country, normalized };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.normalized - b.normalized);
+
+  for (const entry of highlightedCountries) {
+    const color = interpolateColor(props.hotspotColorMin, props.hotspotColorMax, Math.pow(entry.normalized, 0.72));
+    const polygon = COUNTRY_POLYGONS.find((item) => item.name === entry.country.name);
+    ctx.beginPath();
+    if (polygon) {
+      polygon.geometry.coordinates.forEach((ring) => {
+        tracePolygonPath(ctx, ring, width, height);
+      });
+    } else {
+      const x = projectLng(entry.country.lngMin, width);
+      const y = projectLat(entry.country.latMax, height);
+      const rectWidth = Math.max(6, projectLng(entry.country.lngMax, width) - x);
+      const rectHeight = Math.max(6, projectLat(entry.country.latMin, height) - y);
+      ctx.rect(x, y, rectWidth, rectHeight);
+    }
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = withAlpha("#ffffff", 0.76);
+    ctx.stroke();
+  }
+
+  ctx.save();
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  for (const country of COUNTRY_BLOCKS) {
+    const mappedValue = countryValueState.valueMap.get(country.code)
+      ?? countryValueState.valueMap.get(country.name.toLowerCase());
+    if (!Number.isFinite(mappedValue)) continue;
+    const polygon = COUNTRY_POLYGONS.find((item) => item.name === country.name);
+    ctx.beginPath();
+    if (polygon) {
+      polygon.geometry.coordinates.forEach((ring) => {
+        tracePolygonPath(ctx, ring, width, height);
+      });
+    } else {
+      const x = projectLng(country.lngMin, width);
+      const y = projectLat(country.latMax, height);
+      const rectWidth = Math.max(6, projectLng(country.lngMax, width) - x);
+      const rectHeight = Math.max(6, projectLat(country.latMin, height) - y);
+      ctx.rect(x, y, rectWidth, rectHeight);
+    }
+    ctx.lineWidth = 1.1;
+    ctx.strokeStyle = withAlpha("#2b3b73", 0.28);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  const latFade = ctx.createLinearGradient(0, 0, 0, height);
+  latFade.addColorStop(0, withAlpha("#b8c7ff", 0.06));
+  latFade.addColorStop(0.5, withAlpha("#ffffff", 0));
+  latFade.addColorStop(1, withAlpha("#7588c7", 0.08));
+  ctx.fillStyle = latFade;
+  ctx.fillRect(0, 0, width, height);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 4;
+  texture.needsUpdate = true;
+  return texture;
 }
 
 function getPointColor(point) {
+  if (point.countryValueNormalized != null) {
+    const mix = Math.pow(point.countryValueNormalized, 0.72);
+    return withAlpha(interpolateColor(props.hotspotColorMin, props.hotspotColorMax, mix), 0.98);
+  }
+  if (props.countryValues.length) {
+    return withAlpha(props.neutralLandColor, 0.22 + point.tint * 0.08);
+  }
   if (point.countryBlock) return withAlpha(point.countryBlock.color, 0.98);
   if (point.continent) return withAlpha(point.continent.color, 0.62 + point.tint * 0.2);
   return `rgba(188, 26, 33, ${0.48 + point.tint * 0.16})`;
 }
 
 function getPointAltitude(point) {
+  if (point.countryValueNormalized != null) return 0.012 + point.countryValueNormalized * 0.03 + point.tint * 0.004;
+  if (props.countryValues.length) return 0.004 + point.tint * 0.004;
   if (point.countryBlock) return 0.024 + point.tint * 0.016;
   return 0.007 + point.tint * 0.01;
 }
 
 function getPointRadius(point) {
+  if (point.countryValueNormalized != null) return 0.085 + point.countryValueNormalized * 0.065 + point.size * 0.02;
+  if (props.countryValues.length) return 0.055 + point.size * 0.025;
   if (point.countryBlock) return 0.13 + point.size * 0.055;
   return 0.07 + point.size * 0.04;
 }
 
 function buildPolygonLayers() {
-  const continentLayers = CONTINENT_GROUPS.map((continent) => {
+  if (!props.showPolygons) return [];
+  const continentLayers = props.showContinentPolygons ? CONTINENT_GROUPS.map((continent) => {
     const polygons = continent.polygonIndexes.map((index) => [CONTINENTS[index]]);
     return {
       name: continent.name,
@@ -453,16 +697,16 @@ function buildPolygonLayers() {
       strokeColor: "rgba(255, 214, 208, 0.22)",
       altitude: 0.009
     };
-  });
+  }) : [];
 
-  const countryLayers = COUNTRY_POLYGONS.map((country) => ({
+  const countryLayers = props.showCountryPolygons ? COUNTRY_POLYGONS.map((country) => ({
     name: country.name,
     geometry: country.geometry,
     capColor: country.color,
     sideColor: darkenRgba(country.color, 0.72),
     strokeColor: "rgba(255, 244, 240, 0.78)",
     altitude: country.name === "Singapore" || country.name === "Netherlands" ? 0.026 : 0.02
-  }));
+  })) : [];
 
   return continentLayers.concat(countryLayers);
 }
@@ -488,17 +732,24 @@ function initGlobe() {
   const scene = world.scene();
   const renderer = world.renderer();
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const countryValueState = normalizeCountryValues(props.countryValues);
+  const surfaceTexture = props.surfaceMode === "texture"
+    ? createSurfaceTexture(countryValueState)
+    : null;
+  if (surfaceTexture) disposableResources.push(surfaceTexture);
+  const globeBaseColor = props.surfaceMode === "texture" ? "#ffffff" : props.globeColor;
 
   const globeMat = new THREE.MeshPhongMaterial({
-    color: new THREE.Color(props.globeColor),
+    color: new THREE.Color(globeBaseColor),
     emissive: new THREE.Color(props.globeEmissive),
-    emissiveIntensity: 0.18,
-    shininess: 28,
+    emissiveIntensity: props.surfaceMode === "texture" ? 0.1 : 0.18,
+    shininess: props.surfaceMode === "texture" ? 18 : 28,
     specular: new THREE.Color(props.globeSpecular),
     transparent: true,
     opacity: 0.98,
     depthWrite: true
   });
+  if (surfaceTexture) globeMat.map = surfaceTexture;
   world.globeMaterial(globeMat);
 
   const ambient = new THREE.AmbientLight(0x8b8f99, 0.22);
@@ -515,14 +766,6 @@ function initGlobe() {
 
   const globeRadius = world.getGlobeRadius();
   world
-    .pointsData(generateLandPoints(props.dotCount, props.landExtraRatio))
-    .pointLat("lat")
-    .pointLng("lng")
-    .pointColor(getPointColor)
-    .pointAltitude(getPointAltitude)
-    .pointRadius(getPointRadius)
-    .pointsMerge(true)
-    .pointsTransitionDuration(0)
     .polygonsData(buildPolygonLayers())
     .polygonGeoJsonGeometry("geometry")
     .polygonCapColor("capColor")
@@ -532,13 +775,42 @@ function initGlobe() {
     .polygonCapCurvatureResolution(3)
     .polygonsTransitionDuration(0);
 
-  scene.add(buildTelemetryAccents(globeRadius));
+  if (props.surfaceMode === "texture") {
+    world.pointsData([]).pointsTransitionDuration(0);
+  } else {
+    world
+      .pointsData(generateLandPoints(props.dotCount, props.landExtraRatio))
+      .pointLat("lat")
+      .pointLng("lng")
+      .pointColor(getPointColor)
+      .pointAltitude(getPointAltitude)
+      .pointRadius(getPointRadius)
+      .pointsMerge(true)
+      .pointsTransitionDuration(0);
 
-  const initLat = 14;
+    const coloredPoints = generateLandPoints(props.dotCount, props.landExtraRatio).map((point) => {
+      if (!point.countryBlock) return point;
+      const mappedValue = countryValueState.valueMap.get(point.countryBlock.code)
+        ?? countryValueState.valueMap.get(point.countryBlock.name.toLowerCase());
+      if (!Number.isFinite(mappedValue)) return point;
+      const span = countryValueState.max - countryValueState.min || 1;
+      return {
+        ...point,
+        countryValue: mappedValue,
+        countryValueNormalized: span === 0 ? 1 : (mappedValue - countryValueState.min) / span
+      };
+    });
+    world.pointsData(coloredPoints);
+  }
+
+  if (props.showTelemetryAccents) {
+    scene.add(buildTelemetryAccents(globeRadius));
+  }
+
   world.pointOfView({
-    lat: initLat,
-    lng: 262,
-    altitude: 2.35
+    lat: props.cameraLat,
+    lng: props.cameraLng,
+    altitude: props.cameraAltitude
   });
 
   try {
@@ -549,7 +821,7 @@ function initGlobe() {
     controls.enableDamping = true;
     controls.dampingFactor = 0.075;
     controls.rotateSpeed = 0.85;
-    controls.autoRotate = true;
+    controls.autoRotate = props.autoRotate;
     controls.autoRotateSpeed = props.rotateSpeed * 60 * 0.22;
   } catch (e) { /* noop */ }
 
@@ -578,6 +850,10 @@ onBeforeUnmount(() => {
     } catch (e) { /* noop */ }
     globeInstance = null;
   }
+  disposableResources.forEach((resource) => {
+    if (resource && resource.dispose) resource.dispose();
+  });
+  disposableResources = [];
 });
 </script>
 
@@ -593,7 +869,7 @@ onBeforeUnmount(() => {
 
 .globe-wrap :deep(canvas) {
   display: block;
-  border-radius: 50%;
+  border-radius: var(--canvas-radius);
 }
 
 .globe-wrap:active {

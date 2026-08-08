@@ -4,6 +4,7 @@
       <div class="title">F1 图表</div>
       <div class="nav">
         <RouterLink class="nav-link" to="/globe">全球地球</RouterLink>
+        <RouterLink class="nav-link" to="/requests-by-country">国家请求</RouterLink>
         <RouterLink class="nav-link" to="/compare-throttle">油门对比</RouterLink>
         <RouterLink class="nav-link" to="/compare-brake">刹车对比</RouterLink>
         <RouterLink class="nav-link" to="/compare-speed">速度对比</RouterLink>
