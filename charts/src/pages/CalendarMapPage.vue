@@ -62,78 +62,10 @@
           <div class="calendar-country-card">
             <div class="calendar-panel-header">
               <div>
-                <div class="panel-eyebrow">Broadcast Overlay</div>
-                <div class="panel-heading">{{ focusedCountry.name }}</div>
+                <div class="panel-eyebrow">Country Stack</div>
+                <div class="panel-heading">Season Hosts</div>
               </div>
-              <div class="panel-chip">{{ primaryCircuit.grandPrix }}</div>
-            </div>
-
-            <div class="overlay-stage">
-              <svg class="overlay-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                <line x1="-6" y1="22" x2="14" y2="22" class="overlay-line overlay-line--lead" />
-                <line x1="14" y1="22" x2="18" y2="14" class="overlay-line overlay-line--lead" />
-                <line x1="18" y1="14" x2="78" y2="14" class="overlay-line overlay-line--lead" />
-                <line x1="18" y1="14" x2="18" y2="86" class="overlay-line overlay-line--side" />
-              </svg>
-
-              <div class="overlay-floating-window">
-                <div class="overlay-window-inner">
-                  <button
-                    v-for="item in floatingWindowItems"
-                    :key="item.key"
-                    type="button"
-                    class="overlay-window-row"
-                    :class="{ 'is-active': item.isActive }"
-                    @mouseenter="handleHoverCountry(item.code)"
-                    @mouseleave="handleHoverCountry('')"
-                    @click="handleSelectCountry(item.code)"
-                  >
-                    {{ item.label }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="overlay-track-preview">
-                <div class="overlay-track-header">
-                  <div>
-                    <div class="overlay-track-kicker">{{ primaryCircuit.circuit }}</div>
-                    <div class="overlay-track-city">{{ primaryCircuit.city }}</div>
-                  </div>
-                  <div class="overlay-track-pill">{{ primaryCircuit.type }}</div>
-                </div>
-
-                <div class="overlay-track-map">
-                  <svg viewBox="0 0 220 132" aria-hidden="true">
-                    <defs>
-                      <linearGradient id="overlay-track-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#ffffff" />
-                        <stop offset="58%" stop-color="#ffe2db" />
-                        <stop offset="100%" stop-color="#e10600" />
-                      </linearGradient>
-                    </defs>
-                    <path
-                      :d="primaryCircuit.path"
-                      transform="translate(20 16) scale(1.1)"
-                      stroke="rgba(255,255,255,0.12)"
-                      stroke-width="18"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      fill="none"
-                    />
-                    <path
-                      :d="primaryCircuit.path"
-                      transform="translate(20 16) scale(1.1)"
-                      stroke="url(#overlay-track-gradient)"
-                      stroke-width="8"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      fill="none"
-                    />
-                  </svg>
-                </div>
-
-                <div class="overlay-track-copy">{{ primaryCircuit.signature }}</div>
-              </div>
+              <div class="panel-chip">Click To Lock</div>
             </div>
 
             <div class="country-list">
@@ -591,70 +523,12 @@ const countryGroups = computed(() => {
 const countryByCode = computed(() => new Map(countryGroups.value.map((country) => [country.code, country])));
 const activeCountryCode = computed(() => hoveredCountryCode.value || selectedCountryCode.value || defaultCountryCode);
 const focusedCountry = computed(() => countryByCode.value.get(activeCountryCode.value) || countryGroups.value[0]);
-const primaryCircuit = computed(() => focusedCountry.value.circuits[0]);
 const globeHighlights = computed(() =>
   countryGroups.value.map((country) => ({
     code: country.code,
     value: country.highlightValue
   }))
 );
-const floatingWindowItems = computed(() => {
-  const focus = focusedCountry.value;
-  const primaryRegion = regionKey(focus.region);
-  const sameRegionCountries = countryGroups.value
-    .filter((country) => country.code !== focus.code && regionKey(country.region) === primaryRegion)
-    .slice(0, 3)
-    .map((country) => ({
-      key: `country-${country.code}`,
-      label: country.name.toUpperCase(),
-      code: country.code,
-      isActive: false
-    }));
-  const extraCircuitCities = focus.circuits
-    .slice(1)
-    .map((circuit) => ({
-      key: `city-${circuit.id}`,
-      label: circuit.city.toUpperCase(),
-      code: focus.code,
-      isActive: false
-    }));
-  const fallbackCountries = countryGroups.value
-    .filter((country) => country.code !== focus.code && regionKey(country.region) !== primaryRegion)
-    .slice(0, 4)
-    .map((country) => ({
-      key: `fallback-${country.code}`,
-      label: country.name.toUpperCase(),
-      code: country.code,
-      isActive: false
-    }));
-
-  const ordered = [
-    {
-      key: `primary-city-${primaryCircuit.value.id}`,
-      label: primaryCircuit.value.city.toUpperCase(),
-      code: focus.code,
-      isActive: false
-    },
-    ...sameRegionCountries,
-    {
-      key: `focus-${focus.code}`,
-      label: focus.name.toUpperCase(),
-      code: focus.code,
-      isActive: true
-    },
-    ...extraCircuitCities,
-    ...fallbackCountries
-  ];
-
-  const unique = [];
-  const seen = new Set();
-  ordered.forEach((item) => {
-    if (seen.has(item.label)) return;
-    seen.add(item.label);
-    unique.push(item);
-  });
-  return unique.slice(0, 6);
-});
 
 const summaryCards = computed(() => [
   {
@@ -681,10 +555,6 @@ const summaryCards = computed(() => [
 
 function normalizeCode(code) {
   return String(code || "").toUpperCase();
-}
-
-function regionKey(region) {
-  return String(region || "").split("/")[0].trim();
 }
 
 function handleHoverCountry(code) {
@@ -892,150 +762,10 @@ function handleSelectCountry(code) {
   color: #ffffff;
 }
 
-.overlay-stage {
-  position: relative;
-  min-height: 420px;
-  margin-top: 14px;
-  padding: 18px 18px 16px 18px;
-  overflow: hidden;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background:
-    radial-gradient(circle at left center, rgba(255, 255, 255, 0.05), transparent 24%),
-    linear-gradient(180deg, rgba(7, 10, 16, 0.96), rgba(4, 6, 12, 0.98));
-}
-
-.overlay-lines {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.overlay-line {
-  stroke: rgba(255, 255, 255, 0.72);
-  stroke-width: 0.42;
-  fill: none;
-}
-
-.overlay-line--lead {
-  stroke-width: 0.66;
-}
-
-.overlay-line--side {
-  stroke-width: 0.34;
-  opacity: 0.9;
-}
-
-.overlay-floating-window,
-.overlay-track-preview {
-  position: relative;
-  z-index: 1;
-}
-
-.overlay-floating-window {
-  width: calc(100% - 28px);
-  margin-left: 18px;
-  padding: 22px 22px 24px;
-  clip-path: polygon(7% 0, 100% 0, 100% 100%, 0 100%, 0 17%);
-  border: 1px solid rgba(255, 186, 178, 0.42);
-  background:
-    linear-gradient(180deg, rgba(1, 3, 18, 0.98), rgba(2, 4, 18, 0.98)),
-    rgba(2, 4, 18, 0.98);
-  box-shadow: inset 0 0 0 1px rgba(255, 78, 70, 0.14);
-}
-
-.overlay-window-inner {
-  display: grid;
-  gap: 10px;
-}
-
-.overlay-window-row {
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: #f4f4f4;
-  font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: clamp(22px, 2.5vw, 34px);
-  font-weight: 900;
-  line-height: 1.02;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  text-align: left;
-  cursor: pointer;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.overlay-window-row.is-active {
-  color: #e10600;
-  text-shadow: 0 0 12px rgba(225, 6, 0, 0.18);
-}
-
-.overlay-track-preview {
-  margin-top: 16px;
-  margin-left: 46px;
-  padding: 14px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.overlay-track-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.overlay-track-kicker {
-  font-size: 16px;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.overlay-track-city {
-  margin-top: 4px;
-  color: rgba(255, 255, 255, 0.64);
-  font-size: 12px;
-}
-
-.overlay-track-pill {
-  padding: 5px 9px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-}
-
-.overlay-track-map {
-  margin-top: 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)),
-    rgba(2, 4, 8, 0.92);
-}
-
-.overlay-track-map svg {
-  display: block;
-  width: 100%;
-  height: 188px;
-}
-
-.overlay-track-copy {
-  margin-top: 12px;
-  color: rgba(255, 255, 255, 0.66);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
 .country-list {
   display: grid;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 .country-row {
@@ -1191,8 +921,7 @@ function handleSelectCountry(code) {
 
 @media (max-width: 980px) {
   .calendar-main,
-  .track-grid,
-  .overlay-stage {
+  .track-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1206,17 +935,6 @@ function handleSelectCountry(code) {
   .calendar-callouts,
   .track-country-summary {
     grid-template-columns: 1fr;
-  }
-
-  .overlay-stage {
-    min-height: auto;
-    padding: 14px;
-  }
-
-  .overlay-floating-window,
-  .overlay-track-preview {
-    margin-left: 0;
-    width: 100%;
   }
 
   .calendar-title :deep(.session-title-main) {
