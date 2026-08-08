@@ -38,9 +38,9 @@
                 <div class="globe-panel-frame frame-bottom"></div>
                 <div class="globe-caption">Global Traffic Mesh</div>
                 <div class="globe-frame">
-                  <CloudflareCountryGlobe
+                  <CountryGlobe
                     :size="283"
-                    :items="globeItems"
+                    :highlighted-countries="globeHighlights"
                     :active-code="activeCountryCode"
                     :selected-code="selectedCountryCode"
                     @hover-country="handleHoverCountry"
@@ -104,7 +104,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import HeaderBar from "../widgets/HeaderBar.vue";
-import CloudflareCountryGlobe from "../components/CloudflareCountryGlobe.vue";
+import CountryGlobe from "../components/CountryGlobe.vue";
 
 const rawCountries = [
   { code: "SG", name: "Singapore", value: 588 },
@@ -138,7 +138,7 @@ const countries = rawCountries.map((item, index) => ({
 
 const hoveredCountryCode = ref("");
 const selectedCountryCode = ref("");
-const globeItems = countries.map(({ code, name, value }) => ({ code, name, value }));
+const globeHighlights = countries.map(({ code, value }) => ({ code, value }));
 const topCountry = countries[0];
 const leaderShare = Math.round((topCountry.value / totalValue) * 100);
 const countryByCode = new Map(countries.map((item) => [item.code, item]));
