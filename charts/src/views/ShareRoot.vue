@@ -34,7 +34,7 @@ const sync = () => {
 onMounted(() => {
   sync();
   window.addEventListener("hashchange", sync);
-  if (!share.value) router.replace("/compare-throttle");
+  if (!share.value) router.replace("/calendar-map");
 });
 
 onBeforeUnmount(() => {

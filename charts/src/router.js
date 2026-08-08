@@ -2,15 +2,13 @@ import { createRouter, createWebHistory } from "vue-router";
 import DefaultRedirect from "./views/DefaultRedirect.vue";
 import ShareRoot from "./views/ShareRoot.vue";
 import PageShell from "./views/PageShell.vue";
-import GlobePage from "./pages/GlobePage.vue";
-import RequestsByCountryPage from "./pages/RequestsByCountryPage.vue";
+import CalendarMapPage from "./pages/CalendarMapPage.vue";
 
 export default createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: "/", component: ShareRoot },
-    { path: "/globe", component: GlobePage },
-    { path: "/requests-by-country", component: RequestsByCountryPage },
+    { path: "/calendar-map", component: CalendarMapPage },
     { path: "/compare-throttle", component: PageShell, props: { pageKey: "compare-throttle" } },
     { path: "/compare-brake", component: PageShell, props: { pageKey: "compare-brake" } },
     { path: "/compare-speed", component: PageShell, props: { pageKey: "compare-speed" } },

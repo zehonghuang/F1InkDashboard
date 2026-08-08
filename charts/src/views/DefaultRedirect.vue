@@ -17,5 +17,5 @@ import { useRouter } from "vue-router";
 import { Button, Card } from "view-ui-plus";
 
 const router = useRouter();
-const go = () => router.replace("/driver-telemetry");
+const go = () => router.replace("/calendar-map");
 </script>
