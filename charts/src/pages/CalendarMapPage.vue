@@ -62,57 +62,52 @@
           <div class="calendar-country-card">
             <div class="calendar-panel-header">
               <div>
-                <div class="panel-eyebrow">Signal Board</div>
-                <div class="panel-heading">{{ primaryCircuit.grandPrix }}</div>
+                <div class="panel-eyebrow">Broadcast Overlay</div>
+                <div class="panel-heading">{{ focusedCountry.name }}</div>
               </div>
-              <div class="panel-chip">{{ primaryCircuit.circuit }}</div>
+              <div class="panel-chip">{{ primaryCircuit.grandPrix }}</div>
             </div>
 
-            <div class="signal-board">
-              <svg class="signal-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                <line x1="-4" y1="18" x2="14" y2="18" class="signal-line signal-line--lead" />
-                <line x1="14" y1="18" x2="14" y2="82" class="signal-line" />
-                <line x1="14" y1="22" x2="32" y2="22" class="signal-line" />
-                <line x1="14" y1="40" x2="32" y2="40" class="signal-line" />
-                <line x1="14" y1="58" x2="32" y2="58" class="signal-line" />
-                <line x1="14" y1="76" x2="58" y2="76" class="signal-line" />
-                <line x1="58" y1="76" x2="58" y2="28" class="signal-line" />
-                <line x1="58" y1="28" x2="72" y2="28" class="signal-line signal-line--focus" />
-                <circle cx="14" cy="18" r="1.8" class="signal-node" />
-                <circle cx="14" cy="22" r="1.1" class="signal-node signal-node--small" />
-                <circle cx="14" cy="40" r="1.1" class="signal-node signal-node--small" />
-                <circle cx="14" cy="58" r="1.1" class="signal-node signal-node--small" />
-                <circle cx="58" cy="76" r="1.3" class="signal-node" />
-                <circle cx="72" cy="28" r="1.8" class="signal-node signal-node--focus" />
+            <div class="overlay-stage">
+              <svg class="overlay-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <line x1="-6" y1="22" x2="14" y2="22" class="overlay-line overlay-line--lead" />
+                <line x1="14" y1="22" x2="18" y2="14" class="overlay-line overlay-line--lead" />
+                <line x1="18" y1="14" x2="78" y2="14" class="overlay-line overlay-line--lead" />
+                <line x1="18" y1="14" x2="18" y2="86" class="overlay-line overlay-line--side" />
               </svg>
 
-              <div class="signal-meta">
-                <div class="signal-item">
-                  <span class="signal-label">Country</span>
-                  <strong>{{ focusedCountry.name }}</strong>
-                </div>
-                <div class="signal-item">
-                  <span class="signal-label">City</span>
-                  <strong>{{ primaryCircuit.city }}</strong>
-                </div>
-                <div class="signal-item">
-                  <span class="signal-label">Profile</span>
-                  <strong>{{ primaryCircuit.profile }}</strong>
+              <div class="overlay-floating-window">
+                <div class="overlay-window-inner">
+                  <button
+                    v-for="item in floatingWindowItems"
+                    :key="item.key"
+                    type="button"
+                    class="overlay-window-row"
+                    :class="{ 'is-active': item.isActive }"
+                    @mouseenter="handleHoverCountry(item.code)"
+                    @mouseleave="handleHoverCountry('')"
+                    @click="handleSelectCountry(item.code)"
+                  >
+                    {{ item.label }}
+                  </button>
                 </div>
               </div>
 
-              <div class="signal-track-card">
-                <div class="signal-track-top">
-                  <div class="signal-track-title">{{ primaryCircuit.circuit }}</div>
-                  <div class="signal-track-type">{{ primaryCircuit.type }}</div>
+              <div class="overlay-track-preview">
+                <div class="overlay-track-header">
+                  <div>
+                    <div class="overlay-track-kicker">{{ primaryCircuit.circuit }}</div>
+                    <div class="overlay-track-city">{{ primaryCircuit.city }}</div>
+                  </div>
+                  <div class="overlay-track-pill">{{ primaryCircuit.type }}</div>
                 </div>
 
-                <div class="signal-track-map">
+                <div class="overlay-track-map">
                   <svg viewBox="0 0 220 132" aria-hidden="true">
                     <defs>
-                      <linearGradient id="signal-track-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <linearGradient id="overlay-track-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stop-color="#ffffff" />
-                        <stop offset="60%" stop-color="#ffe2db" />
+                        <stop offset="58%" stop-color="#ffe2db" />
                         <stop offset="100%" stop-color="#e10600" />
                       </linearGradient>
                     </defs>
@@ -128,7 +123,7 @@
                     <path
                       :d="primaryCircuit.path"
                       transform="translate(20 16) scale(1.1)"
-                      stroke="url(#signal-track-gradient)"
+                      stroke="url(#overlay-track-gradient)"
                       stroke-width="8"
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -137,7 +132,7 @@
                   </svg>
                 </div>
 
-                <div class="signal-track-copy">{{ primaryCircuit.signature }}</div>
+                <div class="overlay-track-copy">{{ primaryCircuit.signature }}</div>
               </div>
             </div>
 
@@ -603,6 +598,63 @@ const globeHighlights = computed(() =>
     value: country.highlightValue
   }))
 );
+const floatingWindowItems = computed(() => {
+  const focus = focusedCountry.value;
+  const primaryRegion = regionKey(focus.region);
+  const sameRegionCountries = countryGroups.value
+    .filter((country) => country.code !== focus.code && regionKey(country.region) === primaryRegion)
+    .slice(0, 3)
+    .map((country) => ({
+      key: `country-${country.code}`,
+      label: country.name.toUpperCase(),
+      code: country.code,
+      isActive: false
+    }));
+  const extraCircuitCities = focus.circuits
+    .slice(1)
+    .map((circuit) => ({
+      key: `city-${circuit.id}`,
+      label: circuit.city.toUpperCase(),
+      code: focus.code,
+      isActive: false
+    }));
+  const fallbackCountries = countryGroups.value
+    .filter((country) => country.code !== focus.code && regionKey(country.region) !== primaryRegion)
+    .slice(0, 4)
+    .map((country) => ({
+      key: `fallback-${country.code}`,
+      label: country.name.toUpperCase(),
+      code: country.code,
+      isActive: false
+    }));
+
+  const ordered = [
+    {
+      key: `primary-city-${primaryCircuit.value.id}`,
+      label: primaryCircuit.value.city.toUpperCase(),
+      code: focus.code,
+      isActive: false
+    },
+    ...sameRegionCountries,
+    {
+      key: `focus-${focus.code}`,
+      label: focus.name.toUpperCase(),
+      code: focus.code,
+      isActive: true
+    },
+    ...extraCircuitCities,
+    ...fallbackCountries
+  ];
+
+  const unique = [];
+  const seen = new Set();
+  ordered.forEach((item) => {
+    if (seen.has(item.label)) return;
+    seen.add(item.label);
+    unique.push(item);
+  });
+  return unique.slice(0, 6);
+});
 
 const summaryCards = computed(() => [
   {
@@ -629,6 +681,10 @@ const summaryCards = computed(() => [
 
 function normalizeCode(code) {
   return String(code || "").toUpperCase();
+}
+
+function regionKey(region) {
+  return String(region || "").split("/")[0].trim();
 }
 
 function handleHoverCountry(code) {
@@ -836,21 +892,20 @@ function handleSelectCountry(code) {
   color: #ffffff;
 }
 
-.signal-board {
+.overlay-stage {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(136px, 0.8fr) minmax(0, 1.2fr);
-  gap: 18px;
+  min-height: 420px;
   margin-top: 14px;
-  padding: 18px;
-  border-radius: 18px;
+  padding: 18px 18px 16px 18px;
+  overflow: hidden;
+  border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.06), transparent 36%),
+    radial-gradient(circle at left center, rgba(255, 255, 255, 0.05), transparent 24%),
     linear-gradient(180deg, rgba(7, 10, 16, 0.96), rgba(4, 6, 12, 0.98));
 }
 
-.signal-lines {
+.overlay-lines {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -858,88 +913,94 @@ function handleSelectCountry(code) {
   pointer-events: none;
 }
 
-.signal-line {
+.overlay-line {
   stroke: rgba(255, 255, 255, 0.72);
   stroke-width: 0.42;
+  fill: none;
 }
 
-.signal-line--lead {
-  stroke-width: 0.62;
+.overlay-line--lead {
+  stroke-width: 0.66;
 }
 
-.signal-line--focus {
-  stroke: rgba(255, 226, 220, 0.96);
-  stroke-width: 0.58;
+.overlay-line--side {
+  stroke-width: 0.34;
+  opacity: 0.9;
 }
 
-.signal-node {
-  fill: #ffffff;
-}
-
-.signal-node--small {
-  fill: rgba(255, 255, 255, 0.86);
-}
-
-.signal-node--focus {
-  fill: #e10600;
-}
-
-.signal-meta,
-.signal-track-card {
+.overlay-floating-window,
+.overlay-track-preview {
   position: relative;
   z-index: 1;
 }
 
-.signal-meta {
-  display: grid;
-  align-content: start;
-  gap: 14px;
-  padding-top: 6px;
+.overlay-floating-window {
+  width: calc(100% - 28px);
+  margin-left: 18px;
+  padding: 22px 22px 24px;
+  clip-path: polygon(7% 0, 100% 0, 100% 100%, 0 100%, 0 17%);
+  border: 1px solid rgba(255, 186, 178, 0.42);
+  background:
+    linear-gradient(180deg, rgba(1, 3, 18, 0.98), rgba(2, 4, 18, 0.98)),
+    rgba(2, 4, 18, 0.98);
+  box-shadow: inset 0 0 0 1px rgba(255, 78, 70, 0.14);
 }
 
-.signal-item {
+.overlay-window-inner {
   display: grid;
-  gap: 6px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 10px;
 }
 
-.signal-label {
-  font-size: 11px;
-  letter-spacing: 0.14em;
+.overlay-window-row {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #f4f4f4;
+  font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: clamp(22px, 2.5vw, 34px);
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.48);
+  text-align: left;
+  cursor: pointer;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.signal-item strong,
-.signal-track-title {
-  color: #ffffff;
+.overlay-window-row.is-active {
+  color: #e10600;
+  text-shadow: 0 0 12px rgba(225, 6, 0, 0.18);
 }
 
-.signal-track-card {
+.overlay-track-preview {
+  margin-top: 16px;
+  margin-left: 46px;
   padding: 14px;
   border-radius: 16px;
-  background:
-    radial-gradient(circle at top left, rgba(225, 6, 0, 0.08), transparent 38%),
-    rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.signal-track-top {
+.overlay-track-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
 
-.signal-track-title {
+.overlay-track-kicker {
   font-size: 16px;
   font-weight: 700;
+  color: #ffffff;
 }
 
-.signal-track-type {
+.overlay-track-city {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 12px;
+}
+
+.overlay-track-pill {
   padding: 5px 9px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -949,7 +1010,7 @@ function handleSelectCountry(code) {
   letter-spacing: 0.12em;
 }
 
-.signal-track-map {
+.overlay-track-map {
   margin-top: 14px;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -958,13 +1019,13 @@ function handleSelectCountry(code) {
     rgba(2, 4, 8, 0.92);
 }
 
-.signal-track-map svg {
+.overlay-track-map svg {
   display: block;
   width: 100%;
   height: 188px;
 }
 
-.signal-track-copy {
+.overlay-track-copy {
   margin-top: 12px;
   color: rgba(255, 255, 255, 0.66);
   font-size: 13px;
@@ -1131,7 +1192,7 @@ function handleSelectCountry(code) {
 @media (max-width: 980px) {
   .calendar-main,
   .track-grid,
-  .signal-board {
+  .overlay-stage {
     grid-template-columns: 1fr;
   }
 
@@ -1147,8 +1208,15 @@ function handleSelectCountry(code) {
     grid-template-columns: 1fr;
   }
 
-  .signal-board {
+  .overlay-stage {
+    min-height: auto;
     padding: 14px;
+  }
+
+  .overlay-floating-window,
+  .overlay-track-preview {
+    margin-left: 0;
+    width: 100%;
   }
 
   .calendar-title :deep(.session-title-main) {
