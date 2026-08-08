@@ -6,7 +6,6 @@
     <div ref="canvasHostRef" class="cf-country-globe__canvas-host"></div>
     <div class="cf-country-globe__tone cf-country-globe__tone--core"></div>
     <div class="cf-country-globe__tone cf-country-globe__tone--shell"></div>
-    <div class="cf-country-globe__tone cf-country-globe__tone--ring"></div>
   </div>
 </template>
 
@@ -33,7 +32,7 @@ let scene = null;
 let camera = null;
 let controls = null;
 let globeMesh = null;
-let atmosphereMesh = null;
+let landMesh = null;
 let frameId = 0;
 let texture = null;
 let countriesGeo = null;
@@ -220,26 +219,7 @@ function generateTexture(items, features, countryIndex) {
   const minValue = values.length ? Math.min(...values) : 0;
   const maxValue = values.length ? Math.max(...values) : 1;
   const span = Math.max(1, maxValue - minValue);
-  const valueMap = new Map(normalizedItems.map((item) => [item.code, item.value]));
-
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, width, height);
-
-  const seaGradient = ctx.createLinearGradient(0, 0, 0, height);
-  seaGradient.addColorStop(0, "#ffffff");
-  seaGradient.addColorStop(0.38, "#fbfdff");
-  seaGradient.addColorStop(0.76, "#f3f8ff");
-  seaGradient.addColorStop(1, "#edf4ff");
-  ctx.fillStyle = seaGradient;
-  ctx.fillRect(0, 0, width, height);
-
-  const polarFade = ctx.createLinearGradient(0, 0, 0, height);
-  polarFade.addColorStop(0, withAlpha("#cfe0ff", 0.16));
-  polarFade.addColorStop(0.14, withAlpha("#f4f8ff", 0.03));
-  polarFade.addColorStop(0.86, withAlpha("#eef4ff", 0.03));
-  polarFade.addColorStop(1, withAlpha("#c9dbff", 0.14));
-  ctx.fillStyle = polarFade;
-  ctx.fillRect(0, 0, width, height);
+  ctx.clearRect(0, 0, width, height);
 
   features.forEach((feature) => {
     const base = baseLandColor(feature);
@@ -328,41 +308,22 @@ async function setupGlobe() {
   texture = generateTexture(normalizedItems, features, countryIndex);
 
   const sphereGeometry = new THREE.SphereGeometry(1.62, 96, 96);
-  const sphereMaterial = new THREE.MeshPhongMaterial({
+  const sphereMaterial = new THREE.MeshBasicMaterial({
     color: "#ffffff",
-    map: texture,
-    shininess: 0,
-    specular: new THREE.Color("#000000"),
-    emissive: new THREE.Color("#f2f6ff"),
-    emissiveIntensity: 0.02
+    transparent: true,
+    opacity: 1
   });
   globeMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
   globeGroup.add(globeMesh);
 
-  const atmosphereGeometry = new THREE.SphereGeometry(1.67, 72, 72);
-  const atmosphereMaterial = new THREE.MeshBasicMaterial({
-    color: "#d5e1ff",
+  const landMaterial = new THREE.MeshBasicMaterial({
+    color: "#ffffff",
+    map: texture,
     transparent: true,
-    opacity: 0.08,
-    side: THREE.BackSide
+    depthWrite: false
   });
-  atmosphereMesh = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
-  globeGroup.add(atmosphereMesh);
-
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xd9e4ff, 0.9));
-  scene.add(new THREE.AmbientLight(0xffffff, 0.48));
-
-  const keyLight = new THREE.DirectionalLight(0xffffff, 1.08);
-  keyLight.position.set(3.2, 2.2, 5.4);
-  scene.add(keyLight);
-
-  const fillLight = new THREE.DirectionalLight(0x9fb8ff, 0.34);
-  fillLight.position.set(-2.6, 0.9, 4.1);
-  scene.add(fillLight);
-
-  const rimLight = new THREE.DirectionalLight(0xf8fbff, 0.08);
-  rimLight.position.set(-4.1, -0.4, -2.2);
-  scene.add(rimLight);
+  landMesh = new THREE.Mesh(new THREE.SphereGeometry(1.623, 96, 96), landMaterial);
+  globeGroup.add(landMesh);
 
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enablePan = false;
@@ -396,10 +357,10 @@ function disposeGlobe() {
     globeMesh = null;
   }
 
-  if (atmosphereMesh) {
-    atmosphereMesh.geometry.dispose();
-    atmosphereMesh.material.dispose();
-    atmosphereMesh = null;
+  if (landMesh) {
+    landMesh.geometry.dispose();
+    landMesh.material.dispose();
+    landMesh = null;
   }
 
   texture?.dispose();
@@ -437,11 +398,15 @@ onBeforeUnmount(() => {
 .cf-country-globe {
   position: relative;
   overflow: hidden;
+  border-radius: 50%;
+  background: transparent;
 }
 
 .cf-country-globe__canvas-host {
   position: absolute;
   inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .cf-country-globe__tone {
@@ -452,29 +417,30 @@ onBeforeUnmount(() => {
 }
 
 .cf-country-globe__tone--core {
-  inset: 11px;
+  inset: 16px;
   background:
-    radial-gradient(circle at 48.5% 43%, rgba(255, 255, 255, 0.82) 0 46%, rgba(254, 254, 255, 0.64) 58%, rgba(246, 249, 253, 0.28) 76%, rgba(228, 232, 238, 0.06) 100%);
+    radial-gradient(circle at 48.5% 43%, rgba(255, 255, 255, 0.92) 0 42%, rgba(251, 252, 255, 0.8) 58%, rgba(243, 246, 251, 0.34) 76%, rgba(255, 255, 255, 0.1) 90%, rgba(255, 255, 255, 0) 100%);
   box-shadow:
-    inset 0 -22px 30px rgba(180, 185, 194, 0.12),
-    inset 0 14px 18px rgba(255, 255, 255, 0.26);
+    inset 0 -16px 22px rgba(240, 243, 248, 0.18),
+    inset 0 12px 16px rgba(255, 255, 255, 0.22);
 }
 
 .cf-country-globe__tone--shell {
-  inset: 7px;
+  inset: 0;
   background:
-    radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0) 0 70%, rgba(239, 242, 247, 0.05) 79%, rgba(223, 227, 234, 0.18) 87%, rgba(206, 211, 220, 0.32) 95%, rgba(196, 201, 211, 0.16) 100%);
-  box-shadow:
-    inset 0 -8px 14px rgba(201, 205, 214, 0.1),
-    inset 0 5px 8px rgba(255, 255, 255, 0.1);
-}
-
-.cf-country-globe__tone--ring {
-  inset: 5px;
-  border: 1px solid rgba(206, 211, 220, 0.96);
-  box-shadow:
-    0 0 0 1px rgba(246, 247, 250, 0.98),
-    0 2px 6px rgba(187, 192, 201, 0.12);
+    radial-gradient(circle at 50% 45%,
+      rgba(255, 255, 255, 0) 0 74%,
+      rgba(255, 255, 255, 0.98) 80.5%,
+      rgba(255, 255, 255, 1) 89.8%,
+      rgba(255, 255, 255, 0) 91.1%),
+    radial-gradient(circle at 50% 45%,
+      rgba(255, 255, 255, 0) 0 91.2%,
+      rgba(255, 255, 255, 0.82) 92.1%,
+      rgba(255, 255, 255, 0.92) 93.2%,
+      rgba(255, 255, 255, 0) 94.4%),
+    radial-gradient(circle at 50% 45%,
+      rgba(255, 255, 255, 0) 0 95%,
+      rgba(255, 255, 255, 0) 100%);
 }
 
 .cf-country-globe :deep(.cf-country-globe-canvas) {
