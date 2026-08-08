@@ -19,23 +19,37 @@ import { feature } from "topojson-client";
 
 const props = defineProps({
   size: { type: Number, default: 283 },
+  activeCode: { type: String, default: "" },
+  selectedCode: { type: String, default: "" },
   items: {
     type: Array,
     default: () => []
   }
 });
 
+const emit = defineEmits(["hover-country", "select-country"]);
 const canvasHostRef = ref(null);
 
 let renderer = null;
 let scene = null;
 let camera = null;
 let controls = null;
-let globeMesh = null;
 let landMesh = null;
 let frameId = 0;
 let texture = null;
 let countriesGeo = null;
+let globeGroup = null;
+let hitMap = null;
+let currentFeatures = [];
+let currentCountryIndex = null;
+let currentItems = [];
+let currentHoveredCode = "";
+let pointerDownPoint = null;
+let movedSincePointerDown = false;
+let cleanupCanvasListeners = null;
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
 
 const ISO_NUMERIC_BY_ALPHA2 = {
   AT: "040",
@@ -57,6 +71,9 @@ const ISO_NUMERIC_BY_ALPHA2 = {
   UA: "804",
   US: "840"
 };
+const ISO_ALPHA2_BY_NUMERIC = Object.fromEntries(
+  Object.entries(ISO_NUMERIC_BY_ALPHA2).map(([alpha2, numeric]) => [numeric, alpha2])
+);
 
 const BASE_LAND_FILLS = ["#171013", "#211217", "#2c151b", "#381920"];
 const HIGHLIGHT_FILLS = ["#651816", "#86120f", "#a90d09", "#c80904", "#e10600", "#ff3b30", "#ffc1b6"];
@@ -172,6 +189,14 @@ function buildCountryIndex(features) {
   return index;
 }
 
+function normalizeCode(code) {
+  return String(code || "").toUpperCase();
+}
+
+function activeFeatureCode() {
+  return normalizeCode(props.activeCode || props.selectedCode);
+}
+
 function resolveLocation(code, countryIndex, valueMap) {
   const feature = countryIndex.get(ISO_NUMERIC_BY_ALPHA2[String(code).toUpperCase()]);
   if (!feature) return null;
@@ -208,7 +233,33 @@ function computeInitialLongitude(items, countryIndex, valueMap) {
   return THREE.MathUtils.radToDeg(Math.atan2(sumY, sumX));
 }
 
-function generateTexture(items, features, countryIndex) {
+function highlightFeature(ctx, path, featureObject, mode = "hover") {
+  if (!featureObject) return;
+  const isSelected = mode === "selected";
+  const fillAlpha = isSelected ? 0.56 : 0.38;
+  const strokeAlpha = isSelected ? 0.96 : 0.88;
+  const strokeWidth = isSelected ? 1.42 : 1.18;
+  fillFeatureGradient(
+    ctx,
+    path,
+    featureObject,
+    [
+      colorWithAlpha("#ff8a75", fillAlpha * 0.52),
+      colorWithAlpha("#e10600", fillAlpha),
+      colorWithAlpha("#520705", fillAlpha * 0.9)
+    ],
+    "diagonal"
+  );
+  ctx.save();
+  ctx.beginPath();
+  path(featureObject);
+  ctx.strokeStyle = withAlpha("#e10600", strokeAlpha);
+  ctx.lineWidth = strokeWidth;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function generateTexture(items, features, countryIndex, activeCodeValue = "", selectedCodeValue = "") {
   const width = 2048;
   const height = 1024;
   const canvas = document.createElement("canvas");
@@ -221,6 +272,8 @@ function generateTexture(items, features, countryIndex) {
   });
   const path = geoPath(projection, ctx);
   const normalizedItems = normalizeItems(items);
+  const activeCode = normalizeCode(activeCodeValue);
+  const selectedCode = normalizeCode(selectedCodeValue);
   const values = normalizedItems.map((item) => item.value);
   const minValue = values.length ? Math.min(...values) : 0;
   const maxValue = values.length ? Math.max(...values) : 1;
@@ -292,6 +345,13 @@ function generateTexture(items, features, countryIndex) {
     ctx.stroke();
   });
 
+  if (activeCode) {
+    highlightFeature(ctx, path, countryIndex.get(ISO_NUMERIC_BY_ALPHA2[activeCode]), "hover");
+  }
+  if (selectedCode && selectedCode !== activeCode) {
+    highlightFeature(ctx, path, countryIndex.get(ISO_NUMERIC_BY_ALPHA2[selectedCode]), "selected");
+  }
+
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 8;
@@ -299,12 +359,139 @@ function generateTexture(items, features, countryIndex) {
   return texture;
 }
 
+function buildHitMap(features) {
+  const width = 2048;
+  const height = 1024;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const projection = geoEquirectangular().fitSize([width, height], {
+    type: "FeatureCollection",
+    features
+  });
+  const path = geoPath(projection, ctx);
+  const codeByColorKey = new Map();
+
+  features.forEach((featureObject, index) => {
+    const colorIndex = index + 1;
+    const r = (colorIndex >> 16) & 255;
+    const g = (colorIndex >> 8) & 255;
+    const b = colorIndex & 255;
+    const numericId = featureId(featureObject);
+    const alpha2 = ISO_ALPHA2_BY_NUMERIC[numericId];
+    if (!alpha2) return;
+    ctx.beginPath();
+    path(featureObject);
+    ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+    ctx.fill();
+    codeByColorKey.set(colorIndex, alpha2);
+  });
+
+  return { canvas, ctx, codeByColorKey };
+}
+
+function updateTexture() {
+  if (!landMesh || !currentCountryIndex || !currentFeatures.length) return;
+  const nextTexture = generateTexture(
+    currentItems,
+    currentFeatures,
+    currentCountryIndex,
+    props.activeCode,
+    props.selectedCode
+  );
+  const material = landMesh.material;
+  const previousTexture = material.map;
+  material.map = nextTexture;
+  material.needsUpdate = true;
+  texture = nextTexture;
+  previousTexture?.dispose();
+}
+
 function setCanvasCursor(rendererInstance) {
   const canvas = rendererInstance?.domElement;
   if (!canvas) return;
   canvas.className = "cf-country-globe-canvas";
-  canvas.addEventListener("pointerdown", () => canvas.classList.add("is-dragging"));
-  window.addEventListener("pointerup", () => canvas.classList.remove("is-dragging"));
+}
+
+function sampleCountryCodeAtEvent(event) {
+  const canvas = renderer?.domElement;
+  if (!canvas || !camera || !landMesh || !hitMap?.ctx || !hitMap?.canvas) return "";
+  const bounds = canvas.getBoundingClientRect();
+  if (!bounds.width || !bounds.height) return "";
+
+  pointer.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+  pointer.y = -(((event.clientY - bounds.top) / bounds.height) * 2 - 1);
+  raycaster.setFromCamera(pointer, camera);
+  const intersections = raycaster.intersectObject(landMesh, false);
+  const hit = intersections[0];
+  const uv = hit?.uv;
+  if (!uv) return "";
+
+  const x = Math.max(0, Math.min(hitMap.canvas.width - 1, Math.floor(uv.x * hitMap.canvas.width)));
+  const y = Math.max(0, Math.min(hitMap.canvas.height - 1, Math.floor((1 - uv.y) * hitMap.canvas.height)));
+  const [r, g, b] = hitMap.ctx.getImageData(x, y, 1, 1).data;
+  return hitMap.codeByColorKey.get((r << 16) | (g << 8) | b) || "";
+}
+
+function emitHoverCountry(nextCode) {
+  const normalizedCode = normalizeCode(nextCode);
+  if (normalizedCode === currentHoveredCode) return;
+  currentHoveredCode = normalizedCode;
+  emit("hover-country", normalizedCode);
+}
+
+function bindCanvasInteractions() {
+  const canvas = renderer?.domElement;
+  if (!canvas) return;
+
+  const handlePointerDown = (event) => {
+    pointerDownPoint = { x: event.clientX, y: event.clientY };
+    movedSincePointerDown = false;
+    canvas.classList.add("is-dragging");
+  };
+
+  const handlePointerMove = (event) => {
+    if (pointerDownPoint) {
+      const deltaX = event.clientX - pointerDownPoint.x;
+      const deltaY = event.clientY - pointerDownPoint.y;
+      if ((deltaX * deltaX) + (deltaY * deltaY) > 16) {
+        movedSincePointerDown = true;
+      }
+    }
+    emitHoverCountry(sampleCountryCodeAtEvent(event));
+  };
+
+  const handlePointerLeave = () => {
+    emitHoverCountry("");
+    canvas.classList.remove("is-dragging");
+    pointerDownPoint = null;
+    movedSincePointerDown = false;
+  };
+
+  const handlePointerUp = () => {
+    canvas.classList.remove("is-dragging");
+    pointerDownPoint = null;
+  };
+
+  const handleClick = (event) => {
+    if (movedSincePointerDown) return;
+    emit("select-country", sampleCountryCodeAtEvent(event));
+  };
+
+  canvas.addEventListener("pointerdown", handlePointerDown);
+  canvas.addEventListener("pointermove", handlePointerMove);
+  canvas.addEventListener("pointerleave", handlePointerLeave);
+  canvas.addEventListener("click", handleClick);
+  window.addEventListener("pointerup", handlePointerUp);
+
+  cleanupCanvasListeners = () => {
+    canvas.removeEventListener("pointerdown", handlePointerDown);
+    canvas.removeEventListener("pointermove", handlePointerMove);
+    canvas.removeEventListener("pointerleave", handlePointerLeave);
+    canvas.removeEventListener("click", handleClick);
+    window.removeEventListener("pointerup", handlePointerUp);
+  };
 }
 
 async function setupGlobe() {
@@ -315,6 +502,9 @@ async function setupGlobe() {
   const features = geoJson.features || [];
   const countryIndex = buildCountryIndex(features);
   const normalizedItems = normalizeItems(props.items);
+  currentFeatures = features;
+  currentCountryIndex = countryIndex;
+  currentItems = normalizedItems;
   const valueMap = new Map(normalizedItems.map((item) => [item.code, item.value]));
   const initialLongitude = computeInitialLongitude(normalizedItems, countryIndex, valueMap);
 
@@ -328,13 +518,15 @@ async function setupGlobe() {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   host.replaceChildren(renderer.domElement);
   setCanvasCursor(renderer);
+  bindCanvasInteractions();
 
-  const globeGroup = new THREE.Group();
+  globeGroup = new THREE.Group();
   globeGroup.rotation.x = THREE.MathUtils.degToRad(-12.5);
   globeGroup.rotation.y = THREE.MathUtils.degToRad(-(initialLongitude - 16));
   scene.add(globeGroup);
 
-  texture = generateTexture(normalizedItems, features, countryIndex);
+  texture = generateTexture(normalizedItems, features, countryIndex, props.activeCode, props.selectedCode);
+  hitMap = buildHitMap(features);
 
   const landMaterial = new THREE.MeshBasicMaterial({
     color: "#ffffff",
@@ -368,14 +560,10 @@ function disposeGlobe() {
     frameId = 0;
   }
 
+  cleanupCanvasListeners?.();
+  cleanupCanvasListeners = null;
   controls?.dispose();
   controls = null;
-
-  if (globeMesh) {
-    globeMesh.geometry.dispose();
-    globeMesh.material.dispose();
-    globeMesh = null;
-  }
 
   if (landMesh) {
     landMesh.geometry.dispose();
@@ -383,8 +571,20 @@ function disposeGlobe() {
     landMesh = null;
   }
 
+  if (globeGroup) {
+    scene?.remove(globeGroup);
+    globeGroup = null;
+  }
+
   texture?.dispose();
   texture = null;
+  hitMap = null;
+  currentFeatures = [];
+  currentCountryIndex = null;
+  currentItems = [];
+  currentHoveredCode = "";
+  pointerDownPoint = null;
+  movedSincePointerDown = false;
 
   renderer?.dispose();
   if (renderer?.domElement?.parentNode) {
@@ -407,6 +607,13 @@ watch(
     await setupGlobe();
   },
   { deep: true }
+);
+
+watch(
+  () => [props.activeCode, props.selectedCode],
+  () => {
+    updateTexture();
+  }
 );
 
 onBeforeUnmount(() => {

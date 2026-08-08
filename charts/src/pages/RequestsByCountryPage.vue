@@ -38,15 +38,22 @@
                 <div class="globe-panel-frame frame-bottom"></div>
                 <div class="globe-caption">Global Traffic Mesh</div>
                 <div class="globe-frame">
-                  <CloudflareCountryGlobe :size="283" :items="globeItems" />
+                  <CloudflareCountryGlobe
+                    :size="283"
+                    :items="globeItems"
+                    :active-code="activeCountryCode"
+                    :selected-code="selectedCountryCode"
+                    @hover-country="handleHoverCountry"
+                    @select-country="handleSelectCountry"
+                  />
                 </div>
                 <div class="globe-callout callout-left">
-                  <span class="callout-label">Leader</span>
-                  <span class="callout-value">{{ topCountry.name }}</span>
+                  <span class="callout-label">{{ focusLabel }}</span>
+                  <span class="callout-value">{{ focusCountry.name }}</span>
                 </div>
                 <div class="globe-callout callout-right">
-                  <span class="callout-label">Share</span>
-                  <span class="callout-value">{{ leaderShare }}%</span>
+                  <span class="callout-label">{{ focusMetricLabel }}</span>
+                  <span class="callout-value">{{ focusShare }}%</span>
                 </div>
                 <div class="globe-callout callout-bottom">
                   <span class="callout-label">Countries</span>
@@ -63,7 +70,15 @@
                 </div>
 
                 <div class="rank-scroll">
-                  <div v-for="item in countries" :key="item.code" class="rank-row">
+                  <div
+                    v-for="item in countries"
+                    :key="item.code"
+                    class="rank-row"
+                    :class="{ 'is-active': item.code === activeCountryCode, 'is-selected': item.code === selectedCountryCode }"
+                    @mouseenter="handleHoverCountry(item.code)"
+                    @mouseleave="handleHoverCountry('')"
+                    @click="handleSelectCountry(item.code)"
+                  >
                     <div class="rank-position">P{{ item.rank }}</div>
                     <div class="rank-main">
                       <div class="rank-name">{{ item.name }}</div>
@@ -87,6 +102,7 @@
 </template>
 
 <script setup>
+import { computed, ref } from "vue";
 import HeaderBar from "../widgets/HeaderBar.vue";
 import CloudflareCountryGlobe from "../components/CloudflareCountryGlobe.vue";
 
@@ -120,9 +136,12 @@ const countries = rawCountries.map((item, index) => ({
   pct: Math.max(1, Math.round((item.value / maxValue) * 100))
 }));
 
+const hoveredCountryCode = ref("");
+const selectedCountryCode = ref("");
 const globeItems = countries.map(({ code, name, value }) => ({ code, name, value }));
 const topCountry = countries[0];
 const leaderShare = Math.round((topCountry.value / totalValue) * 100);
+const countryByCode = new Map(countries.map((item) => [item.code, item]));
 
 const formattedTotal = new Intl.NumberFormat("en-US", {
   notation: "compact",
@@ -135,6 +154,25 @@ const summaryCards = [
   { label: "Leader Share", value: `${leaderShare}%`, sub: "of all tracked requests" },
   { label: "Countries Tracked", value: String(countries.length), sub: "active telemetry regions" }
 ];
+
+const activeCountryCode = computed(() => hoveredCountryCode.value || selectedCountryCode.value);
+const focusCountry = computed(() => countryByCode.get(activeCountryCode.value) || topCountry);
+const focusLabel = computed(() => activeCountryCode.value ? "Focus" : "Leader");
+const focusMetricLabel = computed(() => activeCountryCode.value ? "Traffic Share" : "Share");
+const focusShare = computed(() => Math.round((focusCountry.value.value / totalValue) * 100));
+
+function normalizeCode(code) {
+  return String(code || "").toUpperCase();
+}
+
+function handleHoverCountry(code) {
+  hoveredCountryCode.value = normalizeCode(code);
+}
+
+function handleSelectCountry(code) {
+  const nextCode = normalizeCode(code);
+  selectedCountryCode.value = selectedCountryCode.value === nextCode ? "" : nextCode;
+}
 </script>
 
 <style scoped>
@@ -406,10 +444,24 @@ const summaryCards = [
   gap: 14px;
   padding: 12px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: background-color 160ms ease, transform 160ms ease;
 }
 
 .rank-row:last-child {
   border-bottom: none;
+}
+
+.rank-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.rank-row.is-active {
+  background: rgba(225, 6, 0, 0.08);
+}
+
+.rank-row.is-selected {
+  background: rgba(225, 6, 0, 0.12);
 }
 
 .rank-position {
@@ -429,6 +481,15 @@ const summaryCards = [
   white-space: nowrap;
   text-overflow: ellipsis;
   margin-bottom: 4px;
+}
+
+.rank-row.is-active .rank-name,
+.rank-row.is-selected .rank-name,
+.rank-row.is-active .rank-value,
+.rank-row.is-selected .rank-value,
+.rank-row.is-active .rank-position,
+.rank-row.is-selected .rank-position {
+  color: #ffd8cf;
 }
 
 .rank-bar-wrap {
@@ -452,6 +513,12 @@ const summaryCards = [
   border-radius: 999px;
   background: linear-gradient(90deg, #7a0c10, #ff3b30 55%, #ffd2ca);
   box-shadow: 0 0 16px rgba(255, 91, 87, 0.45);
+}
+
+.rank-row.is-active .rank-bar-fill,
+.rank-row.is-selected .rank-bar-fill {
+  background: linear-gradient(90deg, #8d0904, #e10600 58%, #ffb9ae);
+  box-shadow: 0 0 20px rgba(225, 6, 0, 0.5);
 }
 
 .rank-value {
