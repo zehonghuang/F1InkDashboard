@@ -1,0 +1,93 @@
+:root {
+  color-scheme: light;
+  --background: #fff8fc;
+  --surface: #ffffff;
+  --surface-soft: #fff1f7;
+  --surface-strong: #ffe3ef;
+  --foreground: #45162e;
+  --foreground-soft: #7a5065;
+  --muted: #f4dce7;
+  --muted-strong: #e8c1d4;
+  --border: rgba(170, 62, 115, 0.14);
+  --primary: #eb4b93;
+  --primary-strong: #d92a7b;
+  --primary-soft: rgba(235, 75, 147, 0.12);
+  --secondary: #ffd3e7;
+  --success: #1f9d68;
+  --warning: #d28214;
+  --danger: #d14c59;
+  --shadow: 0 24px 50px rgba(235, 75, 147, 0.12);
+  --shadow-soft: 0 12px 28px rgba(235, 75, 147, 0.08);
+  --radius-xl: 28px;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --sidebar: #fff1f7;
+  --sidebar-border: rgba(170, 62, 115, 0.1);
+  --page-max: 1600px;
+}
+
+:root.dark {
+  color-scheme: dark;
+  --background: #190b14;
+  --surface: #24111c;
+  --surface-soft: #301420;
+  --surface-strong: #3f1830;
+  --foreground: #ffe6f1;
+  --foreground-soft: #d7a8bd;
+  --muted: #3a1b2a;
+  --muted-strong: #54233d;
+  --border: rgba(255, 194, 221, 0.1);
+  --primary: #ff5ca2;
+  --primary-strong: #ff7ab4;
+  --primary-soft: rgba(255, 92, 162, 0.14);
+  --secondary: #4f2039;
+  --success: #3cc08a;
+  --warning: #ffc257;
+  --danger: #ff7b84;
+  --shadow: 0 24px 50px rgba(0, 0, 0, 0.28);
+  --shadow-soft: 0 12px 28px rgba(0, 0, 0, 0.22);
+  --sidebar: #1f0d18;
+  --sidebar-border: rgba(255, 194, 221, 0.08);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'PingFang SC',
+    'Microsoft YaHei',
+    sans-serif;
+  background:
+    radial-gradient(circle at top right, rgba(235, 75, 147, 0.12), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(255, 211, 231, 0.5), transparent 26%),
+    var(--background);
+  color: var(--foreground);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
