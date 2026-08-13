@@ -17,7 +17,9 @@ export default defineConfig(({ mode }) => {
       .filter(Boolean),
   ]
 
+  const appBase = (env.VITE_APP_BASE || '/admin-v2/').trim().replace(/\/+$/, '/') || '/'
   return {
+    base: appBase,
     build: {
       sourcemap: 'hidden',
     },

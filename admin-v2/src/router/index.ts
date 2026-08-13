@@ -96,8 +96,9 @@ const routes: RouteRecordRaw[] = [
   { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundPage },
 ]
 
+const env = (import.meta as ImportMeta & { env?: Record<string, string> }).env || {}
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(env.BASE_URL || '/admin-v2/'),
   routes,
 })
 

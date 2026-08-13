@@ -17,6 +17,11 @@ COPY . .
 ARG VITE_API_BASE=""
 ENV VITE_API_BASE="${VITE_API_BASE}"
 
+# 可选：build 时注入应用部署前缀（子路径），Vite base 和 Vue Router base 都会自动读到
+# 默认生产部署在 /admin-v2/ 子路径；如果要部署到域名根，改为 "/"
+ARG VITE_APP_BASE="/admin-v2/"
+ENV VITE_APP_BASE="${VITE_APP_BASE}"
+
 RUN npm run build
 
 # ===== Stage 2: Nginx SPA serve =====
