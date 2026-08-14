@@ -38,6 +38,8 @@ func MpAuthLogin(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mysql_required"})
 			return
 		}
+		log.Printf("mp_auth_login check_config wechat_enabled=%v appid=%s ip=%s",
+			cfg.WechatMini.Enabled, cfg.WechatMini.AppID, c.ClientIP())
 		if !cfg.WechatMini.Enabled {
 			LogReqError(c, "mp_auth_login", "mini_login_disabled", nil)
 			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "mini_login_disabled"})
@@ -55,6 +57,8 @@ func MpAuthLogin(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: "code_required"})
 			return
 		}
+		log.Printf("mp_auth_login code_received code_len=%d code_prefix=%s ip=%s",
+			len(req.Code), maskCodeForLog(req.Code), c.ClientIP())
 
 		client := wechatmini.Client{
 			AppID:  cfg.WechatMini.AppID,
@@ -62,11 +66,13 @@ func MpAuthLogin(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
 		}
 		sess, err := client.Code2Session(c.Request.Context(), req.Code)
 		if err != nil {
+			log.Printf("mp_auth_login code2session_error err=%v ip=%s", err, c.ClientIP())
 			LogReqError(c, "mp_auth_login", "wechat_code2session_failed", err)
 			c.JSON(http.StatusUnauthorized, model.ErrorResponse{Ok: false, Error: "wechat_code2session_failed"})
 			return
 		}
-		log.Printf("mp_auth_login ok openid=%s ip=%s ua=%q", sess.OpenID, c.ClientIP(), c.Request.UserAgent())
+		log.Printf("mp_auth_login ok openid=%s unionid_len=%d ip=%s ua=%q",
+			sess.OpenID, len(sess.UnionID), c.ClientIP(), c.Request.UserAgent())
 
 		token, err := genTokenHex64()
 		if err != nil {
@@ -458,4 +464,12 @@ func genTokenHex64() (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(b), nil
+}
+
+func maskCodeForLog(s string) string {
+	s = strings.TrimSpace(s)
+	if len(s) <= 6 {
+		return "***"
+	}
+	return s[:3] + "***" + s[len(s)-3:]
 }
