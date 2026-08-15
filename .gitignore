@@ -63,3 +63,12 @@ miniprogram/node_modules/
 miniprogram/miniprogram_npm/
 miniprogram/libs/
 miniprogram/project.private.config.json
+
+# admin-v2 (Vite + Vue3 + TS)
+admin-v2/node_modules/
+admin-v2/dist/
+admin-v2/.vite/
+admin-v2/coverage/
+admin-v2/tsconfig.tsbuildinfo
+admin-v2/.env.local
+admin-v2/.env.*.local
