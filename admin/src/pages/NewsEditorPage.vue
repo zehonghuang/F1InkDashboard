@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { fetchMpNewsDetail, ingestMpNews, type MpNewsItem, type MpNewsRichTextNode } from '@/api/mpNews'
 import RichTextRenderer from '@/components/RichTextRenderer.vue'
+import ShopProductPickerModal from '@/components/ShopProductPickerModal.vue'
 import {
   htmlToMpNodes,
   itemContentToHTML,
   nodesToHTML,
+  buildShopCardNode,
+  F1_SHOP_CARD_TAG,
 } from '@/utils/mpNewsRichText'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
 import StarterKit from '@tiptap/starter-kit'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Message } from 'view-ui-plus'
 
@@ -60,6 +63,8 @@ const form = reactive<EditorForm>({
   content_mode: 'VISUAL',
   content_nodes_json: '[]',
 })
+
+const shopPickerVisible = ref(false)
 
 function formatNodesJSON(nodes?: MpNewsRichTextNode[]) {
   return JSON.stringify(nodes || [], null, 2)
@@ -255,6 +260,83 @@ function insertImage() {
   editor.value.chain().focus().setImage({ src }).run()
 }
 
+function insertShopCardJSON(productID: string, insertIndex?: number) {
+  const curNodes = parseNodes()
+  const card = buildShopCardNode(productID)
+  const i = typeof insertIndex === 'number' ? insertIndex : curNodes.length
+  const next: MpNewsRichTextNode[] = curNodes.slice(0, i)
+  if (next.length && next[next.length - 1].name !== F1_SHOP_CARD_TAG) {
+    const last = next[next.length - 1]
+    if (last.name === 'p' || last.name === 'div' || last.name === 'blockquote') {
+      /* 放在 block 后面即可 */
+    }
+  }
+  next.push(card)
+  next.push(...curNodes.slice(i))
+  form.content_nodes_json = formatNodesJSON(next)
+}
+
+function findInsertIndexFromCaretInNodes(currentNodes: MpNewsRichTextNode[]): number {
+  if (!editor.value) return currentNodes.length
+  try {
+    const doc = editor.value.state.doc
+    const pos = editor.value.state.selection.head
+    let flatIndex = 0
+    let remaining = pos
+    let stopped = false
+    let nodeCursor = 0
+    doc.forEach((_node, _offset, index) => {
+      if (stopped) return
+      nodeCursor = index
+      const nodeSize = _node.nodeSize
+      if (remaining <= nodeSize) {
+        flatIndex = index
+        stopped = true
+        return
+      }
+      remaining -= nodeSize
+    })
+    if (!stopped) flatIndex = Math.min(currentNodes.length, nodeCursor + 1)
+    return flatIndex
+  } catch {
+    return currentNodes.length
+  }
+}
+
+async function insertShopCardAtCurrentPosition(productID: string) {
+  const before = parseNodes()
+
+  if (form.content_mode === 'JSON') {
+    insertShopCardJSON(productID)
+    Message.success(`已插入商品卡片 ${productID}`)
+    return
+  }
+
+  if (!editor.value) {
+    insertShopCardJSON(productID)
+    Message.success(`已插入商品卡片 ${productID}`)
+    return
+  }
+
+  const idx = findInsertIndexFromCaretInNodes(before)
+  insertShopCardJSON(productID, idx)
+  Message.success(`已插入商品卡片 ${productID}（位置 ${idx + 1}）`)
+
+  await nextTick()
+  const next = parseNodes()
+  setEditorHTML(nodesToHTML(next))
+}
+
+function openShopPicker() {
+  shopPickerVisible.value = true
+}
+
+function onShopPickerConfirm(productID: string) {
+  const pid = String(productID || '').trim()
+  if (!pid) return
+  insertShopCardAtCurrentPosition(pid)
+}
+
 async function save() {
   saving.value = true
   errorText.value = ''
@@ -355,6 +437,19 @@ onBeforeUnmount(() => {
                 <Button size="small" @click="toggleMark('blockquote')">引用</Button>
                 <Button size="small" @click="insertLink">链接</Button>
                 <Button size="small" @click="insertImage">图片</Button>
+                <Button size="small" type="primary" ghost @click="openShopPicker">
+                  <span class="inline-flex items-center gap-1.5">
+                    <svg class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                      <path
+                        fill-rule="evenodd"
+                        d="M3.875 3A1.875 1.875 0 002 4.875v8.25C2 14.16 2.84 15 3.875 15h8.25C13.16 15 14 14.16 14 13.125v-8.25A1.875 1.875 0 0012.125 3h-8.25zM3.5 4.875a.375.375 0 01.375-.375h8.25a.375.375 0 01.375.375v8.25a.375.375 0 01-.375.375h-8.25a.375.375 0 01-.375-.375v-8.25z"
+                        clip-rule="evenodd"
+                      />
+                      <path d="M5.5 6h7v1.2h-7zM5.5 8.2h7v1.2h-7zM5.5 10.4h4.2v1.2H5.5z" />
+                    </svg>
+                    插入商品
+                  </span>
+                </Button>
               </div>
               <div class="notion-field min-h-[420px] px-4 py-4">
                 <EditorContent :editor="editor" />
@@ -443,5 +538,57 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </div>
+
+    <ShopProductPickerModal v-model="shopPickerVisible" @confirm="onShopPickerConfirm" />
   </div>
 </template>
+
+<style>
+.f1-shop-card-placeholder {
+  position: relative;
+  margin: 12px 0;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px dashed #e10600;
+  background:
+    radial-gradient(1000px circle at 0% 0%, rgba(225, 6, 0, 0.06), transparent 60%),
+    linear-gradient(180deg, rgba(250, 250, 250, 1), rgba(246, 246, 246, 1));
+  user-select: none;
+  pointer-events: none;
+  box-shadow: 0 6px 22px -16px rgba(225, 6, 0, 0.45);
+}
+.f1-shop-card-placeholder::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 58%;
+  background: linear-gradient(180deg, #e10600, rgba(225, 6, 0, 0.25));
+  border-radius: 2px;
+}
+.f1-shop-card-placeholder__title {
+  padding-left: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #0a0a0a;
+  letter-spacing: 0.02em;
+}
+.f1-shop-card-placeholder__title code {
+  background: rgba(225, 6, 0, 0.1);
+  color: #b50700;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 4px;
+}
+.f1-shop-card-placeholder__hint {
+  padding-left: 10px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #8f8f8f;
+}
+</style>
