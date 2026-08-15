@@ -403,9 +403,9 @@ func (c *Client) GetProductDetail(ctx context.Context, productID string) (*Produ
 }
 
 type listProductsResponse struct {
-	ProductIDs  []string `json:"product_ids"`
-	NextKey     string   `json:"next_key"`
-	TotalCount  int      `json:"total_num"`
+	ProductIDs  []int64 `json:"product_ids"`
+	NextKey     string  `json:"next_key"`
+	TotalCount  int     `json:"total_num"`
 	apiError
 }
 
@@ -428,10 +428,7 @@ func (c *Client) ListAllProductIDs(ctx context.Context, status int) ([]string, e
 			return nil, err
 		}
 		for _, pid := range out.ProductIDs {
-			id := strings.TrimSpace(pid)
-			if id != "" {
-				ids = append(ids, id)
-			}
+			ids = append(ids, fmt.Sprintf("%d", pid))
 		}
 		nk := strings.TrimSpace(out.NextKey)
 		if nk == "" || nk == nextKey {
