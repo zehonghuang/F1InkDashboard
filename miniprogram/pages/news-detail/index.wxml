@@ -25,64 +25,18 @@
         </view>
         <view
           wx:elif="{{ block.type === 'product_card' }}"
-          class="product-card"
-          data-block-id="{{ block.id }}"
-          bindtap="onTapShopCard"
+          class="store-product-embed"
         >
-          <view class="product-card__body">
-            <view class="product-card__cover product-card__cover--skeleton" wx:if="{{ block.loading }}"></view>
-            <view wx:elif="{{ block.errorText }}" class="product-card__cover product-card__cover--error">
-              <text class="product-card__err">{{ block.errorText }}</text>
-            </view>
-            <image
-              wx:elif="{{ block.headImg }}"
-              class="product-card__cover"
-              src="{{ block.headImg }}"
-              mode="aspectFill"
-              lazy-load
-            />
-            <view wx:else class="product-card__cover product-card__cover--empty">
-              <text class="product-card__empty">SHOP</text>
-            </view>
-            <view class="product-card__info">
-              <view class="product-card__meta">
-                <view class="badge-store">
-                  <view class="badge-store__dot"></view>
-                  F1 Store
-                </view>
-                <view wx:if="{{ block.statusText }}" class="{{ block.statusClass }}">{{ block.statusText }}</view>
-              </view>
-              <view wx:if="{{ block.loading }}" class="product-card__skeletons">
-                <view class="product-card__skeleton product-card__skeleton--1"></view>
-                <view class="product-card__skeleton product-card__skeleton--2"></view>
-                <view class="product-card__skeleton product-card__skeleton--3"></view>
-              </view>
-              <block wx:elif="{{ block.detail }}">
-                <view class="product-card__title">{{ block.detail.title || ('商品 ' + block.productID) }}</view>
-                <view wx:if="{{ block.detail.sub_title }}" class="product-card__subtitle">{{ block.detail.sub_title }}</view>
-                <view class="product-card__price-row">
-                  <text class="product-card__price">{{ block.priceText }}</text>
-                  <text wx:if="{{ block.marketPriceText && block.marketPriceText !== '-' }}" class="product-card__market">{{ block.marketPriceText }}</text>
-                </view>
-                <view class="product-card__chips">
-                  <view class="chip chip-gray">ID {{ block.productID }}</view>
-                  <view
-                    wx:if="{{ block.detail.total_stock > 0 || block.detail.total_stock === 0 }}"
-                    class="{{ block.detail.total_stock > 0 ? 'chip chip-gray' : 'chip chip-red' }}"
-                  >库存 {{ block.detail.total_stock }}</view>
-                  <view wx:if="{{ block.skuCount }}" class="chip chip-gray">{{ block.skuCount }} SKU</view>
-                </view>
-              </block>
-              <block wx:else>
-                <view class="product-card__title">商品 {{ block.productID }}</view>
-              </block>
-            </view>
-          </view>
-          <view class="product-card__cta">
-            <text class="product-card__cta-label">前往详情</text>
-            <svg class="product-card__cta-chevron" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
-            </svg>
+          <store-product
+            wx:if="{{ storeAppId && block.productID }}"
+            appid="{{storeAppId}}"
+            product-id="{{block.productID}}"
+            custom-style="{{embeddedStoreStyle}}"
+          />
+          <view wx:else class="store-product-embed__fallback">
+            <view class="store-product-embed__tag">F1 Store</view>
+            <view class="store-product-embed__id">商品 {{ block.productID || 'ID 缺失' }}</view>
+            <view wx:if="{{ !storeAppId }}" class="store-product-embed__warn">未配置微信小店 AppID</view>
           </view>
         </view>
       </block>

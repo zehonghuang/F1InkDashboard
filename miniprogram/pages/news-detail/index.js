@@ -1,12 +1,31 @@
 const { fetchNewsDetail } = require("../../services/mpNewsApi")
 const i18n = require("../../services/i18n")
 const { getWeChatStoreConfig } = require("../../services/wechatStore")
-const {
-  fetchShopProductDetail,
-  priceFenToYuanText,
-} = require("../../services/shopApi")
 
 const F1_SHOP_CARD_TAG = "f1-shop-card"
+const EMBEDDED_STORE_STYLE = {
+  card: {
+    "background-color": "#08080D"
+  },
+  title: {
+    color: "rgba(255, 255, 255, 0.92)"
+  },
+  price: {
+    color: "#FF6A57"
+  },
+  "buy-button": {
+    width: "116px",
+    "border-radius": "999px",
+    "background-color": "#E10600",
+    color: "#FFFFFF"
+  },
+  "buy-button-disabled": {
+    width: "116px",
+    "border-radius": "999px",
+    "background-color": "#4D1212",
+    color: "rgba(255, 255, 255, 0.58)"
+  }
+}
 
 function isShopCardNode(node) {
   return Boolean(
@@ -112,11 +131,6 @@ function buildContentBlocks(nodes) {
           id: `shop_${blocks.length}_${pid}`,
           type: "product_card",
           productID: pid,
-          loading: false,
-          errorText: "",
-          detail: null,
-          priceText: "-",
-          marketPriceText: "",
         })
       }
       continue
@@ -138,23 +152,6 @@ function buildContentBlocks(nodes) {
   return blocks
 }
 
-function formatShopCardBlock(block) {
-  if (!block || block.type !== "product_card" || !block.detail) return block
-  const skus = Array.isArray(block.detail.skus) ? block.detail.skus : []
-  const headImg = (Array.isArray(block.detail.head_img) && block.detail.head_img.length) ? block.detail.head_img[0] : ""
-  return Object.assign({}, block, {
-    headImg,
-    statusText: block.detail.status == 5 ? "已上架" : block.detail.status ? "已下架" : "待上架",
-    statusClass:
-      block.detail.status == 5
-        ? "chip chip-green"
-        : block.detail.status
-          ? "chip chip-gray"
-          : "chip chip-amber",
-    skuCount: skus.length,
-  })
-}
-
 Page({
   data: {
     i18n: i18n.getDict(),
@@ -170,8 +167,7 @@ Page({
     viewerVisible: false,
     viewerInitialIndex: 0,
     storeAppId: "",
-    storeProductId: "",
-    storeProductStyle: {},
+    embeddedStoreStyle: EMBEDDED_STORE_STYLE,
     storeProductErrorText: "",
     loading: false,
     errorText: ""
@@ -197,8 +193,7 @@ Page({
         const content = (matched && matched.content) || { formatCode: "PLAIN", text: "", nodes: [] }
         const contentNodes = content.formatCode === "RICH_TEXT_NODES" ? content.nodes || [] : []
         const articleImages = collectArticleImages(contentNodes)
-        const rawBlocks = buildContentBlocks(contentNodes)
-        const contentBlocks = decorateGalleryBlocks(rawBlocks, articleImages)
+        const contentBlocks = decorateGalleryBlocks(buildContentBlocks(contentNodes), articleImages)
         this.setData({
           id: matched ? matched.id : "",
           title: matched ? matched.title : "",
@@ -213,7 +208,6 @@ Page({
         }, () => {
           const tt = String(this.data.title || "").trim()
           wx.setNavigationBarTitle({ title: tt || i18n.t("newsDetail.title") })
-          this.loadProductCardsIfAny()
         })
       })
       .catch(() => {
@@ -222,49 +216,6 @@ Page({
   },
   onUnload() {
     if (this._offLocale) this._offLocale()
-  },
-  loadProductCardsIfAny() {
-    const blocks = Array.isArray(this.data.contentBlocks) ? this.data.contentBlocks : []
-    const targets = blocks.filter((b) => b && b.type === "product_card" && b.productID && !b.detail && !b.loading)
-    if (!targets.length) return
-    targets.forEach((block) => this.setShopCardState(block.id, { loading: true, errorText: "" }))
-    targets.forEach((block) => {
-      const pid = String(block.productID || "").trim()
-      const blockId = block.id
-      fetchShopProductDetail(pid)
-        .then((res) => {
-          const detail = (res && res.product) || null
-          const patch = {
-            loading: false,
-            errorText: "",
-            detail,
-            priceText: priceFenToYuanText(detail && detail.min_price),
-            marketPriceText: priceFenToYuanText(detail && detail.market_price),
-          }
-          this.setShopCardState(blockId, patch, true)
-        })
-        .catch((err) => {
-          const msg = String(err && err.message ? err.message : err || "加载商品失败")
-          this.setShopCardState(blockId, { loading: false, errorText: msg })
-        })
-    })
-  },
-  setShopCardState(blockId, patch, formatIt) {
-    const blocks = (Array.isArray(this.data.contentBlocks) ? this.data.contentBlocks.slice() : [])
-    const idx = blocks.findIndex((b) => b && b.id === blockId)
-    if (idx < 0) return
-    const merged = Object.assign({}, blocks[idx], patch)
-    blocks[idx] = formatIt ? formatShopCardBlock(merged) : merged
-    this.setData({ contentBlocks: blocks })
-  },
-  onTapShopCard(e) {
-    const blockId = String(((e && e.currentTarget && e.currentTarget.dataset) || {}).blockId || "").trim()
-    const blocks = Array.isArray(this.data.contentBlocks) ? this.data.contentBlocks : []
-    const block = blocks.find((b) => b && b.id === blockId)
-    if (!block) return
-    const pid = String(block.productID || "").trim()
-    if (!pid) return
-    wx.navigateTo({ url: `/pages/shop-detail/index?id=${encodeURIComponent(pid)}` })
   },
   onTapGallery(e) {
     const blockIndex = Number((e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.blockIndex) || -1)
