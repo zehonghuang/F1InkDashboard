@@ -76,7 +76,14 @@ const ZH_CN = {
     loading: "加载中...",
     missingId: "缺少资讯 ID",
     loadFailed: "加载失败",
-    expand: "展开"
+    expand: "展开",
+    recommendEyebrow: "SHOP RECOMMEND",
+    recommendTitle: "文章下方商品推荐",
+    recommendDesc: "阅读完可直接查看同页推荐商品，留在当前小程序内完成跳转与交易。",
+    recommendTip: "商品卡使用微信小店原生组件渲染，并按当前页面做了暗色与 F1 红按钮适配。",
+    recommendConfigMissing: "未读取到微信小店配置，暂时无法展示商品推荐。",
+    recommendEnterFailed: "打开商品失败，请稍后重试",
+    recommendEnterFailedPrefix: "打开商品失败："
   },
   archive: {
     headerTitle: "F1 数据分析",
@@ -393,7 +400,14 @@ const EN_US = {
     loading: "Loading...",
     missingId: "Missing news id",
     loadFailed: "Load failed",
-    expand: "Open"
+    expand: "Open",
+    recommendEyebrow: "SHOP RECOMMEND",
+    recommendTitle: "Recommended Product",
+    recommendDesc: "Users can open the featured product right below the article and stay inside the mini program for browsing and checkout.",
+    recommendTip: "The card uses the native WeChat Store component with a dark theme and F1 red CTA adapted for this page.",
+    recommendConfigMissing: "WeChat Store config is missing, so the product recommendation cannot be shown right now.",
+    recommendEnterFailed: "Failed to open the product. Please try again later.",
+    recommendEnterFailedPrefix: "Failed to open the product: "
   },
   archive: {
     headerTitle: "F1 Analytics",

@@ -26,6 +26,14 @@
       </block>
     </view>
   </view>
+  <store-product
+    wx:if="{{ !loading && !errorText && storeAppId && storeProductId }}"
+    appid="{{storeAppId}}"
+    product-id="{{storeProductId}}"
+    custom-style="{{storeProductStyle}}"
+    bindentersuccess="onStoreProductEnterSuccess"
+    bindentererror="onStoreProductEnterError"
+  />
   <image-deck-viewer
     visible="{{ viewerVisible }}"
     images="{{ articleImages }}"
