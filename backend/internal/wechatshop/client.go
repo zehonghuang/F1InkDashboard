@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -178,6 +179,7 @@ func (c *Client) doShopAPI(ctx context.Context, method, path string, reqBody any
 		}
 		bodyBytes = b
 	}
+	log.Printf("[wechatshop] REQ %s %s body=%s", method, path, strings.TrimSpace(string(bodyBytes)))
 
 	req, err := http.NewRequestWithContext(ctx, method, u, bytes.NewReader(bodyBytes))
 	if err != nil {
@@ -198,6 +200,11 @@ func (c *Client) doShopAPI(ctx context.Context, method, path string, reqBody any
 	if err != nil {
 		return err
 	}
+	respPreview := strings.TrimSpace(string(raw))
+	if len(respPreview) > 4096 {
+		respPreview = respPreview[:4096] + "...(truncated)"
+	}
+	log.Printf("[wechatshop] RES %s %s status=%d body=%s", method, path, resp.StatusCode, respPreview)
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("wechatshop_http_%d: %s", resp.StatusCode, strings.TrimSpace(string(raw)))
 	}
