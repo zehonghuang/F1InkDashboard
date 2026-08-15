@@ -245,7 +245,40 @@ type classTree struct {
 
 type listCategoryResponse struct {
 	Tree    classTree `json:"tree"`
+	Trees   []classTree `json:"trees,omitempty"`
 	Version int64     `json:"version"`
+	apiError
+}
+
+func firstTreeWithLevel1(out listCategoryResponse) *classTree {
+	if len(out.Tree.Level1) > 0 {
+		return &out.Tree
+	}
+	for i := range out.Trees {
+		if len(out.Trees[i].Level1) > 0 {
+			return &out.Trees[i]
+		}
+	}
+	if out.Tree.TreeID > 0 || len(out.Trees) > 0 {
+		if len(out.Trees) > 0 {
+			return &out.Trees[0]
+		}
+		return &out.Tree
+	}
+	return nil
+}
+
+type categoryDetailInfoSrc struct {
+	CatID   flexInt64 `json:"cat_id"`
+	Name    string    `json:"name"`
+	FID     flexInt64 `json:"fid"`
+	Level   flexInt   `json:"level"`
+	CatType flexInt   `json:"cat_type"`
+	IconURL string    `json:"icon_url"`
+}
+
+type categoryDetailResponse struct {
+	Info   categoryDetailInfoSrc `json:"info"`
 	apiError
 }
 
@@ -281,10 +314,16 @@ func flattenClassificationTree(tree classTree) []Category {
 
 func (c *Client) ListCategories(ctx context.Context) ([]Category, error) {
 	var out listCategoryResponse
-	if err := c.doShopAPI(ctx, http.MethodPost, "/channels/ec/store/classification/tree/get", nil, &out); err != nil {
+	body := map[string]any{}
+	err := c.doShopAPI(ctx, http.MethodPost, "/channels/ec/store/classification/tree/get", body, &out)
+	if err != nil {
 		return nil, err
 	}
-	return flattenClassificationTree(out.Tree), nil
+	t := firstTreeWithLevel1(out)
+	if t == nil {
+		return []Category{}, nil
+	}
+	return flattenClassificationTree(*t), nil
 }
 
 type listCategoryProductsResponse struct {
@@ -299,10 +338,10 @@ func (c *Client) ListProductIDsByCategory(ctx context.Context, level1ID, level2I
 	for {
 		body := map[string]any{
 			"req": map[string]any{
-				"level_1_id":    level1ID,
-				"level_2_id":    level2ID,
-				"page_context":  pageContext,
-				"page_size":     100,
+				"level_1_id":   level1ID,
+				"level_2_id":   level2ID,
+				"page_context": pageContext,
+				"page_size":    100,
 			},
 		}
 		var out listCategoryProductsResponse
