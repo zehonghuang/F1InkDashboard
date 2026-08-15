@@ -9,12 +9,68 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"toinc_f1_backend/internal/config"
 )
+
+type flexInt64 int64
+
+func (f *flexInt64) UnmarshalJSON(data []byte) error {
+	data = bytes.TrimSpace(data)
+	if len(data) == 0 || bytes.Equal(data, []byte(`null`)) {
+		*f = 0
+		return nil
+	}
+	if data[0] == '"' {
+		var s string
+		if err := json.Unmarshal(data, &s); err != nil {
+			return err
+		}
+		s = strings.TrimSpace(s)
+		if s == "" {
+			*f = 0
+			return nil
+		}
+		n, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			// try float
+			fn, ferr := strconv.ParseFloat(s, 64)
+			if ferr != nil {
+				return err
+			}
+			*f = flexInt64(int64(fn))
+			return nil
+		}
+		*f = flexInt64(n)
+		return nil
+	}
+	var n int64
+	if err := json.Unmarshal(data, &n); err == nil {
+		*f = flexInt64(n)
+		return nil
+	}
+	var fn float64
+	if err := json.Unmarshal(data, &fn); err != nil {
+		return err
+	}
+	*f = flexInt64(int64(fn))
+	return nil
+}
+
+type flexInt int
+
+func (f *flexInt) UnmarshalJSON(data []byte) error {
+	var v flexInt64
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	*f = flexInt(int(v))
+	return nil
+}
 
 type Client struct {
 	cfg        config.WechatShopConfig
@@ -51,8 +107,8 @@ func (e *apiError) Error() string {
 }
 
 type tokenResponse struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn   int    `json:"expires_in"`
+	AccessToken string    `json:"access_token"`
+	ExpiresIn   flexInt   `json:"expires_in"`
 	apiError
 }
 
@@ -95,7 +151,7 @@ func (c *Client) GetAccessToken(ctx context.Context) (string, error) {
 	if strings.TrimSpace(r.AccessToken) == "" {
 		return "", errors.New("empty_access_token")
 	}
-	expSec := r.ExpiresIn
+	expSec := int(r.ExpiresIn)
 	if expSec <= 0 {
 		expSec = 7200
 	}
@@ -169,16 +225,16 @@ type Category struct {
 }
 
 type classLevel2 struct {
-	ID     int64  `json:"id"`
-	Name   string `json:"name"`
-	ImgURL string `json:"img_url"`
+	ID     flexInt64 `json:"id"`
+	Name   string    `json:"name"`
+	ImgURL string    `json:"img_url"`
 }
 
 type classLevel1 struct {
-	ID     int64         `json:"id"`
-	Name   string        `json:"name"`
-	ImgURL string        `json:"img_url"`
-	Level2 []classLevel2 `json:"level_2"`
+	ID     flexInt64      `json:"id"`
+	Name   string         `json:"name"`
+	ImgURL string         `json:"img_url"`
+	Level2 []classLevel2  `json:"level_2"`
 }
 
 type classTree struct {
@@ -197,7 +253,7 @@ func flattenClassificationTree(tree classTree) []Category {
 	out := make([]Category, 0, 32)
 	for _, l1 := range tree.Level1 {
 		c1 := Category{
-			CatID:   l1.ID,
+			CatID:   int64(l1.ID),
 			Name:    l1.Name,
 			FID:     0,
 			Level:   1,
@@ -208,9 +264,9 @@ func flattenClassificationTree(tree classTree) []Category {
 			kids := make([]Category, 0, len(l1.Level2))
 			for _, l2 := range l1.Level2 {
 				kids = append(kids, Category{
-					CatID:   l2.ID,
+					CatID:   int64(l2.ID),
 					Name:    l2.Name,
-					FID:     l1.ID,
+					FID:     int64(l1.ID),
 					Level:   2,
 					Icon:    l2.ImgURL,
 					CatType: 0,
@@ -232,8 +288,8 @@ func (c *Client) ListCategories(ctx context.Context) ([]Category, error) {
 }
 
 type listCategoryProductsResponse struct {
-	ProductIDs  []int64 `json:"product_ids"`
-	PageContext string  `json:"page_context"`
+	ProductIDs  []int64   `json:"product_ids"`
+	PageContext string    `json:"page_context"`
 	apiError
 }
 
@@ -310,9 +366,9 @@ type productSkuSrc struct {
 	SkuID       string              `json:"sku_id"`
 	OutSkuID    string              `json:"out_sku_id"`
 	ThumbImg    string              `json:"thumb_img"`
-	SalePrice   int64               `json:"sale_price"`
-	MarketPrice int64               `json:"market_price"`
-	StockNum    int                 `json:"stock_num"`
+	SalePrice   flexInt64           `json:"sale_price"`
+	MarketPrice flexInt64           `json:"market_price"`
+	StockNum    flexInt             `json:"stock_num"`
 	SkuCode     string              `json:"sku_code"`
 	SkuAttrs    []productSkuAttrSrc `json:"sku_attrs,omitempty"`
 }
@@ -324,12 +380,12 @@ type productDetailSrc struct {
 	Subtitle      string          `json:"subtitle"`
 	HeadImgs      []string        `json:"head_imgs"`
 	DescInfo      ProductDesc     `json:"desc_info"`
-	CateID        int64           `json:"cate_id"`
-	BrandID       int64           `json:"brand_id"`
-	MinPrice      int64           `json:"min_price"`
-	MarketPrice   int64           `json:"market_price"`
-	TotalStockNum int             `json:"total_stock_num"`
-	Status        int             `json:"status"`
+	CateID        flexInt64       `json:"cate_id"`
+	BrandID       flexInt64       `json:"brand_id"`
+	MinPrice      flexInt64       `json:"min_price"`
+	MarketPrice   flexInt64       `json:"market_price"`
+	TotalStockNum flexInt         `json:"total_stock_num"`
+	Status        flexInt         `json:"status"`
 	Skus          []productSkuSrc `json:"skus,omitempty"`
 }
 
@@ -349,12 +405,12 @@ func convertProduct(src productDetailSrc) *ProductDetail {
 		SubTitle:     src.Subtitle,
 		HeadImg:      src.HeadImgs,
 		DescInfo:     src.DescInfo,
-		CateID:       src.CateID,
-		BrandID:      src.BrandID,
-		SalePrice:    src.MinPrice,
-		MarketPrice:  src.MarketPrice,
-		TotalStock:   src.TotalStockNum,
-		Status:       src.Status,
+		CateID:       int64(src.CateID),
+		BrandID:      int64(src.BrandID),
+		SalePrice:    int64(src.MinPrice),
+		MarketPrice:  int64(src.MarketPrice),
+		TotalStock:   int(src.TotalStockNum),
+		Status:       int(src.Status),
 	}
 	if len(src.Skus) > 0 {
 		skus := make([]ProductSku, 0, len(src.Skus))
@@ -363,9 +419,9 @@ func convertProduct(src productDetailSrc) *ProductDetail {
 				SkuID:       s.SkuID,
 				OutSkuID:    s.OutSkuID,
 				ThumbImg:    s.ThumbImg,
-				SalePrice:   s.SalePrice,
-				MarketPrice: s.MarketPrice,
-				StockNum:    s.StockNum,
+				SalePrice:   int64(s.SalePrice),
+				MarketPrice: int64(s.MarketPrice),
+				StockNum:    int(s.StockNum),
 				SkuCode:     s.SkuCode,
 			}
 			if len(s.SkuAttrs) > 0 {
@@ -403,9 +459,9 @@ func (c *Client) GetProductDetail(ctx context.Context, productID string) (*Produ
 }
 
 type listProductsResponse struct {
-	ProductIDs  []int64 `json:"product_ids"`
-	NextKey     string  `json:"next_key"`
-	TotalCount  int     `json:"total_num"`
+	ProductIDs  []int64    `json:"product_ids"`
+	NextKey     string     `json:"next_key"`
+	TotalCount  flexInt    `json:"total_num"`
 	apiError
 }
 
