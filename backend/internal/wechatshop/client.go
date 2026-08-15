@@ -232,32 +232,53 @@ type Category struct {
 }
 
 type classLevel2 struct {
-	ID     flexInt64 `json:"id"`
-	Name   string    `json:"name"`
-	ImgURL string    `json:"img_url"`
+	ID          flexInt64 `json:"id"`
+	Name        string    `json:"name"`
+	ImgURL      string    `json:"img_url"`
+	IsDisplayed bool      `json:"is_displayed"`
 }
 
 type classLevel1 struct {
-	ID     flexInt64      `json:"id"`
-	Name   string         `json:"name"`
-	ImgURL string         `json:"img_url"`
-	Level2 []classLevel2  `json:"level_2"`
+	ID          flexInt64      `json:"id"`
+	Name        string         `json:"name"`
+	ImgURL      string         `json:"img_url"`
+	IsDisplayed bool           `json:"is_displayed"`
+	Level2      []classLevel2  `json:"level_2"`
 }
 
 type classTree struct {
-	Level1 []classLevel1 `json:"level_1"`
-	Name   string        `json:"name"`
-	TreeID int64         `json:"tree_id"`
+	Level1     []classLevel1 `json:"level_1"`
+	Status     int64         `json:"status"`
+	Name       string        `json:"name"`
+	TreeID     int64         `json:"tree_id"`
+	TemplateID int64         `json:"template_id"`
+}
+
+type listCategoryResponseInner struct {
+	Tree        classTree `json:"tree"`
+	Version     int64     `json:"version"`
+	DefaultTree classTree `json:"default_tree"`
+	TreeType    int       `json:"tree_type"`
 }
 
 type listCategoryResponse struct {
-	Tree    classTree `json:"tree"`
-	Trees   []classTree `json:"trees,omitempty"`
-	Version int64     `json:"version"`
+	Resp      listCategoryResponseInner `json:"resp"`
+	Tree      classTree                 `json:"tree"`
+	Trees     []classTree               `json:"trees,omitempty"`
+	Version   int64                     `json:"version"`
 	apiError
 }
 
+func cleanWechatQuotedURL(s string) string {
+	s = strings.TrimSpace(s)
+	s = strings.Trim(s, "`")
+	return strings.TrimSpace(s)
+}
+
 func firstTreeWithLevel1(out listCategoryResponse) *classTree {
+	if len(out.Resp.Tree.Level1) > 0 {
+		return &out.Resp.Tree
+	}
 	if len(out.Tree.Level1) > 0 {
 		return &out.Tree
 	}
@@ -266,9 +287,12 @@ func firstTreeWithLevel1(out listCategoryResponse) *classTree {
 			return &out.Trees[i]
 		}
 	}
-	if out.Tree.TreeID > 0 || len(out.Trees) > 0 {
+	if out.Tree.TreeID > 0 || len(out.Trees) > 0 || out.Resp.Tree.TreeID > 0 {
 		if len(out.Trees) > 0 {
 			return &out.Trees[0]
+		}
+		if out.Resp.Tree.TreeID > 0 {
+			return &out.Resp.Tree
 		}
 		return &out.Tree
 	}
@@ -294,10 +318,10 @@ func flattenClassificationTree(tree classTree) []Category {
 	for _, l1 := range tree.Level1 {
 		c1 := Category{
 			CatID:   int64(l1.ID),
-			Name:    l1.Name,
+			Name:    strings.TrimSpace(l1.Name),
 			FID:     0,
 			Level:   1,
-			Icon:    l1.ImgURL,
+			Icon:    cleanWechatQuotedURL(l1.ImgURL),
 			CatType: 0,
 		}
 		if len(l1.Level2) > 0 {
@@ -305,10 +329,10 @@ func flattenClassificationTree(tree classTree) []Category {
 			for _, l2 := range l1.Level2 {
 				kids = append(kids, Category{
 					CatID:   int64(l2.ID),
-					Name:    l2.Name,
+					Name:    strings.TrimSpace(l2.Name),
 					FID:     int64(l1.ID),
 					Level:   2,
-					Icon:    l2.ImgURL,
+					Icon:    cleanWechatQuotedURL(l2.ImgURL),
 					CatType: 0,
 				})
 			}
@@ -333,9 +357,15 @@ func (c *Client) ListCategories(ctx context.Context) ([]Category, error) {
 	return flattenClassificationTree(*t), nil
 }
 
+type listCategoryProductsResponseInner struct {
+	ProductIDs  []int64 `json:"product_ids"`
+	PageContext string  `json:"page_context"`
+}
+
 type listCategoryProductsResponse struct {
-	ProductIDs  []int64   `json:"product_ids"`
-	PageContext string    `json:"page_context"`
+	Resp        listCategoryProductsResponseInner `json:"resp"`
+	ProductIDs  []int64                           `json:"product_ids"`
+	PageContext string                            `json:"page_context"`
 	apiError
 }
 
@@ -355,10 +385,17 @@ func (c *Client) ListProductIDsByCategory(ctx context.Context, level1ID, level2I
 		if err := c.doShopAPI(ctx, http.MethodPost, "/channels/ec/store/classification/tree/product/get", body, &out); err != nil {
 			return nil, err
 		}
-		for _, pid := range out.ProductIDs {
+		pids := out.ProductIDs
+		if len(out.Resp.ProductIDs) > 0 {
+			pids = out.Resp.ProductIDs
+		}
+		for _, pid := range pids {
 			ids = append(ids, fmt.Sprintf("%d", pid))
 		}
 		next := strings.TrimSpace(out.PageContext)
+		if len(out.Resp.PageContext) > 0 {
+			next = strings.TrimSpace(out.Resp.PageContext)
+		}
 		if next == "" || next == pageContext {
 			break
 		}
@@ -435,8 +472,13 @@ type productDetailSrc struct {
 	Skus          []productSkuSrc `json:"skus,omitempty"`
 }
 
-type getProductResponse struct {
+type getProductResponseInner struct {
 	Product productDetailSrc `json:"product"`
+}
+
+type getProductResponse struct {
+	Resp    getProductResponseInner `json:"resp"`
+	Product productDetailSrc        `json:"product"`
 	apiError
 }
 
@@ -444,13 +486,25 @@ func convertProduct(src productDetailSrc) *ProductDetail {
 	if strings.TrimSpace(src.ProductID) == "" && strings.TrimSpace(src.OutProductID) == "" {
 		return nil
 	}
+	head := make([]string, 0, len(src.HeadImgs))
+	for _, s := range src.HeadImgs {
+		if u := cleanWechatQuotedURL(s); u != "" {
+			head = append(head, u)
+		}
+	}
+	descImgs := make([]string, 0, len(src.DescInfo.Imgs))
+	for _, s := range src.DescInfo.Imgs {
+		if u := cleanWechatQuotedURL(s); u != "" {
+			descImgs = append(descImgs, u)
+		}
+	}
 	pd := &ProductDetail{
-		SpuID:        src.ProductID,
-		OutProductID: src.OutProductID,
-		Title:        src.Title,
-		SubTitle:     src.Subtitle,
-		HeadImg:      src.HeadImgs,
-		DescInfo:     src.DescInfo,
+		SpuID:        strings.TrimSpace(src.ProductID),
+		OutProductID: strings.TrimSpace(src.OutProductID),
+		Title:        strings.TrimSpace(src.Title),
+		SubTitle:     strings.TrimSpace(src.Subtitle),
+		HeadImg:      head,
+		DescInfo:     ProductDesc{Imgs: descImgs},
 		CateID:       int64(src.CateID),
 		BrandID:      int64(src.BrandID),
 		SalePrice:    int64(src.MinPrice),
@@ -462,20 +516,27 @@ func convertProduct(src productDetailSrc) *ProductDetail {
 		skus := make([]ProductSku, 0, len(src.Skus))
 		for _, s := range src.Skus {
 			ps := ProductSku{
-				SkuID:       s.SkuID,
-				OutSkuID:    s.OutSkuID,
-				ThumbImg:    s.ThumbImg,
+				SkuID:       strings.TrimSpace(s.SkuID),
+				OutSkuID:    strings.TrimSpace(s.OutSkuID),
+				ThumbImg:    cleanWechatQuotedURL(s.ThumbImg),
 				SalePrice:   int64(s.SalePrice),
 				MarketPrice: int64(s.MarketPrice),
 				StockNum:    int(s.StockNum),
-				SkuCode:     s.SkuCode,
+				SkuCode:     strings.TrimSpace(s.SkuCode),
 			}
 			if len(s.SkuAttrs) > 0 {
 				attrs := make([]ProductSkuAttr, 0, len(s.SkuAttrs))
 				for _, a := range s.SkuAttrs {
-					attrs = append(attrs, ProductSkuAttr{Name: a.AttrKey, Value: a.AttrValue})
+					n := strings.TrimSpace(a.AttrKey)
+					v := strings.TrimSpace(a.AttrValue)
+					if n == "" && v == "" {
+						continue
+					}
+					attrs = append(attrs, ProductSkuAttr{Name: n, Value: v})
 				}
-				ps.SkuAttrs = attrs
+				if len(attrs) > 0 {
+					ps.SkuAttrs = attrs
+				}
 			}
 			skus = append(skus, ps)
 		}
@@ -497,17 +558,28 @@ func (c *Client) GetProductDetail(ctx context.Context, productID string) (*Produ
 	if err := c.doShopAPI(ctx, http.MethodPost, "/channels/ec/product/get", body, &out); err != nil {
 		return nil, err
 	}
-	pd := convertProduct(out.Product)
+	src := out.Product
+	if strings.TrimSpace(out.Resp.Product.ProductID) != "" || strings.TrimSpace(out.Resp.Product.OutProductID) != "" || out.Resp.Product.CateID != 0 {
+		src = out.Resp.Product
+	}
+	pd := convertProduct(src)
 	if pd == nil {
 		return nil, errors.New("product_not_found")
 	}
 	return pd, nil
 }
 
+type listProductsResponseInner struct {
+	ProductIDs []int64 `json:"product_ids"`
+	NextKey    string  `json:"next_key"`
+	TotalCount flexInt `json:"total_num"`
+}
+
 type listProductsResponse struct {
-	ProductIDs  []int64    `json:"product_ids"`
-	NextKey     string     `json:"next_key"`
-	TotalCount  flexInt    `json:"total_num"`
+	Resp       listProductsResponseInner `json:"resp"`
+	ProductIDs []int64                  `json:"product_ids"`
+	NextKey    string                   `json:"next_key"`
+	TotalCount flexInt                  `json:"total_num"`
 	apiError
 }
 
@@ -519,8 +591,8 @@ func (c *Client) ListAllProductIDs(ctx context.Context, status int) ([]string, e
 	var nextKey string
 	for {
 		body := map[string]any{
-			"status":     status,
-			"page_size":  100,
+			"status":    status,
+			"page_size": 100,
 		}
 		if nextKey != "" {
 			body["next_key"] = nextKey
@@ -529,10 +601,17 @@ func (c *Client) ListAllProductIDs(ctx context.Context, status int) ([]string, e
 		if err := c.doShopAPI(ctx, http.MethodPost, "/channels/ec/product/list/get", body, &out); err != nil {
 			return nil, err
 		}
-		for _, pid := range out.ProductIDs {
+		pids := out.ProductIDs
+		if len(out.Resp.ProductIDs) > 0 {
+			pids = out.Resp.ProductIDs
+		}
+		for _, pid := range pids {
 			ids = append(ids, fmt.Sprintf("%d", pid))
 		}
 		nk := strings.TrimSpace(out.NextKey)
+		if strings.TrimSpace(out.Resp.NextKey) != "" {
+			nk = strings.TrimSpace(out.Resp.NextKey)
+		}
 		if nk == "" || nk == nextKey {
 			break
 		}
