@@ -104,17 +104,15 @@ func (c *Client) GetAccessToken(ctx context.Context) (string, error) {
 	return c.accessToken, nil
 }
 
-func (c *Client) doShopAPI(ctx context.Context, method, path string, query url.Values, reqBody any, respOut any) error {
+func (c *Client) doShopAPI(ctx context.Context, method, path string, reqBody any, respOut any) error {
 	tok, err := c.GetAccessToken(ctx)
 	if err != nil {
 		return err
 	}
-	if query == nil {
-		query = url.Values{}
-	}
-	query.Set("access_token", tok)
-
-	u := "https://api.weixin.qq.com" + path + "?" + query.Encode()
+	u := "https://api.weixin.qq.com" + path
+	q := url.Values{}
+	q.Set("access_token", tok)
+	u += "?" + q.Encode()
 
 	var bodyBytes []byte
 	if reqBody != nil {
@@ -160,88 +158,122 @@ func (c *Client) doShopAPI(ctx context.Context, method, path string, query url.V
 }
 
 type Category struct {
-	CatID    int64  `json:"cat_id"`
-	Name     string `json:"name"`
-	FID      int64  `json:"f_id"`
-	Level    int    `json:"level"`
-	CatType  int    `json:"cat_type"`
-	Icon     string `json:"icon_url"`
-	Sort     int    `json:"sort"`
+	CatID    int64      `json:"cat_id"`
+	Name     string     `json:"name"`
+	FID      int64      `json:"f_id"`
+	Level    int        `json:"level"`
+	CatType  int        `json:"cat_type"`
+	Icon     string     `json:"icon_url"`
+	Sort     int        `json:"sort"`
 	Children []Category `json:"children,omitempty"`
 }
 
+type classLevel2 struct {
+	ID     int64  `json:"id"`
+	Name   string `json:"name"`
+	ImgURL string `json:"img_url"`
+}
+
+type classLevel1 struct {
+	ID     int64         `json:"id"`
+	Name   string        `json:"name"`
+	ImgURL string        `json:"img_url"`
+	Level2 []classLevel2 `json:"level_2"`
+}
+
+type classTree struct {
+	Level1 []classLevel1 `json:"level_1"`
+	Name   string        `json:"name"`
+	TreeID int64         `json:"tree_id"`
+}
+
 type listCategoryResponse struct {
-	CategoryList []Category `json:"category_list"`
+	Tree    classTree `json:"tree"`
+	Version int64     `json:"version"`
 	apiError
+}
+
+func flattenClassificationTree(tree classTree) []Category {
+	out := make([]Category, 0, 32)
+	for _, l1 := range tree.Level1 {
+		c1 := Category{
+			CatID:   l1.ID,
+			Name:    l1.Name,
+			FID:     0,
+			Level:   1,
+			Icon:    l1.ImgURL,
+			CatType: 0,
+		}
+		if len(l1.Level2) > 0 {
+			kids := make([]Category, 0, len(l1.Level2))
+			for _, l2 := range l1.Level2 {
+				kids = append(kids, Category{
+					CatID:   l2.ID,
+					Name:    l2.Name,
+					FID:     l1.ID,
+					Level:   2,
+					Icon:    l2.ImgURL,
+					CatType: 0,
+				})
+			}
+			c1.Children = kids
+		}
+		out = append(out, c1)
+	}
+	return out
 }
 
 func (c *Client) ListCategories(ctx context.Context) ([]Category, error) {
 	var out listCategoryResponse
-	body := map[string]any{
-		"page": 1,
-		"page_size": 500,
-	}
-	if err := c.doShopAPI(ctx, http.MethodPost, "/shop/account/get_category_list", nil, body, &out); err != nil {
+	if err := c.doShopAPI(ctx, http.MethodPost, "/channels/ec/store/classification/tree/get", nil, &out); err != nil {
 		return nil, err
 	}
-	return out.CategoryList, nil
-}
-
-type categoryProductRef struct {
-	SpuID        string `json:"spu_id"`
-	OutProductID string `json:"out_product_id"`
+	return flattenClassificationTree(out.Tree), nil
 }
 
 type listCategoryProductsResponse struct {
-	ProductList []categoryProductRef `json:"product_list"`
-	TotalCount  int                  `json:"total_count"`
-	NextKey     string              `json:"next_key"`
+	ProductIDs  []int64 `json:"product_ids"`
+	PageContext string  `json:"page_context"`
 	apiError
 }
 
-func (c *Client) ListProductIDsByCategory(ctx context.Context, cateID int64) ([]string, error) {
+func (c *Client) ListProductIDsByCategory(ctx context.Context, level1ID, level2ID int64) ([]string, error) {
 	ids := make([]string, 0, 64)
-	var nextKey string
+	var pageContext string
 	for {
 		body := map[string]any{
-			"page_size":  100,
-			"cate_id":    cateID,
-			"status":     5,
-			"need_edit_spu": 0,
-		}
-		if nextKey != "" {
-			body["next_key"] = nextKey
+			"req": map[string]any{
+				"level_1_id":    level1ID,
+				"level_2_id":    level2ID,
+				"page_context":  pageContext,
+				"page_size":     100,
+			},
 		}
 		var out listCategoryProductsResponse
-		if err := c.doShopAPI(ctx, http.MethodPost, "/shop/spu/get_list", nil, body, &out); err != nil {
+		if err := c.doShopAPI(ctx, http.MethodPost, "/channels/ec/store/classification/tree/product/get", body, &out); err != nil {
 			return nil, err
 		}
-		for _, p := range out.ProductList {
-			id := strings.TrimSpace(p.OutProductID)
-			if id == "" {
-				id = strings.TrimSpace(p.SpuID)
-			}
-			if id != "" {
-				ids = append(ids, id)
-			}
+		for _, pid := range out.ProductIDs {
+			ids = append(ids, fmt.Sprintf("%d", pid))
 		}
-		nextKey = strings.TrimSpace(out.NextKey)
-		if nextKey == "" {
+		next := strings.TrimSpace(out.PageContext)
+		if next == "" || next == pageContext {
 			break
 		}
+		pageContext = next
 	}
 	return ids, nil
 }
 
 type ProductSku struct {
-	SkuID          string         `json:"sku_id"`
-	OutSkuID       string         `json:"out_sku_id"`
-	ThumbImg       string         `json:"thumb_img"`
-	SalePrice      int64          `json:"sale_price"`
-	MarketPrice    int64          `json:"market_price"`
-	StockNum       int            `json:"stock_num"`
-	SkuCode        string         `json:"sku_code"`
-	SkuAttrs       []ProductSkuAttr `json:"sku_attrs,omitempty"`
+	SkuID        string          `json:"sku_id"`
+	OutSkuID     string          `json:"out_sku_id"`
+	ThumbImg     string          `json:"thumb_img"`
+	SalePrice    int64           `json:"sale_price"`
+	MarketPrice  int64           `json:"market_price"`
+	StockNum     int             `json:"stock_num"`
+	SkuCode      string          `json:"sku_code"`
+	SkuAttrs     []ProductSkuAttr `json:"sku_attrs,omitempty"`
 }
 
 type ProductSkuAttr struct {
@@ -250,17 +282,17 @@ type ProductSkuAttr struct {
 }
 
 type ProductDetail struct {
-	SpuID          string      `json:"spu_id"`
+	SpuID          string      `json:"product_id"`
 	OutProductID   string      `json:"out_product_id"`
 	Title          string      `json:"title"`
-	SubTitle       string      `json:"sub_title"`
-	HeadImg        []string    `json:"head_img"`
+	SubTitle       string      `json:"subtitle"`
+	HeadImg        []string    `json:"head_imgs"`
 	DescInfo       ProductDesc `json:"desc_info"`
 	CateID         int64       `json:"cate_id"`
 	BrandID        int64       `json:"brand_id"`
 	SalePrice      int64       `json:"min_price"`
 	MarketPrice    int64       `json:"market_price"`
-	TotalStock     int         `json:"total_stock"`
+	TotalStock     int         `json:"total_stock_num"`
 	Status         int         `json:"status"`
 	Skus           []ProductSku `json:"skus,omitempty"`
 }
@@ -269,9 +301,85 @@ type ProductDesc struct {
 	Imgs []string `json:"imgs,omitempty"`
 }
 
+type productSkuAttrSrc struct {
+	AttrKey   string `json:"attr_key"`
+	AttrValue string `json:"attr_value"`
+}
+
+type productSkuSrc struct {
+	SkuID       string              `json:"sku_id"`
+	OutSkuID    string              `json:"out_sku_id"`
+	ThumbImg    string              `json:"thumb_img"`
+	SalePrice   int64               `json:"sale_price"`
+	MarketPrice int64               `json:"market_price"`
+	StockNum    int                 `json:"stock_num"`
+	SkuCode     string              `json:"sku_code"`
+	SkuAttrs    []productSkuAttrSrc `json:"sku_attrs,omitempty"`
+}
+
+type productDetailSrc struct {
+	ProductID     string          `json:"product_id"`
+	OutProductID  string          `json:"out_product_id"`
+	Title         string          `json:"title"`
+	Subtitle      string          `json:"subtitle"`
+	HeadImgs      []string        `json:"head_imgs"`
+	DescInfo      ProductDesc     `json:"desc_info"`
+	CateID        int64           `json:"cate_id"`
+	BrandID       int64           `json:"brand_id"`
+	MinPrice      int64           `json:"min_price"`
+	MarketPrice   int64           `json:"market_price"`
+	TotalStockNum int             `json:"total_stock_num"`
+	Status        int             `json:"status"`
+	Skus          []productSkuSrc `json:"skus,omitempty"`
+}
+
 type getProductResponse struct {
-	Spu ProductDetail `json:"spu"`
+	Product productDetailSrc `json:"product"`
 	apiError
+}
+
+func convertProduct(src productDetailSrc) *ProductDetail {
+	if strings.TrimSpace(src.ProductID) == "" && strings.TrimSpace(src.OutProductID) == "" {
+		return nil
+	}
+	pd := &ProductDetail{
+		SpuID:        src.ProductID,
+		OutProductID: src.OutProductID,
+		Title:        src.Title,
+		SubTitle:     src.Subtitle,
+		HeadImg:      src.HeadImgs,
+		DescInfo:     src.DescInfo,
+		CateID:       src.CateID,
+		BrandID:      src.BrandID,
+		SalePrice:    src.MinPrice,
+		MarketPrice:  src.MarketPrice,
+		TotalStock:   src.TotalStockNum,
+		Status:       src.Status,
+	}
+	if len(src.Skus) > 0 {
+		skus := make([]ProductSku, 0, len(src.Skus))
+		for _, s := range src.Skus {
+			ps := ProductSku{
+				SkuID:       s.SkuID,
+				OutSkuID:    s.OutSkuID,
+				ThumbImg:    s.ThumbImg,
+				SalePrice:   s.SalePrice,
+				MarketPrice: s.MarketPrice,
+				StockNum:    s.StockNum,
+				SkuCode:     s.SkuCode,
+			}
+			if len(s.SkuAttrs) > 0 {
+				attrs := make([]ProductSkuAttr, 0, len(s.SkuAttrs))
+				for _, a := range s.SkuAttrs {
+					attrs = append(attrs, ProductSkuAttr{Name: a.AttrKey, Value: a.AttrValue})
+				}
+				ps.SkuAttrs = attrs
+			}
+			skus = append(skus, ps)
+		}
+		pd.Skus = skus
+	}
+	return pd
 }
 
 func (c *Client) GetProductDetail(ctx context.Context, productID string) (*ProductDetail, error) {
@@ -280,15 +388,56 @@ func (c *Client) GetProductDetail(ctx context.Context, productID string) (*Produ
 		return nil, errors.New("missing_product_id")
 	}
 	body := map[string]any{
-		"out_product_id": productID,
+		"product_id": productID,
+		"data_type":  1,
 	}
 	var out getProductResponse
-	if err := c.doShopAPI(ctx, http.MethodPost, "/shop/spu/get", nil, body, &out); err != nil {
+	if err := c.doShopAPI(ctx, http.MethodPost, "/channels/ec/product/get", body, &out); err != nil {
 		return nil, err
 	}
-	pd := out.Spu
-	if strings.TrimSpace(pd.OutProductID) == "" && strings.TrimSpace(pd.SpuID) == "" {
+	pd := convertProduct(out.Product)
+	if pd == nil {
 		return nil, errors.New("product_not_found")
 	}
-	return &pd, nil
+	return pd, nil
+}
+
+type listProductsResponse struct {
+	ProductIDs  []string `json:"product_ids"`
+	NextKey     string   `json:"next_key"`
+	TotalCount  int      `json:"total_num"`
+	apiError
+}
+
+func (c *Client) ListAllProductIDs(ctx context.Context, status int) ([]string, error) {
+	if status <= 0 {
+		status = 5
+	}
+	ids := make([]string, 0, 64)
+	var nextKey string
+	for {
+		body := map[string]any{
+			"status":     status,
+			"page_size":  100,
+		}
+		if nextKey != "" {
+			body["next_key"] = nextKey
+		}
+		var out listProductsResponse
+		if err := c.doShopAPI(ctx, http.MethodPost, "/channels/ec/product/list/get", body, &out); err != nil {
+			return nil, err
+		}
+		for _, pid := range out.ProductIDs {
+			id := strings.TrimSpace(pid)
+			if id != "" {
+				ids = append(ids, id)
+			}
+		}
+		nk := strings.TrimSpace(out.NextKey)
+		if nk == "" || nk == nextKey {
+			break
+		}
+		nextKey = nk
+	}
+	return ids, nil
 }

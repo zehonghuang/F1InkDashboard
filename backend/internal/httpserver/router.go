@@ -145,6 +145,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 
 	s.Router.GET("/api/v1/shop/categories", handlers.WechatShopCategories(cfg))
 	s.Router.GET("/api/v1/shop/categories/:id/products", handlers.WechatShopCategoryProductIDs(cfg))
+	s.Router.GET("/api/v1/shop/products", handlers.WechatShopAllProductIDs(cfg))
 	s.Router.GET("/api/v1/shop/products/:id", handlers.WechatShopProductDetail(cfg))
 
 	s.Router.GET("/api/v1/f1/sessions", handlers.F1Sessions(cfg, gormOrNil(database), s.Cache))

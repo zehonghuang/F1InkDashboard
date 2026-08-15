@@ -2,6 +2,7 @@
 import {
   fetchShopCategories,
   fetchShopCategoryProductIDs,
+  fetchShopAllProductIDs,
   fetchShopProductDetail,
   type ShopCategory,
   type ShopProductDetail,
@@ -62,16 +63,8 @@ async function loadProductIDs() {
   errorText.value = ''
   try {
     if (!selectedCatID.value) {
-      const all = new Set<string>()
-      for (const c of flatCats.value) {
-        try {
-          const r = await fetchShopCategoryProductIDs(c.cat_id)
-          for (const id of r.product_ids || []) all.add(id)
-        } catch {
-          // skip category errors
-        }
-      }
-      productIDs.value = Array.from(all)
+      const r = await fetchShopAllProductIDs(5)
+      productIDs.value = r.product_ids || []
     } else {
       const r = await fetchShopCategoryProductIDs(Number(selectedCatID.value))
       productIDs.value = r.product_ids || []

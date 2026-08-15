@@ -24,6 +24,12 @@ export type ShopCategoryProductIDsResponse = {
   product_ids: string[]
 }
 
+export type ShopAllProductIDsResponse = {
+  ok: boolean
+  error?: string
+  product_ids: string[]
+}
+
 export type ShopProductSkuAttr = {
   name: string
   value: string
@@ -76,6 +82,13 @@ export async function fetchShopCategoryProductIDs(catID: number | string): Promi
   const res = await fetchJSON<ShopCategoryProductIDsResponse>(
     `/api/v1/shop/categories/${encodeURIComponent(String(catID))}/products`,
   )
+  if (!res.ok) throw new Error(res.error || 'backend_error')
+  return res
+}
+
+export async function fetchShopAllProductIDs(status = 5): Promise<ShopAllProductIDsResponse> {
+  const url = `/api/v1/shop/products?status=${encodeURIComponent(String(status))}`
+  const res = await fetchJSON<ShopAllProductIDsResponse>(url)
   if (!res.ok) throw new Error(res.error || 'backend_error')
   return res
 }

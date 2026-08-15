@@ -101,6 +101,22 @@ func WechatShopCategories(cfg config.Config) gin.HandlerFunc {
 // @Failure 401 {object} model.ErrorResponse
 // @Failure 503 {object} model.ErrorResponse
 // @Router /api/v1/shop/categories/{id}/products [get]
+func resolveCatLevel(list []wechatshop.Category, catID int64) (level1, level2 int64) {
+	level1 = catID
+	level2 = 0
+	for _, l1 := range list {
+		if l1.CatID == catID {
+			return l1.CatID, 0
+		}
+		for _, l2 := range l1.Children {
+			if l2.CatID == catID {
+				return l1.CatID, l2.CatID
+			}
+		}
+	}
+	return catID, 0
+}
+
 func WechatShopCategoryProductIDs(cfg config.Config) gin.HandlerFunc {
 	client, initErr := wechatshop.NewClient(cfg.WechatShop)
 
@@ -118,7 +134,31 @@ func WechatShopCategoryProductIDs(cfg config.Config) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: "invalid_cat_id"})
 			return
 		}
-		ids, err := client.ListProductIDsByCategory(c.Request.Context(), catID)
+		level1 := int64(0)
+		level2 := int64(0)
+		level1Raw := strings.TrimSpace(c.Query("level_1_id"))
+		level2Raw := strings.TrimSpace(c.Query("level_2_id"))
+		if level1Raw != "" {
+			n, e := strconv.ParseInt(level1Raw, 10, 64)
+			if e == nil && n > 0 {
+				level1 = n
+			}
+		}
+		if level2Raw != "" {
+			n, e := strconv.ParseInt(level2Raw, 10, 64)
+			if e == nil && n > 0 {
+				level2 = n
+			}
+		}
+		if level1 == 0 {
+			tree, terr := client.ListCategories(c.Request.Context())
+			if terr != nil {
+				c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: strings.TrimSpace(terr.Error())})
+				return
+			}
+			level1, level2 = resolveCatLevel(tree, catID)
+		}
+		ids, err := client.ListProductIDsByCategory(c.Request.Context(), level1, level2)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: strings.TrimSpace(err.Error())})
 			return
@@ -131,6 +171,55 @@ func WechatShopCategoryProductIDs(cfg config.Config) gin.HandlerFunc {
 			CatID:      catID,
 			ProductIDs: ids,
 		})
+	}
+}
+
+type WechatShopAllProductIDsResponse struct {
+	Ok         bool     `json:"ok"`
+	Error      string   `json:"error,omitempty"`
+	ProductIDs []string `json:"product_ids"`
+}
+
+// @Summary 微信小店-全店商品ID列表
+// @Description |
+//
+//	返回全店按状态（默认 5 已上架）分页合并后的 product_id 列表。
+//
+//	鉴权：query token 与 WECHAT_SHOP_API_TOKEN 配置一致。
+//
+// @Tags WechatShop
+// @Produce json
+// @Param token query string false "鉴权 token"
+// @Param status query int false "商品状态，默认5已上架"
+// @Success 200 {object} WechatShopAllProductIDsResponse
+// @Router /api/v1/shop/products [get]
+func WechatShopAllProductIDs(cfg config.Config) gin.HandlerFunc {
+	client, initErr := wechatshop.NewClient(cfg.WechatShop)
+
+	return func(c *gin.Context) {
+		if initErr != nil {
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "wechatshop_unavailable"})
+			return
+		}
+		if !shopTokenOK(c, cfg.WechatShop.ApiToken) {
+			return
+		}
+		status := 5
+		if s := strings.TrimSpace(c.Query("status")); s != "" {
+			n, e := strconv.Atoi(s)
+			if e == nil && n > 0 {
+				status = n
+			}
+		}
+		ids, err := client.ListAllProductIDs(c.Request.Context(), status)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: strings.TrimSpace(err.Error())})
+			return
+		}
+		if ids == nil {
+			ids = []string{}
+		}
+		c.JSON(http.StatusOK, WechatShopAllProductIDsResponse{Ok: true, ProductIDs: ids})
 	}
 }
 
