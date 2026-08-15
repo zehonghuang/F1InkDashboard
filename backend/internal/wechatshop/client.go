@@ -369,6 +369,22 @@ type listCategoryProductsResponse struct {
 	apiError
 }
 
+func dedupStringPreserveOrder(in []string) []string {
+	if len(in) <= 1 {
+		return in
+	}
+	seen := make(map[string]struct{}, len(in))
+	out := make([]string, 0, len(in))
+	for _, s := range in {
+		if _, ok := seen[s]; ok {
+			continue
+		}
+		seen[s] = struct{}{}
+		out = append(out, s)
+	}
+	return out
+}
+
 func (c *Client) ListProductIDsByCategory(ctx context.Context, level1ID, level2ID int64) ([]string, error) {
 	ids := make([]string, 0, 64)
 	var pageContext string
@@ -401,7 +417,7 @@ func (c *Client) ListProductIDsByCategory(ctx context.Context, level1ID, level2I
 		}
 		pageContext = next
 	}
-	return ids, nil
+	return dedupStringPreserveOrder(ids), nil
 }
 
 type ProductSku struct {
@@ -617,5 +633,5 @@ func (c *Client) ListAllProductIDs(ctx context.Context, status int) ([]string, e
 		}
 		nextKey = nk
 	}
-	return ids, nil
+	return dedupStringPreserveOrder(ids), nil
 }
