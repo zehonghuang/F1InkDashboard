@@ -37,6 +37,13 @@ type WechatMiniConfig struct {
 	Secret  string
 }
 
+type WechatShopConfig struct {
+	Enabled  bool
+	AppID    string
+	Secret   string
+	ApiToken string
+}
+
 type Config struct {
 	ListenAddr     string
 	StaticDir      string
@@ -50,6 +57,7 @@ type Config struct {
 	MySQL      MySQLConfig
 	WechatPay  WechatPayConfig
 	WechatMini WechatMiniConfig
+	WechatShop WechatShopConfig
 
 	NewsWsEnabled   bool
 	NewsIngestToken string
@@ -122,6 +130,7 @@ func FromEnv() Config {
 		MySQL:             mysqlFromEnv(),
 		WechatPay:         wechatPayFromEnv(),
 		WechatMini:        wechatMiniFromEnv(),
+		WechatShop:        wechatShopFromEnv(),
 		NewsWsEnabled:     getenvBool("NEWS_WS_ENABLED", false),
 		NewsIngestToken:   getenvTrim("NEWS_INGEST_TOKEN", ""),
 		OpenF1Enabled:     getenvBool("OPENF1_ENABLED", false),
@@ -218,6 +227,15 @@ func wechatMiniFromEnv() WechatMiniConfig {
 		Enabled: getenvBool("WECHAT_MINI_ENABLED", false),
 		AppID:   getenvTrim("WECHAT_MINI_APP_ID", ""),
 		Secret:  getenvTrim("WECHAT_MINI_SECRET", ""),
+	}
+}
+
+func wechatShopFromEnv() WechatShopConfig {
+	return WechatShopConfig{
+		Enabled:  getenvBool("WECHAT_SHOP_ENABLED", false),
+		AppID:    getenvTrim("WECHAT_SHOP_APP_ID", ""),
+		Secret:   getenvTrim("WECHAT_SHOP_SECRET", ""),
+		ApiToken: getenvTrim("WECHAT_SHOP_API_TOKEN", ""),
 	}
 }
 
