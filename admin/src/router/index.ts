@@ -13,6 +13,8 @@ import UsersListPage from '@/pages/UsersListPage.vue'
 import F1LiveTimingDemoPage from '@/pages/F1LiveTimingDemoPage.vue'
 import MotorsportQualifyingDemoPage from '@/pages/MotorsportQualifyingDemoPage.vue'
 import MotorsportLiveStandingsDemoPage from '@/pages/MotorsportLiveStandingsDemoPage.vue'
+import ShopCategoriesPage from '@/pages/ShopCategoriesPage.vue'
+import ShopProductsPage from '@/pages/ShopProductsPage.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -90,6 +92,18 @@ const routes: RouteRecordRaw[] = [
         name: 'f1-live-timing-demo',
         component: F1LiveTimingDemoPage,
         meta: { title: 'F1 Live Timing Demo' },
+      },
+      {
+        path: 'shop/categories',
+        name: 'shop-categories',
+        component: ShopCategoriesPage,
+        meta: { title: '微信小店 · 分类' },
+      },
+      {
+        path: 'shop/products',
+        name: 'shop-products',
+        component: ShopProductsPage,
+        meta: { title: '微信小店 · 商品' },
       },
     ],
   },
