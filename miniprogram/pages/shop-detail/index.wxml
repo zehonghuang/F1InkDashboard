@@ -1,20 +1,84 @@
 <view class="page">
-  <view wx:if="{{!product}}" class="empty">{{i18n.shop.empty}}</view>
+  <view wx:if="{{ loading }}" class="status">{{i18n.common.loading || '加载中...'}}</view>
+  <view wx:if="{{ !loading && errorText }}" class="status status-error">{{ errorText }}</view>
 
-  <view wx:else>
-    <view class="header">
-      <view class="title">{{product.title}}</view>
-      <view class="subtitle">{{product.subtitle}}</view>
-    </view>
-
-    <view class="card">
-      <view class="row">
-        <view class="row-key">{{i18n.shop.price}}</view>
-        <view class="row-val">{{priceText}}</view>
+  <block wx:if="{{ !loading && product }}">
+    <view class="gallery-card">
+      <image
+        wx:if="{{ product.head_img && product.head_img.length > 0 }}"
+        class="gallery-main"
+        src="{{ product.head_img[0] }}"
+        mode="aspectFill"
+      />
+      <view class="gallery-sub-row" wx:if="{{ product.head_img.length > 1 }}">
+        <image
+          wx:for="{{ product.head_img }}"
+          wx:for-item="src"
+          wx:for-index="idx"
+          wx:key="idx"
+          class="gallery-sub"
+          src="{{ src }}"
+          mode="aspectFill"
+        />
       </view>
-      <view wx:if="{{product.desc}}" class="desc">{{product.desc}}</view>
-      <button class="btn" bindtap="onTapBuy">{{i18n.shop.buy}}</button>
     </view>
+
+    <view class="header-card">
+      <view class="price-row">
+        <view class="price-sale">{{ priceText }}</view>
+        <view wx:if="{{ marketPriceText && marketPriceText !== '-' }}" class="price-market">
+          {{ marketPriceText }}
+        </view>
+      </view>
+      <view class="title">{{ product.title }}</view>
+      <view wx:if="{{ product.sub_title }}" class="subtitle">{{ product.sub_title }}</view>
+      <view class="meta-row">
+        <view class="meta-chip">
+          <text wx:if="{{ product.total_stock > 0 }}">库存 {{ product.total_stock }}</text>
+          <text wx:else class="meta-chip-warn">已售罄</text>
+        </view>
+        <view class="meta-chip" wx:if="{{ product.skus }}">
+          {{ product.skus.length }} 个 SKU
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{ product.skus && product.skus.length }}" class="sku-card">
+      <view class="section-title">SKU 规格</view>
+      <view wx:for="{{ product.skus }}" wx:for-item="sku" wx:for-index="idx" wx:key="idx" class="sku-row">
+        <image
+          wx:if="{{ sku.thumb_img }}"
+          class="sku-thumb"
+          src="{{ sku.thumb_img }}"
+          mode="aspectFill"
+        />
+        <view class="sku-info">
+          <view class="sku-spec">{{ sku._specLabel || '规格' }}</view>
+          <view class="sku-price-row">
+            <view class="sku-price">{{ sku._priceText || '-' }}</view>
+            <view class="sku-stock">库存 {{ sku.stock_num || 0 }}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{ product.desc_info && product.desc_info.imgs && product.desc_info.imgs.length }}" class="desc-card">
+      <view class="section-title">商品详情</view>
+      <image
+        wx:for="{{ product.desc_info.imgs }}"
+        wx:for-item="src"
+        wx:for-index="idx"
+        wx:key="idx"
+        class="desc-image"
+        src="{{ src }}"
+        mode="widthFix"
+      />
+    </view>
+
+    <view class="safe-bottom"></view>
+  </block>
+
+  <view class="buy-bar" wx:if="{{ !loading && product }}">
+    <button class="buy-btn" bindtap="onTapBuy">立即购买</button>
   </view>
 </view>
-

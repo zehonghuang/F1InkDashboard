@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { MpNewsRichTextNode } from '@/api/mpNews'
+import { F1_SHOP_CARD_TAG, getShopCardProductID, isShopCardNode } from '@/utils/mpNewsRichText'
+import ShopProductCardInline from '@/components/ShopProductCardInline.vue'
 
 defineOptions({ name: 'RichTextNode' })
 
 const props = defineProps<{ node: MpNewsRichTextNode; baseUrl?: string }>()
 
 const isText = computed(() => String(props.node?.type || '') === 'text')
+const isShopCard = computed(() => isShopCardNode(props.node))
+const shopCardProductID = computed(() => (isShopCard.value ? getShopCardProductID(props.node) : ''))
 
 function safeUrl(raw: string) {
   const s = raw.trim()
@@ -26,6 +30,7 @@ function joinURL(base: string, p: string) {
 
 const tagName = computed(() => {
   const name = String(props.node?.name || '').toLowerCase()
+  if (name === F1_SHOP_CARD_TAG) return 'div'
   const allowed = new Set([
     'p',
     'span',
@@ -93,6 +98,11 @@ const children = computed<MpNewsRichTextNode[]>(() => {
 
 <template>
   <template v-if="isText">{{ node.text }}</template>
+  <ShopProductCardInline
+    v-else-if="isShopCard"
+    :product-i-d="shopCardProductID"
+    :interactive="false"
+  />
   <component v-else :is="tagName" v-bind="attrs">
     <template v-if="tagName !== 'img' && tagName !== 'br'">
       <RichTextNode v-for="(c, idx) in children" :key="idx" :node="c" :base-url="baseUrl" />

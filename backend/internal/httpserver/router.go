@@ -143,6 +143,11 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/pay/wechat/order/:out_trade_no", handlers.WechatPayQueryOrder(cfg))
 	s.Router.POST("/api/v1/pay/wechat/notify", handlers.WechatPayNotify(cfg))
 
+	s.Router.GET("/api/v1/shop/categories", handlers.WechatShopCategories(cfg))
+	s.Router.GET("/api/v1/shop/categories/:id/products", handlers.WechatShopCategoryProductIDs(cfg))
+	s.Router.GET("/api/v1/shop/products", handlers.WechatShopAllProductIDs(cfg))
+	s.Router.GET("/api/v1/shop/products/:id", handlers.WechatShopProductDetail(cfg))
+
 	s.Router.GET("/api/v1/f1/sessions", handlers.F1Sessions(cfg, gormOrNil(database), s.Cache))
 	s.Router.GET("/api/v1/f1/sessions/current", handlers.F1SessionsCurrentExplicit(cfg, gormOrNil(database), s.Cache))
 	s.Router.GET("/api/v1/f1/sessions/:season/:round/:session_name", handlers.F1SessionsByPath(cfg, gormOrNil(database), s.Cache))

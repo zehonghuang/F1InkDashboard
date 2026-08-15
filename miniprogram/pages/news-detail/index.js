@@ -1,5 +1,45 @@
 const { fetchNewsDetail } = require("../../services/mpNewsApi")
 const i18n = require("../../services/i18n")
+const { getWeChatStoreConfig } = require("../../services/wechatStore")
+
+const F1_SHOP_CARD_TAG = "f1-shop-card"
+const EMBEDDED_STORE_STYLE = {
+  card: {
+    "background-color": "#08080D"
+  },
+  title: {
+    color: "rgba(255, 255, 255, 0.92)"
+  },
+  price: {
+    color: "#FF6A57"
+  },
+  "buy-button": {
+    width: "116px",
+    "border-radius": "999px",
+    "background-color": "#E10600",
+    color: "#FFFFFF"
+  },
+  "buy-button-disabled": {
+    width: "116px",
+    "border-radius": "999px",
+    "background-color": "#4D1212",
+    color: "rgba(255, 255, 255, 0.58)"
+  }
+}
+
+function isShopCardNode(node) {
+  return Boolean(
+    node &&
+      typeof node === "object" &&
+      String(node.name || "").trim().toLowerCase() === F1_SHOP_CARD_TAG
+  )
+}
+
+function getShopCardProductID(node) {
+  const attrs = (node && node.attrs) || {}
+  const pid = attrs["data-product-id"]
+  return String(pid == null ? "" : pid).trim()
+}
 
 function isImageNode(node) {
   return Boolean(
@@ -82,6 +122,19 @@ function buildContentBlocks(nodes) {
   }
 
   for (const node of arr) {
+    if (isShopCardNode(node)) {
+      flushRich()
+      flushGallery()
+      const pid = getShopCardProductID(node)
+      if (pid) {
+        blocks.push({
+          id: `shop_${blocks.length}_${pid}`,
+          type: "product_card",
+          productID: pid,
+        })
+      }
+      continue
+    }
     if (isImageNode(node)) {
       flushRich()
       galleryImages.push({
@@ -113,6 +166,9 @@ Page({
     articleImages: [],
     viewerVisible: false,
     viewerInitialIndex: 0,
+    storeAppId: "",
+    embeddedStoreStyle: EMBEDDED_STORE_STYLE,
+    storeProductErrorText: "",
     loading: false,
     errorText: ""
   },
@@ -125,6 +181,7 @@ Page({
   onLoad(query) {
     this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     this.applyI18n()
+    this.syncStoreProductConfig()
     const id = (query && query.id) || ""
     if (!id) {
       this.setData({ errorText: i18n.t("newsDetail.missingId") })
@@ -174,6 +231,25 @@ Page({
   },
   onViewerClose() {
     this.setData({ viewerVisible: false })
+  },
+  onStoreProductEnterSuccess() {
+    if (!this.data.storeProductErrorText) return
+    this.setData({ storeProductErrorText: "" })
+  },
+  onStoreProductEnterError(e) {
+    const detail = (e && e.detail) || {}
+    const message = String(detail.message || "").trim()
+    this.setData({
+      storeProductErrorText: message
+        ? `${i18n.t("newsDetail.recommendEnterFailedPrefix")}${message}`
+        : i18n.t("newsDetail.recommendEnterFailed")
+    })
+  },
+  syncStoreProductConfig() {
+    const cfg = getWeChatStoreConfig()
+    this.setData({
+      storeAppId: String(cfg.appId || "").trim()
+    })
   },
   applyI18n() {
     const dict = i18n.getDict()

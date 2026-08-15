@@ -23,6 +23,22 @@
             />
           </view>
         </view>
+        <view
+          wx:elif="{{ block.type === 'product_card' }}"
+          class="store-product-embed"
+        >
+          <store-product
+            wx:if="{{ storeAppId && block.productID }}"
+            appid="{{storeAppId}}"
+            product-id="{{block.productID}}"
+            custom-style="{{embeddedStoreStyle}}"
+          />
+          <view wx:else class="store-product-embed__fallback">
+            <view class="store-product-embed__tag">F1 Store</view>
+            <view class="store-product-embed__id">商品 {{ block.productID || 'ID 缺失' }}</view>
+            <view wx:if="{{ !storeAppId }}" class="store-product-embed__warn">未配置微信小店 AppID</view>
+          </view>
+        </view>
       </block>
     </view>
   </view>

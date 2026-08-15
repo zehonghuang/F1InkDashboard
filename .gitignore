@@ -72,3 +72,5 @@ admin-v2/coverage/
 admin-v2/tsconfig.tsbuildinfo
 admin-v2/.env.local
 admin-v2/.env.*.local
+
+qdrant_storage/
