@@ -10,7 +10,6 @@ import (
 	"msg-gateway/internal/model"
 	"msg-gateway/internal/platform"
 	"msg-gateway/internal/wechatshop"
-	"msg-gateway/internal/xiaohongshu"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -40,23 +39,10 @@ func New(cfg config.Config, database *db.DB) *Server {
 		}
 	}
 
-	var xhsCli *xiaohongshu.Client
-	if cfg.Xiaohongshu.Enabled {
-		c, err := xiaohongshu.NewClient(cfg.Xiaohongshu)
-		if err != nil {
-			log.Printf("[server] xiaohongshu client init skipped: %v", err)
-		} else {
-			xhsCli = c
-			msgSvc.RegisterClient(model.PlatformXiaohongshu, platform.Client(xhsCli))
-			log.Printf("[server] xiaohongshu client registered")
-		}
-	}
-
 	appCtx := &handlers.AppContext{
 		Cfg:           cfg,
 		MessageSvc:    msgSvc,
 		WechatShopCli: wsCli,
-		XhsCli:        xhsCli,
 	}
 
 	s := &Server{
@@ -82,9 +68,6 @@ func (s *Server) registerRoutes() {
 
 	r.GET("/webhook/wechatshop", handlers.WechatShopWebhookVerify(app))
 	r.POST("/webhook/wechatshop", handlers.WechatShopWebhook(app))
-
-	r.GET("/webhook/xiaohongshu", handlers.XiaohongshuWebhookVerify(app))
-	r.POST("/webhook/xiaohongshu", handlers.XiaohongshuWebhook(app))
 
 	admin := r.Group("/api/v1/admin")
 	admin.Use(handlers.AdminRequired(s.Config))

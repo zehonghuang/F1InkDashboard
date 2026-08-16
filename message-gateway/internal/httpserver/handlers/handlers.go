@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -10,7 +12,6 @@ import (
 	"msg-gateway/internal/config"
 	"msg-gateway/internal/message"
 	"msg-gateway/internal/wechatshop"
-	"msg-gateway/internal/xiaohongshu"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,7 +20,6 @@ type AppContext struct {
 	Cfg           config.Config
 	MessageSvc    *message.Service
 	WechatShopCli *wechatshop.Client
-	XhsCli        *xiaohongshu.Client
 }
 
 func Health() gin.HandlerFunc {
@@ -71,14 +71,14 @@ func SendMessage(app *AppContext) gin.HandlerFunc {
 		defer cancel()
 
 		msg, err := app.MessageSvc.SendMessage(ctx, message.SendParams{
-			Platform:       req.Platform,
-			PlatformUID:    req.PlatformUID,
-			MsgType:        req.MsgType,
-			Content:        req.Content,
-			MediaURL:       req.MediaURL,
-			LinkTitle:      req.LinkTitle,
-			LinkURL:        req.LinkURL,
-			ProductID:      req.ProductID,
+			Platform:    req.Platform,
+			PlatformUID: req.PlatformUID,
+			MsgType:     req.MsgType,
+			Content:     req.Content,
+			MediaURL:    req.MediaURL,
+			LinkTitle:   req.LinkTitle,
+			LinkURL:     req.LinkURL,
+			ProductID:   req.ProductID,
 		})
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
@@ -135,7 +135,10 @@ func WechatShopWebhookVerify(app *AppContext) gin.HandlerFunc {
 		timestamp := c.Query("timestamp")
 		nonce := c.Query("nonce")
 		echostr := c.Query("echostr")
+		log.Printf("[wechatshop:verify] GET sig=%s ts=%s nonce=%s echostr=%s",
+			signature, timestamp, nonce, echostr)
 		if !app.WechatShopCli.VerifyWebhookSignature(signature, timestamp, nonce, "") {
+			log.Printf("[wechatshop:verify] !!! invalid_signature")
 			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
@@ -160,68 +163,45 @@ func WechatShopWebhook(app *AppContext) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "read_body_failed"})
 			return
 		}
-		if !app.WechatShopCli.VerifyWebhookSignature(signature, timestamp, nonce, string(body)) {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "invalid_signature"})
-			return
+		if len(body) > 0 {
+			log.Printf("[wechatshop:webhook] <<< raw body: %s", string(body))
+		}
+		if app.Cfg.WechatShop.NotifyToken != "" {
+			if !app.WechatShopCli.VerifyWebhookSignature(signature, timestamp, nonce, string(body)) {
+				log.Printf("[wechatshop:webhook] !!! invalid_signature sig=%s ts=%s nonce=%s body=%s",
+					signature, timestamp, nonce, truncateLogBody(body))
+				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "invalid_signature"})
+				return
+			}
 		}
 		event, err := app.WechatShopCli.ParseWebhookEvent(body)
 		if err != nil {
+			log.Printf("[wechatshop:webhook] !!! parse_body_failed: %v body=%s", err, truncateLogBody(body))
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
+		}
+		log.Printf("[wechatshop:webhook] >>> event=%s id=%s order_id=%s uid=%s shop_id=%s conv_id=%s",
+			event.EventType, event.EventID, event.OrderID, event.PlatformUID, event.ShopID, event.ConversationID)
+		if len(event.RawPayload) > 0 {
+			log.Printf("[wechatshop:webhook] >>> decoded payload: %s", truncateLogStr(event.RawPayload))
 		}
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 15*time.Second)
 		defer cancel()
 		_ = app.MessageSvc.IngestIncomingEvent(ctx, event)
-		c.JSON(http.StatusOK, gin.H{"ok": true})
+		c.String(http.StatusOK, "success")
 	}
 }
 
-func XiaohongshuWebhookVerify(app *AppContext) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if app.XhsCli == nil {
-			c.String(http.StatusServiceUnavailable, "xhs_disabled")
-			return
-		}
-		signature := c.GetHeader("X-Signature")
-		timestamp := c.GetHeader("X-Timestamp")
-		nonce := c.GetHeader("X-Nonce")
-		echostr := c.Query("echostr")
-		if !app.XhsCli.VerifyWebhookSignature(signature, timestamp, nonce, "") {
-			c.AbortWithStatus(http.StatusForbidden)
-			return
-		}
-		c.String(http.StatusOK, echostr)
-	}
+func truncateLogBody(b []byte) string {
+	return truncateLogStr(string(b))
 }
 
-func XiaohongshuWebhook(app *AppContext) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if app.XhsCli == nil {
-			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "xhs_disabled"})
-			return
-		}
-		signature := c.GetHeader("X-Signature")
-		timestamp := c.GetHeader("X-Timestamp")
-		nonce := c.GetHeader("X-Nonce")
-		body, err := c.GetRawData()
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "read_body_failed"})
-			return
-		}
-		if !app.XhsCli.VerifyWebhookSignature(signature, timestamp, nonce, string(body)) {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "invalid_signature"})
-			return
-		}
-		event, err := app.XhsCli.ParseWebhookEvent(body)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		ctx, cancel := context.WithTimeout(c.Request.Context(), 15*time.Second)
-		defer cancel()
-		_ = app.MessageSvc.IngestIncomingEvent(ctx, event)
-		c.JSON(http.StatusOK, gin.H{"ok": true})
+func truncateLogStr(s string) string {
+	const max = 2048
+	if len(s) <= max {
+		return s
 	}
+	return s[:max] + fmt.Sprintf("...[truncated %d bytes]", len(s)-max)
 }
 
 func RequestLogger(enabled bool) gin.HandlerFunc {

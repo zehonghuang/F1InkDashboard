@@ -60,11 +60,9 @@ func logStartupConfig(cfg config.Config) {
 		mk("MSG_GATEWAY_MYSQL_DB"),
 	)
 
-	log.Printf("startup env WECHAT_SHOP_ENABLED=%s WECHAT_SHOP_APP_ID=%s XHS_ENABLED=%s XHS_APP_ID=%s",
+	log.Printf("startup env WECHAT_SHOP_ENABLED=%s WECHAT_SHOP_APP_ID=%s",
 		mk("WECHAT_SHOP_ENABLED"),
 		mk("WECHAT_SHOP_APP_ID"),
-		mk("XHS_ENABLED"),
-		mk("XHS_APP_ID"),
 	)
 
 	if !cfg.MySQL.Enabled {
@@ -113,21 +111,6 @@ func validateStartupConfig(cfg config.Config) {
 		reqWS("WECHAT_SHOP_SECRET")
 		if len(missingWS) > 0 {
 			log.Fatalf("startup config invalid: missing env %s (set WECHAT_SHOP_ENABLED=0 to disable)", strings.Join(missingWS, ","))
-		}
-	}
-
-	if cfg.Xiaohongshu.Enabled {
-		missingX := make([]string, 0, 4)
-		reqX := func(key string) {
-			v, ok := os.LookupEnv(key)
-			if !ok || strings.TrimSpace(v) == "" {
-				missingX = append(missingX, key)
-			}
-		}
-		reqX("XHS_APP_ID")
-		reqX("XHS_APP_SECRET")
-		if len(missingX) > 0 {
-			log.Fatalf("startup config invalid: missing env %s (set XHS_ENABLED=0 to disable)", strings.Join(missingX, ","))
 		}
 	}
 }

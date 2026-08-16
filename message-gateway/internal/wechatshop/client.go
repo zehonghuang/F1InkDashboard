@@ -3,9 +3,14 @@ package wechatshop
 import (
 	"bytes"
 	"context"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"crypto/sha1"
-	"encoding/hex"
+	"encoding/base64"
+	"encoding/binary"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
@@ -21,6 +26,11 @@ import (
 	"msg-gateway/internal/config"
 	"msg-gateway/internal/model"
 	"msg-gateway/internal/platform"
+)
+
+const (
+	EventOrderNew = "channels_ec_order_new"
+	EventOrderPay = "channels_ec_order_pay"
 )
 
 type flexInt64 int64
@@ -233,53 +243,244 @@ func (c *Client) VerifyWebhookSignature(signature, timestamp, nonce, body string
 	sort.Strings(arr)
 	joined := strings.Join(arr, "")
 	h := sha1.Sum([]byte(joined))
-	expected := hex.EncodeToString(h[:])
-	return strings.EqualFold(expected, signature)
+	expected := strings.ToLower(hex.EncodeToString(h[:]))
+	return strings.ToLower(signature) == expected
+}
+
+type msgSignatureInput struct {
+	Token     string
+	Timestamp string
+	Nonce     string
+	Encrypt   string
+}
+
+func sha1Hex(s ...string) string {
+	sort.Strings(s)
+	h := sha1.Sum([]byte(strings.Join(s, "")))
+	return strings.ToLower(hex.EncodeToString(h[:]))
+}
+
+func (c *Client) VerifyMsgSignature(msgSignature, timestamp, nonce, encrypt string) bool {
+	if c.cfg.NotifyToken == "" {
+		return false
+	}
+	expected := sha1Hex(c.cfg.NotifyToken, timestamp, nonce, encrypt)
+	return strings.ToLower(msgSignature) == expected
+}
+
+type encryptedEnvelope struct {
+	XMLName      xml.Name `xml:"xml"`
+	ToUserName   string   `xml:"ToUserName"`
+	Encrypt      string   `xml:"Encrypt"`
+	MsgSignature string   `xml:"MsgSignature"`
+	TimeStamp    string   `xml:"TimeStamp"`
+	Nonce        string   `xml:"Nonce"`
+}
+
+type flexString string
+
+func (f *flexString) UnmarshalJSON(data []byte) error {
+	trimmed := strings.TrimSpace(string(data))
+	if trimmed == `""` || trimmed == `null` {
+		*f = ""
+		return nil
+	}
+	if len(trimmed) >= 2 && trimmed[0] == '"' && trimmed[len(trimmed)-1] == '"' {
+		*f = flexString(trimmed[1 : len(trimmed)-1])
+		return nil
+	}
+	*f = flexString(trimmed)
+	return nil
+}
+
+type OrderInfo struct {
+	OrderID flexString `json:"order_id"`
+	PayTime int64      `json:"pay_time,omitempty"`
 }
 
 type webhookEnvelope struct {
-	ToUserName   string          `json:"ToUserName"`
-	FromUserName string          `json:"FromUserName"`
-	CreateTime   int64           `json:"CreateTime"`
-	MsgType      string          `json:"MsgType"`
-	Event        string          `json:"Event"`
-	Content      string          `json:"Content"`
-	MsgID        string          `json:"MsgId"`
-	PicURL       string          `json:"PicUrl"`
-	MediaID      string          `json:"MediaId"`
-	Title        string          `json:"Title"`
-	Description  string          `json:"Description"`
-	URL          string          `json:"Url"`
-	ProductID    string          `json:"ProductId"`
-	HeadImage    string          `json:"HeadImage"`
-	NickName     string          `json:"NickName"`
-	ShopAppID    string          `json:"shop_app_id"`
-	OpenID       string          `json:"openid"`
-	Raw          json.RawMessage `json:"-"`
+	ToUserName   string    `json:"ToUserName"`
+	FromUserName string    `json:"FromUserName"`
+	CreateTime   int64     `json:"CreateTime"`
+	MsgType      string    `json:"MsgType"`
+	Event        string    `json:"Event"`
+	OrderInfo    OrderInfo `json:"order_info"`
+
+	Content   string `json:"Content"`
+	MsgID     string `json:"MsgId"`
+	PicURL    string `json:"PicUrl"`
+	MediaID   string `json:"MediaId"`
+	Title     string `json:"Title"`
+	URL       string `json:"Url"`
+	ProductID string `json:"ProductId"`
+	NickName  string `json:"NickName"`
+	HeadImage string `json:"HeadImage"`
+	ShopAppID string `json:"shop_app_id"`
+	OpenID    string `json:"openid"`
 }
 
-func (c *Client) ParseWebhookEvent(body []byte) (*model.PlatformEvent, error) {
-	var env webhookEnvelope
-	if err := json.Unmarshal(body, &env); err != nil {
+func (c *Client) DecryptEvent(aesKey, encrypted string) ([]byte, error) {
+	aesKey = strings.TrimSpace(aesKey)
+	key, err := base64.StdEncoding.DecodeString(aesKey + "=")
+	if err != nil {
+		return nil, fmt.Errorf("decode aes key: %w", err)
+	}
+	if len(key) != 32 {
+		key = padAESKey(key)
+	}
+	cipherBlock, err := aes.NewCipher(key)
+	if err != nil {
 		return nil, err
 	}
+	raw, err := base64.StdEncoding.DecodeString(encrypted)
+	if err != nil {
+		return nil, fmt.Errorf("decode encrypt: %w", err)
+	}
+	if len(raw) < aes.BlockSize || len(raw)%aes.BlockSize != 0 {
+		return nil, fmt.Errorf("invalid cipher length %d", len(raw))
+	}
+	iv := make([]byte, aes.BlockSize)
+	if _, err := rand.Read(iv); err != nil {
+		iv = raw[:aes.BlockSize]
+	} else {
+		iv = raw[:aes.BlockSize]
+	}
+	mode := cipher.NewCBCDecrypter(cipherBlock, iv)
+	out := make([]byte, len(raw))
+	mode.CryptBlocks(out, raw)
+	out = pkcs7Unpad(out)
+	if len(out) <= 20+aes.BlockSize {
+		return nil, fmt.Errorf("decrypted too short: %d", len(out))
+	}
+	offset := aes.BlockSize
+	content := out[offset+4:]
+	msgLen := binary.BigEndian.Uint32(out[offset : offset+4])
+	if int(msgLen) > len(content) {
+		return nil, fmt.Errorf("msg_len %d > content %d", msgLen, len(content))
+	}
+	return content[:msgLen], nil
+}
+
+func padAESKey(key []byte) []byte {
+	out := make([]byte, 32)
+	copy(out, key)
+	return out
+}
+
+func pkcs7Unpad(b []byte) []byte {
+	if len(b) == 0 {
+		return b
+	}
+	pad := int(b[len(b)-1])
+	if pad < 1 || pad > aes.BlockSize || pad > len(b) {
+		return b
+	}
+	for i := len(b) - pad; i < len(b); i++ {
+		if int(b[i]) != pad {
+			return b
+		}
+	}
+	return b[:len(b)-pad]
+}
+
+func parseWechatBody(body []byte) ([]byte, error) {
+	body = bytes.TrimSpace(body)
+	if len(body) == 0 {
+		return nil, errors.New("empty_body")
+	}
+	first := body[0]
+	if first == '<' {
+		var env encryptedEnvelope
+		if err := xml.Unmarshal(body, &env); err != nil {
+			return nil, err
+		}
+		enc := strings.TrimSpace(env.Encrypt)
+		if enc == "" {
+			return body, nil
+		}
+		return []byte(enc), nil
+	}
+	return body, nil
+}
+
+func (c *Client) ParseWebhookEvent(rawBody []byte) (*model.PlatformEvent, error) {
+	body := bytes.TrimSpace(rawBody)
+	if len(body) == 0 {
+		return nil, errors.New("empty_body")
+	}
+
+	var envelope encryptedEnvelope
+	isXML := len(body) > 0 && body[0] == '<'
+	var encryptedStr string
+	var msgSig string
+	var ts string
+	var nonceStr string
+
+	if isXML {
+		if err := xml.Unmarshal(body, &envelope); err == nil {
+			encryptedStr = strings.TrimSpace(envelope.Encrypt)
+			msgSig = envelope.MsgSignature
+			ts = envelope.TimeStamp
+			nonceStr = envelope.Nonce
+		}
+	}
+
+	plaintext := body
+	if encryptedStr != "" && strings.TrimSpace(c.cfg.AESKey) != "" {
+		if msgSig != "" && !c.VerifyMsgSignature(msgSig, ts, nonceStr, encryptedStr) {
+			return nil, errors.New("invalid_msg_signature")
+		}
+		dec, err := c.DecryptEvent(c.cfg.AESKey, encryptedStr)
+		if err != nil {
+			log.Printf("[wechatshop] decrypt fallback, treat body as plain. err=%v", err)
+		} else {
+			plaintext = dec
+		}
+	}
+
+	var env webhookEnvelope
+	if err := json.Unmarshal(plaintext, &env); err != nil {
+		if isXML {
+			return nil, err
+		}
+		return nil, fmt.Errorf("parse json: %w", err)
+	}
+
+	orderID := string(env.OrderInfo.OrderID)
+	openID := env.FromUserName
+	if openID == "" {
+		openID = env.OpenID
+	}
+	shopAppID := env.ShopAppID
+	if shopAppID == "" {
+		shopAppID = env.ToUserName
+	}
+
 	eventType := env.Event
 	if eventType == "" {
 		eventType = "msg_" + env.MsgType
 	}
+
 	eventID := env.MsgID
 	if eventID == "" {
-		eventID = fmt.Sprintf("evt_%d_%s", env.CreateTime, env.OpenID)
+		if orderID != "" {
+			eventID = fmt.Sprintf("%s_%s_%d", eventType, orderID, env.CreateTime)
+		} else {
+			eventID = fmt.Sprintf("evt_%s_%d", eventType, env.CreateTime)
+		}
 	}
-	return &model.PlatformEvent{
+
+	ev := &model.PlatformEvent{
 		Platform:       model.PlatformWechatShop,
 		EventType:      eventType,
 		EventID:        eventID,
-		PlatformUID:    env.OpenID,
-		ConversationID: env.OpenID,
-		ShopID:         env.ShopAppID,
-		RawPayload:     string(body),
-	}, nil
+		PlatformUID:    openID,
+		ConversationID: openID,
+		ShopID:         shopAppID,
+		OrderID:        orderID,
+		RawPayload:     string(rawBody),
+	}
+	return ev, nil
 }
 
 func (c *Client) SendMessage(ctx context.Context, payload platform.MessagePayload) (string, error) {
@@ -326,4 +527,125 @@ func (c *Client) SendMessage(ctx context.Context, payload platform.MessagePayloa
 
 func (c *Client) MarkConversationRead(ctx context.Context, conversationID, platformUID string) error {
 	return nil
+}
+
+// ---------- 订单相关 API 调用 ----------
+
+type OrderDetail struct {
+	OrderID      string `json:"order_id"`
+	Status       int    `json:"status"`
+	OpenID       string `json:"openid"`
+	CreateTime   int64  `json:"create_time"`
+	PayTime      int64  `json:"pay_time"`
+	PayAmount    int64  `json:"pay_amount"`
+	ProductPrice int64  `json:"product_price"`
+	Freight      int64  `json:"freight"`
+	Discounted   int64  `json:"discounted_price"`
+	OrderDetail  *struct {
+		ProductInfos []OrderProduct `json:"product_infos"`
+		PriceInfo    *OrderPrice    `json:"price_info"`
+	} `json:"order_detail"`
+	ExtInfo *struct {
+		ProductSpu []OrderProduct `json:"product_spu"`
+	} `json:"ext_info"`
+}
+
+type OrderProduct struct {
+	SpuID       string `json:"spu_id"`
+	ProductID   string `json:"product_id"`
+	SkuID       string `json:"sku_id"`
+	Title       string `json:"title"`
+	ThumbImg    string `json:"thumb_img"`
+	Count       int    `json:"count"`
+	SalePrice   int64  `json:"sale_price"`
+	ProductName string `json:"product_name"`
+}
+
+type OrderPrice struct {
+	ProductPrice  int64 `json:"product_price"`
+	Freight       int64 `json:"freight"`
+	Discounted    int64 `json:"discounted_price"`
+	OriginalPrice int64 `json:"original_price"`
+	PayablePrice  int64 `json:"payable_price"`
+	PayPrice      int64 `json:"pay_price"`
+}
+
+type getOrderResponseInner struct {
+	Order struct {
+		OrderID     string          `json:"order_id"`
+		Status      int             `json:"status"`
+		OpenID      string          `json:"openid"`
+		CreateTime  int64           `json:"create_time"`
+		PayTime     int64           `json:"pay_time"`
+		OrderDetail json.RawMessage `json:"order_detail"`
+		PriceInfo   json.RawMessage `json:"price_info"`
+		ExtInfo     json.RawMessage `json:"ext_info"`
+	} `json:"order"`
+}
+
+type getOrderResponse struct {
+	Resp      getOrderResponseInner `json:"resp"`
+	OrderInfo getOrderResponseInner `json:"order_info"`
+	apiError
+}
+
+func (c *Client) GetOrderDetail(ctx context.Context, orderID string) (*OrderDetail, error) {
+	orderID = strings.TrimSpace(orderID)
+	if orderID == "" {
+		return nil, errors.New("missing_order_id")
+	}
+	body := map[string]any{"order_id": orderID}
+	var out getOrderResponse
+	if err := c.doAPI(ctx, http.MethodPost, "/channels/ec/order/get", body, &out); err != nil {
+		return nil, err
+	}
+	inner := out.OrderInfo
+	if inner.Order.OrderID == "" && out.Resp.Order.OrderID != "" {
+		inner = out.Resp
+	}
+	if inner.Order.OrderID == "" {
+		return nil, errors.New("order_not_found")
+	}
+	od := &OrderDetail{
+		OrderID:    inner.Order.OrderID,
+		Status:     inner.Order.Status,
+		OpenID:     inner.Order.OpenID,
+		CreateTime: inner.Order.CreateTime,
+		PayTime:    inner.Order.PayTime,
+	}
+	if len(inner.Order.OrderDetail) > 0 {
+		od.OrderDetail = &struct {
+			ProductInfos []OrderProduct `json:"product_infos"`
+			PriceInfo    *OrderPrice    `json:"price_info"`
+		}{}
+		_ = json.Unmarshal(inner.Order.OrderDetail, od.OrderDetail)
+	}
+	if len(inner.Order.PriceInfo) > 0 && od.OrderDetail != nil {
+		od.OrderDetail.PriceInfo = &OrderPrice{}
+		_ = json.Unmarshal(inner.Order.PriceInfo, od.OrderDetail.PriceInfo)
+		if od.OrderDetail.PriceInfo != nil {
+			od.ProductPrice = od.OrderDetail.PriceInfo.ProductPrice
+			od.Freight = od.OrderDetail.PriceInfo.Freight
+			od.Discounted = od.OrderDetail.PriceInfo.Discounted
+			od.PayAmount = od.OrderDetail.PriceInfo.PayPrice
+		}
+	}
+	return od, nil
+}
+
+// ---------- hex encode helper ----------
+var hex = hexString{}
+
+type hexString struct{}
+
+func (hexString) EncodeToString(src []byte) string {
+	const hextable = "0123456789abcdef"
+	dst := make([]byte, len(src)*2)
+	j := 0
+	for _, v := range src {
+		dst[j] = hextable[v>>4]
+		dst[j+1] = hextable[v&0x0f]
+		j += 2
+	}
+	return string(dst)
 }

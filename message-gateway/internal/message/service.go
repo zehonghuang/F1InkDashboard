@@ -3,11 +3,13 @@ package message
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
 	"msg-gateway/internal/model"
 	"msg-gateway/internal/platform"
+	"msg-gateway/internal/wechatshop"
 
 	"gorm.io/gorm"
 )
@@ -195,26 +197,34 @@ func (s *Service) IngestIncomingEvent(ctx context.Context, event *model.Platform
 
 func (s *Service) processIncomingEvent(ctx context.Context, event *model.PlatformEvent) error {
 	now := time.Now()
-	user, err := s.upsertPlatformUser(ctx, event.Platform, event.PlatformUID)
-	if err != nil {
-		log.Printf("[message] upsert user on event failed: %v", err)
-	}
-	conv, err := s.getOrCreateConversation(ctx, event.Platform, event.PlatformUID, user)
-	if err != nil {
-		log.Printf("[message] get conv on event failed: %v", err)
-	}
+	isOrderEvent := event.OrderID != ""
 
-	client, ok := s.clients[event.Platform]
-	if ok && event.ConversationID != "" && event.PlatformUID != "" {
-		_ = client.MarkConversationRead(ctx, event.ConversationID, event.PlatformUID)
-	}
+	if !isOrderEvent && event.PlatformUID != "" {
+		user, err := s.upsertPlatformUser(ctx, event.Platform, event.PlatformUID)
+		if err != nil {
+			log.Printf("[message] upsert user on event failed: %v", err)
+		}
+		conv, err := s.getOrCreateConversation(ctx, event.Platform, event.PlatformUID, user)
+		if err != nil {
+			log.Printf("[message] get conv on event failed: %v", err)
+		}
 
-	if s.db != nil && conv.ID > 0 {
-		s.db.Model(conv).Updates(map[string]any{
-			"last_message_at": now,
-			"last_sender":     model.SenderUser,
-			"unread_count":    gorm.Expr("unread_count + 1"),
-		})
+		client, ok := s.clients[event.Platform]
+		if ok && event.ConversationID != "" && event.PlatformUID != "" {
+			_ = client.MarkConversationRead(ctx, event.ConversationID, event.PlatformUID)
+		}
+
+		if s.db != nil && conv.ID > 0 {
+			s.db.Model(conv).Updates(map[string]any{
+				"last_message_at": now,
+				"last_sender":     model.SenderUser,
+				"unread_count":    gorm.Expr("unread_count + 1"),
+				"last_message":    fmtSummaryFromEvent(event),
+			})
+		}
+	} else {
+		log.Printf("[message] order event: platform=%s event=%s order_id=%s uid=%s",
+			event.Platform, event.EventType, event.OrderID, event.PlatformUID)
 	}
 
 	if s.db != nil {
@@ -224,6 +234,16 @@ func (s *Service) processIncomingEvent(ctx context.Context, event *model.Platfor
 		})
 	}
 	return nil
+}
+
+func fmtSummaryFromEvent(event *model.PlatformEvent) string {
+	switch event.EventType {
+	case wechatshop.EventOrderNew:
+		return fmt.Sprintf("新订单通知：%s", event.OrderID)
+	case wechatshop.EventOrderPay:
+		return fmt.Sprintf("订单支付成功：%s", event.OrderID)
+	}
+	return "[事件] " + event.EventType
 }
 
 func (s *Service) ListConversations(ctx context.Context, platform string, page, pageSize int) ([]model.Conversation, int64, error) {
