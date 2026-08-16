@@ -1,0 +1,16 @@
+.env
+.env.local
+bin/
+*.exe
+*.test
+*.out
+vendor/
+
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+coverage.out
+coverage.html
