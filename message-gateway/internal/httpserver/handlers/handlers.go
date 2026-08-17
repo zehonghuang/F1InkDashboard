@@ -154,10 +154,7 @@ func WechatShopWebhook(app *AppContext) gin.HandlerFunc {
 			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "wechatshop_disabled"})
 			return
 		}
-		signature := c.Query("msg_signature")
-		if signature == "" {
-			signature = c.Query("signature")
-		}
+		msgSignature := c.Query("msg_signature")
 		timestamp := c.Query("timestamp")
 		nonce := c.Query("nonce")
 		body, err := c.GetRawData()
@@ -169,9 +166,15 @@ func WechatShopWebhook(app *AppContext) gin.HandlerFunc {
 			log.Printf("[wechatshop:webhook] <<< raw body: %s", string(body))
 		}
 		if app.Cfg.WechatShop.NotifyToken != "" {
-			if !app.WechatShopCli.VerifyWebhookSignature(signature, timestamp, nonce, string(body)) {
-				log.Printf("[wechatshop:webhook] !!! invalid_signature sig=%s ts=%s nonce=%s body=%s",
-					signature, timestamp, nonce, truncateLogBody(body))
+			encrypt, parseErr := wechatshop.ExtractEncryptFromBody(body)
+			if parseErr != nil {
+				log.Printf("[wechatshop:webhook] !!! extract_encrypt_failed: %v body=%s", parseErr, truncateLogBody(body))
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid_body"})
+				return
+			}
+			if !app.WechatShopCli.VerifyMsgSignature(msgSignature, timestamp, nonce, encrypt) {
+				log.Printf("[wechatshop:webhook] !!! invalid_msg_signature msg_sig=%s ts=%s nonce=%s encrypt=%s",
+					msgSignature, timestamp, nonce, truncateLogStr(encrypt))
 				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "invalid_signature"})
 				return
 			}

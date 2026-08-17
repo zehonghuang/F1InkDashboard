@@ -5,12 +5,10 @@ import (
 	"context"
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/rand"
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
-	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
@@ -269,12 +267,8 @@ func (c *Client) VerifyMsgSignature(msgSignature, timestamp, nonce, encrypt stri
 }
 
 type encryptedEnvelope struct {
-	XMLName      xml.Name `xml:"xml"`
-	ToUserName   string   `xml:"ToUserName"`
-	Encrypt      string   `xml:"Encrypt"`
-	MsgSignature string   `xml:"MsgSignature"`
-	TimeStamp    string   `xml:"TimeStamp"`
-	Nonce        string   `xml:"Nonce"`
+	ToUserName string `json:"ToUserName"`
+	Encrypt    string `json:"Encrypt"`
 }
 
 type flexString string
@@ -319,46 +313,60 @@ type webhookEnvelope struct {
 	OpenID    string `json:"openid"`
 }
 
-func (c *Client) DecryptEvent(aesKey, encrypted string) ([]byte, error) {
+func ExtractEncryptFromBody(body []byte) (string, error) {
+	body = bytes.TrimSpace(body)
+	if len(body) == 0 {
+		return "", errors.New("empty_body")
+	}
+	var env encryptedEnvelope
+	if err := json.Unmarshal(body, &env); err != nil {
+		return "", fmt.Errorf("parse json envelope: %w", err)
+	}
+	enc := strings.TrimSpace(env.Encrypt)
+	if enc == "" {
+		return "", errors.New("missing_encrypt_field")
+	}
+	return enc, nil
+}
+
+func (c *Client) DecryptEvent(aesKey, encrypted string) (msg []byte, appid string, err error) {
 	aesKey = strings.TrimSpace(aesKey)
 	key, err := base64.StdEncoding.DecodeString(aesKey + "=")
 	if err != nil {
-		return nil, fmt.Errorf("decode aes key: %w", err)
+		return nil, "", fmt.Errorf("decode aes key: %w", err)
 	}
 	if len(key) != 32 {
 		key = padAESKey(key)
 	}
 	cipherBlock, err := aes.NewCipher(key)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	raw, err := base64.StdEncoding.DecodeString(encrypted)
 	if err != nil {
-		return nil, fmt.Errorf("decode encrypt: %w", err)
+		return nil, "", fmt.Errorf("decode encrypt: %w", err)
 	}
 	if len(raw) < aes.BlockSize || len(raw)%aes.BlockSize != 0 {
-		return nil, fmt.Errorf("invalid cipher length %d", len(raw))
+		return nil, "", fmt.Errorf("invalid cipher length %d", len(raw))
 	}
-	iv := make([]byte, aes.BlockSize)
-	if _, err := rand.Read(iv); err != nil {
-		iv = raw[:aes.BlockSize]
-	} else {
-		iv = raw[:aes.BlockSize]
-	}
+	iv := raw[:aes.BlockSize]
 	mode := cipher.NewCBCDecrypter(cipherBlock, iv)
 	out := make([]byte, len(raw))
 	mode.CryptBlocks(out, raw)
 	out = pkcs7Unpad(out)
 	if len(out) <= 20+aes.BlockSize {
-		return nil, fmt.Errorf("decrypted too short: %d", len(out))
+		return nil, "", fmt.Errorf("decrypted too short: %d", len(out))
 	}
 	offset := aes.BlockSize
 	content := out[offset+4:]
 	msgLen := binary.BigEndian.Uint32(out[offset : offset+4])
 	if int(msgLen) > len(content) {
-		return nil, fmt.Errorf("msg_len %d > content %d", msgLen, len(content))
+		return nil, "", fmt.Errorf("msg_len %d > content %d", msgLen, len(content))
 	}
-	return content[:msgLen], nil
+	msgBytes := content[:msgLen]
+	remaining := content[msgLen:]
+	appid = string(bytes.TrimSpace(remaining))
+	return msgBytes, appid, nil
 }
 
 func padAESKey(key []byte) []byte {
@@ -383,24 +391,24 @@ func pkcs7Unpad(b []byte) []byte {
 	return b[:len(b)-pad]
 }
 
-func parseWechatBody(body []byte) ([]byte, error) {
+func parseWechatBody(body []byte) (string, error) {
 	body = bytes.TrimSpace(body)
 	if len(body) == 0 {
-		return nil, errors.New("empty_body")
+		return "", errors.New("empty_body")
 	}
 	first := body[0]
-	if first == '<' {
+	if first == '{' {
 		var env encryptedEnvelope
-		if err := xml.Unmarshal(body, &env); err != nil {
-			return nil, err
+		if err := json.Unmarshal(body, &env); err != nil {
+			return "", err
 		}
 		enc := strings.TrimSpace(env.Encrypt)
 		if enc == "" {
-			return body, nil
+			return "", errors.New("missing_encrypt")
 		}
-		return []byte(enc), nil
+		return enc, nil
 	}
-	return body, nil
+	return "", fmt.Errorf("unsupported_body_format: body must be JSON (starts with '{')")
 }
 
 func (c *Client) ParseWebhookEvent(rawBody []byte) (*model.PlatformEvent, error) {
@@ -409,40 +417,32 @@ func (c *Client) ParseWebhookEvent(rawBody []byte) (*model.PlatformEvent, error)
 		return nil, errors.New("empty_body")
 	}
 
-	var envelope encryptedEnvelope
-	isXML := len(body) > 0 && body[0] == '<'
 	var encryptedStr string
-	var msgSig string
-	var ts string
-	var nonceStr string
-
-	if isXML {
-		if err := xml.Unmarshal(body, &envelope); err == nil {
-			encryptedStr = strings.TrimSpace(envelope.Encrypt)
-			msgSig = envelope.MsgSignature
-			ts = envelope.TimeStamp
-			nonceStr = envelope.Nonce
+	if body[0] == '{' {
+		var env encryptedEnvelope
+		if err := json.Unmarshal(body, &env); err != nil {
+			return nil, fmt.Errorf("parse json envelope: %w", err)
 		}
+		encryptedStr = strings.TrimSpace(env.Encrypt)
 	}
 
 	plaintext := body
 	if encryptedStr != "" && strings.TrimSpace(c.cfg.AESKey) != "" {
-		if msgSig != "" && !c.VerifyMsgSignature(msgSig, ts, nonceStr, encryptedStr) {
-			return nil, errors.New("invalid_msg_signature")
-		}
-		dec, err := c.DecryptEvent(c.cfg.AESKey, encryptedStr)
+		dec, decryptedAppID, err := c.DecryptEvent(c.cfg.AESKey, encryptedStr)
 		if err != nil {
 			log.Printf("[wechatshop] decrypt fallback, treat body as plain. err=%v", err)
 		} else {
 			plaintext = dec
+			expectedAppID := strings.TrimSpace(c.cfg.AppID)
+			gotAppID := strings.TrimSpace(decryptedAppID)
+			if expectedAppID != "" && gotAppID != "" && expectedAppID != gotAppID {
+				return nil, fmt.Errorf("decrypted appid mismatch: expected=%s got=%s", expectedAppID, gotAppID)
+			}
 		}
 	}
 
 	var env webhookEnvelope
 	if err := json.Unmarshal(plaintext, &env); err != nil {
-		if isXML {
-			return nil, err
-		}
 		return nil, fmt.Errorf("parse json: %w", err)
 	}
 
@@ -478,7 +478,7 @@ func (c *Client) ParseWebhookEvent(rawBody []byte) (*model.PlatformEvent, error)
 		ConversationID: openID,
 		ShopID:         shopAppID,
 		OrderID:        orderID,
-		RawPayload:     string(rawBody),
+		RawPayload:     string(plaintext),
 	}
 	return ev, nil
 }
