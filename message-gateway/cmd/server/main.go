@@ -5,10 +5,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/joho/godotenv"
 	"msg-gateway/internal/config"
 	"msg-gateway/internal/db"
 	"msg-gateway/internal/httpserver"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -109,6 +110,7 @@ func validateStartupConfig(cfg config.Config) {
 		}
 		reqWS("WECHAT_SHOP_APP_ID")
 		reqWS("WECHAT_SHOP_SECRET")
+		reqWS("WECHAT_SHOP_NOTIFY_TOKEN")
 		if len(missingWS) > 0 {
 			log.Fatalf("startup config invalid: missing env %s (set WECHAT_SHOP_ENABLED=0 to disable)", strings.Join(missingWS, ","))
 		}

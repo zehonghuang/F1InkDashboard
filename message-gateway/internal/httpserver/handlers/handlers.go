@@ -137,10 +137,12 @@ func WechatShopWebhookVerify(app *AppContext) gin.HandlerFunc {
 		echostr := c.Query("echostr")
 		log.Printf("[wechatshop:verify] GET sig=%s ts=%s nonce=%s echostr=%s",
 			signature, timestamp, nonce, echostr)
-		if !app.WechatShopCli.VerifyWebhookSignature(signature, timestamp, nonce, "") {
-			log.Printf("[wechatshop:verify] !!! invalid_signature")
-			c.AbortWithStatus(http.StatusForbidden)
-			return
+		if app.Cfg.WechatShop.NotifyToken != "" {
+			if !app.WechatShopCli.VerifyWebhookSignature(signature, timestamp, nonce, "") {
+				log.Printf("[wechatshop:verify] !!! invalid_signature")
+				c.AbortWithStatus(http.StatusForbidden)
+				return
+			}
 		}
 		c.String(http.StatusOK, echostr)
 	}
