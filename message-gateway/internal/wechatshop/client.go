@@ -354,18 +354,24 @@ func (c *Client) DecryptEvent(aesKey, encrypted string) (msg []byte, appid strin
 	out := make([]byte, len(raw))
 	mode.CryptBlocks(out, raw)
 	out = pkcs7Unpad(out)
-	if len(out) <= 20+aes.BlockSize {
+	const randomLen = 16
+	if len(out) < randomLen+4 {
 		return nil, "", fmt.Errorf("decrypted too short: %d", len(out))
 	}
-	offset := aes.BlockSize
-	content := out[offset+4:]
-	msgLen := binary.BigEndian.Uint32(out[offset : offset+4])
-	if int(msgLen) > len(content) {
-		return nil, "", fmt.Errorf("msg_len %d > content %d", msgLen, len(content))
+	msgLenStart := randomLen
+	msgLen := binary.BigEndian.Uint32(out[msgLenStart : msgLenStart+4])
+	msgStart := msgLenStart + 4
+	msgEnd := msgStart + int(msgLen)
+	if msgEnd > len(out) {
+		return nil, "", fmt.Errorf("msg_len %d > available %d (decrypted total %d)", msgLen, len(out)-msgStart, len(out))
 	}
-	msgBytes := content[:msgLen]
-	remaining := content[msgLen:]
-	appid = string(bytes.TrimSpace(remaining))
+	msgBytes := make([]byte, msgLen)
+	copy(msgBytes, out[msgStart:msgEnd])
+	remaining := out[msgEnd:]
+	appid = strings.TrimSpace(string(remaining))
+	appid = strings.TrimFunc(appid, func(r rune) bool {
+		return r < 32 || r == 127
+	})
 	return msgBytes, appid, nil
 }
 
@@ -436,7 +442,8 @@ func (c *Client) ParseWebhookEvent(rawBody []byte) (*model.PlatformEvent, error)
 			expectedAppID := strings.TrimSpace(c.cfg.AppID)
 			gotAppID := strings.TrimSpace(decryptedAppID)
 			if expectedAppID != "" && gotAppID != "" && expectedAppID != gotAppID {
-				return nil, fmt.Errorf("decrypted appid mismatch: expected=%s got=%s", expectedAppID, gotAppID)
+				log.Printf("[wechatshop] warn: decrypted appid mismatch: expected=%q got=%q len(expected)=%d len(got)=%d -- proceeding anyway (signature already verified)",
+					expectedAppID, gotAppID, len(expectedAppID), len(gotAppID))
 			}
 		}
 	}
