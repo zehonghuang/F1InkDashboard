@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
+
 type Server struct {
 	Router *gin.Engine
 	DB     *db.DB
@@ -26,6 +27,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 	autoMigrate(gormDB)
 
 	msgSvc := message.NewService(gormDB)
+	msgSvc.StartIngestWorkers(0)
 
 	var wsCli *wechatshop.Client
 	if cfg.WechatShop.Enabled {
@@ -58,6 +60,12 @@ func New(cfg config.Config, database *db.DB) *Server {
 
 	s.registerRoutes()
 	return s
+}
+
+func (s *Server) Close() {
+	if s.AppCtx != nil && s.AppCtx.MessageSvc != nil {
+		s.AppCtx.MessageSvc.StopIngestWorkers()
+	}
 }
 
 func (s *Server) registerRoutes() {

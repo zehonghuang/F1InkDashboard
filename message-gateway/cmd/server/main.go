@@ -1,14 +1,20 @@
 package main
 
 import (
+	"context"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
 	"msg-gateway/internal/config"
 	"msg-gateway/internal/db"
 	"msg-gateway/internal/httpserver"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -24,9 +30,40 @@ func main() {
 	}
 
 	s := httpserver.New(cfg, database)
-	if err := s.Router.Run(cfg.ListenAddr); err != nil {
-		log.Fatalf("listen failed: %v", err)
+
+	srv := &http.Server{
+		Addr:    cfg.ListenAddr,
+		Handler: s.Router,
 	}
+	gin.DefaultWriter = log.Writer()
+	gin.DefaultErrorWriter = log.Writer()
+
+	errCh := make(chan error, 1)
+	go func() {
+		log.Printf("http server listening on %s", cfg.ListenAddr)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			errCh <- err
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	select {
+	case err := <-errCh:
+		log.Printf("http server error: %v", err)
+	case sig := <-quit:
+		log.Printf("received signal: %s, shutting down", sig)
+	}
+
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer shutdownCancel()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Printf("http server shutdown failed: %v", err)
+	}
+
+	s.Close()
+	log.Printf("graceful shutdown complete")
 }
 
 func loadEnvFiles() {

@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"runtime"
+	"sync"
 	"time"
 
 	"msg-gateway/internal/model"
@@ -14,16 +16,114 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	defaultIngestQueueSize = 10000
+	defaultIngestWorkers   = 4
+)
+
+type incomingJob struct {
+	receivedAt time.Time
+	event      *model.PlatformEvent
+}
+
 type Service struct {
 	db      *gorm.DB
 	clients map[string]platform.Client
+
+	ingestQueue chan incomingJob
+	ingestWg    sync.WaitGroup
+	ingestStop  chan struct{}
+	ingestOnce  sync.Once
 }
 
 func NewService(db *gorm.DB) *Service {
-	return &Service{
-		db:      db,
-		clients: make(map[string]platform.Client),
+	s := &Service{
+		db:          db,
+		clients:     make(map[string]platform.Client),
+		ingestQueue: make(chan incomingJob, defaultIngestQueueSize),
+		ingestStop:  make(chan struct{}),
 	}
+	return s
+}
+
+func (s *Service) StartIngestWorkers(num int) {
+	if num <= 0 {
+		num = defaultIngestWorkers
+	}
+	if num <= 0 {
+		num = runtime.NumCPU()
+	}
+	for i := 0; i < num; i++ {
+		s.ingestWg.Add(1)
+		go s.ingestWorker(i)
+	}
+	log.Printf("[message] ingest workers started: count=%d queue_size=%d", num, defaultIngestQueueSize)
+}
+
+func (s *Service) StopIngestWorkers() {
+	s.ingestOnce.Do(func() {
+		close(s.ingestStop)
+	})
+	s.ingestWg.Wait()
+	log.Printf("[message] ingest workers stopped")
+}
+
+func (s *Service) ingestWorker(id int) {
+	defer s.ingestWg.Done()
+	logPrefix := fmt.Sprintf("[message:worker#%d]", id)
+	for {
+		select {
+		case <-s.ingestStop:
+			for {
+				select {
+				case job, ok := <-s.ingestQueue:
+					if !ok {
+						log.Printf("%s drain done, exit", logPrefix)
+						return
+					}
+					s.processIngestJob(logPrefix, job)
+				default:
+					log.Printf("%s queue empty after stop signal, exit", logPrefix)
+					return
+				}
+			}
+		case job, ok := <-s.ingestQueue:
+			if !ok {
+				log.Printf("%s queue closed, exit", logPrefix)
+				return
+			}
+			s.processIngestJob(logPrefix, job)
+		}
+	}
+}
+
+func (s *Service) processIngestJob(logPrefix string, job incomingJob) {
+	event := job.event
+	latency := time.Since(job.receivedAt)
+	log.Printf("%s ingest event=%s id=%s platform=%s order_id=%s uid=%s shop_id=%s latency=%s payload=%s",
+		logPrefix,
+		event.EventType,
+		event.EventID,
+		event.Platform,
+		event.OrderID,
+		event.PlatformUID,
+		event.ShopID,
+		latency,
+		truncateLogSafe(event.RawPayload),
+	)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	if err := s.IngestIncomingEvent(ctx, event); err != nil {
+		log.Printf("%s ingest failed event=%s id=%s err=%v", logPrefix, event.EventType, event.EventID, err)
+	}
+}
+
+func truncateLogSafe(s string) string {
+	const max = 512
+	if len(s) <= max {
+		return s
+	}
+	return s[:max] + fmt.Sprintf("...[truncated %d bytes]", len(s)-max)
 }
 
 func (s *Service) RegisterClient(platformName string, client platform.Client) {
@@ -307,4 +407,22 @@ func truncate(s string, n int) string {
 		return s
 	}
 	return s[:n]
+}
+
+func (s *Service) IngestIncomingEventAsync(event *model.PlatformEvent) bool {
+	if event == nil {
+		return false
+	}
+	job := incomingJob{
+		receivedAt: time.Now(),
+		event:      event,
+	}
+	select {
+	case s.ingestQueue <- job:
+		return true
+	default:
+		log.Printf("[message:async] QUEUE FULL (cap=%d) => dropping event=%s id=%s platform=%s",
+			defaultIngestQueueSize, event.EventType, event.EventID, event.Platform)
+		return false
+	}
 }

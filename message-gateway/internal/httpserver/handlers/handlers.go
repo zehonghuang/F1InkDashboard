@@ -190,9 +190,7 @@ func WechatShopWebhook(app *AppContext) gin.HandlerFunc {
 		if len(event.RawPayload) > 0 {
 			log.Printf("[wechatshop:webhook] >>> decoded payload: %s", truncateLogStr(event.RawPayload))
 		}
-		ctx, cancel := context.WithTimeout(c.Request.Context(), 15*time.Second)
-		defer cancel()
-		_ = app.MessageSvc.IngestIncomingEvent(ctx, event)
+		app.MessageSvc.IngestIncomingEventAsync(event)
 		c.String(http.StatusOK, "success")
 	}
 }
