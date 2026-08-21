@@ -13,17 +13,22 @@ func adminTokenOK(c *gin.Context, expected string) bool {
 	if expected == "" {
 		return true
 	}
-	token := strings.TrimSpace(c.Query("token"))
+	var token string
+	if qt := strings.TrimSpace(c.Query("token")); qt != "" {
+		token = qt
+	}
 	if token == "" {
-		token = strings.TrimSpace(c.PostForm("token"))
+		if ct := strings.TrimSpace(c.PostForm("token")); ct != "" {
+			token = ct
+		}
 	}
 	if token == "" {
 		authHeader := strings.TrimSpace(c.GetHeader("Authorization"))
-		if strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
+		if lower := strings.ToLower(authHeader); strings.HasPrefix(lower, "bearer ") {
 			token = strings.TrimSpace(authHeader[7:])
-		} else if strings.HasPrefix(strings.ToLower(authHeader), "token ") {
+		} else if strings.HasPrefix(lower, "token ") {
 			token = strings.TrimSpace(authHeader[6:])
-		} else {
+		} else if authHeader != "" {
 			token = authHeader
 		}
 	}

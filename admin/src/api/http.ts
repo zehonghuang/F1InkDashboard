@@ -29,7 +29,6 @@ function buildHeaders(init?: RequestInit): Headers {
   }
   return headers
 }
-
 export async function fetchJSON<T>(path: string, init?: RequestInit): Promise<T> {
   const url = getApiBase() + path
   const headers = buildHeaders(init)
