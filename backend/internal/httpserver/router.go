@@ -118,6 +118,12 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/mp/news/:id", handlers.MpNewsDetail(gormOrNil(database)))
 	s.Router.POST("/api/v1/mp/news/ingest", handlers.MpNewsIngest(cfg, gormOrNil(database)))
 
+	s.Router.GET("/api/v1/mp/wechat-group", handlers.MpWechatGroupGet(cfg.StaticDir))
+
+	s.Router.GET("/api/v1/admin/mp/wechat-group", handlers.AdminMpWechatGroupGet(cfg))
+	s.Router.POST("/api/v1/admin/mp/wechat-group", handlers.AdminMpWechatGroupUpdate(cfg))
+	s.Router.POST("/api/v1/admin/mp/wechat-group/qr-image", handlers.AdminMpWechatGroupUploadQr(cfg))
+
 	s.Router.GET("/api/v1/admin/devices", handlers.AdminDevicesList(cfg, gormOrNil(database)))
 	s.Router.GET("/api/v1/admin/devices/:device_id", handlers.AdminDeviceDetail(cfg, gormOrNil(database)))
 	s.Router.GET("/api/v1/admin/f1/live-timing", handlers.AdminF1LiveTiming(cfg, s.F1LiveTiming))

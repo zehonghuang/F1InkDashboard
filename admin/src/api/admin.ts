@@ -277,3 +277,58 @@ export async function adminUnbind(params: { user_id?: number; device_id?: string
   return res
 }
 
+export type MpWechatGroupConfig = {
+  name: string
+  hint: string
+  qr_image: string
+}
+
+export type MpWechatGroupResponse = {
+  ok: boolean
+  error?: string
+  config: MpWechatGroupConfig
+}
+
+export type MpWechatGroupUploadQrResponse = {
+  ok: boolean
+  error?: string
+  qr_image: string
+  mime: string
+  bytes: number
+}
+
+export async function fetchMpWechatGroup() {
+  const url = withToken('/api/v1/admin/mp/wechat-group')
+  const res = await fetchJSON<MpWechatGroupResponse>(url)
+  if (!res.ok) throw new Error(res.error || 'backend_error')
+  return res
+}
+
+export async function updateMpWechatGroup(params: { name?: string; hint?: string }) {
+  const url = withToken('/api/v1/admin/mp/wechat-group')
+  const res = await fetchJSON<MpWechatGroupResponse>(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  })
+  if (!res.ok) throw new Error(res.error || 'backend_error')
+  return res
+}
+
+export async function uploadMpWechatGroupQr(file: File) {
+  const url = withToken('/api/v1/admin/mp/wechat-group/qr-image')
+  const token = (localStorage.getItem('f1ink_admin_token') || '').trim()
+  const formData = new FormData()
+  formData.append('qr_image', file)
+  if (token) formData.append('token', token)
+  const extraHeaders: Record<string, string> = {}
+  if (token) extraHeaders['Authorization'] = `Bearer ${token}`
+  const res = await fetchJSON<MpWechatGroupUploadQrResponse>(url, {
+    method: 'POST',
+    headers: extraHeaders,
+    body: formData,
+  })
+  if (!res.ok) throw new Error(res.error || 'backend_error')
+  return res
+}
+

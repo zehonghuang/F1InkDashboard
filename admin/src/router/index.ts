@@ -15,6 +15,7 @@ import MotorsportQualifyingDemoPage from '@/pages/MotorsportQualifyingDemoPage.v
 import MotorsportLiveStandingsDemoPage from '@/pages/MotorsportLiveStandingsDemoPage.vue'
 import ShopCategoriesPage from '@/pages/ShopCategoriesPage.vue'
 import ShopProductsPage from '@/pages/ShopProductsPage.vue'
+import MiniProgramConfigPage from '@/pages/MiniProgramConfigPage.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -104,6 +105,12 @@ const routes: RouteRecordRaw[] = [
         name: 'shop-products',
         component: ShopProductsPage,
         meta: { title: '微信小店 · 商品' },
+      },
+      {
+        path: 'mini-program',
+        name: 'mini-program-config',
+        component: MiniProgramConfigPage,
+        meta: { title: '小程序配置' },
       },
     ],
   },

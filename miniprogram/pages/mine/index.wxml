@@ -227,6 +227,55 @@
     <button class="btn btn-ghost" bindtap="onLogout">{{i18n.mine.logout}}</button>
   </view>
 
+  <view class="wechat-group-fab" bindtap="onOpenWechatGroup">
+    <view class="wechat-group-fab-core">
+      <view class="wechat-group-fab-badge"></view>
+      <view class="wechat-group-fab-icon">
+        <view class="wechat-group-fab-corner wechat-group-fab-corner-tl"></view>
+        <view class="wechat-group-fab-corner wechat-group-fab-corner-tr"></view>
+        <view class="wechat-group-fab-corner wechat-group-fab-corner-bl"></view>
+        <view class="wechat-group-fab-corner wechat-group-fab-corner-br"></view>
+        <view class="wechat-group-fab-center"></view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{showWechatGroupPopup}}" class="wechat-group-mask" bindtap="onCloseWechatGroup"></view>
+  <view wx:if="{{showWechatGroupPopup}}" class="wechat-group-popup" catchtap="noop">
+    <view class="wechat-group-popup-tail"></view>
+    <view class="wechat-group-popup-head">
+      <view>
+        <view class="wechat-group-popup-title">{{wechatGroupName}}</view>
+        <view class="wechat-group-popup-desc">{{wechatGroupHint}}</view>
+      </view>
+      <view class="wechat-group-popup-close" bindtap="onCloseWechatGroup">×</view>
+    </view>
+    <view class="wechat-group-qr-shell" bindtap="onPreviewWechatGroupQr">
+      <image
+        wx:if="{{wechatGroupQrUrl}}"
+        class="wechat-group-qr {{wechatGroupQrLoaded && !wechatGroupQrBroken ? 'wechat-group-qr-visible' : 'wechat-group-qr-hidden'}}"
+        src="{{wechatGroupQrUrl}}"
+        mode="aspectFit"
+        bindload="onWechatGroupQrLoad"
+        binderror="onWechatGroupQrError"
+      />
+      <view wx:if="{{!wechatGroupQrUrl || wechatGroupQrBroken}}" class="wechat-group-qr-fake">
+        <view class="wechat-group-qr-board">
+          <block wx:for="{{wechatGroupFakeQrCells}}" wx:key="key">
+            <view class="wechat-group-qr-cell" style="left: {{item.left}}rpx; top: {{item.top}}rpx;"></view>
+          </block>
+        </view>
+        <view class="wechat-group-qr-fake-note">{{i18n.mine.wechatGroupFakeHint}}</view>
+      </view>
+      <view wx:if="{{wechatGroupQrUrl && !wechatGroupQrBroken && !wechatGroupQrLoaded}}" class="wechat-group-qr-state">
+        {{i18n.common.loading}}
+      </view>
+    </view>
+    <view class="wechat-group-popup-tip">
+      {{(!wechatGroupQrUrl || wechatGroupQrBroken) ? i18n.mine.wechatGroupFakePreview : i18n.mine.wechatGroupPreviewHint}}
+    </view>
+  </view>
+
   <view wx:if="{{showPicker}}" class="picker-mask" bindtap="onClosePicker"></view>
   <view wx:if="{{showPicker}}" class="picker">
     <view class="picker-header">

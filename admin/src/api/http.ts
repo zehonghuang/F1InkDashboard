@@ -21,9 +21,19 @@ export function withToken(url: string) {
   return url + (hasQuery ? '&' : '?') + new URLSearchParams({ token }).toString()
 }
 
+function buildHeaders(init?: RequestInit): Headers {
+  const headers = new Headers(init?.headers || {})
+  const token = getToken()
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+  return headers
+}
 export async function fetchJSON<T>(path: string, init?: RequestInit): Promise<T> {
   const url = getApiBase() + path
-  const r = await fetch(url, init)
+  const headers = buildHeaders(init)
+  const nextInit: RequestInit = { ...(init || {}), headers }
+  const r = await fetch(url, nextInit)
   if (!r.ok) throw new Error(`HTTP ${r.status}`)
   const ct = (r.headers.get('content-type') || '').toLowerCase()
   if (!ct.includes('application/json')) {

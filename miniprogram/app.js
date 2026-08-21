@@ -1,5 +1,6 @@
 const i18n = require("./services/i18n")
 const { DEFAULT_WECHAT_STORE_CONFIG } = require("./services/wechatStore")
+const { DEFAULT_WECHAT_GROUP_CONFIG, fetchWeChatGroupConfig } = require("./services/wechatGroup")
 
 App({
   onLaunch() {
@@ -34,16 +35,14 @@ App({
 
       if (envVersion !== "develop") {
         this.globalData.tweakAEffective = false
-        return
+      } else {
+        const manual = this.globalData.tweakA
+        if (typeof manual === "boolean") {
+          this.globalData.tweakAEffective = manual
+        } else {
+          this.globalData.tweakAEffective = true
+        }
       }
-
-      const manual = this.globalData.tweakA
-      if (typeof manual === "boolean") {
-        this.globalData.tweakAEffective = manual
-        return
-      }
-
-      this.globalData.tweakAEffective = true
     } catch (e) {
       this.globalData.tweakAEffective = false
     }
@@ -64,6 +63,8 @@ App({
     } catch (e) {
       this.globalData.formula1Loaded = false
     }
+
+    Promise.resolve(fetchWeChatGroupConfig({ silent: true })).catch(() => {})
   },
   onShow() {
     try {
@@ -79,6 +80,7 @@ App({
     formula1Loaded: false,
     newsDataSource: "backend",
     shopMiniProgram: Object.assign({}, DEFAULT_WECHAT_STORE_CONFIG),
+    wechatGroup: Object.assign({}, DEFAULT_WECHAT_GROUP_CONFIG),
     envVersion: "",
     tweakA: null,
     tweakAEffective: false
