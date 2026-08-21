@@ -317,10 +317,15 @@ export async function updateMpWechatGroup(params: { name?: string; hint?: string
 
 export async function uploadMpWechatGroupQr(file: File) {
   const url = withToken('/api/v1/admin/mp/wechat-group/qr-image')
+  const token = (localStorage.getItem('f1ink_admin_token') || '').trim()
   const formData = new FormData()
   formData.append('qr_image', file)
+  if (token) formData.append('token', token)
+  const extraHeaders: Record<string, string> = {}
+  if (token) extraHeaders['Authorization'] = `Bearer ${token}`
   const res = await fetchJSON<MpWechatGroupUploadQrResponse>(url, {
     method: 'POST',
+    headers: extraHeaders,
     body: formData,
   })
   if (!res.ok) throw new Error(res.error || 'backend_error')
