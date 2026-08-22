@@ -59,6 +59,9 @@ type Config struct {
 	WechatMini WechatMiniConfig
 	WechatShop WechatShopConfig
 
+	WSServerBaseURL       string
+	WSServerInternalToken string
+
 	NewsWsEnabled   bool
 	NewsIngestToken string
 
@@ -131,6 +134,8 @@ func FromEnv() Config {
 		WechatPay:         wechatPayFromEnv(),
 		WechatMini:        wechatMiniFromEnv(),
 		WechatShop:        wechatShopFromEnv(),
+		WSServerBaseURL:   getenvTrim("WS_SERVER_BASE_URL", ""),
+		WSServerInternalToken: getenvTrim("WS_SERVER_INTERNAL_TOKEN", ""),
 		NewsWsEnabled:     getenvBool("NEWS_WS_ENABLED", false),
 		NewsIngestToken:   getenvTrim("NEWS_INGEST_TOKEN", ""),
 		OpenF1Enabled:     getenvBool("OPENF1_ENABLED", false),

@@ -4,13 +4,11 @@ import (
 	"toinc_f1_backend/internal/cache"
 	"toinc_f1_backend/internal/config"
 	"toinc_f1_backend/internal/db"
-	"toinc_f1_backend/internal/f1livetiming"
 	"toinc_f1_backend/internal/httpserver/handlers"
-	"toinc_f1_backend/internal/motorsportlive"
 	"toinc_f1_backend/internal/openf1scheduler"
 	"toinc_f1_backend/internal/tasks"
 	"toinc_f1_backend/internal/teamdrivercache"
-	"toinc_f1_backend/internal/ws"
+	"toinc_f1_backend/internal/wsclient"
 
 	_ "toinc_f1_backend/docs"
 
@@ -21,42 +19,25 @@ import (
 )
 
 type Server struct {
-	Router            *gin.Engine
-	DB                *db.DB
-	Config            config.Config
-	Cache             *cache.TTLCache
-	TeamCache         *teamdrivercache.Manager
-	EchoHub           *ws.Hub
-	NewsHub           *ws.Hub
-	OpenF1Hub         *ws.Hub
-	F1LiveTimingHub   *ws.Hub
-	F1LiveTiming      *f1livetiming.Manager
-	MotorsportLiveHub *ws.Hub
-	MotorsportLive    *motorsportlive.Manager
+	Router    *gin.Engine
+	DB        *db.DB
+	Config    config.Config
+	Cache     *cache.TTLCache
+	TeamCache *teamdrivercache.Manager
+	WSClient  *wsclient.Client
 }
 
 func New(cfg config.Config, database *db.DB) *Server {
-	f1LiveTimingHub := ws.NewHub()
-	f1LiveTimingMgr := f1livetiming.New(cfg, gormOrNil(database), f1LiveTimingHub)
-	motorsportLiveHub := ws.NewHub()
-	motorsportLiveMgr := motorsportlive.New(cfg, gormOrNil(database), motorsportLiveHub)
+	wsClient := wsclient.New(cfg.WSServerBaseURL, cfg.WSServerInternalToken)
 	s := &Server{
-		Router:            gin.New(),
-		DB:                database,
-		Config:            cfg,
-		Cache:             cache.New(),
-		TeamCache:         teamdrivercache.New(gormOrNil(database), cfg.StaticDir),
-		EchoHub:           ws.NewHub(),
-		NewsHub:           ws.NewHub(),
-		OpenF1Hub:         ws.NewHub(),
-		F1LiveTimingHub:   f1LiveTimingHub,
-		F1LiveTiming:      f1LiveTimingMgr,
-		MotorsportLiveHub: motorsportLiveHub,
-		MotorsportLive:    motorsportLiveMgr,
+		Router:    gin.New(),
+		DB:        database,
+		Config:    cfg,
+		Cache:     cache.New(),
+		TeamCache: teamdrivercache.New(gormOrNil(database), cfg.StaticDir),
+		WSClient:  wsClient,
 	}
 	s.TeamCache.Start()
-	s.F1LiveTiming.Start()
-	s.MotorsportLive.Start()
 
 	s.Router.Use(gin.Recovery())
 	_ = s.Router.SetTrustedProxies(cfg.TrustedProxies)
@@ -75,25 +56,6 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/charts/driver/:driver_number/latest.png", handlers.ChartsDriverLatestPng(cfg.StaticDir))
 	s.Router.GET("/api/v1/charts/driver/:driver_number/latest.json", handlers.ChartsDriverLatestJSON(cfg.StaticDir))
 
-	s.Router.GET("/api/v1/ws/status", handlers.WsStatus(s.EchoHub))
-	s.Router.Any("/api/v1/ws/broadcast", handlers.WsBroadcast(s.EchoHub))
-	s.Router.GET("/ws", handlers.WsEcho(s.EchoHub))
-
-	s.Router.GET("/api/v1/news/ws/status", handlers.NewsWsStatus(cfg, s.NewsHub))
-	s.Router.POST("/api/v1/news/ws/ingest", handlers.NewsWsIngest(cfg, s.NewsHub, cfg.StaticDir))
-	s.Router.POST("/api/v1/news/meme/ws/ingest", handlers.NewsMemeWsIngest(cfg, s.NewsHub, cfg.StaticDir))
-	s.Router.POST("/api/v1/news/ingest", handlers.NewsIngestJSON(cfg, s.NewsHub, cfg.StaticDir))
-	s.Router.GET("/ws/news", handlers.WsNews(cfg, s.NewsHub))
-
-	s.Router.GET("/api/v1/openf1/status", handlers.OpenF1Status(cfg, s.OpenF1Hub))
-	s.Router.POST("/api/v1/openf1/ingest", handlers.OpenF1Ingest(cfg, s.OpenF1Hub))
-	s.Router.GET("/ws/openf1", handlers.WsOpenF1(cfg, s.OpenF1Hub))
-	s.Router.GET("/ws/openf1/raw", handlers.WsOpenF1(cfg, s.OpenF1Hub))
-	s.Router.GET("/ws/openf1/ingest", handlers.OpenF1IngestWS(cfg, s.OpenF1Hub))
-	s.Router.GET("/ws/f1/live-timing", handlers.WsF1LiveTiming(cfg, s.F1LiveTiming, s.F1LiveTimingHub))
-	s.Router.GET("/ws/mp/f1/live-timing", handlers.WsMpF1LiveTiming(s.F1LiveTiming, s.F1LiveTimingHub))
-	s.Router.GET("/ws/motorsport/live", handlers.WsMotorsportLive(s.MotorsportLive, s.MotorsportLiveHub))
-
 	s.Router.GET("/api/v1/pages", handlers.Pages(cfg, gormOrNil(database), s.Cache, cfg.StaticDir))
 	s.Router.GET("/api/v1/pages/race-day", handlers.PagesRaceDay(cfg, gormOrNil(database), s.Cache, cfg.StaticDir))
 	s.Router.GET("/api/v1/pages/off-week", handlers.PagesOffWeek(cfg, gormOrNil(database), s.Cache, cfg.StaticDir))
@@ -109,14 +71,30 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/mp/race-sessions", handlers.MpRaceSessions(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/session-results", handlers.MpSessionResults(gormOrNil(database), s.TeamCache))
 	s.Router.GET("/api/v1/mp/session-results/latest-crawled", handlers.MpSessionResultsLatestCrawled(cfg, s.TeamCache))
-	s.Router.GET("/api/v1/mp/f1/live-timing", handlers.MpF1LiveTiming(s.F1LiveTiming))
-	s.Router.GET("/api/v1/mp/motorsport/live", handlers.MpMotorsportLive(s.MotorsportLive))
+	s.Router.GET("/api/v1/mp/f1/live-timing", handlers.MpF1LiveTimingProxy(cfg, s.WSClient))
+	s.Router.GET("/api/v1/mp/motorsport/live", handlers.MpMotorsportLiveProxy(cfg, s.WSClient))
 	s.Router.GET("/api/v1/mp/standings", handlers.MpStandings(gormOrNil(database), s.TeamCache))
 	s.Router.GET("/api/v1/mp/telemetry/controls", handlers.MpTelemetryControls(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/telemetry/sector_controls", handlers.MpTelemetrySectorControls(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/news", handlers.MpNewsList(gormOrNil(database)))
 	s.Router.GET("/api/v1/mp/news/:id", handlers.MpNewsDetail(gormOrNil(database)))
 	s.Router.POST("/api/v1/mp/news/ingest", handlers.MpNewsIngest(cfg, gormOrNil(database)))
+
+	s.Router.GET("/api/v1/ws/status", handlers.WsStatusProxy(cfg, s.WSClient))
+	s.Router.GET("/api/v1/ws/broadcast", handlers.WsBroadcastProxy(cfg, s.WSClient, "json"))
+	s.Router.POST("/api/v1/ws/broadcast", handlers.WsBroadcastProxy(cfg, s.WSClient, "json"))
+	s.Router.POST("/api/v1/ws/broadcast/text", handlers.WsBroadcastProxy(cfg, s.WSClient, "text"))
+	s.Router.POST("/api/v1/ws/broadcast/json", handlers.WsBroadcastProxy(cfg, s.WSClient, "json"))
+
+	s.Router.GET("/api/v1/news/ws/status", handlers.NewsWsStatusProxy(cfg, s.WSClient))
+	s.Router.POST("/api/v1/news/ws/ingest", handlers.NewsWsIngestProxy(cfg, s.WSClient))
+	s.Router.POST("/api/v1/news/ingest", handlers.NewsWsIngestProxy(cfg, s.WSClient))
+	s.Router.POST("/api/v1/news/meme/ws/ingest", handlers.NewsWsIngestProxy(cfg, s.WSClient))
+
+	s.Router.GET("/api/v1/openf1/status", handlers.OpenF1StatusProxy(cfg, s.WSClient))
+	s.Router.POST("/api/v1/openf1/ingest", handlers.OpenF1IngestProxy(cfg, s.WSClient, "fw"))
+	s.Router.POST("/api/v1/openf1/ingest/fw", handlers.OpenF1IngestProxy(cfg, s.WSClient, "fw"))
+	s.Router.POST("/api/v1/openf1/ingest/raw", handlers.OpenF1IngestProxy(cfg, s.WSClient, "raw"))
 
 	s.Router.GET("/api/v1/mp/wechat-group", handlers.MpWechatGroupGet(cfg.StaticDir))
 
@@ -126,7 +104,7 @@ func New(cfg config.Config, database *db.DB) *Server {
 
 	s.Router.GET("/api/v1/admin/devices", handlers.AdminDevicesList(cfg, gormOrNil(database)))
 	s.Router.GET("/api/v1/admin/devices/:device_id", handlers.AdminDeviceDetail(cfg, gormOrNil(database)))
-	s.Router.GET("/api/v1/admin/f1/live-timing", handlers.AdminF1LiveTiming(cfg, s.F1LiveTiming))
+	s.Router.GET("/api/v1/admin/f1/live-timing", handlers.AdminF1LiveTimingProxy(cfg, s.WSClient))
 	s.Router.GET("/api/v1/admin/mp/users", handlers.AdminUsersList(cfg, gormOrNil(database)))
 	s.Router.GET("/api/v1/admin/mp/users/:user_id", handlers.AdminUserDetail(cfg, gormOrNil(database)))
 	s.Router.GET("/api/v1/admin/motorsport/live-standings", handlers.AdminMotorsportLiveStandings(cfg))
