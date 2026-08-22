@@ -340,6 +340,18 @@ def code_from_url(url: str) -> str:
     return str(value).strip().upper()
 
 
+KEEP_SESSION_CODES: set[str] = {
+    "FP1",
+    "FP2",
+    "FP3",
+    "CSQ",
+    "SPR",
+    "CQ",
+    "RACE",
+    "R",
+}
+
+
 def normalize_session_code(value: str) -> str:
     text = collapse_ws(value).upper()
     if not text:
@@ -347,11 +359,21 @@ def normalize_session_code(value: str) -> str:
     text = text.replace("PRACTICE ", "FP")
     text = text.replace("FREE PRACTICE ", "FP")
     aliases = {
-        "QUALIFYING": "Q",
-        "SPRINT QUALIFYING": "SQ",
-        "SPRINT SHOOTOUT": "SQ",
+        "QUALIFYING": "CQ",
+        "SPRINT QUALIFYING": "CSQ",
+        "SPRINT SHOOTOUT": "CSQ",
+        "SPRINT GRID": "SPRGRID",
+        "SPRINTFL": "SPRFL",
+        "SPRINT FL": "SPRFL",
+        "SPRINT": "SPR",
+        "MAIN RACE": "RACE",
+        "GRAND PRIX": "RACE",
+        "RACE": "RACE",
     }
-    return aliases.get(text, text)
+    key = re.sub(r"[^A-Z0-9]+", "", text)
+    if key in ("R", "RACE"):
+        return "RACE"
+    return aliases.get(text, aliases.get(key, text if key == "" else key))
 
 
 def session_key(code: str) -> str:
@@ -360,30 +382,22 @@ def session_key(code: str) -> str:
 
 def session_priority(code: str) -> tuple[int, str]:
     key = session_key(code)
+    if key == "R":
+        key = "RACE"
     order = {
-        "EL": 10,
-        "CQ": 20,
-        "FP0": 100,
         "FP1": 110,
         "FP2": 120,
         "FP3": 130,
-        "SQ": 200,
-        "SQ1": 210,
-        "SQ2": 220,
-        "SQ3": 230,
-        "SPR": 240,
-        "SPRINT": 240,
-        "Q": 300,
-        "Q1": 310,
-        "Q2": 320,
-        "Q3": 330,
-        "GRID": 380,
-        "FL": 390,
-        "PT": 395,
-        "TH": 398,
+        "CSQ": 240,
+        "SPR": 248,
+        "CQ": 340,
         "RACE": 400,
     }
     return order.get(key, 1000), key
+
+
+def is_kept_session_code(code: str) -> bool:
+    return session_key(code) in KEEP_SESSION_CODES or (session_key(code) == "R")
 
 
 def extract_season_results_links(html: str, season: int) -> list[dict[str, str]]:
@@ -694,6 +708,8 @@ def crawl_event_sessions(
 
     fetched: list[tuple[str, str, dict[str, Any]]] = []
     for code, session_url in session_links.items():
+        if not is_kept_session_code(code):
+            continue
         session_title, headers, rows = parse_session_table(client.fetch_text(session_url))
         session_title = clean_session_title(session_title, code)
         payload = {

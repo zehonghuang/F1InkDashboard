@@ -121,6 +121,27 @@ func MpSessionResultsLatestCrawled(cfg config.Config, tdCache *teamdrivercache.M
 		for _, raw := range payload.Rows {
 			rows = append(rows, normalizeMotorsportSessionRow(raw, tdCache))
 		}
+		sort.SliceStable(rows, func(i, j int) bool {
+			if rows[i].Pos == rows[j].Pos {
+				if rows[i].Number == rows[j].Number {
+					return rows[i].Driver < rows[j].Driver
+				}
+				if rows[i].Number <= 0 {
+					return false
+				}
+				if rows[j].Number <= 0 {
+					return true
+				}
+				return rows[i].Number < rows[j].Number
+			}
+			if rows[i].Pos <= 0 {
+				return false
+			}
+			if rows[j].Pos <= 0 {
+				return true
+			}
+			return rows[i].Pos < rows[j].Pos
+		})
 
 		title := strings.TrimSpace(payload.SessionTitle)
 		if title == "" {
@@ -267,12 +288,49 @@ func findLatestMotorsportSession(eventDir string, idx mpCrawledResultsIndex) (mp
 		return out, "", nil
 	}
 	sort.SliceStable(candidates, func(i, j int) bool {
+		pi := latestCrawledSessionRank(candidates[i].meta.SessionCode)
+		pj := latestCrawledSessionRank(candidates[j].meta.SessionCode)
+		if pi != pj {
+			return pi > pj
+		}
+		ri := candidates[i].meta.RowCount
+		rj := candidates[j].meta.RowCount
+		if ri != rj {
+			if ri <= 0 {
+				return false
+			}
+			if rj <= 0 {
+				return true
+			}
+			return ri > rj
+		}
 		if candidates[i].mod.Equal(candidates[j].mod) {
 			return candidates[i].order > candidates[j].order
 		}
 		return candidates[i].mod.After(candidates[j].mod)
 	})
 	return candidates[0].meta, candidates[0].path, nil
+}
+
+func latestCrawledSessionRank(code string) int {
+	key := strings.ToUpper(strings.ReplaceAll(strings.TrimSpace(code), "-", ""))
+	switch key {
+	case "FP1":
+		return 110
+	case "FP2":
+		return 120
+	case "FP3":
+		return 130
+	case "CSQ":
+		return 240
+	case "SPR", "SPRINT":
+		return 248
+	case "CQ", "Q":
+		return 340
+	case "RACE", "R":
+		return 400
+	}
+	return 1000
 }
 
 func readMotorsportSessionPayload(path string) (mpCrawledSessionPayload, error) {
