@@ -158,7 +158,7 @@ func FromEnv() Config {
 		F1LiveTimingScheduleIntervalSec:    getenvInt("F1_LIVE_TIMING_SCHEDULE_INTERVAL_SEC", 30),
 
 		MotorsportLiveEnabled:                getenvBool("MOTORSPORT_LIVE_ENABLED", true),
-		MotorsportLiveWSURL:                  getenvTrim("MOTORSPORT_LIVE_WS_URL", "wss://livetiming.motorsport.com:8080/782178-full/"),
+		MotorsportLiveWSURL:                  getenvTrim("MOTORSPORT_LIVE_WS_URL", "wss://livetiming.motorsport.com:8080/782204-full/"),
 		MotorsportLiveOrigin:                 getenvTrim("MOTORSPORT_LIVE_ORIGIN", "https://www.motorsport.com"),
 		MotorsportLiveUserAgent:              getenvTrim("MOTORSPORT_LIVE_USER_AGENT", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"),
 		MotorsportLiveRecentLimit:            getenvInt("MOTORSPORT_LIVE_RECENT_LIMIT", 20),

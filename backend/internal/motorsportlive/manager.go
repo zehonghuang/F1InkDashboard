@@ -523,43 +523,87 @@ func (m *Manager) resolveActiveTarget(now time.Time) (*liveTarget, error) {
 	before := time.Duration(maxInt(1, m.cfg.MotorsportLiveConnectBeforeMin)) * time.Minute
 	calibration, anchorIndex := findSeedCalibration(seedID, rows)
 	m.updateSeedCalibration(calibration)
-	if anchorIndex < 0 {
-		anchorIndex = selectAnchorRow(rows, now, before)
-	}
-	if anchorIndex < 0 {
-		return nil, nil
-	}
+
 	targetIndex := selectTargetRow(rows, now, before)
 	if targetIndex < 0 {
 		return nil, nil
 	}
 
-	targetRow := rows[targetIndex]
-	targetID := seedID + (targetIndex - anchorIndex)
-	if calibration != nil && calibration.AnchorSessionKey > 0 && calibration.Season > 0 && targetRow.Year == calibration.Season {
+	targetID := seedID
+	hasValidAnchor := false
+	seasonOffsetEnabled := false
+
+	if calibration != nil && calibration.AnchorSessionKey > 0 && calibration.Season > 0 {
 		seasonRows, err := m.loadSeasonScheduleRows(calibration.Season)
-		if err != nil {
-			return nil, err
-		}
-		seasonAnchorIndex := findScheduleIndexBySessionKey(seasonRows, calibration.AnchorSessionKey)
-		seasonTargetIndex := findScheduleIndexBySessionKey(seasonRows, targetRow.SessionKey)
-		if seasonAnchorIndex >= 0 && seasonTargetIndex >= 0 {
-			targetID = seedID + (seasonTargetIndex - seasonAnchorIndex)
-			calibration.MatchedSessionKey = seasonRows[seasonAnchorIndex].SessionKey
-			calibration.MatchedMeetingKey = seasonRows[seasonAnchorIndex].MeetingKey
-			calibration.MatchedSessionName = firstNonEmptyLocal(ptrString(seasonRows[seasonAnchorIndex].SessionType), ptrString(seasonRows[seasonAnchorIndex].SessionName))
-			calibration.MatchedStartAtUTC = seasonRows[seasonAnchorIndex].DateStartUTC.UTC().Format(time.RFC3339Nano)
-			calibration.Note = fmt.Sprintf(
-				"seed %d calibrated from anchor session_key %d to target session_key %d via full %d season schedule order (delta=%+d)",
-				seedID,
-				calibration.AnchorSessionKey,
-				targetRow.SessionKey,
-				calibration.Season,
-				seasonTargetIndex-seasonAnchorIndex,
-			)
-			m.updateSeedCalibration(calibration)
+		if err == nil && len(seasonRows) > 0 {
+			seasonAnchorIndex := findScheduleIndexBySessionKey(seasonRows, calibration.AnchorSessionKey)
+			seasonTargetIndex := findScheduleIndexBySessionKey(seasonRows, rows[targetIndex].SessionKey)
+			if seasonAnchorIndex >= 0 && seasonTargetIndex >= 0 && rows[targetIndex].Year == calibration.Season {
+				targetID = seedID + (seasonTargetIndex - seasonAnchorIndex)
+				hasValidAnchor = true
+				seasonOffsetEnabled = true
+				calibration.MatchedSessionKey = seasonRows[seasonAnchorIndex].SessionKey
+				calibration.MatchedMeetingKey = seasonRows[seasonAnchorIndex].MeetingKey
+				calibration.MatchedSessionName = firstNonEmptyLocal(ptrString(seasonRows[seasonAnchorIndex].SessionType), ptrString(seasonRows[seasonAnchorIndex].SessionName))
+				calibration.MatchedStartAtUTC = seasonRows[seasonAnchorIndex].DateStartUTC.UTC().Format(time.RFC3339Nano)
+				calibration.Note = fmt.Sprintf(
+					"seed %d calibrated from anchor session_key %d to target session_key %d via full %d season schedule order (delta=%+d)",
+					seedID,
+					calibration.AnchorSessionKey,
+					rows[targetIndex].SessionKey,
+					calibration.Season,
+					seasonTargetIndex-seasonAnchorIndex,
+				)
+				m.updateSeedCalibration(calibration)
+			}
 		}
 	}
+
+	if !seasonOffsetEnabled && anchorIndex >= 0 {
+		targetID = seedID + (targetIndex - anchorIndex)
+		hasValidAnchor = true
+	}
+
+	if !hasValidAnchor {
+		targetRow := rows[targetIndex]
+		matched := false
+		if calibration != nil {
+			targetSessionCode := normalizeSessionCode(targetRow.SessionName, targetRow.SessionType)
+			if calibration.Season > 0 && targetRow.Year == calibration.Season &&
+				strings.EqualFold(strings.TrimSpace(calibration.SessionCode), strings.TrimSpace(targetSessionCode)) &&
+				(calibration.EventLabel == "" ||
+					strings.Contains(strings.ToLower(ptrString(targetRow.MeetingName)), strings.ToLower(calibration.EventLabel)) ||
+					strings.Contains(strings.ToLower(ptrString(targetRow.Location)), strings.ToLower(calibration.EventLabel)) ||
+					strings.Contains(strings.ToLower(ptrString(targetRow.CountryName)), strings.ToLower(calibration.EventLabel))) {
+				matched = true
+			}
+		}
+		if matched {
+			targetID = seedID
+			if calibration != nil {
+				calibration.MatchedSessionKey = targetRow.SessionKey
+				calibration.MatchedMeetingKey = targetRow.MeetingKey
+				calibration.MatchedSessionName = firstNonEmptyLocal(ptrString(targetRow.SessionType), ptrString(targetRow.SessionName))
+				calibration.MatchedStartAtUTC = targetRow.DateStartUTC.UTC().Format(time.RFC3339Nano)
+				calibration.Note = fmt.Sprintf(
+					"seed %d matched to session_key %d via event/session metadata; seed id used directly without offset",
+					seedID,
+					targetRow.SessionKey,
+				)
+				m.updateSeedCalibration(calibration)
+			}
+		} else {
+			targetID = seedID
+			if calibration != nil {
+				calibration.Note = fmt.Sprintf(
+					"seed %d has no valid anchor; seed id used directly without schedule offset (uncalibrated adjacent sessions may point to wrong motorsport id)",
+					seedID,
+				)
+				m.updateSeedCalibration(calibration)
+			}
+		}
+	}
+
 	if targetID <= 0 {
 		return nil, fmt.Errorf("invalid_live_timing_id: %d", targetID)
 	}
@@ -567,6 +611,7 @@ func (m *Manager) resolveActiveTarget(now time.Time) (*liveTarget, error) {
 	if err != nil {
 		return nil, err
 	}
+	targetRow := rows[targetIndex]
 	sessionName := strings.TrimSpace(firstNonEmptyLocal(ptrString(targetRow.SessionType), ptrString(targetRow.SessionName)))
 	if sessionName == "" {
 		sessionName = fmt.Sprintf("session-%d", targetRow.SessionKey)
@@ -663,20 +708,31 @@ func (m *Manager) updateSeedCalibration(cal *SeedCalibration) {
 }
 
 func baseSeedCalibration(seedID int) *SeedCalibration {
-	if seedID != 782179 {
+	switch seedID {
+	case 782179:
+		return &SeedCalibration{
+			SeedID:           782179,
+			Season:           2026,
+			EventLabel:       "Spanish Grand Prix",
+			SessionCode:      "Q",
+			SessionName:      "Qualifying",
+			AnchorSessionKey: 11303,
+			Note:             "seed 782179 is calibrated to session_key 11303; adjacent sessions map by +1 / -1 in schedule order",
+		}
+	case 782204:
+		return &SeedCalibration{
+			SeedID:      782204,
+			Season:      2026,
+			EventLabel:  "Dutch Grand Prix",
+			SessionCode: "Q",
+			SessionName: "Qualifying",
+			Note:        "seed 782204 is calibrated to Dutch Grand Prix Qualifying",
+		}
+	default:
 		return &SeedCalibration{
 			SeedID: seedID,
 			Note:   "no explicit calibration recorded for this seed id",
 		}
-	}
-	return &SeedCalibration{
-		SeedID:           782179,
-		Season:           2026,
-		EventLabel:       "Spanish Grand Prix",
-		SessionCode:      "Q",
-		SessionName:      "Qualifying",
-		AnchorSessionKey: 11303,
-		Note:             "seed 782179 is calibrated to session_key 11303; adjacent sessions map by +1 / -1 in schedule order",
 	}
 }
 
@@ -685,7 +741,7 @@ func findSeedCalibration(seedID int, rows []scheduleRow) (*SeedCalibration, int)
 	if cal == nil {
 		return nil, -1
 	}
-	if seedID != 782179 {
+	if cal.AnchorSessionKey <= 0 {
 		return cal, -1
 	}
 	for index, row := range rows {
