@@ -31,7 +31,7 @@
 }
 
 .mslt-table {
-  width: 730rpx;
+  width: 940rpx;
 }
 
 .mslt-row {
@@ -78,43 +78,51 @@
 .mslt-cell {
   box-sizing: border-box;
   flex: none;
-  padding: 12rpx 10rpx;
+  padding: 8rpx 4rpx;
   text-align: center;
   font-size: 18rpx;
   color: rgba(226, 232, 240, 0.96);
 }
 
 .mslt-head .mslt-cell {
-  font-size: 16rpx;
+  font-size: 14rpx;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgba(148, 163, 184, 0.95);
 }
 
 .mslt-c-pos {
-  width: 88rpx;
+  width: 64rpx;
 }
 
 .mslt-c-driver {
-  width: 214rpx;
+  width: 190rpx;
   text-align: left;
+  padding-left: 8rpx;
 }
 
 .mslt-c-gap {
-  width: 110rpx;
+  width: 96rpx;
 }
 
 .mslt-c-time {
-  width: 106rpx;
-  padding-left: 4rpx;
-  padding-right: 4rpx;
+  width: 96rpx;
+  padding-left: 2rpx;
+  padding-right: 2rpx;
 }
 
 .mslt-c-tyre {
-  width: 212rpx;
-  padding-left: 4rpx;
+  width: 164rpx;
+  padding-left: 2rpx;
+  padding-right: 2rpx;
+}
+
+.mslt-c-sectors {
+  width: 330rpx;
+  padding-left: 8rpx;
   padding-right: 4rpx;
+  text-align: left;
 }
 
 .mslt-pos-box {
@@ -218,4 +226,99 @@
   line-height: 1;
   font-weight: 600;
   white-space: nowrap;
+}
+
+.mslt-sectors-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8rpx;
+}
+
+.mslt-sector {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4rpx;
+  min-width: 0;
+}
+
+.mslt-sector-chip {
+  height: 20rpx;
+  padding: 0 4rpx;
+  border-radius: 4rpx;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 14rpx;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  line-height: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.mslt-sc-purple {
+  background: transparent;
+  color: #e9d5ff;
+  text-shadow: 0 0 8rpx rgba(192, 132, 252, 0.45);
+}
+
+.mslt-sc-yellow {
+  background: transparent;
+  color: #fde68a;
+  text-shadow: 0 0 8rpx rgba(250, 204, 21, 0.45);
+}
+
+.mslt-sc-green {
+  background: transparent;
+  color: #86efac;
+  text-shadow: 0 0 8rpx rgba(74, 222, 128, 0.45);
+}
+
+.mslt-segment-row {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3rpx;
+}
+
+.mslt-segment-row--placeholder {
+  opacity: 0.38;
+}
+
+.mslt-segment-bar {
+  width: 8rpx;
+  height: 22rpx;
+  border-radius: 3rpx;
+  background: rgba(148, 163, 184, 0.32);
+  box-shadow: 0 0 0 1rpx rgba(255, 255, 255, 0.03) inset;
+}
+
+.mslt-segment-bar--ph {
+  opacity: 0.42;
+}
+
+.mslt-sd-purple {
+  background: linear-gradient(180deg, #d8b4fe 0%, #a855f7 100%);
+  box-shadow: 0 0 8rpx rgba(192, 132, 252, 0.75), inset 0 0 0 1rpx rgba(244, 114, 182, 0.12);
+}
+
+.mslt-sd-yellow {
+  background: linear-gradient(180deg, #fde68a 0%, #eab308 100%);
+  box-shadow: 0 0 8rpx rgba(250, 204, 21, 0.75), inset 0 0 0 1rpx rgba(254, 240, 138, 0.16);
+}
+
+.mslt-sd-blue {
+  background: linear-gradient(180deg, #93c5fd 0%, #3b82f6 100%);
+  box-shadow: 0 0 8rpx rgba(96, 165, 250, 0.75), inset 0 0 0 1rpx rgba(147, 197, 253, 0.14);
+}
+
+.mslt-sd-green {
+  background: linear-gradient(180deg, #86efac 0%, #22c55e 100%);
+  box-shadow: 0 0 8rpx rgba(74, 222, 128, 0.75), inset 0 0 0 1rpx rgba(134, 239, 172, 0.15);
 }

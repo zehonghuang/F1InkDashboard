@@ -96,19 +96,6 @@
   </view>
 
   <view class="panel">
-    <view class="panel-title">{{i18n.liveTiming.fullTower}}</view>
-    <ms-qualifying-table
-      title=""
-      rows="{{qualifyingRows}}"
-      maxRows="0"
-      dense
-      bodyHeightRpx="920"
-      baseUrl="{{''}}"
-      bindrowlongpress="onDriverRowLongPress"
-    />
-  </view>
-
-  <view class="panel">
     <view class="panel-title">{{i18n.liveTiming.raceControl}}</view>
     <view wx:if="{{raceControlMessages.length}}" class="feed-list">
       <block wx:for="{{raceControlMessages}}" wx:key="id">

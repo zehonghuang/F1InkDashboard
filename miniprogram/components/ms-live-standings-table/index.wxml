@@ -12,6 +12,7 @@
           <view class="mslt-cell mslt-c-gap">GAP</view>
           <view class="mslt-cell mslt-c-time">TIME</view>
           <view class="mslt-cell mslt-c-tyre">TYRE</view>
+          <view class="mslt-cell mslt-c-sectors">SECTORS</view>
         </view>
 
         <block wx:for="{{displayRows}}" wx:key="rowKey">
@@ -38,8 +39,28 @@
 
             <view class="mslt-cell mslt-c-tyre">
               <view class="mslt-tyre-row">
-                <block wx:for="{{item.tyreParts}}" wx:key="text">
-                  <view class="{{item.primary ? 'mslt-tyre-badge' : 'mslt-tyre-meta'}}">{{item.text}}</view>
+                <block wx:for="{{item.tyreParts}}" wx:key="text" wx:for-item="tp">
+                  <view class="{{tp.primary ? 'mslt-tyre-badge' : 'mslt-tyre-meta'}}">{{tp.text}}</view>
+                </block>
+              </view>
+            </view>
+
+            <view class="mslt-cell mslt-c-sectors">
+              <view class="mslt-sectors-row">
+                <block wx:for="{{item.sectorList}}" wx:key="text" wx:for-item="sec">
+                  <view class="mslt-sector">
+                    <view class="mslt-segment-row" wx:if="{{sec.segments.length}}">
+                      <block wx:for="{{sec.segments}}" wx:key="*this" wx:for-item="sd">
+                        <view class="mslt-segment-bar {{sd}}"></view>
+                      </block>
+                    </view>
+                    <view class="mslt-segment-row mslt-segment-row--placeholder" wx:else>
+                      <view class="mslt-segment-bar mslt-segment-bar--ph"></view>
+                      <view class="mslt-segment-bar mslt-segment-bar--ph"></view>
+                      <view class="mslt-segment-bar mslt-segment-bar--ph"></view>
+                    </view>
+                    <view class="mslt-sector-chip {{sec.colorClass}}">{{sec.text}}</view>
+                  </view>
                 </block>
               </view>
             </view>

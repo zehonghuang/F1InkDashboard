@@ -42,6 +42,7 @@ Component({
         row.team = String(row.team || '-')
         row.gap = String(row.gap || '')
         row.time = String(row.time || '-')
+        row.sectorList = buildSectorList(row)
         row.rowKey = buildRowKey(row, idx)
         row.animStyle = ''
         row.animClass = ''
@@ -224,4 +225,38 @@ function extractTouchPoint(event) {
     x: Number(touch.clientX) || 0,
     y: Number(touch.clientY) || 0,
   }
+}
+
+function buildSectorList(row) {
+  const sectors = Array.isArray(row && row.sectors) ? row.sectors : (Array.isArray(row && row.Sectors) ? row.Sectors : [])
+  const colors = Array.isArray(row && row.sectorColors) ? row.sectorColors : (Array.isArray(row && row.sector_colors) ? row.sector_colors : (Array.isArray(row && row.SectorColors) ? row.SectorColors : []))
+  const segmentColors = Array.isArray(row && row.sectorSegmentColors)
+    ? row.sectorSegmentColors
+    : (Array.isArray(row && row.sector_segment_colors)
+        ? row.sector_segment_colors
+        : (Array.isArray(row && row.SectorSegmentColors) ? row.SectorSegmentColors : []))
+  const count = Math.max(sectors.length, colors.length, segmentColors.length, 3)
+  const list = []
+  for (let i = 0; i < count; i += 1) {
+    const colorRaw = String(colors[i] || '').toLowerCase()
+    let colorClass = ''
+    if (colorRaw === 'purple') colorClass = 'mslt-sc-purple'
+    else if (colorRaw === 'yellow') colorClass = 'mslt-sc-yellow'
+    else if (colorRaw === 'green') colorClass = 'mslt-sc-green'
+    const rawSegments = Array.isArray(segmentColors[i]) ? segmentColors[i] : []
+    const segments = rawSegments.map((c) => {
+      const sc = String(c || '').toLowerCase()
+      if (sc === 'purple') return 'mslt-sd-purple'
+      if (sc === 'yellow') return 'mslt-sd-yellow'
+      if (sc === 'blue') return 'mslt-sd-blue'
+      if (sc === 'green') return 'mslt-sd-green'
+      return ''
+    })
+    list.push({
+      text: sectors[i] || '--',
+      colorClass,
+      segments,
+    })
+  }
+  return list
 }

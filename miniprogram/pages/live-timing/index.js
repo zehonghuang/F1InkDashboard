@@ -210,6 +210,9 @@ function mapToLiveRow(row) {
     pitCount: Number(item.pit_count) || 0,
     teamColor: firstNonEmpty(item.team_color, "#64748b"),
     carData: item.car_data || item.carData || null,
+    sectors: Array.isArray(item.sectors) ? item.sectors : (Array.isArray(item.Sectors) ? item.Sectors : undefined),
+    sectorColors: Array.isArray(item.sector_colors) ? item.sector_colors : (Array.isArray(item.SectorColors) ? item.SectorColors : undefined),
+    sectorSegmentColors: Array.isArray(item.sector_segment_colors) ? item.sector_segment_colors : (Array.isArray(item.SectorSegmentColors) ? item.SectorSegmentColors : undefined),
   }
 }
 
@@ -697,13 +700,11 @@ Page({
     this._lastSnapshot = snapshot || null
     const rows = Array.isArray(snapshot && snapshot.rows) ? snapshot.rows : []
     const session = (snapshot && snapshot.session) || {}
-    const topRows = rows.slice(0, 8).map(mapToLiveRow)
-    const qualifyingRows = rows.map(mapToQualifyingRow)
+    const liveRows = rows.map(mapToLiveRow)
     const raceControlMessages = Array.isArray(snapshot && snapshot.race_control_messages)
       ? snapshot.race_control_messages.slice(0, 8).map((item, index) => buildRaceControlMessage(item, index))
       : []
     const trackStatus = buildTrackStatus(snapshot)
-    const bubbleRows = qualifyingRows.length ? qualifyingRows : topRows
     this.syncPinnedRaceControl(raceControlMessages)
     this.setData({
       sessionTitle: firstNonEmpty(session.meeting_name, session.location, this.data.i18n.liveTiming.pageTitle),
@@ -713,14 +714,13 @@ Page({
       updatedAt: formatStamp(snapshot && snapshot.last_updated_at_utc),
       trackStatusLabel: trackStatus.label,
       trackStatusTone: trackStatus.tone,
-      liveRows: topRows,
-      qualifyingRows,
+      liveRows,
       raceControlMessages,
       weatherCards: buildWeatherCards(snapshot),
       connectionBadges: buildConnectionBadges(snapshot, this.data.wsState),
       error: firstNonEmpty(snapshot && snapshot.last_error),
     })
-    this.syncCarDataBubble(bubbleRows)
+    this.syncCarDataBubble(liveRows)
   },
 
   connectWs() {
