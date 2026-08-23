@@ -873,14 +873,14 @@ func segmentColors(segments []struct {
 
 func segmentColor(status int) string {
 	switch status {
-	case 2024, 2048:
+	case 2024, 2048, 2052:
 		return "yellow"
 	case 2064:
 		return "blue"
-	case 2049:
-		return "purple"
-	case 2050, 2051, 2052, 2053:
+	case 2049, 2053:
 		return "green"
+	case 2050, 2051:
+		return "purple"
 	default:
 		return ""
 	}
