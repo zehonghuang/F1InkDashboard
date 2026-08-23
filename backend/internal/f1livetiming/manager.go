@@ -879,6 +879,8 @@ func segmentColor(status int) string {
 		return "blue"
 	case 2049:
 		return "purple"
+	case 2050, 2051, 2052, 2053:
+		return "green"
 	default:
 		return ""
 	}
