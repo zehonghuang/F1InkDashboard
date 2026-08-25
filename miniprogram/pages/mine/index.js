@@ -159,6 +159,9 @@ Page({
       if (tb && typeof tb.setSelectedByRoute === 'function') {
         tb.setSelectedByRoute(this.route)
       }
+      if (tb && typeof tb.setVisible === 'function') {
+        tb.setVisible(true)
+      }
     }
     this.refreshWeChatGroupFromBackend({ silent: true })
   },

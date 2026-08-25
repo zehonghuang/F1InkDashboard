@@ -36,6 +36,7 @@ Component({
   },
   pageLifetimes: {
     show() {
+      this.setVisible(true)
       this.refreshTabs()
     }
   },
