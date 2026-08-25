@@ -4,7 +4,9 @@
   },
   "navigationBarTitleText": "归档",
   "navigationStyle": "custom",
-  "enablePullDownRefresh": true,
+  "enablePullDownRefresh": false,
   "backgroundColor": "#15151E",
-  "backgroundTextStyle": "light"
+  "backgroundTextStyle": "light",
+  "renderer": "skyline",
+  "componentFramework": "glass-easel"
 }

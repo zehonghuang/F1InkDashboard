@@ -10,12 +10,16 @@
   border-top: 1rpx solid rgba(255, 255, 255, 0.08);
   border-radius: 24rpx 24rpx 0 0;
   box-shadow: 0 -10rpx 30rpx rgba(0, 0, 0, 0.36);
+  pointer-events: auto;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .tabbar-inner {
   height: 104rpx;
   padding: 8rpx 16rpx 0;
   box-sizing: border-box;
+  pointer-events: auto;
 }
 
 .tabbar-track {

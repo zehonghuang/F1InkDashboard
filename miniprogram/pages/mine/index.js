@@ -3,6 +3,7 @@ const { fetchPrefs, updatePrefs } = require("../../services/prefsService")
 const i18n = require("../../services/i18n")
 const { getWeChatStoreConfig } = require("../../services/wechatStore")
 const { getWeChatGroupConfig, fetchWeChatGroupConfig } = require("../../services/wechatGroup")
+const { computeTabbarReserveStyle } = require("../../utils/tabbar-layout")
 
 const STORAGE_KEYS = {
   season: "pref_season",
@@ -115,15 +116,20 @@ Page({
     wechatGroupQrUrl: "",
     wechatGroupQrLoaded: false,
     wechatGroupQrBroken: false,
-    wechatGroupFakeQrCells: FAKE_QR_CELLS
+    wechatGroupFakeQrCells: FAKE_QR_CELLS,
+    scrollViewStyle: "height: calc(100vh - 200rpx);",
+    tabbarReserveRpx: 200
   },
   onLoad() {
+    const layout = computeTabbarReserveStyle()
     this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     try {
       const sys = wx.getSystemInfoSync()
       const h = Number(sys && sys.statusBarHeight) || 0
-      this.setData({ statusBarHeight: h })
-    } catch (e) {}
+      this.setData({ statusBarHeight: h, scrollViewStyle: layout.scrollViewStyle, tabbarReserveRpx: layout.tabbarReserveRpx })
+    } catch (e) {
+      this.setData({ scrollViewStyle: layout.scrollViewStyle, tabbarReserveRpx: layout.tabbarReserveRpx })
+    }
     this.applyI18n()
     this.syncStoreConfig()
     this.syncWeChatGroupConfig()
@@ -139,6 +145,7 @@ Page({
     this.measureHeroRect()
   },
   onShow() {
+    console.log("[PAGE:MINE] onShow() fired. this.route=", this.route, "typeof getTabBar=", typeof this.getTabBar)
     this.applyI18n()
     this.syncStoreConfig()
     this.syncWeChatGroupConfig()
@@ -156,11 +163,18 @@ Page({
     } catch (e) {}
     if (typeof this.getTabBar === 'function') {
       const tb = this.getTabBar()
+      console.log("[PAGE:MINE] getTabBar() returned tb=", tb ? "✅ instance OK" : "❌ NULL/undefined")
       if (tb && typeof tb.setSelectedByRoute === 'function') {
+        console.log("[PAGE:MINE] 🎯 will call tb.setSelectedByRoute(this.route=", this.route, ")")
         tb.setSelectedByRoute(this.route)
+      } else {
+        console.log("[PAGE:MINE] ⚠️ tb missing or setSelectedByRoute not a function. typeof=", tb && typeof tb.setSelectedByRoute)
       }
       if (tb && typeof tb.setVisible === 'function') {
+        console.log("[PAGE:MINE] 👁️  will call tb.setVisible(true)")
         tb.setVisible(true)
+      } else {
+        console.log("[PAGE:MINE] ⚠️ tb missing or setVisible not a function. typeof=", tb && typeof tb.setVisible)
       }
     }
     this.refreshWeChatGroupFromBackend({ silent: true })

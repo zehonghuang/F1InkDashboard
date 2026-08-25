@@ -6,6 +6,7 @@
     enhanced
     show-scrollbar="{{false}}"
     bindscroll="onPageScroll"
+    style="{{scrollViewStyle}}"
   >
     <view class="page has-tabbar mine">
       <view

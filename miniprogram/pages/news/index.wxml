@@ -17,6 +17,7 @@
     bindscroll="onPageScroll"
     bindscrolltolower="onScrollToLower"
     scrolltolower-threshold="120"
+    style="{{scrollViewStyle}}"
   >
     <view class="page has-tabbar {{ pressPreview && pressPreview.active ? 'page-previewing' : '' }}">
       <view class="header" style="padding-top: calc({{ statusBarHeight }}px + 12rpx);">

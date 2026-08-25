@@ -1,4 +1,5 @@
 const i18n = require("../../services/i18n")
+const { computeTabbarReserveStyle } = require("../../utils/tabbar-layout")
 
 Page({
   data: {
@@ -10,6 +11,9 @@ Page({
     selectedSeason: 2026,
     latestRace: null,
     completedCount: 0,
+    refreshing: false,
+    scrollViewStyle: "height: calc(100vh - 200rpx);",
+    tabbarReserveRpx: 200,
     races: [
       {
         id: "R07",
@@ -58,29 +62,41 @@ Page({
     ]
   },
   onLoad() {
+    const layout = computeTabbarReserveStyle()
     this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     try {
       const sys = wx.getSystemInfoSync()
       const h = Number(sys && sys.statusBarHeight) || 0
-      this.setData({ statusBarHeight: h })
-    } catch (e) {}
+      this.setData({ statusBarHeight: h, scrollViewStyle: layout.scrollViewStyle, tabbarReserveRpx: layout.tabbarReserveRpx })
+    } catch (e) {
+      this.setData({ scrollViewStyle: layout.scrollViewStyle, tabbarReserveRpx: layout.tabbarReserveRpx })
+    }
     this.applyI18n()
     this.loadArchive()
   },
   onUnload() {
     if (this._offLocale) this._offLocale()
   },
-  onPullDownRefresh() {
+  onRefresherRefresh() {
+    this.setData({ refreshing: true })
     this.loadArchive({ isPullDown: true })
   },
   onShow() {
+    console.log("[PAGE:ARCHIVE] onShow() fired. this.route=", this.route, "typeof getTabBar=", typeof this.getTabBar)
     if (typeof this.getTabBar === 'function') {
       const tb = this.getTabBar()
+      console.log("[PAGE:ARCHIVE] getTabBar() returned tb=", tb ? "✅ instance OK" : "❌ NULL/undefined")
       if (tb && typeof tb.setSelectedByRoute === 'function') {
+        console.log("[PAGE:ARCHIVE] 🎯 will call tb.setSelectedByRoute(this.route=", this.route, ")")
         tb.setSelectedByRoute(this.route)
+      } else {
+        console.log("[PAGE:ARCHIVE] ⚠️ tb missing or setSelectedByRoute not a function. typeof=", tb && typeof tb.setSelectedByRoute)
       }
       if (tb && typeof tb.setVisible === 'function') {
+        console.log("[PAGE:ARCHIVE] 👁️  will call tb.setVisible(true)")
         tb.setVisible(true)
+      } else {
+        console.log("[PAGE:ARCHIVE] ⚠️ tb missing or setVisible not a function. typeof=", tb && typeof tb.setVisible)
       }
     }
     this.applyI18n()
@@ -114,7 +130,7 @@ Page({
   loadArchive(opts) {
     const done = () => {
       if (opts && opts.isPullDown) {
-        wx.stopPullDownRefresh()
+        this.setData({ refreshing: false })
       }
     }
     const app = getApp()

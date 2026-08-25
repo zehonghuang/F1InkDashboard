@@ -8,7 +8,7 @@
 }
 
 .page-scroll {
-  flex: 1;
+  height: calc(100vh - 200rpx);
   width: 100%;
   min-height: 0;
 }

@@ -6,6 +6,7 @@ const { fetchLatestCrawledSessionResults } = require("../../services/mpSessionRe
 const { createMotorsportLiveClient } = require("../../services/motorsportLiveWs")
 const { getAuthState } = require("../../services/authService")
 const i18n = require("../../services/i18n")
+const { computeTabbarReserveStyle } = require("../../utils/tabbar-layout")
 
 const WELCOME_KEY = "news_welcome_shown_v1"
 const PREF_TEAMS_KEY = "pref_follow_teams"
@@ -373,6 +374,8 @@ Page({
     page: 1,
     pageSize: 20,
     hasMore: true,
+    scrollViewStyle: "height: calc(100vh - 200rpx);",
+    tabbarReserveRpx: 200,
     statusBarHeight: 0,
     liveStandingsStickyTopPx: 0,
     liveStandingsBodyHeightRpx: 360,
@@ -626,6 +629,7 @@ Page({
     }, 260)
   },
   onLoad() {
+    const layout = computeTabbarReserveStyle()
     this._motorsportLiveHasSnapshot = false
     this._raceWeekTimelineSessions = []
     this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
@@ -636,8 +640,10 @@ Page({
         return
       }
       const apiBase = app && app.globalData && app.globalData.apiBase ? String(app.globalData.apiBase) : ""
-      this.setData({ apiBase })
-    } catch (e) {}
+      this.setData({ apiBase, scrollViewStyle: layout.scrollViewStyle, tabbarReserveRpx: layout.tabbarReserveRpx })
+    } catch (e) {
+      this.setData({ scrollViewStyle: layout.scrollViewStyle, tabbarReserveRpx: layout.tabbarReserveRpx })
+    }
     try {
       const sys = wx.getSystemInfoSync()
       const h = Number(sys && sys.statusBarHeight) || 0
@@ -672,6 +678,7 @@ Page({
     clearTimeout(this._qualiHideTimer)
   },
   onShow() {
+    console.log("[PAGE:NEWS] onShow() fired. this.route=", this.route, "typeof getTabBar=", typeof this.getTabBar)
     this.applyI18n()
     const isLoggedIn = this.syncAuthState()
     if (isLoggedIn) {
@@ -681,11 +688,19 @@ Page({
     }
     if (typeof this.getTabBar === "function") {
       const tb = this.getTabBar()
+      console.log("[PAGE:NEWS] getTabBar() returned tb=", tb ? "✅ instance OK" : "❌ NULL/undefined")
       if (tb && typeof tb.setSelectedByRoute === "function") {
+        console.log("[PAGE:NEWS] 🎯 will call tb.setSelectedByRoute(this.route=", this.route, ")")
         tb.setSelectedByRoute(this.route)
+      } else {
+        console.log("[PAGE:NEWS] ⚠️ tb missing or setSelectedByRoute not a function. tb.setSelectedByRoute typeof=", tb && typeof tb.setSelectedByRoute)
       }
       if (tb && typeof tb.setVisible === "function") {
-        tb.setVisible(!this.data.showWelcome && !(this.data.pressPreview && this.data.pressPreview.show))
+        const vis = !this.data.showWelcome && !(this.data.pressPreview && this.data.pressPreview.show)
+        console.log("[PAGE:NEWS] 👁️  will call tb.setVisible(", vis, ")")
+        tb.setVisible(vis)
+      } else {
+        console.log("[PAGE:NEWS] ⚠️ tb missing or setVisible not a function. typeof=", tb && typeof tb.setVisible)
       }
     }
   },
