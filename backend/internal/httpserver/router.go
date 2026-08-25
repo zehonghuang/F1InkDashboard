@@ -133,6 +133,12 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.POST("/api/v1/admin/bind", handlers.AdminBind(cfg, gormOrNil(database)))
 	s.Router.POST("/api/v1/admin/unbind", handlers.AdminUnbind(cfg, gormOrNil(database)))
 
+	s.Router.GET("/api/v1/admin/activities", handlers.AdminActivityList(gormOrNil(database)))
+	s.Router.GET("/api/v1/admin/activities/:id", handlers.AdminActivityDetail(gormOrNil(database)))
+	s.Router.POST("/api/v1/admin/activities", handlers.AdminActivityCreate(gormOrNil(database)))
+	s.Router.PUT("/api/v1/admin/activities/:id", handlers.AdminActivityUpdate(gormOrNil(database)))
+	s.Router.DELETE("/api/v1/admin/activities/:id", handlers.AdminActivityDelete(gormOrNil(database)))
+
 	mpAuth := s.Router.Group("/api/v1/mp/auth")
 	mpAuth.POST("/login", handlers.MpAuthLogin(cfg, gormOrNil(database)))
 	mpAuthAuth := mpAuth.Group("")
