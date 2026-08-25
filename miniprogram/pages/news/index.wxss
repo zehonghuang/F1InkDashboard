@@ -35,7 +35,18 @@
   flex-direction: column;
 }
 
-.news-list > * + * {
+.news-list .news-card + .news-card {
+  margin-top: 18rpx;
+}
+
+.news-list .raceweek-countdown + .news-card,
+.news-list .quali-panel + .news-card,
+.news-list .hero-swiper + .news-card,
+.news-list .status + .news-card {
+  margin-top: 18rpx;
+}
+
+.news-list .load-more {
   margin-top: 18rpx;
 }
 
@@ -61,7 +72,7 @@
   margin-right: 20rpx;
 }
 
-.raceweek-countdown-left > * + * {
+.raceweek-countdown-left .raceweek-countdown-session + .raceweek-countdown-suffix {
   margin-top: 6rpx;
 }
 
@@ -70,10 +81,6 @@
   margin-right: 20rpx;
   align-items: center;
   justify-content: center;
-}
-
-.raceweek-countdown-left-flag-only > * + * {
-  margin-top: 0;
 }
 
 .raceweek-countdown-mid {
@@ -124,7 +131,7 @@
   align-items: flex-end;
 }
 
-.raceweek-countdown-clock > * + * {
+.raceweek-countdown-clock .raceweek-countdown-seg + .raceweek-countdown-seg {
   margin-left: 14rpx;
 }
 
@@ -134,7 +141,7 @@
   align-items: flex-end;
 }
 
-.raceweek-countdown-seg > * + * {
+.raceweek-countdown-seg .raceweek-countdown-num + .raceweek-countdown-unit {
   margin-left: 10rpx;
 }
 
@@ -215,7 +222,7 @@
   align-items: flex-start;
 }
 
-.live-session-title-group > * + * {
+.live-session-title-group .live-session-title + .live-session-subtitle {
   margin-top: 4rpx;
 }
 
@@ -455,7 +462,8 @@
   align-items: center;
 }
 
-.press-preview-meta > * + * {
+.press-preview-meta .press-preview-tag + .press-preview-dot,
+.press-preview-meta .press-preview-dot + .press-preview-time {
   margin-left: 10rpx;
 }
 
@@ -563,7 +571,8 @@
   align-items: center;
 }
 
-.hero-meta > * + * {
+.hero-meta .hero-tag + .hero-dot,
+.hero-meta .hero-dot + .hero-time {
   margin-left: 10rpx;
 }
 
@@ -800,7 +809,8 @@
   align-items: center;
 }
 
-.news-meta > * + * {
+.news-meta .news-tag + .news-dot,
+.news-meta .news-dot + .news-time {
   margin-left: 10rpx;
 }
 

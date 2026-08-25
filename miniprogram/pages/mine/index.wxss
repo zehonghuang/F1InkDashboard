@@ -276,12 +276,17 @@
 }
 
 .btn {
+  width: 100%;
   font-size: 24rpx;
   line-height: 36rpx;
   padding: 12rpx 20rpx;
   border-radius: 14rpx;
   font-weight: 700;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-primary {
@@ -316,36 +321,41 @@
 }
 
 .follow-grid {
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: space-between;
   margin-top: 0;
 }
 
 .follow-grid .follow-card {
-  margin-top: 16rpx;
-}
-
-.follow-grid .follow-card:nth-child(1),
-.follow-grid .follow-card:nth-child(2) {
+  width: calc((100% - 16rpx) / 2);
+  box-sizing: border-box;
   margin-top: 0;
 }
 
+.follow-grid .follow-card:first-child {
+  margin-right: 16rpx;
+}
+
 .follow-card {
-  width: calc(50% - 8rpx);
-  box-sizing: border-box;
   min-width: 0;
   padding: 18rpx;
   border-radius: 18rpx;
   border: 1rpx solid rgba(255, 255, 255, 0.08);
   background: linear-gradient(180deg, rgba(16, 16, 22, 0.94) 0%, rgba(8, 8, 12, 0.98) 100%);
+  display: flex;
+  flex-direction: column;
 }
 
 .follow-card-head {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+  flex: none;
 }
 
 .follow-card-title {
@@ -353,20 +363,29 @@
   color: rgba(255, 255, 255, 0.92);
   font-size: 24rpx;
   font-weight: 700;
-  margin-right: 12rpx;
 }
 
 .follow-card-count {
   flex: none;
+  margin-left: auto;
   color: rgba(255, 255, 255, 0.48);
   font-size: 20rpx;
 }
 
 .follow-card-stack {
+  width: 100%;
+  box-sizing: border-box;
   margin-top: 18rpx;
   min-height: 48rpx;
   display: flex;
+  flex-direction: row;
   align-items: center;
+  justify-content: flex-start;
+  flex: none;
+}
+
+.follow-card-stack .stack {
+  flex: none;
 }
 
 .follow-card-empty {
@@ -376,6 +395,8 @@
 }
 
 .follow-card-value {
+  width: 100%;
+  box-sizing: border-box;
   margin-top: 16rpx;
   color: rgba(255, 255, 255, 0.86);
   font-size: 22rpx;
@@ -383,6 +404,7 @@
   font-weight: 600;
   height: 64rpx;
   overflow: hidden;
+  flex: none;
 }
 
 .stack {
@@ -461,24 +483,30 @@
 }
 
 .quick-grid {
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: space-between;
 }
 
 .quick-grid .quick-card {
+  width: calc((100% - 16rpx) / 2);
+  box-sizing: border-box;
   margin-top: 16rpx;
 }
 
-.quick-grid .quick-card:nth-child(1),
-.quick-grid .quick-card:nth-child(2) {
+.quick-grid .quick-card:first-child,
+.quick-grid .quick-card:first-child + .quick-card + .quick-card {
+  margin-right: 16rpx;
+}
+
+.quick-grid .quick-card:first-child,
+.quick-grid .quick-card:first-child + .quick-card {
   margin-top: 0;
 }
 
 .quick-card {
-  width: calc(50% - 8rpx);
-  box-sizing: border-box;
   min-width: 0;
   min-height: 220rpx;
   padding: 20rpx 18rpx 18rpx;
@@ -496,12 +524,12 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
   width: 100%;
+  box-sizing: border-box;
+  flex: none;
 }
 
 .quick-card-icon {
-  flex: 0 0 72rpx;
   width: 72rpx;
   height: 72rpx;
   border-radius: 22rpx;
@@ -514,6 +542,7 @@
   font-size: 24rpx;
   font-weight: 900;
   letter-spacing: 1rpx;
+  flex: none;
 }
 
 .quick-card-icon-image {
@@ -527,8 +556,8 @@
 }
 
 .quick-card-badge {
-  flex: 0 0 auto;
-  margin-left: 12rpx;
+  flex: none;
+  margin-left: auto;
   padding: 8rpx 14rpx;
   border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.06);
@@ -539,23 +568,32 @@
 }
 
 .quick-card-title {
+  width: 100%;
+  box-sizing: border-box;
   margin-top: 18rpx;
   color: #ffffff;
   font-size: 28rpx;
   font-weight: 700;
   line-height: 1.2;
+  flex: none;
 }
 
 .quick-card-desc {
+  width: 100%;
+  box-sizing: border-box;
   margin-top: 10rpx;
   min-height: 60rpx;
   color: rgba(255, 255, 255, 0.52);
   font-size: 21rpx;
   line-height: 30rpx;
+  flex: none;
 }
 
 .quick-card-link {
-  margin-top: 18rpx;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: auto;
+  padding-top: 18rpx;
   color: rgba(255, 255, 255, 0.8);
   font-size: 22rpx;
   font-weight: 700;
@@ -612,19 +650,27 @@
 }
 
 .row {
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   padding: 12rpx 0;
 }
 
 .row-key {
+  flex: none;
   color: #ffffff;
   font-weight: 600;
+  text-align: left;
 }
 
 .row-val {
+  flex: none;
+  margin-left: auto;
   color: rgba(255, 255, 255, 0.64);
+  text-align: right;
 }
 
 .shop-section {
@@ -635,7 +681,8 @@
   position: relative;
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .shop-inline-head-decoration {
@@ -645,12 +692,21 @@
   top: -22rpx;
   height: 2rpx;
   background: linear-gradient(90deg, rgba(225, 6, 0, 0.84) 0%, rgba(255, 255, 255, 0.18) 100%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .shop-inline-head-main {
-  min-width: 0;
   flex: 1;
   margin-right: 16rpx;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.shop-inline-pill {
+  position: relative;
+  z-index: 1;
 }
 
 .shop-inline-eyebrow {
@@ -676,6 +732,8 @@
 }
 
 .shop-inline-pill {
+  position: relative;
+  z-index: 1;
   flex: none;
   margin-top: 2rpx;
   padding: 8rpx 14rpx;
@@ -688,6 +746,8 @@
 }
 
 .shop-inline-shell {
+  width: 100%;
+  box-sizing: border-box;
   margin-top: 18rpx;
   padding: 12rpx;
   border-radius: 20rpx;
@@ -701,14 +761,20 @@
 }
 
 .shop-inline-embed {
+  width: 100%;
+  height: 360rpx;
+  box-sizing: border-box;
   border-radius: 16rpx;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.02);
+  position: relative;
 }
 
 .shop-inline-embed store-home {
-  display: block;
   width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
 }
 
 .shop-inline-empty {

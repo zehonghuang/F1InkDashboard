@@ -15,19 +15,16 @@
   margin-bottom: 20rpx;
 }
 
-.archive-overview > * {
-  margin-top: 16rpx;
-}
-
-.archive-overview > *:nth-child(1),
-.archive-overview > *:nth-child(2) {
-  margin-top: 0;
-}
-
 .season-picker {
   width: 100%;
   display: flex;
   justify-content: flex-start;
+  margin-bottom: 16rpx;
+}
+
+.overview-card-wide {
+  width: 100%;
+  margin-bottom: 16rpx;
 }
 
 .season-pill {
@@ -110,7 +107,7 @@
   flex-direction: column;
 }
 
-.race-list > * + * {
+.race-list .timeline + .timeline {
   margin-top: 16rpx;
 }
 
@@ -119,7 +116,7 @@
   flex-direction: column;
 }
 
-.timeline > * + * {
+.timeline .timeline-item + .timeline-item {
   margin-top: 20rpx;
 }
 
@@ -252,7 +249,7 @@
   flex-direction: column;
 }
 
-.archive-results > * + * {
+.archive-results .archive-result-row + .archive-result-row {
   margin-top: 12rpx;
 }
 
