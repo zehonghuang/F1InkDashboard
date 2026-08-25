@@ -1,3 +1,18 @@
+.page-root {
+  height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(225, 6, 0, 0.14) 0, rgba(225, 6, 0, 0) 34%),
+    linear-gradient(180deg, #15151e 0%, #101018 56%, #09090f 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+.page-scroll {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+}
+
 .section {
   margin-top: 22rpx;
   padding: 22rpx;
@@ -9,9 +24,7 @@
 
 .mine {
   padding-top: 48rpx;
-  background:
-    radial-gradient(circle at top, rgba(225, 6, 0, 0.14) 0, rgba(225, 6, 0, 0) 34%),
-    linear-gradient(180deg, #15151e 0%, #101018 56%, #09090f 100%);
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
 }
 
 .hero {
@@ -51,7 +64,10 @@
 
 .hero-custom-bg {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -81,12 +97,11 @@
 .hero-pull-pill {
   padding: 10rpx 18rpx;
   border-radius: 999rpx;
-  background: rgba(8, 8, 12, 0.56);
+  background: rgba(8, 8, 12, 0.72);
   border: 1rpx solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.86);
   font-size: 22rpx;
   line-height: 1.2;
-  backdrop-filter: blur(12rpx);
 }
 
 .hero-pull-pill-ready {
@@ -103,9 +118,8 @@
   bottom: 24rpx;
   padding: 24rpx 22rpx;
   border-radius: 18rpx;
-  background: rgba(8, 8, 12, 0.48);
+  background: rgba(8, 8, 12, 0.7);
   border: 1rpx solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12rpx);
 }
 
 .profile {
@@ -175,13 +189,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12rpx;
 }
 
 .profile-guide-title {
   color: #ffffff;
   font-size: 24rpx;
   font-weight: 700;
+  margin-right: 12rpx;
 }
 
 .profile-guide-badge {
@@ -208,12 +222,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14rpx;
 }
 
 .profile-guide-step-main {
   min-width: 0;
   flex: 1;
+  margin-right: 14rpx;
 }
 
 .profile-guide-step-title {
@@ -248,7 +262,10 @@
 .profile-actions {
   display: flex;
   flex-direction: column;
-  gap: 10rpx;
+}
+
+.profile-actions .btn + .btn {
+  margin-top: 10rpx;
 }
 
 .hero-sync-hint {
@@ -264,6 +281,7 @@
   padding: 12rpx 20rpx;
   border-radius: 14rpx;
   font-weight: 700;
+  box-sizing: border-box;
 }
 
 .btn-primary {
@@ -298,12 +316,25 @@
 }
 
 .follow-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16rpx;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-top: 0;
+}
+
+.follow-grid .follow-card {
+  margin-top: 16rpx;
+}
+
+.follow-grid .follow-card:nth-child(1),
+.follow-grid .follow-card:nth-child(2) {
+  margin-top: 0;
 }
 
 .follow-card {
+  width: calc(50% - 8rpx);
+  box-sizing: border-box;
   min-width: 0;
   padding: 18rpx;
   border-radius: 18rpx;
@@ -315,7 +346,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12rpx;
 }
 
 .follow-card-title {
@@ -323,6 +353,7 @@
   color: rgba(255, 255, 255, 0.92);
   font-size: 24rpx;
   font-weight: 700;
+  margin-right: 12rpx;
 }
 
 .follow-card-count {
@@ -350,9 +381,7 @@
   font-size: 22rpx;
   line-height: 32rpx;
   font-weight: 600;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  height: 64rpx;
   overflow: hidden;
 }
 
@@ -413,7 +442,8 @@
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  gap: 20rpx 0;
+  padding-top: 10rpx;
+  padding-bottom: 10rpx;
 }
 
 .more-item {
@@ -422,7 +452,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 12rpx 0;
+  padding: 10rpx 0;
 }
 
 .more-item-feature {
@@ -431,12 +461,24 @@
 }
 
 .quick-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16rpx;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.quick-grid .quick-card {
+  margin-top: 16rpx;
+}
+
+.quick-grid .quick-card:nth-child(1),
+.quick-grid .quick-card:nth-child(2) {
+  margin-top: 0;
 }
 
 .quick-card {
+  width: calc(50% - 8rpx);
+  box-sizing: border-box;
   min-width: 0;
   min-height: 220rpx;
   padding: 20rpx 18rpx 18rpx;
@@ -452,12 +494,14 @@
 
 .quick-card-head {
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: 12rpx;
+  width: 100%;
 }
 
 .quick-card-icon {
+  flex: 0 0 72rpx;
   width: 72rpx;
   height: 72rpx;
   border-radius: 22rpx;
@@ -483,7 +527,8 @@
 }
 
 .quick-card-badge {
-  flex: none;
+  flex: 0 0 auto;
+  margin-left: 12rpx;
   padding: 8rpx 14rpx;
   border-radius: 999rpx;
   background: rgba(255, 255, 255, 0.06);
@@ -510,8 +555,7 @@
 }
 
 .quick-card-link {
-  margin-top: auto;
-  padding-top: 18rpx;
+  margin-top: 18rpx;
   color: rgba(255, 255, 255, 0.8);
   font-size: 22rpx;
   font-weight: 700;
@@ -592,11 +636,9 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16rpx;
 }
 
-.shop-inline-head::before {
-  content: "";
+.shop-inline-head-decoration {
   position: absolute;
   left: 0;
   right: 120rpx;
@@ -608,6 +650,7 @@
 .shop-inline-head-main {
   min-width: 0;
   flex: 1;
+  margin-right: 16rpx;
 }
 
 .shop-inline-eyebrow {
@@ -698,7 +741,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12rpx;
   padding: 8rpx 0;
   min-height: 76rpx;
 }
@@ -706,6 +748,7 @@
 .action-main {
   flex: 1;
   min-width: 0;
+  margin-right: 12rpx;
 }
 
 .action-label {
@@ -727,13 +770,13 @@
 .action-side {
   display: flex;
   align-items: center;
-  gap: 14rpx;
   flex: none;
 }
 
 .action-meta {
   color: rgba(255, 255, 255, 0.52);
   font-size: 20rpx;
+  margin-right: 14rpx;
 }
 
 .action-arrow {
@@ -753,9 +796,15 @@
   margin: 0;
   background: transparent;
   border: none;
+  position: relative;
 }
 
-.avatar-btn::after {
+.avatar-btn-after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   border: none;
 }
 
@@ -765,10 +814,9 @@
   bottom: calc(150rpx + env(safe-area-inset-bottom));
   padding: 8rpx;
   border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.045);
+  background: rgba(20, 20, 28, 0.8);
   border: 1rpx solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 14rpx 34rpx rgba(0, 0, 0, 0.26);
-  backdrop-filter: blur(14rpx);
   z-index: 120;
 }
 
@@ -855,7 +903,10 @@
 
 .wechat-group-mask {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.3);
   z-index: 920;
   animation: wechat-group-mask-in 180ms ease-out both;
@@ -892,13 +943,13 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 14rpx;
 }
 
 .wechat-group-popup-title {
   color: #ffffff;
   font-size: 28rpx;
   font-weight: 700;
+  margin-right: 14rpx;
 }
 
 .wechat-group-popup-desc {
@@ -906,6 +957,7 @@
   color: rgba(255, 255, 255, 0.54);
   font-size: 20rpx;
   line-height: 28rpx;
+  margin-right: 14rpx;
 }
 
 .wechat-group-popup-close {
@@ -947,7 +999,10 @@
 
 .wechat-group-qr-state {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1062,7 +1117,10 @@
 .picker-actions {
   display: flex;
   flex-direction: row;
-  gap: 12rpx;
+}
+
+.picker-actions .picker-btn + .picker-btn {
+  margin-left: 12rpx;
 }
 
 .picker-btn {
@@ -1084,7 +1142,10 @@
   padding: 16rpx 0;
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+}
+
+.picker-list .card + .card {
+  margin-top: 16rpx;
 }
 
 .card {
@@ -1115,11 +1176,13 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+}
+
+.card-mid .driver-row + .team {
+  margin-top: 8rpx;
 }
 
 .card-mid-team {
-  gap: 0;
 }
 
 .team-title {
@@ -1133,7 +1196,6 @@
   display: flex;
   flex-direction: row;
   align-items: baseline;
-  gap: 12rpx;
   min-width: 0;
 }
 
@@ -1145,6 +1207,7 @@
 }
 
 .driver-no {
+  margin-right: 12rpx;
   flex: none;
   color: #ffffff;
   font-size: 26rpx;

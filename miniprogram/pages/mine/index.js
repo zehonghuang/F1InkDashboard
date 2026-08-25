@@ -163,7 +163,7 @@ Page({
     this.refreshWeChatGroupFromBackend({ silent: true })
   },
   onPageScroll(e) {
-    const top = e && Number.isFinite(e.scrollTop) ? e.scrollTop : Number((e && e.scrollTop) || 0)
+    const top = e && e.detail && Number.isFinite(e.detail.scrollTop) ? e.detail.scrollTop : Number((e && e.detail && e.detail.scrollTop) || 0)
     this.setData({ pageScrollTop: top > 0 ? top : 0 })
   },
   syncStoreConfig() {
@@ -330,7 +330,7 @@ Page({
   },
   measureHeroRect() {
     return new Promise((resolve) => {
-      const query = this.createSelectorQuery ? this.createSelectorQuery() : wx.createSelectorQuery()
+      const query = this.createSelectorQuery ? this.createSelectorQuery().in(this) : wx.createSelectorQuery().in(this)
       query.select(".hero-cover-frame").boundingClientRect((rect) => {
         if (rect && Number(rect.width) > 0 && Number(rect.height) > 0) {
           const out = {
