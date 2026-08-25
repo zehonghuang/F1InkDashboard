@@ -1,0 +1,54 @@
+<import src="../../../../vendors/we-cropper/we-cropper.wxml" />
+
+<view class="crop-page">
+  <view class="crop-stage">
+    <view class="crop-frame" style="width: {{cropWidth}}px; height: {{cropHeight}}px;">
+      <template wx:if="{{cropperOpt}}" is="we-cropper" data="{{...cropperOpt}}" />
+      <view class="crop-preview-mask"></view>
+      <view
+        class="crop-preview-card"
+        style="left: {{previewCardLeft}}px; top: {{previewCardTop}}px; width: {{previewCardWidth}}px; height: {{previewCardHeight}}px;"
+      >
+        <view class="crop-preview-avatar"></view>
+        <view class="crop-preview-main">
+          <view class="crop-preview-name"></view>
+          <view class="crop-preview-sub"></view>
+        </view>
+        <view class="crop-preview-btn"></view>
+      </view>
+      <view class="crop-outline"></view>
+    </view>
+  </view>
+
+  <view class="crop-controls">
+    <view class="crop-title">{{i18n.mine.coverCropTitle}}</view>
+    <view class="crop-hint">{{i18n.mine.coverCropHint}}</view>
+
+    <view class="crop-zoom">
+      <view class="crop-zoom-head">
+        <view class="crop-zoom-label">{{i18n.mine.coverCropZoom}}</view>
+        <view class="crop-zoom-value">{{zoomValue}}%</view>
+      </view>
+      <slider
+        class="crop-zoom-slider"
+        min="100"
+        max="300"
+        step="1"
+        value="{{zoomValue}}"
+        activeColor="#E10600"
+        backgroundColor="rgba(255,255,255,0.16)"
+        block-color="#ffffff"
+        block-size="18"
+        bindchanging="onZoomChanging"
+      />
+    </view>
+
+    <view class="crop-actions">
+      <button class="crop-btn crop-btn-ghost" bindtap="onReset">{{i18n.mine.coverCropReset}}</button>
+      <button class="crop-btn crop-btn-ghost" bindtap="onCancel">{{i18n.common.cancel}}</button>
+      <button class="crop-btn crop-btn-primary" bindtap="onConfirm" loading="{{processing}}">
+        {{i18n.mine.coverCropUse}}
+      </button>
+    </view>
+  </view>
+</view>

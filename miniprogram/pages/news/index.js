@@ -1161,7 +1161,7 @@ Page({
     if (Date.now() < Number(this._suppressTapUntil || 0)) return
     const { id } = e.currentTarget.dataset
     if (!id) return
-    wx.navigateTo({ url: `/pages/news-detail/index?id=${encodeURIComponent(id)}` })
+    wx.navigateTo({ url: `/packages/news-pkg/pages/news-detail/index?id=${encodeURIComponent(id)}` })
   },
   findNewsItemById(id) {
     const nid = String(id || "").trim()
@@ -1231,7 +1231,7 @@ Page({
     }
     this.setData({ pressPreview: null }, () => {
       this.setTabbarVisible(true)
-      wx.navigateTo({ url: `/pages/news-detail/index?id=${encodeURIComponent(id)}` })
+      wx.navigateTo({ url: `/packages/news-pkg/pages/news-detail/index?id=${encodeURIComponent(id)}` })
     })
   },
   onCloseWelcome() {

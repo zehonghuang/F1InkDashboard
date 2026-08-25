@@ -2,20 +2,61 @@
   "pages": [
     "pages/entry/index",
     "pages/news/index",
-    "pages/news-detail/index",
     "pages/archive/index",
-    "pages/race-sessions/index",
-    "pages/session-results/index",
-    "pages/driver/index",
-    "pages/tyre-intro/index",
-    "pages/standings/index",
-    "pages/shop/index",
-    "pages/shop-detail/index",
-    "pages/mine/index",
-    "pages/image-crop/index",
-    "pages/style-demo/index",
-    "pages/live-timing/index"
+    "pages/mine/index"
   ],
+  "subPackages": [
+    {
+      "root": "packages/news-pkg",
+      "name": "news-pkg",
+      "pages": [
+        "pages/news-detail/index"
+      ]
+    },
+    {
+      "root": "packages/race-pkg",
+      "name": "race-pkg",
+      "pages": [
+        "pages/race-sessions/index",
+        "pages/session-results/index",
+        "pages/driver/index",
+        "pages/tyre-intro/index",
+        "pages/standings/index",
+        "pages/live-timing/index"
+      ]
+    },
+    {
+      "root": "packages/shop-pkg",
+      "name": "shop-pkg",
+      "pages": [
+        "pages/shop/index",
+        "pages/shop-detail/index"
+      ]
+    },
+    {
+      "root": "packages/tools-pkg",
+      "name": "tools-pkg",
+      "pages": [
+        "pages/image-crop/index",
+        "pages/style-demo/index",
+        "pages/compare/index"
+      ]
+    }
+  ],
+  "preloadRule": {
+    "pages/news/index": {
+      "network": "all",
+      "packages": ["news-pkg"]
+    },
+    "pages/archive/index": {
+      "network": "all",
+      "packages": ["race-pkg"]
+    },
+    "pages/mine/index": {
+      "network": "all",
+      "packages": ["race-pkg", "shop-pkg", "tools-pkg"]
+    }
+  },
   "lazyCodeLoading": "requiredComponents",
   "window": {
     "navigationBarTitleText": "TONIC F1 Analytics",

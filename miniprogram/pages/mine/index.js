@@ -441,7 +441,7 @@ Page({
     })
   },
   openWeChatShop() {
-    wx.navigateTo({ url: "/pages/shop/index" })
+    wx.navigateTo({ url: "/packages/shop-pkg/pages/shop/index" })
   },
   noop() {},
   onOpenWechatGroup() {
@@ -477,15 +477,15 @@ Page({
     const action = e && e.currentTarget && e.currentTarget.dataset ? e.currentTarget.dataset.action : ""
     if (action === "standings") {
       const season = Number(this.data.prefSeason || 0) || 2026
-      wx.navigateTo({ url: `/pages/standings/index?season=${season}` })
+      wx.navigateTo({ url: `/packages/race-pkg/pages/standings/index?season=${season}` })
       return
     }
     if (action === "tyreIntro") {
-      wx.navigateTo({ url: "/pages/tyre-intro/index" })
+      wx.navigateTo({ url: "/packages/race-pkg/pages/tyre-intro/index" })
       return
     }
     if (action === "liveTiming") {
-      wx.navigateTo({ url: "/pages/live-timing/index" })
+      wx.navigateTo({ url: "/packages/race-pkg/pages/live-timing/index" })
       return
     }
     if (action === "shop") {
@@ -523,7 +523,7 @@ Page({
         ""
       if (!file) throw new Error("cover_file_missing")
       wx.navigateTo({
-        url: `/pages/image-crop/index?file=${encodeURIComponent(file)}&scene=mine-hero&targetWidth=${encodeURIComponent(heroRect.width)}&targetHeight=${encodeURIComponent(heroRect.height)}`,
+        url: `/packages/tools-pkg/pages/image-crop/index?file=${encodeURIComponent(file)}&scene=mine-hero&targetWidth=${encodeURIComponent(heroRect.width)}&targetHeight=${encodeURIComponent(heroRect.height)}`,
         events: {
           done: async (payload) => {
             const croppedPath = payload && payload.filePath ? String(payload.filePath || "").trim() : ""

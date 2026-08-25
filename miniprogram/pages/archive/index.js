@@ -181,7 +181,7 @@ Page({
       return
     }
     wx.navigateTo({
-      url: `/pages/race-sessions/index?season=${season}&round=${rd}&raceName=${encodeURIComponent(name || "")}`
+      url: `/packages/race-pkg/pages/race-sessions/index?season=${season}&round=${rd}&raceName=${encodeURIComponent(name || "")}`
     })
   },
   onQueryInput(e) {

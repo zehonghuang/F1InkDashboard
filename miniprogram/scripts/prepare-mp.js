@@ -337,7 +337,7 @@ async function main() {
   const base64 = fs.readFileSync(fontDst).toString('base64');
   fs.writeFileSync(base64Dst, `module.exports = "${base64}";\n`);
 
-  const echartsVendor = path.join(projectRoot, 'components', 'ec-canvas', 'vendor');
+  const echartsVendor = path.join(projectRoot, 'packages', 'race-pkg', 'components', 'ec-canvas', 'vendor');
   ensureDirSync(echartsVendor);
   const vendorFiles = [
     {
