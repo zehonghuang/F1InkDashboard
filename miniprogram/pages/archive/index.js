@@ -82,21 +82,13 @@ Page({
     this.loadArchive({ isPullDown: true })
   },
   onShow() {
-    console.log("[PAGE:ARCHIVE] onShow() fired. this.route=", this.route, "typeof getTabBar=", typeof this.getTabBar)
     if (typeof this.getTabBar === 'function') {
       const tb = this.getTabBar()
-      console.log("[PAGE:ARCHIVE] getTabBar() returned tb=", tb ? "✅ instance OK" : "❌ NULL/undefined")
       if (tb && typeof tb.setSelectedByRoute === 'function') {
-        console.log("[PAGE:ARCHIVE] 🎯 will call tb.setSelectedByRoute(this.route=", this.route, ")")
         tb.setSelectedByRoute(this.route)
-      } else {
-        console.log("[PAGE:ARCHIVE] ⚠️ tb missing or setSelectedByRoute not a function. typeof=", tb && typeof tb.setSelectedByRoute)
       }
       if (tb && typeof tb.setVisible === 'function') {
-        console.log("[PAGE:ARCHIVE] 👁️  will call tb.setVisible(true)")
         tb.setVisible(true)
-      } else {
-        console.log("[PAGE:ARCHIVE] ⚠️ tb missing or setVisible not a function. typeof=", tb && typeof tb.setVisible)
       }
     }
     this.applyI18n()

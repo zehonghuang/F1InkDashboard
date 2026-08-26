@@ -1,39 +1,35 @@
-/* ============ skyline 专用新增：外层壳 + scroll-view（原 webview 基准不存在这些类） ============ */
 .page-root {
+  width: 100%;
   height: 100vh;
-  background: transparent;
   display: flex;
   flex-direction: column;
+  background: transparent;
 }
 
 .page-scroll {
-  height: calc(100vh - 200rpx);
   width: 100%;
+  height: calc(100vh - 200rpx);
   min-height: 0;
 }
 
-/* ============ 原 webview 基准等价覆盖（只增不减，颜色/字号/圆角/shadow 完全一致） ============ */
 .page {
+  width: 100%;
+  min-height: 100%;
   padding: 24rpx;
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
-  width: 100%;
-  min-height: 100%;
   background:
     radial-gradient(circle at top, rgba(225, 6, 0, 0.14) 0, rgba(225, 6, 0, 0) 32%),
     linear-gradient(180deg, #15151e 0%, #101018 56%, #09090f 100%);
 }
 
-/* ============ skyline 专用新增：顶部 header/title/subtitle（原 webview 基准未在 WXSS 里写，靠全局默认样式） ============ */
 .header {
   width: 100%;
-  box-sizing: border-box;
   margin-bottom: 20rpx;
+  box-sizing: border-box;
 }
 
 .title {
-  width: 100%;
-  box-sizing: border-box;
   color: #ffffff;
   font-size: 56rpx;
   line-height: 68rpx;
@@ -42,8 +38,6 @@
 }
 
 .subtitle {
-  width: 100%;
-  box-sizing: border-box;
   margin-top: 8rpx;
   color: rgba(255, 255, 255, 0.58);
   font-size: 26rpx;
@@ -51,80 +45,31 @@
   letter-spacing: 1.2rpx;
 }
 
-/* ============ 原 webview：.archive-overview → skyline：删 gap，改具体子项 margin 代替 ============ */
 .archive-overview {
   width: 100%;
+  margin-bottom: 20rpx;
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  /* 原基准 gap: 16rpx → 替换成下面三个独立 margin：
-     - season-picker margin-bottom: 16rpx（picker 底 ↔ hero 顶）
-     - overview-card-wide margin-bottom: 16rpx（hero 底 ↔ R/W 两卡顶）
-     - overview-card-odd margin-right: 16rpx（R 卡右 ↔ W 卡左）
-     总效果等价 16rpx row/column gap */
-  margin-bottom: 20rpx;
 }
 
-/* ============ skyline 专用新增：原生 picker 组件自身也参与 flex 布局，必须三层都断拉伸链（wrap→picker→pill），否则 pill 会被反撑满宽 ============ */
 .season-picker-wrap {
   width: 100%;
-  box-sizing: border-box;
+  margin-bottom: 16rpx;
   display: flex;
-  flex-direction: row;
   justify-content: flex-start;
-  align-items: flex-start;
-  margin-bottom: 16rpx; /* 代替原 .archive-overview gap:16rpx 的 picker→hero 行间距 */
+  box-sizing: border-box;
 }
 
 .season-picker {
   flex: 0 0 auto;
   max-width: 100%;
-  box-sizing: border-box;
   display: flex;
   justify-content: flex-start;
-  align-items: flex-start;
 }
 
-/* ============ 原 webview：.overview-card + .overview-card-wide → skyline：严格保持原顺序，先 base 后 wide（后声明覆盖 width=50% → width=100%） ============ */
-.overview-card {
-  width: calc((100% - 16rpx) / 2);
-  min-height: 164rpx;
-  box-sizing: border-box;
-  padding: 20rpx 20rpx 22rpx;
-  border-radius: 20rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(180deg, rgba(14, 14, 18, 0.94) 0%, rgba(7, 7, 10, 0.98) 100%);
-  box-shadow: 0 18rpx 40rpx rgba(0, 0, 0, 0.22);
-  /* skyline 专用新增：原基准 display:block，skyline 下 flex:column 方便内部子元素显式 width 100% 不塌陷；align-items:flex-start 防 kicker/value 被居中 */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-/* ============ skyline 专用新增：代替原 .archive-overview gap:16rpx 的列间距（奇数位左卡 margin-right） ============ */
-.overview-card-odd {
-  margin-right: 16rpx;
-}
-
-/* ============ 原 webview：.overview-card-wide → 必须写在 .overview-card 后面，CSS 后声明优先（保证 width:100% 覆盖 50%） ============ */
-/* skyline 下 flex-wrap 会把 display:flex 的 wide 卡按 flex-grow 比例重算宽度，必须 display:block + flex-basis:100% 强锁整行独占，否则 hero 和 ROUNDS 会挤同一行 */
-.overview-card-wide {
-  display: block;
-  flex: 0 0 100%;
-  width: 100%;
-  box-sizing: border-box;
-  min-height: 184rpx;
-  margin-bottom: 16rpx; /* 代替原 .archive-overview gap:16rpx 的 hero→R/W 行间距 */
-  /* 严格和基准 exact 值一致（0.14 → 0.3 → 0.98 三层透明度），防止红色渐变把上面的 kicker/sub 文字染成偏红棕 */
-  background:
-    linear-gradient(180deg, rgba(225, 6, 0, 0.14) 0%, rgba(20, 10, 12, 0.3) 34%, rgba(7, 7, 10, 0.98) 100%);
-}
-
-/* ============ 原 webview：.season-pill → skyline：删 gap:10rpx，改 season-arrow margin-left:10rpx ============ */
-/* skyline 下三层（wrap→picker→pill）全部显式 flex:none + max-width 锁死不被父级拉伸，否则胶囊会被撑成整屏宽 */
 .season-pill {
-  flex: 0 0 auto;
   max-width: 520rpx;
   display: inline-flex;
   align-items: center;
@@ -133,7 +78,6 @@
   background: rgba(7, 7, 12, 0.82);
   border: 1rpx solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 12rpx 28rpx rgba(0, 0, 0, 0.18);
-  align-self: flex-start;
 }
 
 .season-text {
@@ -143,22 +87,41 @@
 }
 
 .season-arrow {
-  margin-left: 10rpx; /* 代替原 .season-pill gap:10rpx */
+  margin-left: 10rpx;
   color: rgba(255, 255, 255, 0.58);
   font-size: 20rpx;
 }
 
-.overview-kicker {
+.overview-card {
+  width: calc((100% - 16rpx) / 2);
+  min-height: 164rpx;
+  padding: 20rpx 20rpx 22rpx;
+  box-sizing: border-box;
+  border-radius: 20rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(14, 14, 18, 0.94) 0%, rgba(7, 7, 10, 0.98) 100%);
+  box-shadow: 0 18rpx 40rpx rgba(0, 0, 0, 0.22);
+}
+
+.overview-card-wide {
   width: 100%;
-  box-sizing: border-box; /* skyline 专用新增：flex:column 下显式宽度 */
+  min-height: 184rpx;
+  margin-bottom: 16rpx;
+  background:
+    linear-gradient(180deg, rgba(225, 6, 0, 0.14) 0%, rgba(20, 10, 12, 0.3) 34%, rgba(7, 7, 10, 0.98) 100%);
+}
+
+.overview-card-odd {
+  margin-right: 16rpx;
+}
+
+.overview-kicker {
   color: rgba(255, 255, 255, 0.56);
   font-size: 20rpx;
   letter-spacing: 1.5rpx;
 }
 
 .overview-main {
-  width: 100%;
-  box-sizing: border-box; /* skyline 专用新增 */
   margin-top: 14rpx;
   color: rgba(255, 255, 255, 0.98);
   font-size: 40rpx;
@@ -167,16 +130,12 @@
 }
 
 .overview-sub {
-  width: 100%;
-  box-sizing: border-box; /* skyline 专用新增 */
   margin-top: 10rpx;
   color: rgba(255, 255, 255, 0.62);
   font-size: 22rpx;
 }
 
 .overview-value {
-  width: 100%;
-  box-sizing: border-box; /* skyline 专用新增 */
   margin-top: 14rpx;
   color: rgba(255, 255, 255, 0.98);
   font-size: 40rpx;
@@ -191,82 +150,66 @@
   font-family: inherit;
 }
 
-/* ============ 原 webview：.race-list → skyline：删 gap:16rpx ============ */
-.race-list {
-  width: 100%;
-  box-sizing: border-box; /* skyline 专用新增 */
-  display: flex;
-  flex-direction: column;
-}
-
-/* skyline 专用新增：代替原 gap:16rpx（当前 WXML 没用到 .race-list，保留兼容） */
-.race-list .timeline + .timeline {
-  margin-top: 16rpx;
-}
-
-/* ============ 原 webview：.timeline → skyline：删 gap:20rpx，改 .timeline-item + .timeline-item margin-top:20rpx ============ */
 .timeline {
   width: 100%;
-  box-sizing: border-box; /* skyline 专用新增 */
-  display: flex;
-  flex-direction: column;
+  box-sizing: border-box;
 }
 
-/* skyline 专用新增：代替原 .timeline gap:20rpx（相邻两场比赛 R14 ↔ R13 间距） */
 .timeline .timeline-item + .timeline-item {
   margin-top: 20rpx;
 }
 
-/* ============ 原 webview：.timeline-item → skyline：删 gap:18rpx，改 .timeline-gutter margin-right:18rpx ============ */
 .timeline-item {
+  position: relative;
   width: 100%;
-  box-sizing: border-box; /* skyline 专用新增：保证整个 row 占满宽，不会 gutter+card 缩到左边 */
-  display: flex;
-  align-items: stretch;
+  min-height: 188rpx;
+  padding-left: 128rpx;
+  box-sizing: border-box;
 }
 
 .timeline-gutter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
   width: 110rpx;
-  margin-right: 18rpx; /* 代替原 .timeline-item gap:18rpx（时间线 ↔ archive-card 列间距） */
-  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 10rpx;
+  padding-top: 8rpx;
   box-sizing: border-box;
 }
 
 .timeline-date {
   width: 100%;
-  box-sizing: border-box;
-  text-align: center; /* skyline 专用新增：保证日期在 gutter 正中 */
+  text-align: center;
   font-size: 22rpx;
   color: rgba(255, 255, 255, 0.62);
   letter-spacing: 1rpx;
+  line-height: 28rpx;
 }
 
 .timeline-dot {
   width: 14rpx;
   height: 14rpx;
+  margin: 12rpx 0 10rpx;
   border-radius: 999rpx;
-  margin: 10rpx 0;
   background: rgba(255, 255, 255, 0.88);
   box-shadow: 0 0 0 6rpx rgba(255, 255, 255, 0.04);
-  flex: none; /* skyline 专用新增：防压缩 */
+  flex: none;
 }
 
 .timeline-line {
   width: 2rpx;
   flex: 1;
+  min-height: 72rpx;
   background: rgba(255, 255, 255, 0.12);
 }
 
-/* ============ 原 webview：.timeline-content → skyline 下必须显式加 width:100%+box-sizing，否则 flex:1 子项在某些瞬间会被 min-width:0 压成 0 宽导致 archive-card 完全消失 ============ */
 .timeline-content {
   width: 100%;
-  box-sizing: border-box;
-  flex: 1;
   min-width: 0;
+  box-sizing: border-box;
 }
 
 .timeline-content-featured .archive-card {
@@ -277,24 +220,18 @@
 .archive-card {
   position: relative;
   width: 100%;
-  box-sizing: border-box; /* skyline 专用新增 */
   overflow: hidden;
   border-radius: 22rpx;
   border: 1rpx solid rgba(255, 255, 255, 0.08);
   background: linear-gradient(180deg, rgba(12, 12, 16, 0.96) 0%, rgba(7, 7, 10, 0.98) 100%);
   box-shadow: 0 16rpx 36rpx rgba(0, 0, 0, 0.2);
-  /* skyline 专用新增：原基准 display:block，skyline 下 flex:column 保证内部子项显式 width 100%；align-items:flex-start 防多层 flex-column 嵌套后内部文本被居中对齐 */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  box-sizing: border-box;
 }
 
 .archive-thumb-wrap {
   position: relative;
   width: 100%;
   height: 188rpx;
-  box-sizing: border-box;
-  flex: none; /* skyline 专用新增：原基准 fixed 高度 188，在 flex 下显式不被压缩 */
   background: rgba(255, 255, 255, 0.02);
 }
 
@@ -303,7 +240,6 @@
   height: 100%;
 }
 
-/* ============ 原 webview：.archive-thumb-mask inset:0 → skyline：拆成 top/left/right/bottom:0 ============ */
 .archive-thumb-mask {
   position: absolute;
   top: 0;
@@ -315,18 +251,12 @@
 
 .archive-body {
   width: 100%;
-  box-sizing: border-box; /* skyline 专用新增 */
   padding: 22rpx 22rpx 24rpx;
-  /* skyline 专用新增：原基准 block，skyline 下 flex:column 控制内部子项 width 100% 顺序；align-items:flex-start 防 round/name 被居中 */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  box-sizing: border-box;
 }
 
-/* ============ 原 webview：.archive-top gap:12rpx → skyline：删 gap，改 archive-round margin-right:12rpx ============ */
 .archive-top {
   width: 100%;
-  box-sizing: border-box; /* skyline 专用新增 */
   display: flex;
   align-items: center;
 }
@@ -336,13 +266,10 @@
   font-size: 22rpx;
   font-weight: 900;
   letter-spacing: 1.5rpx;
-  flex: none;
-  align-self: flex-start; /* skyline 专用新增：兄弟 badge 有 margin-left:auto，显式锁 round 贴左不被拉走居中 */
-  margin-right: 12rpx; /* 代替原 .archive-top gap:12rpx（R14 ↔ LATEST 徽章间距） */
 }
 
 .archive-badge {
-  margin-left: auto; /* 代替原 justify-content:space-between（LATEST 徽章贴右） */
+  margin-left: auto;
   min-width: 92rpx;
   height: 44rpx;
   padding: 0 14rpx;
@@ -357,12 +284,9 @@
   border: 1rpx solid rgba(225, 6, 0, 0.2);
   background: rgba(225, 6, 0, 0.14);
   box-sizing: border-box;
-  flex: none;
 }
 
 .archive-name {
-  width: 100%;
-  box-sizing: border-box; /* skyline 专用新增 */
   margin-top: 14rpx;
   color: rgba(255, 255, 255, 0.96);
   font-size: 32rpx;
@@ -371,81 +295,36 @@
 }
 
 .archive-date {
-  width: 100%;
-  box-sizing: border-box; /* skyline 专用新增 */
   margin-top: 8rpx;
   color: rgba(255, 255, 255, 0.58);
   font-size: 22rpx;
 }
 
-/* ============ 原 webview：.archive-results gap:12rpx → skyline：删 gap，改相邻兄弟选择器 margin-top:12rpx ============ */
 .archive-results {
-  width: 100%;
-  box-sizing: border-box; /* skyline 专用新增 */
   margin-top: 18rpx;
-  display: flex;
-  flex-direction: column;
 }
 
-/* skyline 专用新增：代替原 .archive-results gap:12rpx（分站冠军行 ↔ 最快圈行间距） */
 .archive-results .archive-result-row + .archive-result-row {
   margin-top: 12rpx;
 }
 
-/* ============ 原 webview：.archive-result-row gap:16rpx + justify-content:space-between → skyline：删 gap/space-between，改 .archive-result-key margin-right:16rpx + .archive-result-value margin-left:auto ============ */
 .archive-result-row {
   width: 100%;
-  box-sizing: border-box; /* skyline 专用新增 */
+  min-height: 36rpx;
   display: flex;
   align-items: center;
-  min-height: 36rpx; /* skyline 专用新增：保证行高和 webview 一致，不会被 vConsole 盖住 */
 }
 
 .archive-result-key {
-  flex: none;
   color: rgba(255, 255, 255, 0.54);
   font-size: 22rpx;
-  /* 删除 skyline 之前加的 line-height:36rpx：让基准默认行高自然生效，父 row align-items:center 统一垂直对齐，避免 key/value baseline 错位 */
-  margin-right: 16rpx; /* 代替原 .archive-result-row gap:16rpx */
 }
 
 .archive-result-value {
-  flex: none;
-  margin-left: auto; /* 代替原 justify-content:space-between（NOR / 1:14.230 贴右） */
+  margin-left: auto;
   color: rgba(255, 255, 255, 0.92);
   font-size: 24rpx;
   line-height: 36rpx;
   font-weight: 700;
   text-align: right;
-}
-
-.input {
-  height: 76rpx;
-  width: 100%; /* skyline 专用新增：原基准父布局撑满，skyline 下原生组件不显式宽=内容宽 */
-  padding: 0 20rpx;
-  border-radius: 12rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  color: #ffffff;
-  background: #000000;
-  box-sizing: border-box;
-}
-
-.input-placeholder {
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.btn {
-  width: 100%; /* skyline 专用新增：原基准 button 继承外层 100%，skyline 下 button 内容宽 */
-  height: 76rpx;
-  line-height: 76rpx;
-  border-radius: 12rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.14);
-  color: #ffffff;
-  background: #000000;
-  font-size: 28rpx;
-  box-sizing: border-box;
-}
-
-.btn-primary {
-  background: rgba(255, 255, 255, 0.12);
 }
