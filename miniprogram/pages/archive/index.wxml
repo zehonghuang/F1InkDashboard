@@ -68,12 +68,20 @@
                   <view class="archive-date">{{item.dateShort}}</view>
                   <view class="archive-results">
                     <view class="archive-result-row">
-                      <view class="archive-result-key">{{i18n.archive.winner}}</view>
-                      <view class="archive-result-value">{{item.winner}}</view>
+                      <view class="archive-result-label">
+                        <view class="archive-result-key">{{i18n.archive.winner}}</view>
+                      </view>
+                      <view class="archive-result-metric">
+                        <view class="archive-result-value">{{item.winner}}</view>
+                      </view>
                     </view>
                     <view class="archive-result-row">
-                      <view class="archive-result-key">{{i18n.archive.fastestLap}}</view>
-                      <view class="archive-result-value">{{item.fastestLap}}</view>
+                      <view class="archive-result-label">
+                        <view class="archive-result-key">{{i18n.archive.fastestLap}}</view>
+                      </view>
+                      <view class="archive-result-metric">
+                        <view class="archive-result-value">{{item.fastestLap}}</view>
+                      </view>
                     </view>
                   </view>
                 </view>
