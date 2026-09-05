@@ -26,17 +26,26 @@
 }
 
 .mslt-scroll {
+  width: 100%;
   padding: 0 12rpx 12rpx;
   box-sizing: border-box;
 }
 
 .mslt-table {
   width: 940rpx;
+  min-width: 940rpx;
+  box-sizing: border-box;
+  display: block;
 }
 
 .mslt-row {
   display: flex;
+  flex-direction: row;
   align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  width: 940rpx;
+  min-width: 940rpx;
   margin-top: 4rpx;
   will-change: transform;
   transform-origin: center center;
@@ -69,19 +78,19 @@
 .mslt-head {
   margin-top: 0;
   padding: 8rpx 0;
-  position: sticky;
-  top: 0;
   z-index: 10;
   background: #141a24;
 }
 
 .mslt-cell {
-  box-sizing: border-box;
-  flex: none;
   padding: 8rpx 4rpx;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  flex-shrink: 0;
   text-align: center;
   font-size: 18rpx;
   color: rgba(226, 232, 240, 0.96);
+  overflow: hidden;
 }
 
 .mslt-head .mslt-cell {
@@ -94,32 +103,38 @@
 
 .mslt-c-pos {
   width: 64rpx;
+  min-width: 64rpx;
 }
 
 .mslt-c-driver {
   width: 190rpx;
+  min-width: 190rpx;
   text-align: left;
   padding-left: 8rpx;
 }
 
 .mslt-c-gap {
   width: 96rpx;
+  min-width: 96rpx;
 }
 
 .mslt-c-time {
   width: 96rpx;
+  min-width: 96rpx;
   padding-left: 2rpx;
   padding-right: 2rpx;
 }
 
 .mslt-c-tyre {
   width: 164rpx;
+  min-width: 164rpx;
   padding-left: 2rpx;
   padding-right: 2rpx;
 }
 
 .mslt-c-sectors {
   width: 330rpx;
+  min-width: 330rpx;
   padding-left: 8rpx;
   padding-right: 4rpx;
   text-align: left;
@@ -155,40 +170,59 @@
 
 .mslt-driver-wrap {
   display: flex;
-  align-items: center;
-  gap: 10rpx;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mslt-driver-wrap .mslt-driver-accent {
+  margin-right: 10rpx;
+  margin-top: 2rpx;
 }
 
 .mslt-driver-accent {
-  width: 6rpx;
-  height: 28rpx;
+  width: 8rpx;
+  height: 34rpx;
   transform: skewX(-12deg);
   border-radius: 2rpx;
-  flex: none;
+  flex: 0 0 8rpx;
+  flex-shrink: 0;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.18);
 }
 
 .mslt-driver-text {
+  flex: 1;
   min-width: 0;
+  width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
 .mslt-driver {
-  font-size: 18rpx;
-  line-height: 1.2;
+  font-size: 20rpx;
+  line-height: 24rpx;
   font-weight: 800;
   color: #f8fafc;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: 0.2rpx;
 }
 
 .mslt-team {
-  margin-top: 2rpx;
+  margin-top: 4rpx;
   font-size: 16rpx;
-  line-height: 1.2;
+  line-height: 18rpx;
   color: #94a3b8;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-weight: 600;
 }
 
 .mslt-time {
@@ -202,13 +236,16 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 6rpx;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+
+.mslt-tyre-row > view + view {
+  margin-left: 6rpx;
 }
 
 .mslt-tyre-badge {
-  min-width: 20px;
-  height: 20px;
+  min-width: 40rpx;
+  height: 40rpx;
   padding: 0 8rpx;
   border-radius: 9999rpx;
   background: rgba(255, 255, 255, 0.1);
@@ -233,7 +270,10 @@
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  gap: 8rpx;
+}
+
+.mslt-sectors-row > view + view {
+  margin-left: 8rpx;
 }
 
 .mslt-sector {
@@ -241,8 +281,11 @@
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 4rpx;
   min-width: 0;
+}
+
+.mslt-sector > view + view {
+  margin-top: 4rpx;
 }
 
 .mslt-sector-chip {
@@ -284,7 +327,10 @@
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  gap: 3rpx;
+}
+
+.mslt-segment-row > view + view {
+  margin-left: 3rpx;
 }
 
 .mslt-segment-row--placeholder {
