@@ -47,7 +47,9 @@
   flex-wrap: nowrap;
   width: 1220rpx;
   min-width: 1220rpx;
+  min-height: 78rpx;
   margin-top: 6rpx;
+  box-sizing: border-box;
 }
 
 .msqt-row:not(.msqt-head) {
@@ -76,10 +78,19 @@
   box-sizing: border-box;
   flex: 0 0 auto;
   flex-shrink: 0;
+  flex-grow: 0;
   font-size: 22rpx;
   color: rgba(226, 232, 240, 0.95);
   text-align: center;
   overflow: hidden;
+  min-height: 24rpx;
+}
+
+.msqt-placeholder {
+  opacity: 0;
+  pointer-events: none;
+  display: inline-block;
+  font-size: 18rpx;
 }
 
 .msqt-dense .msqt-header {

@@ -10,7 +10,9 @@
         <view class="msqt-cell msqt-c-cla">CLA</view>
         <view class="msqt-cell msqt-c-driver">DRIVER</view>
         <view class="msqt-cell msqt-c-no">#</view>
-        <view class="msqt-cell msqt-c-car"></view>
+        <view class="msqt-cell msqt-c-car">
+          <text class="msqt-placeholder">CAR</text>
+        </view>
         <view class="msqt-cell msqt-c-laps">LAPS</view>
         <view class="msqt-cell msqt-c-time">TIME</view>
         <view class="msqt-cell msqt-c-int">INTERVAL</view>

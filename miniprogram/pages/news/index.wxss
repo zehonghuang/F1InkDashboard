@@ -63,13 +63,16 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: nowrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .raceweek-countdown-left {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin-right: 20rpx;
+  justify-content: center;
 }
 
 .raceweek-countdown-left .raceweek-countdown-session + .raceweek-countdown-suffix {
@@ -78,16 +81,9 @@
 
 .raceweek-countdown-left-flag-only {
   min-width: 112rpx;
-  margin-right: 20rpx;
   align-items: center;
   justify-content: center;
-}
-
-.raceweek-countdown-mid {
-  width: 84rpx;
   margin-right: 20rpx;
-  flex: 0 0 84rpx;
-  overflow: hidden;
 }
 
 .raceweek-countdown-session {
@@ -125,10 +121,20 @@
   box-shadow: 0 10rpx 22rpx rgba(0, 0, 0, 0.28);
 }
 
+.raceweek-countdown-mid {
+  width: 84rpx;
+  margin-right: 20rpx;
+  margin-left: 20rpx;
+  flex: 0 0 84rpx;
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
 .raceweek-countdown-clock {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
+  flex-wrap: nowrap;
 }
 
 .raceweek-countdown-clock .raceweek-countdown-seg + .raceweek-countdown-seg {
@@ -139,6 +145,8 @@
   display: flex;
   flex-direction: row;
   align-items: flex-end;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
 }
 
 .raceweek-countdown-seg .raceweek-countdown-num + .raceweek-countdown-unit {
@@ -151,6 +159,7 @@
   color: rgba(255, 255, 255, 0.96);
   line-height: 76rpx;
   font-family: Formula1, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  flex-shrink: 0;
 }
 
 .raceweek-countdown-unit {
@@ -159,6 +168,7 @@
   color: rgba(255, 255, 255, 0.66);
   line-height: 30rpx;
   letter-spacing: 1rpx;
+  flex-shrink: 0;
 }
 
 .quali-panel {
@@ -200,26 +210,24 @@
   border: 0;
   border-radius: 0;
   background: transparent;
-}
-
-.quali-panel-header {
-  padding: 20rpx 22rpx;
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
-}
-
-.live-session-meta {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  min-width: 84rpx;
+  flex-wrap: nowrap;
+  padding: 22rpx 24rpx 20rpx;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .live-session-title-group {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  width: 0;
 }
 
 .live-session-title-group .live-session-title + .live-session-subtitle {
@@ -248,9 +256,23 @@
   letter-spacing: 2rpx;
 }
 
+.live-session-meta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  min-width: 84rpx;
+  flex-shrink: 0;
+}
+
 .live-session-toggle {
   width: 44rpx;
   height: 44rpx;
+  margin-left: 20rpx;
+  flex: 0 0 44rpx;
+  flex-shrink: 0;
+  flex-grow: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -261,7 +283,7 @@
 .live-session-login-hint {
   color: rgba(255, 255, 255, 0.72);
   font-size: 18rpx;
-  line-height: 1.2;
+  line-height: 22rpx;
   text-align: right;
 }
 
@@ -275,7 +297,21 @@
   opacity: 0.92;
 }
 
+.quali-panel-header {
+  padding: 20rpx 22rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .quali-panel-title {
+  flex: 1;
+  min-width: 0;
+  width: 0;
   font-size: 28rpx;
   font-weight: 800;
   color: rgba(255, 255, 255, 0.92);
@@ -285,6 +321,10 @@
 .quali-panel-icon {
   width: 44rpx;
   height: 44rpx;
+  margin-left: 16rpx;
+  flex: 0 0 44rpx;
+  flex-shrink: 0;
+  flex-grow: 0;
   display: flex;
   align-items: center;
   justify-content: center;

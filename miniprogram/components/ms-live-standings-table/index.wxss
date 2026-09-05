@@ -46,7 +46,9 @@
   flex-wrap: nowrap;
   width: 940rpx;
   min-width: 940rpx;
+  min-height: 58rpx;
   margin-top: 4rpx;
+  box-sizing: border-box;
   will-change: transform;
   transform-origin: center center;
 }
@@ -87,10 +89,12 @@
   box-sizing: border-box;
   flex: 0 0 auto;
   flex-shrink: 0;
+  flex-grow: 0;
   text-align: center;
   font-size: 18rpx;
   color: rgba(226, 232, 240, 0.96);
   overflow: hidden;
+  min-height: 24rpx;
 }
 
 .mslt-head .mslt-cell {
