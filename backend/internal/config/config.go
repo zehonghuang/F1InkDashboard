@@ -157,8 +157,9 @@ func FromEnv() Config {
 		F1LiveTimingScheduleStopAfterMin:   getenvInt("F1_LIVE_TIMING_SCHEDULE_STOP_AFTER_MIN", 60),
 		F1LiveTimingScheduleIntervalSec:    getenvInt("F1_LIVE_TIMING_SCHEDULE_INTERVAL_SEC", 30),
 
-		MotorsportLiveEnabled:                getenvBool("MOTORSPORT_LIVE_ENABLED", true),
-		MotorsportLiveWSURL:                  getenvTrim("MOTORSPORT_LIVE_WS_URL", "wss://livetiming.motorsport.com:8080/782204-full/"),
+		MotorsportLiveEnabled: getenvBool("MOTORSPORT_LIVE_ENABLED", true),
+		// 2026 蒙扎 排位赛: seed id 782209 对应 session_key 11357 (Italian Grand Prix, Monza Qualifying)
+		MotorsportLiveWSURL:                  getenvTrim("MOTORSPORT_LIVE_WS_URL", "wss://livetiming.motorsport.com:8080/782209-full/"),
 		MotorsportLiveOrigin:                 getenvTrim("MOTORSPORT_LIVE_ORIGIN", "https://www.motorsport.com"),
 		MotorsportLiveUserAgent:              getenvTrim("MOTORSPORT_LIVE_USER_AGENT", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"),
 		MotorsportLiveRecentLimit:            getenvInt("MOTORSPORT_LIVE_RECENT_LIMIT", 20),

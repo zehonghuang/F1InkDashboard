@@ -11,7 +11,8 @@ from pathlib import Path
 import websockets
 
 
-DEFAULT_WS_URL = "wss://livetiming.motorsport.com:8080/782179-full/"
+# 2026 蒙扎 排位赛: seed id 782209 对应 session_key 11357 (Italian Grand Prix, Monza Qualifying)
+DEFAULT_WS_URL = "wss://livetiming.motorsport.com:8080/782209-full/"
 DEFAULT_ORIGIN = "https://www.motorsport.com"
 DEFAULT_USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
