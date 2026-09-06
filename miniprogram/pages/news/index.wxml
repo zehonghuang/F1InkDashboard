@@ -66,8 +66,7 @@
 
       <view
         wx:if="{{ raceWeek && raceWeek.isRaceWeek && raceWeekCardMode === 'live' }}"
-        class="live-standings-wrap {{ raceWeekLiveStandingsOpen ? '' : 'live-standings-wrap-sticky' }}"
-        style="{{ raceWeekLiveStandingsOpen ? '' : 'top:' + liveStandingsStickyTopPx + 'px;' }}"
+        class="live-standings-wrap"
       >
         <view
           class="live-session-card"
