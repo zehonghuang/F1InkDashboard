@@ -2,7 +2,6 @@ const { getAuthState, loginWithWeChat, logout, fetchMe, bindDevice, uploadAvatar
 const { fetchPrefs, updatePrefs } = require("../../services/prefsService")
 const i18n = require("../../services/i18n")
 const { getWeChatStoreConfig } = require("../../services/wechatStore")
-const { getWeChatGroupConfig, fetchWeChatGroupConfig } = require("../../services/wechatGroup")
 const { computeTabbarReserveStyle } = require("../../utils/tabbar-layout")
 
 const STORAGE_KEYS = {
@@ -17,51 +16,6 @@ const STORAGE_KEYS = {
 
 const HERO_PULL_TRIGGER = 84
 const HERO_PULL_MAX = 126
-
-const FAKE_QR_MATRIX = [
-  "11111110001011111",
-  "10000010111010001",
-  "10111010001010111",
-  "10111010111010101",
-  "10111010010010101",
-  "10000010101110001",
-  "11111110101011111",
-  "00000000110100000",
-  "11101110101101110",
-  "00111000010101001",
-  "11001110111010011",
-  "01110100001011100",
-  "10101110101010010",
-  "00000000111100000",
-  "11111110010101110",
-  "10000010111100101",
-  "10111010010011101",
-  "10111010101100011",
-  "10111010011010101",
-  "10000010100011100",
-  "11111110111010110"
-]
-
-function buildFakeQrCells(matrix) {
-  const out = []
-  const rows = Array.isArray(matrix) ? matrix : []
-  const offset = 22
-  const gap = 11
-  for (let row = 0; row < rows.length; row += 1) {
-    const line = String(rows[row] || "")
-    for (let col = 0; col < line.length; col += 1) {
-      if (line.charAt(col) !== "1") continue
-      out.push({
-        key: `${row}-${col}`,
-        left: offset + col * gap,
-        top: offset + row * gap
-      })
-    }
-  }
-  return out
-}
-
-const FAKE_QR_CELLS = buildFakeQrCells(FAKE_QR_MATRIX)
 
 Page({
   data: {
@@ -110,13 +64,6 @@ Page({
     teamOptions: [],
     syncingPrefs: false,
     storeAppId: "",
-    showWechatGroupPopup: false,
-    wechatGroupName: "",
-    wechatGroupHint: "",
-    wechatGroupQrUrl: "",
-    wechatGroupQrLoaded: false,
-    wechatGroupQrBroken: false,
-    wechatGroupFakeQrCells: FAKE_QR_CELLS,
     scrollViewStyle: "height: calc(100vh - 200rpx);",
     tabbarReserveRpx: 200
   },
@@ -132,11 +79,9 @@ Page({
     }
     this.applyI18n()
     this.syncStoreConfig()
-    this.syncWeChatGroupConfig()
     this.loadHeroCover()
     this.loadPreferences()
     this.refreshAuth()
-    this.refreshWeChatGroupFromBackend({ silent: true })
   },
   onUnload() {
     if (this._offLocale) this._offLocale()
@@ -148,7 +93,6 @@ Page({
     console.log("[PAGE:MINE] onShow() fired. this.route=", this.route, "typeof getTabBar=", typeof this.getTabBar)
     this.applyI18n()
     this.syncStoreConfig()
-    this.syncWeChatGroupConfig()
     this.refreshAuth()
     this.loadPreferences()
     this.measureHeroRect()
@@ -177,7 +121,6 @@ Page({
         console.log("[PAGE:MINE] ⚠️ tb missing or setVisible not a function. typeof=", tb && typeof tb.setVisible)
       }
     }
-    this.refreshWeChatGroupFromBackend({ silent: true })
   },
   onPageScroll(e) {
     const top = e && e.detail && Number.isFinite(e.detail.scrollTop) ? e.detail.scrollTop : Number((e && e.detail && e.detail.scrollTop) || 0)
@@ -187,28 +130,6 @@ Page({
     const cfg = getWeChatStoreConfig()
     const appId = String(cfg.appId || "").trim()
     this.setData({ storeAppId: appId })
-  },
-  syncWeChatGroupConfig() {
-    const cfg = getWeChatGroupConfig()
-    const dict = i18n.getDict()
-    const name = String(cfg.name || dict.mine.wechatGroupTitle).trim()
-    const hint = String(cfg.hint || dict.mine.wechatGroupHint).trim()
-    const qrUrl = String(cfg.qrImage || "").trim()
-    this.setData({
-      wechatGroupName: name,
-      wechatGroupHint: hint,
-      wechatGroupQrUrl: qrUrl,
-      wechatGroupQrLoaded: false,
-      wechatGroupQrBroken: !qrUrl
-    })
-  },
-  async refreshWeChatGroupFromBackend(opts) {
-    try {
-      const cfg = await fetchWeChatGroupConfig(opts || {})
-      if (cfg) {
-        this.syncWeChatGroupConfig()
-      }
-    } catch (e) {}
   },
   async syncPrefsFromBackend(opts) {
     if (this.data.syncingPrefs) return
@@ -460,34 +381,12 @@ Page({
   openWeChatShop() {
     wx.navigateTo({ url: "/packages/shop-pkg/pages/shop/index" })
   },
-  noop() {},
   onOpenWechatGroup() {
-    this.setData({ showWechatGroupPopup: true })
-  },
-  onCloseWechatGroup() {
-    this.setData({ showWechatGroupPopup: false })
-  },
-  onWechatGroupQrLoad() {
-    this.setData({
-      wechatGroupQrLoaded: true,
-      wechatGroupQrBroken: false
-    })
-  },
-  onWechatGroupQrError() {
-    this.setData({
-      wechatGroupQrLoaded: false,
-      wechatGroupQrBroken: true
-    })
-  },
-  onPreviewWechatGroupQr() {
-    const url = String(this.data.wechatGroupQrUrl || "").trim()
-    if (!url || !this.data.wechatGroupQrLoaded || this.data.wechatGroupQrBroken) {
-      wx.showToast({ title: i18n.t("mine.wechatGroupFakePreview"), icon: "none" })
-      return
-    }
-    wx.previewImage({
-      current: url,
-      urls: [url]
+    wx.navigateTo({
+      url: "/packages/tools-pkg/pages/wechat-group/index",
+      fail: () => {
+        wx.showToast({ title: i18n.t("common.featurePending"), icon: "none" })
+      }
     })
   },
   onTapItem(e) {
@@ -965,7 +864,6 @@ Page({
   applyI18n() {
     const dict = i18n.getDict()
     this.setData({ i18n: dict, locale: i18n.getLocale() })
-    this.syncWeChatGroupConfig()
     this.refreshAuth()
     this.refreshFollowTextsFromOptions()
     wx.setNavigationBarTitle({ title: dict.nav.mine })

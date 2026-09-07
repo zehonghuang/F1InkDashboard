@@ -1,0 +1,61 @@
+<view class="page-root">
+  <view class="status-bar" style="height: {{statusBarHeight}}px;"></view>
+  <view class="nav">
+    <view class="nav-back" bindtap="onBack">
+      <view class="nav-back-icon">
+        <view class="nav-back-bar nav-back-bar-top"></view>
+        <view class="nav-back-bar nav-back-bar-bottom"></view>
+      </view>
+    </view>
+    <view class="nav-title">加入群聊</view>
+    <view class="nav-placeholder"></view>
+  </view>
+
+  <scroll-view class="page-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="hero-shell">
+      <view class="hero-card">
+        <view class="hero-head">
+          <view class="hero-avatar-shell">
+            <view class="hero-avatar">
+              <view class="hero-avatar-corner hero-avatar-corner-tl"></view>
+              <view class="hero-avatar-corner hero-avatar-corner-tr"></view>
+              <view class="hero-avatar-corner hero-avatar-corner-bl"></view>
+              <view class="hero-avatar-corner hero-avatar-corner-br"></view>
+              <view class="hero-avatar-center"></view>
+            </view>
+          </view>
+          <view class="hero-main">
+            <view class="hero-name">{{wechatGroupName}}</view>
+            <view class="hero-desc">{{wechatGroupHint}}</view>
+          </view>
+        </view>
+
+        <view class="qr-shell" bindtap="onPreviewQr">
+          <image
+            wx:if="{{wechatGroupQrUrl}}"
+            class="qr {{wechatGroupQrLoaded && !wechatGroupQrBroken ? 'qr-visible' : 'qr-hidden'}}"
+            src="{{wechatGroupQrUrl}}"
+            mode="aspectFit"
+            bindload="onQrLoad"
+            binderror="onQrError"
+          />
+          <view wx:if="{{!wechatGroupQrUrl || wechatGroupQrBroken}}" class="qr-fake">
+            <view class="qr-board">
+              <block wx:for="{{fakeQrCells}}" wx:key="key">
+                <view class="qr-cell" style="left: {{item.left}}rpx; top: {{item.top}}rpx;"></view>
+              </block>
+            </view>
+            <view class="qr-fake-note">{{i18n.mine.wechatGroupFakeHint}}</view>
+          </view>
+          <view wx:if="{{wechatGroupQrUrl && !wechatGroupQrBroken && !wechatGroupQrLoaded}}" class="qr-state">
+            {{i18n.common.loading}}
+          </view>
+        </view>
+
+        <view class="tip">
+          {{(!wechatGroupQrUrl || wechatGroupQrBroken) ? i18n.mine.wechatGroupFakePreview : i18n.mine.wechatGroupPreviewHint}}
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

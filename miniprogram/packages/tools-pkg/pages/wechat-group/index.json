@@ -1,0 +1,9 @@
+{
+  "usingComponents": {},
+  "navigationBarTitleText": "加入群聊",
+  "navigationStyle": "custom",
+  "backgroundColor": "#0B0B10",
+  "backgroundTextStyle": "light",
+  "renderer": "skyline",
+  "componentFramework": "glass-easel"
+}

@@ -39,7 +39,8 @@
       "pages": [
         "pages/image-crop/index",
         "pages/style-demo/index",
-        "pages/compare/index"
+        "pages/compare/index",
+        "pages/wechat-group/index"
       ]
     }
   ],
