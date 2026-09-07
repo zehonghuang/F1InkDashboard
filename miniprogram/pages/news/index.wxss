@@ -36,23 +36,23 @@
 }
 
 .news-list .news-card + .news-card {
-  margin-top: 18rpx;
+  margin-top: 10rpx;
 }
 
 .news-list .raceweek-countdown + .news-card,
 .news-list .quali-panel + .news-card,
 .news-list .hero-swiper + .news-card,
 .news-list .status + .news-card {
-  margin-top: 18rpx;
+  margin-top: 10rpx;
 }
 
 .news-list .load-more {
-  margin-top: 18rpx;
+  margin-top: 10rpx;
 }
 
 .raceweek-countdown {
-  margin-top: 16rpx;
-  margin-bottom: 18rpx;
+  margin-top: 8rpx;
+  margin-bottom: 10rpx;
   padding: 22rpx 24rpx 20rpx;
   border-radius: 20rpx;
   overflow: hidden;
@@ -237,7 +237,7 @@
 
 .quali-panel {
   margin-top: 0;
-  margin-bottom: 18rpx;
+  margin-bottom: 10rpx;
   border-radius: 18rpx;
   overflow: hidden;
   border: 1rpx solid rgba(255, 255, 255, 0.08);
@@ -255,7 +255,7 @@
 .live-standings-wrap {
   position: relative;
   z-index: 4;
-  margin-top: 16rpx;
+  margin-top: 8rpx;
   margin-bottom: 0;
   width: 100%;
   box-sizing: border-box;
@@ -274,7 +274,7 @@
   display: block;
   width: 100%;
   box-sizing: border-box;
-  margin-bottom: 18rpx;
+  margin-bottom: 10rpx;
 }
 
 .raceweek-live-card {
@@ -703,8 +703,8 @@
 
 .hero-swiper {
   height: 360rpx;
-  margin-top: 10rpx;
-  margin-bottom: 20rpx;
+  margin-top: 6rpx;
+  margin-bottom: 12rpx;
   position: relative;
   z-index: 2;
 }
@@ -1029,7 +1029,7 @@
 }
 
 .status {
-  margin: 12rpx 0 18rpx 0;
+  margin: 6rpx 0 10rpx 0;
   padding: 18rpx 22rpx;
   border-radius: 16rpx;
   border: 1rpx solid rgba(255, 255, 255, 0.08);
