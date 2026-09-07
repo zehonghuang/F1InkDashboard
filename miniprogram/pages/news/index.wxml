@@ -17,6 +17,7 @@
     bindscroll="onPageScroll"
     bindscrolltolower="onScrollToLower"
     scrolltolower-threshold="120"
+    style="{{scrollViewStyle}}"
   >
     <view class="page has-tabbar {{ pressPreview && pressPreview.active ? 'page-previewing' : '' }}">
       <view class="header" style="padding-top: calc({{ statusBarHeight }}px + 12rpx);">
@@ -65,8 +66,7 @@
 
       <view
         wx:if="{{ raceWeek && raceWeek.isRaceWeek && raceWeekCardMode === 'live' }}"
-        class="live-standings-wrap {{ raceWeekLiveStandingsOpen ? '' : 'live-standings-wrap-sticky' }}"
-        style="{{ raceWeekLiveStandingsOpen ? '' : 'top:' + liveStandingsStickyTopPx + 'px;' }}"
+        class="live-standings-wrap"
       >
         <view
           class="live-session-card"
@@ -95,7 +95,7 @@
 
       <view
         wx:elif="{{ raceWeek && raceWeek.isRaceWeek && raceWeekSessionLabel && countdown }}"
-        class="raceweek-countdown"
+        class="raceweek-countdown {{ raceWeekShowFlag ? 'raceweek-countdown-flag-mode' : '' }}"
       >
         <view class="raceweek-countdown-left {{ raceWeekShowFlag ? 'raceweek-countdown-left-flag-only' : '' }}">
           <block wx:if="{{ raceWeekShowFlag && raceWeek && raceWeek.race && raceWeek.race.flagUrl }}">

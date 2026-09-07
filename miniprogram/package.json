@@ -8,8 +8,6 @@
     "build:tyre-icon": "node scripts/build-tyre-icon.js"
   },
   "dependencies": {
-    "echarts": "^5.3.3",
-    "echarts-for-weixin": "^1.0.2",
     "iview-weapp": "^2.0.0",
     "we-cropper": "^1.4.0"
   }

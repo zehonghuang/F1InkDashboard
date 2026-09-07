@@ -3,6 +3,7 @@ const { fetchPrefs, updatePrefs } = require("../../services/prefsService")
 const i18n = require("../../services/i18n")
 const { getWeChatStoreConfig } = require("../../services/wechatStore")
 const { getWeChatGroupConfig, fetchWeChatGroupConfig } = require("../../services/wechatGroup")
+const { computeTabbarReserveStyle } = require("../../utils/tabbar-layout")
 
 const STORAGE_KEYS = {
   season: "pref_season",
@@ -115,15 +116,20 @@ Page({
     wechatGroupQrUrl: "",
     wechatGroupQrLoaded: false,
     wechatGroupQrBroken: false,
-    wechatGroupFakeQrCells: FAKE_QR_CELLS
+    wechatGroupFakeQrCells: FAKE_QR_CELLS,
+    scrollViewStyle: "height: calc(100vh - 200rpx);",
+    tabbarReserveRpx: 200
   },
   onLoad() {
+    const layout = computeTabbarReserveStyle()
     this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     try {
       const sys = wx.getSystemInfoSync()
       const h = Number(sys && sys.statusBarHeight) || 0
-      this.setData({ statusBarHeight: h })
-    } catch (e) {}
+      this.setData({ statusBarHeight: h, scrollViewStyle: layout.scrollViewStyle, tabbarReserveRpx: layout.tabbarReserveRpx })
+    } catch (e) {
+      this.setData({ scrollViewStyle: layout.scrollViewStyle, tabbarReserveRpx: layout.tabbarReserveRpx })
+    }
     this.applyI18n()
     this.syncStoreConfig()
     this.syncWeChatGroupConfig()
@@ -139,6 +145,7 @@ Page({
     this.measureHeroRect()
   },
   onShow() {
+    console.log("[PAGE:MINE] onShow() fired. this.route=", this.route, "typeof getTabBar=", typeof this.getTabBar)
     this.applyI18n()
     this.syncStoreConfig()
     this.syncWeChatGroupConfig()
@@ -156,14 +163,24 @@ Page({
     } catch (e) {}
     if (typeof this.getTabBar === 'function') {
       const tb = this.getTabBar()
+      console.log("[PAGE:MINE] getTabBar() returned tb=", tb ? "✅ instance OK" : "❌ NULL/undefined")
       if (tb && typeof tb.setSelectedByRoute === 'function') {
+        console.log("[PAGE:MINE] 🎯 will call tb.setSelectedByRoute(this.route=", this.route, ")")
         tb.setSelectedByRoute(this.route)
+      } else {
+        console.log("[PAGE:MINE] ⚠️ tb missing or setSelectedByRoute not a function. typeof=", tb && typeof tb.setSelectedByRoute)
+      }
+      if (tb && typeof tb.setVisible === 'function') {
+        console.log("[PAGE:MINE] 👁️  will call tb.setVisible(true)")
+        tb.setVisible(true)
+      } else {
+        console.log("[PAGE:MINE] ⚠️ tb missing or setVisible not a function. typeof=", tb && typeof tb.setVisible)
       }
     }
     this.refreshWeChatGroupFromBackend({ silent: true })
   },
   onPageScroll(e) {
-    const top = e && Number.isFinite(e.scrollTop) ? e.scrollTop : Number((e && e.scrollTop) || 0)
+    const top = e && e.detail && Number.isFinite(e.detail.scrollTop) ? e.detail.scrollTop : Number((e && e.detail && e.detail.scrollTop) || 0)
     this.setData({ pageScrollTop: top > 0 ? top : 0 })
   },
   syncStoreConfig() {
@@ -330,7 +347,7 @@ Page({
   },
   measureHeroRect() {
     return new Promise((resolve) => {
-      const query = this.createSelectorQuery ? this.createSelectorQuery() : wx.createSelectorQuery()
+      const query = this.createSelectorQuery ? this.createSelectorQuery().in(this) : wx.createSelectorQuery().in(this)
       query.select(".hero-cover-frame").boundingClientRect((rect) => {
         if (rect && Number(rect.width) > 0 && Number(rect.height) > 0) {
           const out = {
@@ -441,7 +458,7 @@ Page({
     })
   },
   openWeChatShop() {
-    wx.navigateTo({ url: "/pages/shop/index" })
+    wx.navigateTo({ url: "/packages/shop-pkg/pages/shop/index" })
   },
   noop() {},
   onOpenWechatGroup() {
@@ -477,15 +494,15 @@ Page({
     const action = e && e.currentTarget && e.currentTarget.dataset ? e.currentTarget.dataset.action : ""
     if (action === "standings") {
       const season = Number(this.data.prefSeason || 0) || 2026
-      wx.navigateTo({ url: `/pages/standings/index?season=${season}` })
+      wx.navigateTo({ url: `/packages/race-pkg/pages/standings/index?season=${season}` })
       return
     }
     if (action === "tyreIntro") {
-      wx.navigateTo({ url: "/pages/tyre-intro/index" })
+      wx.navigateTo({ url: "/packages/race-pkg/pages/tyre-intro/index" })
       return
     }
     if (action === "liveTiming") {
-      wx.navigateTo({ url: "/pages/live-timing/index" })
+      wx.navigateTo({ url: "/packages/race-pkg/pages/live-timing/index" })
       return
     }
     if (action === "shop") {
@@ -523,7 +540,7 @@ Page({
         ""
       if (!file) throw new Error("cover_file_missing")
       wx.navigateTo({
-        url: `/pages/image-crop/index?file=${encodeURIComponent(file)}&scene=mine-hero&targetWidth=${encodeURIComponent(heroRect.width)}&targetHeight=${encodeURIComponent(heroRect.height)}`,
+        url: `/packages/tools-pkg/pages/image-crop/index?file=${encodeURIComponent(file)}&scene=mine-hero&targetWidth=${encodeURIComponent(heroRect.width)}&targetHeight=${encodeURIComponent(heroRect.height)}`,
         events: {
           done: async (payload) => {
             const croppedPath = payload && payload.filePath ? String(payload.filePath || "").trim() : ""

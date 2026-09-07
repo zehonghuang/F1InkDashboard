@@ -5,5 +5,7 @@
   "navigationBarTitleText": "我的",
   "navigationStyle": "custom",
   "backgroundColor": "#15151E",
-  "backgroundTextStyle": "light"
+  "backgroundTextStyle": "light",
+  "renderer": "skyline",
+  "componentFramework": "glass-easel"
 }

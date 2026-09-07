@@ -4,64 +4,70 @@
   </view>
 
   <view class="msqt-frame">
-    <scroll-view class="msqt-scroll" scroll-x scroll-y enhanced show-scrollbar="{{false}}" style="height: {{bodyHeightRpx}}rpx;">
-      <view class="msqt-table">
-      <view class="msqt-row msqt-head">
-        <view class="msqt-cell msqt-c-cla">CLA</view>
-        <view class="msqt-cell msqt-c-driver">DRIVER</view>
-        <view class="msqt-cell msqt-c-no">#</view>
-        <view class="msqt-cell msqt-c-car"></view>
-        <view class="msqt-cell msqt-c-laps">LAPS</view>
-        <view class="msqt-cell msqt-c-time">TIME</view>
-        <view class="msqt-cell msqt-c-int">INTERVAL</view>
-        <view class="msqt-cell msqt-c-tyre">TYRES</view>
-      </view>
-
-      <block wx:for="{{displayRows}}" wx:key="pos">
-        <view class="msqt-row" data-index="{{index}}" bindlongpress="onRowLongPress">
-          <view class="msqt-cell msqt-c-cla">
-            <view class="msqt-cla">{{item.pos}}</view>
-          </view>
-
-          <view class="msqt-cell msqt-c-driver">
-            <view class="msqt-driver-wrap">
-              <view class="msqt-team-badge" style="background-color: {{item.teamColor || '#64748b'}};"></view>
-              <view class="msqt-driver-text">
-                <view class="msqt-driver">{{item.driver}}</view>
-                <view class="msqt-team">{{item.team}}</view>
-              </view>
+    <scroll-view class="msqt-scroll" scroll-x show-scrollbar="{{false}}" style="height: {{bodyHeightRpx}}rpx;">
+      <scroll-view class="msqt-scroll-y" scroll-y show-scrollbar="{{false}}" style="height: 100%;">
+        <view class="msqt-scroll-inner" style="min-height: {{bodyHeightRpx}}rpx;">
+          <view class="msqt-table">
+          <view class="msqt-row msqt-head">
+            <view class="msqt-cell msqt-c-cla">CLA</view>
+            <view class="msqt-cell msqt-c-driver">DRIVER</view>
+            <view class="msqt-cell msqt-c-no">#</view>
+            <view class="msqt-cell msqt-c-car">
+              <text class="msqt-placeholder">CAR</text>
             </view>
+            <view class="msqt-cell msqt-c-laps">LAPS</view>
+            <view class="msqt-cell msqt-c-time">TIME</view>
+            <view class="msqt-cell msqt-c-int">INTERVAL</view>
+            <view class="msqt-cell msqt-c-tyre">TYRES</view>
           </view>
 
-          <view class="msqt-cell msqt-c-no">
-            <view class="msqt-no">{{item.number}}</view>
-          </view>
+            <block wx:for="{{displayRows}}" wx:key="pos">
+              <view class="msqt-row" data-index="{{index}}" bindlongpress="onRowLongPress">
+              <view class="msqt-cell msqt-c-cla">
+                <view class="msqt-cla">{{item.pos}}</view>
+              </view>
 
-          <view class="msqt-cell msqt-c-car">
-            <image wx:if="{{item.carImageUrl}}" class="msqt-car-img" src="{{item.carImageUrl}}" mode="aspectFit" />
-            <view
-              wx:else
-              class="msqt-car"
-              style="--car-accent: {{item.carAccent || item.teamColor || '#64748b'}};"
-            ></view>
-          </view>
+              <view class="msqt-cell msqt-c-driver">
+                <view class="msqt-driver-wrap">
+                  <view class="msqt-team-badge" style="background-color: {{item.teamColor || '#64748b'}};"></view>
+                  <view class="msqt-driver-text">
+                    <view class="msqt-driver">{{item.driver}}</view>
+                    <view class="msqt-team">{{item.team}}</view>
+                  </view>
+                </view>
+              </view>
 
-          <view class="msqt-cell msqt-c-laps">{{item.laps}}</view>
+              <view class="msqt-cell msqt-c-no">
+                <view class="msqt-no">{{item.number}}</view>
+              </view>
 
-          <view class="msqt-cell msqt-c-time">
-            <view class="msqt-gap" wx:if="{{item.gap}}">{{item.gap}}</view>
-            <view class="msqt-time">{{item.time}}</view>
-          </view>
+              <view class="msqt-cell msqt-c-car">
+                <image wx:if="{{item.carImageUrl}}" class="msqt-car-img" src="{{item.carImageUrl}}" mode="aspectFit" />
+                <view
+                  wx:else
+                  class="msqt-car"
+                  style="--car-accent: {{item.carAccent || item.teamColor || '#64748b'}};"
+                ></view>
+              </view>
 
-          <view class="msqt-cell msqt-c-int">{{item.interval}}</view>
+              <view class="msqt-cell msqt-c-laps">{{item.laps}}</view>
 
-          <view class="msqt-cell msqt-c-tyre">
-            <image wx:if="{{item.tyreImageUrl}}" class="msqt-tyre-img" src="{{item.tyreImageUrl}}" mode="aspectFit" />
-            <view wx:else class="msqt-tyre">{{item.tyre}}</view>
+              <view class="msqt-cell msqt-c-time">
+                <view class="msqt-gap" wx:if="{{item.gap}}">{{item.gap}}</view>
+                <view class="msqt-time">{{item.time}}</view>
+              </view>
+
+              <view class="msqt-cell msqt-c-int">{{item.interval}}</view>
+
+              <view class="msqt-cell msqt-c-tyre">
+                <image wx:if="{{item.tyreImageUrl}}" class="msqt-tyre-img" src="{{item.tyreImageUrl}}" mode="aspectFit" />
+                <view wx:else class="msqt-tyre">{{item.tyre}}</view>
+              </view>
+              </view>
+            </block>
           </view>
         </view>
-      </block>
-      </view>
+      </scroll-view>
     </scroll-view>
   </view>
 </view>

@@ -1,0 +1,10 @@
+{
+  "usingComponents": {
+    "ec-canvas": "../../components/ec-canvas/index",
+    "i-icon": "/miniprogram_npm/iview-weapp/dist/icon/index"
+  },
+  "navigationBarTitleText": "车手排名",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
+}
+

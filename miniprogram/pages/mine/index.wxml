@@ -1,12 +1,22 @@
-<view class="page has-tabbar mine">
-  <view
-    class="hero {{heroPullDistance > 0 ? 'hero-pulling' : ''}}"
-    style="transform: translate3d(0, {{heroPullDistance}}px, 0); transition: {{heroPullAnimating ? 'transform 180ms ease' : 'none'}};"
-    bindtouchstart="onHeroPullStart"
-    bindtouchmove="onHeroPullMove"
-    bindtouchend="onHeroPullEnd"
-    bindtouchcancel="onHeroPullEnd"
+<view class="page-root">
+  <scroll-view
+    id="page-scroll"
+    class="page-scroll"
+    scroll-y
+    enhanced
+    show-scrollbar="{{false}}"
+    bindscroll="onPageScroll"
+    style="{{scrollViewStyle}}"
   >
+    <view class="page has-tabbar mine">
+      <view
+        class="hero {{heroPullDistance > 0 ? 'hero-pulling' : ''}}"
+        style="transform: translate3d(0, {{heroPullDistance}}px, 0); transition: {{heroPullAnimating ? 'transform 180ms ease' : 'none'}};"
+        bindtouchstart="onHeroPullStart"
+        bindtouchmove="onHeroPullMove"
+        bindtouchend="onHeroPullEnd"
+        bindtouchcancel="onHeroPullEnd"
+      >
     <view class="hero-cover-frame">
       <view class="hero-bg hero-bg-fallback"></view>
       <view
@@ -36,6 +46,7 @@
               mode="aspectFill"
             />
             <view wx:else class="avatar-placeholder">{{avatarText}}</view>
+            <view class="avatar-btn-after"></view>
           </button>
           <view wx:else class="profile-avatar" bindtap="onAvatarTap">
             <image
@@ -198,6 +209,7 @@
         <view class="shop-inline-desc">{{i18n.mine.shopDesc}}</view>
       </view>
       <view class="shop-inline-pill">SHOP</view>
+      <view class="shop-inline-head-decoration"></view>
     </view>
     <view wx:if="{{storeAppId}}" class="shop-inline-shell">
       <view class="shop-inline-embed">
@@ -226,6 +238,8 @@
   <view wx:if="{{isLoggedIn}}" class="section">
     <button class="btn btn-ghost" bindtap="onLogout">{{i18n.mine.logout}}</button>
   </view>
+    </view>
+  </scroll-view>
 
   <view class="wechat-group-fab" bindtap="onOpenWechatGroup">
     <view class="wechat-group-fab-core">
