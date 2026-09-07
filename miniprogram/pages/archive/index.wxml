@@ -65,7 +65,6 @@
                     <view wx:if="{{item.latestTag}}" class="archive-badge">{{item.latestTag}}</view>
                   </view>
                   <view class="archive-name">{{item.name}}</view>
-                  <view class="archive-date">{{item.dateShort}}</view>
                   <view class="archive-results">
                     <view class="archive-result-row">
                       <view class="archive-result-key">{{i18n.archive.winner}}</view>
