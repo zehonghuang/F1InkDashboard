@@ -927,12 +927,13 @@
   line-height: 48rpx;
   font-weight: 800;
   letter-spacing: 0;
-  height: 144rpx;
+  height: auto;
+  max-height: 144rpx;
   overflow: hidden;
 }
 
 .news-summary-text-only {
-  margin-top: 10rpx;
+  margin-top: 0;
   color: rgba(255, 255, 255, 0.66);
   line-height: 38rpx;
   height: 76rpx;
