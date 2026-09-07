@@ -95,7 +95,7 @@
 
       <view
         wx:elif="{{ raceWeek && raceWeek.isRaceWeek && raceWeekSessionLabel && countdown }}"
-        class="raceweek-countdown"
+        class="raceweek-countdown {{ raceWeekShowFlag ? 'raceweek-countdown-flag-mode' : '' }}"
       >
         <view class="raceweek-countdown-left {{ raceWeekShowFlag ? 'raceweek-countdown-left-flag-only' : '' }}">
           <block wx:if="{{ raceWeekShowFlag && raceWeek && raceWeek.race && raceWeek.race.flagUrl }}">
