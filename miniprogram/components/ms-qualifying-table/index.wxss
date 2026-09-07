@@ -28,6 +28,17 @@
 
 .msqt-scroll {
   width: 100%;
+  box-sizing: border-box;
+}
+
+.msqt-scroll-y {
+  width: 1252rpx;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.msqt-scroll-inner {
+  width: 1252rpx;
   padding: 0 16rpx 16rpx;
   box-sizing: border-box;
 }
@@ -101,7 +112,7 @@
   font-size: 32rpx;
 }
 
-.msqt-dense .msqt-scroll {
+.msqt-dense .msqt-scroll-inner {
   padding: 0 12rpx 12rpx;
 }
 
