@@ -55,6 +55,12 @@ Component({
     },
     _onFrame(e) {
       this.triggerEvent("frame", e && e.detail ? e.detail : {}, {})
+    },
+    _onImgLoad(e) {
+      this.triggerEvent("imageload", e && e.detail ? e.detail : {}, {})
+    },
+    _onImgError(e) {
+      this.triggerEvent("imageerror", e && e.detail ? e.detail : {}, {})
     }
   }
 })

@@ -1,5 +1,7 @@
 {
-  "usingComponents": {},
+  "usingComponents": {
+    "skyline-share-receiver": "/components/skyline-share-receiver/index"
+  },
   "navigationBarTitleText": "加入群聊",
   "navigationStyle": "custom",
   "backgroundColor": "#0B0B10",

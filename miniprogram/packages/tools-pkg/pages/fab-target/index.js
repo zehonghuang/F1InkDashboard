@@ -1,11 +1,12 @@
 Page({
   data: {
-    shareKey: "tyre-icon",
-    imageSrc: "/assets/icons/tyre-blue-icon.png"
+    imageSrc: "",
+    shareKey: ""
   },
-  onLoad(query) {
-    const src = query && query.src ? decodeURIComponent(String(query.src)) : this.data.imageSrc
-    const key = query && query.key ? decodeURIComponent(String(query.key)) : this.data.shareKey
-    this.setData({ imageSrc: src, shareKey: key })
+  onLoad(options) {
+    const opts = (options && typeof options === "object") ? options : {}
+    const imageSrc = String(opts.src || "").trim()
+    const shareKey = String(opts.key || "").trim()
+    this.setData({ imageSrc, shareKey })
   }
 })

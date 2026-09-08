@@ -31,14 +31,20 @@
         </view>
 
         <view class="qr-shell" bindtap="onPreviewQr">
-          <image
-            wx:if="{{wechatGroupQrUrl}}"
-            class="qr {{wechatGroupQrLoaded && !wechatGroupQrBroken ? 'qr-visible' : 'qr-hidden'}}"
-            src="{{wechatGroupQrUrl}}"
-            mode="aspectFit"
-            bindload="onQrLoad"
-            binderror="onQrError"
-          />
+          <block wx:if="{{wechatGroupQrUrl && !wechatGroupQrBroken}}">
+            <skyline-share-receiver
+              share-key="wechat-group-qr"
+              src="{{wechatGroupQrUrl}}"
+              image-mode="aspectFit"
+              width="100%"
+              height="580rpx"
+              wrap-style="display:block;"
+              content-style="width:100%;height:580rpx;display:block;opacity:{{wechatGroupQrLoaded ? '1' : '0'}};transition:opacity 280ms ease-out;"
+              bind:frame="_onShareFrame"
+              bind:imageload="onQrLoad"
+              bind:imageerror="onQrError"
+            />
+          </block>
           <view wx:if="{{!wechatGroupQrUrl || wechatGroupQrBroken}}" class="qr-fake">
             <view class="qr-board">
               <block wx:for="{{fakeQrCells}}" wx:key="key">

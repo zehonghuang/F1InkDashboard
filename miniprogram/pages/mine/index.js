@@ -2,6 +2,7 @@ const { getAuthState, loginWithWeChat, logout, fetchMe, bindDevice, uploadAvatar
 const { fetchPrefs, updatePrefs } = require("../../services/prefsService")
 const i18n = require("../../services/i18n")
 const { getWeChatStoreConfig } = require("../../services/wechatStore")
+const { getWeChatGroupConfig, fetchWeChatGroupConfig } = require("../../services/wechatGroup")
 const { computeTabbarReserveStyle } = require("../../utils/tabbar-layout")
 
 const STORAGE_KEYS = {
@@ -66,9 +67,10 @@ Page({
     storeAppId: "",
     scrollViewStyle: "height: calc(100vh - 200rpx);",
     tabbarReserveRpx: 200,
-    shareFabShareKey: "tyre-icon",
-    shareFabSrc: "/assets/icons/tyre-blue-icon.png",
-    shareFabTargetUrl: "/packages/tools-pkg/pages/fab-target/index?src=" + encodeURIComponent("/assets/icons/tyre-blue-icon.png") + "&key=" + encodeURIComponent("tyre-icon")
+    wechatGroupFabReady: false,
+    wechatGroupFabShareKey: "",
+    wechatGroupFabSrc: "",
+    wechatGroupFabTargetUrl: "/packages/tools-pkg/pages/wechat-group/index"
   },
   onLoad() {
     const layout = computeTabbarReserveStyle()
@@ -82,9 +84,11 @@ Page({
     }
     this.applyI18n()
     this.syncStoreConfig()
+    this.syncWechatGroupFabConfig()
     this.loadHeroCover()
     this.loadPreferences()
     this.refreshAuth()
+    this.refreshWechatGroupFab({ silent: true })
   },
   onUnload() {
     if (this._offLocale) this._offLocale()
@@ -96,9 +100,11 @@ Page({
     console.log("[PAGE:MINE] onShow() fired. this.route=", this.route, "typeof getTabBar=", typeof this.getTabBar)
     this.applyI18n()
     this.syncStoreConfig()
+    this.syncWechatGroupFabConfig()
     this.refreshAuth()
     this.loadPreferences()
     this.measureHeroRect()
+    this.refreshWechatGroupFab({ silent: true })
     try {
       const s = getAuthState()
       if (s && s.isLoggedIn) {
@@ -133,6 +139,22 @@ Page({
     const cfg = getWeChatStoreConfig()
     const appId = String(cfg.appId || "").trim()
     this.setData({ storeAppId: appId })
+  },
+  syncWechatGroupFabConfig() {
+    const cfg = getWeChatGroupConfig()
+    const qrImage = String(cfg.qrImage || "").trim()
+    const shareKey = qrImage ? "wechat-group-qr" : ""
+    this.setData({
+      wechatGroupFabReady: true,
+      wechatGroupFabShareKey: shareKey,
+      wechatGroupFabSrc: qrImage
+    })
+  },
+  async refreshWechatGroupFab(opts) {
+    try {
+      const cfg = await fetchWeChatGroupConfig(opts || {})
+      if (cfg) this.syncWechatGroupFabConfig()
+    } catch (e) {}
   },
   async syncPrefsFromBackend(opts) {
     if (this.data.syncingPrefs) return
@@ -383,16 +405,6 @@ Page({
   },
   openWeChatShop() {
     wx.navigateTo({ url: "/packages/shop-pkg/pages/shop/index" })
-  },
-  onOpenShareElementDemo() {
-    const src = "/assets/icons/tyre-blue-icon.png"
-    const url = `/packages/tools-pkg/pages/fab-target/index?src=${encodeURIComponent(src)}&key=${encodeURIComponent("tyre-icon")}`
-    wx.navigateTo({
-      url,
-      fail: () => {
-        wx.showToast({ title: i18n.t("common.featurePending"), icon: "none" })
-      }
-    })
   },
   onOpenWechatGroup() {
     wx.navigateTo({

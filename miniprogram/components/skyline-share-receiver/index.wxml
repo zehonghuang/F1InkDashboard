@@ -18,6 +18,8 @@
       style="{{_contentStyle}}"
       src="{{src}}"
       mode="{{imageMode}}"
+      bindload="_onImgLoad"
+      binderror="_onImgError"
     />
   </block>
   <block wx:else>
@@ -38,6 +40,8 @@
         style="{{_contentStyle}}"
         src="{{src}}"
         mode="{{imageMode}}"
+        bindload="_onImgLoad"
+        binderror="_onImgError"
       />
     </block>
     <block wx:else>
