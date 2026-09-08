@@ -1,0 +1,65 @@
+.ssf-shell {
+  position: fixed;
+  z-index: 119;
+}
+
+.ssf-shell.size-sm { width: 80rpx; height: 80rpx; }
+.ssf-shell.size-md { width: 104rpx; height: 104rpx; }
+.ssf-shell.size-lg { width: 140rpx; height: 140rpx; }
+
+.ssf-inner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+}
+
+.ssf-img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.ssf-shell.size-sm .ssf-img { width: 52rpx; height: 52rpx; }
+.ssf-shell.size-md .ssf-img { width: 68rpx; height: 68rpx; }
+.ssf-shell.size-lg .ssf-img { width: 92rpx; height: 92rpx; }
+
+.ssf-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 800;
+}
+
+.ssf-shell.size-sm .ssf-fallback { width: 52rpx; height: 52rpx; font-size: 22rpx; }
+.ssf-shell.size-md .ssf-fallback { width: 68rpx; height: 68rpx; font-size: 28rpx; }
+.ssf-shell.size-lg .ssf-fallback { width: 92rpx; height: 92rpx; font-size: 36rpx; }
+
+.ssf-ping {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 999rpx;
+  border: 2rpx solid rgba(124, 203, 255, 0.5);
+  opacity: 0;
+  transform: scale(0.6);
+  animation: ssf-ping-anim 2200ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  pointer-events: none;
+}
+
+.ssf-ping.size-sm { width: 80rpx; height: 80rpx; margin-left: -40rpx; margin-top: -40rpx; }
+.ssf-ping.size-md { width: 104rpx; height: 104rpx; margin-left: -52rpx; margin-top: -52rpx; }
+.ssf-ping.size-lg { width: 140rpx; height: 140rpx; margin-left: -70rpx; margin-top: -70rpx; }
+
+@keyframes ssf-ping-anim {
+  0% { opacity: 0.6; transform: scale(0.6); }
+  70% { opacity: 0; transform: scale(1.7); }
+  100% { opacity: 0; transform: scale(1.7); }
+}

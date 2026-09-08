@@ -241,6 +241,16 @@
     </view>
   </scroll-view>
 
+  <skyline-share-fab
+    target-url="{{shareFabTargetUrl}}"
+    share-key="{{shareFabShareKey}}"
+    src="{{shareFabSrc}}"
+    size="md"
+    bottom="260rpx"
+    ping="{{true}}"
+    glow-color="rgba(92,188,255,0.36)"
+  />
+
   <open-container
     class="wechat-group-fab-shell"
     closed-color="rgba(18, 84, 42, 0.92)"

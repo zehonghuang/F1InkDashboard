@@ -1,0 +1,10 @@
+{
+  "navigationStyle": "custom",
+  "backgroundColor": "#15151E",
+  "backgroundTextStyle": "light",
+  "renderer": "skyline",
+  "componentFramework": "glass-easel",
+  "usingComponents": {
+    "skyline-share-receiver": "/components/skyline-share-receiver/index"
+  }
+}

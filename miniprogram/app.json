@@ -40,7 +40,8 @@
         "pages/image-crop/index",
         "pages/style-demo/index",
         "pages/compare/index",
-        "pages/wechat-group/index"
+        "pages/wechat-group/index",
+        "pages/share-element-demo/index"
       ]
     }
   ],

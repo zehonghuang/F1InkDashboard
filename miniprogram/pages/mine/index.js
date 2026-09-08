@@ -65,7 +65,10 @@ Page({
     syncingPrefs: false,
     storeAppId: "",
     scrollViewStyle: "height: calc(100vh - 200rpx);",
-    tabbarReserveRpx: 200
+    tabbarReserveRpx: 200,
+    shareFabShareKey: "tyre-icon",
+    shareFabSrc: "/assets/icons/tyre-blue-icon.png",
+    shareFabTargetUrl: "/packages/tools-pkg/pages/share-element-demo/index?src=" + encodeURIComponent("/assets/icons/tyre-blue-icon.png") + "&key=" + encodeURIComponent("tyre-icon")
   },
   onLoad() {
     const layout = computeTabbarReserveStyle()
@@ -380,6 +383,17 @@ Page({
   },
   openWeChatShop() {
     wx.navigateTo({ url: "/packages/shop-pkg/pages/shop/index" })
+  },
+  onOpenShareElementDemo() {
+    const src = "/assets/icons/tyre-blue-icon.png"
+    const title = "Tyre Guide"
+    const subtitle = "Skyline Share Element Demo"
+    wx.navigateTo({
+      url: `/packages/tools-pkg/pages/share-element-demo/index?src=${encodeURIComponent(src)}&title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(subtitle)}`,
+      fail: () => {
+        wx.showToast({ title: i18n.t("common.featurePending"), icon: "none" })
+      }
+    })
   },
   onOpenWechatGroup() {
     wx.navigateTo({

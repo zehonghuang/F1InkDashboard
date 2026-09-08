@@ -1,0 +1,9 @@
+<view class="page-root">
+  <skyline-share-receiver
+    share-key="{{shareKey}}"
+    src="{{imageSrc}}"
+    image-mode="aspectFit"
+    width="600rpx"
+    height="600rpx"
+  />
+</view>
