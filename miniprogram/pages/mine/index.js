@@ -68,7 +68,7 @@ Page({
     tabbarReserveRpx: 200,
     shareFabShareKey: "tyre-icon",
     shareFabSrc: "/assets/icons/tyre-blue-icon.png",
-    shareFabTargetUrl: "/packages/tools-pkg/pages/share-element-demo/index?src=" + encodeURIComponent("/assets/icons/tyre-blue-icon.png") + "&key=" + encodeURIComponent("tyre-icon")
+    shareFabTargetUrl: "/packages/tools-pkg/pages/fab-target/index?src=" + encodeURIComponent("/assets/icons/tyre-blue-icon.png") + "&key=" + encodeURIComponent("tyre-icon")
   },
   onLoad() {
     const layout = computeTabbarReserveStyle()
@@ -386,10 +386,9 @@ Page({
   },
   onOpenShareElementDemo() {
     const src = "/assets/icons/tyre-blue-icon.png"
-    const title = "Tyre Guide"
-    const subtitle = "Skyline Share Element Demo"
+    const url = `/packages/tools-pkg/pages/fab-target/index?src=${encodeURIComponent(src)}&key=${encodeURIComponent("tyre-icon")}`
     wx.navigateTo({
-      url: `/packages/tools-pkg/pages/share-element-demo/index?src=${encodeURIComponent(src)}&title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(subtitle)}`,
+      url,
       fail: () => {
         wx.showToast({ title: i18n.t("common.featurePending"), icon: "none" })
       }
