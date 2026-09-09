@@ -256,7 +256,7 @@
     closed-color="rgba(18, 84, 42, 0.92)"
     draggable="{{true}}"
     edge-inset="{{12}}"
-    reserve-bottom-rpx="0"
+    reserve-bottom-rpx="100"
   />
 
   <view wx:if="{{showPicker}}" class="picker-mask" bindtap="onClosePicker"></view>

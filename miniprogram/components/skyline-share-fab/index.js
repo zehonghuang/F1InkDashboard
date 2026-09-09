@@ -17,13 +17,16 @@ function rpxToPx(rpx) {
 function getWinSize() {
   try {
     const sys = wx.getWindowInfo ? wx.getWindowInfo() : (wx.getSystemInfoSync && wx.getSystemInfoSync())
-    if (!sys) return { w: 375, h: 667 }
+    if (!sys) return { w: 375, h: 667, screenH: 667 }
+    const winH = Number(sys.windowHeight) || 667
+    const screenH = Number(sys.screenHeight) || winH
     return {
       w: Number(sys.windowWidth) || 375,
-      h: Number(sys.windowHeight) || 667
+      h: winH,
+      screenH: screenH
     }
   } catch (e) {
-    return { w: 375, h: 667 }
+    return { w: 375, h: 667, screenH: 667 }
   }
 }
 
@@ -107,6 +110,7 @@ Component({
     draggable: { type: Boolean, value: true },
     edgeInset: { type: Number, value: 8 },
     reserveBottomRpx: { type: Number, value: 0 },
+    reserveTabbarPx: { type: Number, value: 50 },
     positionKey: { type: String, value: "skyline_share_fab_pos" }
   },
   data: {
@@ -163,7 +167,7 @@ Component({
     }
   },
   observers: {
-    "size, right, left, top, bottom, closedBorderRadius, innerBg, innerBorder, innerShadow, glowColor, contentStyle, shareKey, draggable, edgeInset, reserveBottomRpx": function () {
+    "size, right, left, top, bottom, closedBorderRadius, innerBg, innerBorder, innerShadow, glowColor, contentStyle, shareKey, draggable, edgeInset, reserveBottomRpx, reserveTabbarPx": function () {
       this._recomputeProps()
     }
   },
@@ -174,12 +178,13 @@ Component({
       const win = getWinSize()
       const insets = this._safeInsets()
       const reserve = rpxToPx(Number(p.reserveBottomRpx) || 0)
+      const tabPx = Number(p.reserveTabbarPx) || 0
       let x = win.w - sizePx - rpxToPx(20)
-      let y = win.h - sizePx - rpxToPx(260) - insets.bottom - reserve
+      let y = win.h - sizePx - rpxToPx(260) - insets.bottom - reserve - tabPx
       if (p.right) x = win.w - sizePx - this._toPxOrZero(p.right)
       if (p.left) x = this._toPxOrZero(p.left)
       if (p.top) y = this._toPxOrZero(p.top)
-      if (p.bottom) y = win.h - sizePx - this._toPxOrZero(p.bottom) - insets.bottom - reserve
+      if (p.bottom) y = win.h - sizePx - this._toPxOrZero(p.bottom) - insets.bottom - reserve - tabPx
       return { x, y }
     },
     _safeInsets() {
@@ -228,10 +233,13 @@ Component({
       const insets = this._safeInsets()
       const inset = Number(this.properties.edgeInset) || 0
       const reserve = rpxToPx(Number(this.properties.reserveBottomRpx) || 0)
+      const tabPx = Number(this.properties.reserveTabbarPx) || 0
       const minX = inset
       const maxX = win.w - sizePx - inset
       const minY = inset + insets.top
-      const maxY = win.h - sizePx - inset - insets.bottom - reserve
+      const winMaxY = win.h - sizePx - inset - insets.bottom - reserve - tabPx
+      const screenMaxY = win.screenH - sizePx - inset - insets.bottom - reserve - tabPx
+      const maxY = Math.min(winMaxY, screenMaxY)
       let x = pt.x
       let y = pt.y
       if (x < minX) x = minX
@@ -368,11 +376,15 @@ Component({
       const insets = this._safeInsets()
       const inset = Number(this.properties.edgeInset) || 0
       const reserve = rpxToPx(Number(this.properties.reserveBottomRpx) || 0)
+      const tabPx = Number(this.properties.reserveTabbarPx) || 0
       const raw = this._lastPos || this._defaultAnchor()
       const snapped = this._snapX(raw)
+      const winMaxY = win.h - sizePx - inset - insets.bottom - reserve - tabPx
+      const screenMaxY = win.screenH - sizePx - inset - insets.bottom - reserve - tabPx
+      const yMax = Math.min(winMaxY, screenMaxY)
       const clamped = this._clampPos({
         x: Math.max(inset, Math.min(win.w - sizePx - inset, snapped.x)),
-        y: Math.max(inset + insets.top, Math.min(win.h - sizePx - inset - insets.bottom - reserve, snapped.y))
+        y: Math.max(inset + insets.top, Math.min(yMax, snapped.y))
       })
       const finalPt = this._applyPos(clamped, { snap: true })
       this._dragState = { wasClick: false, at: Date.now() }
