@@ -171,7 +171,7 @@
     <view class="quick-grid">
       <view class="quick-card" bindtap="onTapItem" data-action="standings">
         <view class="quick-card-head">
-          <view class="quick-card-icon">PTS</view>
+          <view class="quick-card-icon">🏆</view>
         </view>
         <view class="quick-card-title">{{i18n.mine.standings}}</view>
       </view>
@@ -185,7 +185,7 @@
       </view>
       <view class="quick-card" bindtap="onTapItem" data-action="liveTiming">
         <view class="quick-card-head">
-          <view class="quick-card-icon">LIVE</view>
+          <view class="quick-card-icon">⏱️</view>
         </view>
         <view class="quick-card-title">{{i18n.mine.liveTiming}}</view>
       </view>
