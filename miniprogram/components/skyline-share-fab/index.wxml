@@ -1,63 +1,74 @@
-<open-container
-  wx:if="{{_visible}}"
-  class="ssf-shell {{_sizeClass}}"
-  style="{{_shellStyle}}"
-  closed-color="{{closedColor}}"
-  closed-elevation="{{closedElevation}}"
-  closed-border-radius="{{closedBorderRadius}}"
-  open-color="{{openColor}}"
-  open-elevation="{{openElevation}}"
-  open-border-radius="{{openBorderRadius}}"
-  transition-type="{{transitionType}}"
-  transition-duration="{{transitionDuration}}"
-  bindtap="_onTap"
->
-  <view class="ssf-inner" style="{{_innerStyle}}">
-    <share-element
-      wx:if="{{_hasShareKey}}"
-      key="{{shareKey}}"
-      transition-on-gesture="{{transitionOnGesture}}"
-      rect-tween-type="{{rectTweenType}}"
-      shuttle-on-push="{{shuttleOnPush}}"
-      shuttle-on-pop="{{shuttleOnPop}}"
+<view class="ssf-area">
+  <view
+    wx:if="{{_visible}}"
+    class="ssf-drag {{_sizeClass}} {{_dragging ? 'ssf-dragging' : ''}}"
+    style="{{_dragStyle}}"
+    catchtouchstart="_onTouchStart"
+    catchtouchmove="_onTouchMove"
+    catchtouchend="_onTouchEnd"
+    catchtouchcancel="_onTouchEnd"
+  >
+    <open-container
+      class="ssf-shell {{_sizeClass}}"
+      style="{{_shellStyle}}"
+      closed-color="{{closedColor}}"
+      closed-elevation="{{closedElevation}}"
+      closed-border-radius="{{closedBorderRadius}}"
+      open-color="{{openColor}}"
+      open-elevation="{{openElevation}}"
+      open-border-radius="{{openBorderRadius}}"
+      transition-type="{{transitionType}}"
+      transition-duration="{{transitionDuration}}"
+      bindtap="_onInnerTap"
     >
-      <block wx:if="{{useSlot}}">
-        <slot name="content"></slot>
-      </block>
-      <block wx:elif="{{src}}">
-        <image
-          class="ssf-img"
-          style="{{_contentStyle}}"
-          src="{{src}}"
-          mode="{{imageMode}}"
-        />
-      </block>
-      <block wx:else>
-        <view class="ssf-fallback" style="{{_contentStyle}}">
-          <text class="ssf-fallback-text">{{fallbackText}}</text>
-        </view>
-      </block>
-    </share-element>
+      <view class="ssf-inner" style="{{_innerStyle}}">
+        <share-element
+          wx:if="{{_hasShareKey}}"
+          key="{{shareKey}}"
+          transition-on-gesture="{{transitionOnGesture}}"
+          rect-tween-type="{{rectTweenType}}"
+          shuttle-on-push="{{shuttleOnPush}}"
+          shuttle-on-pop="{{shuttleOnPop}}"
+        >
+          <block wx:if="{{useSlot}}">
+            <slot name="content"></slot>
+          </block>
+          <block wx:elif="{{src}}">
+            <image
+              class="ssf-img"
+              style="{{_contentStyle}}"
+              src="{{src}}"
+              mode="{{imageMode}}"
+            />
+          </block>
+          <block wx:else>
+            <view class="ssf-fallback" style="{{_contentStyle}}">
+              <text class="ssf-fallback-text">{{fallbackText}}</text>
+            </view>
+          </block>
+        </share-element>
 
-    <block wx:if="{{!_hasShareKey}}">
-      <block wx:if="{{useSlot}}">
-        <slot name="content"></slot>
-      </block>
-      <block wx:elif="{{src}}">
-        <image
-          class="ssf-img"
-          style="{{_contentStyle}}"
-          src="{{src}}"
-          mode="{{imageMode}}"
-        />
-      </block>
-      <block wx:else>
-        <view class="ssf-fallback" style="{{_contentStyle}}">
-          <text class="ssf-fallback-text">{{fallbackText}}</text>
-        </view>
-      </block>
-    </block>
+        <block wx:if="{{!_hasShareKey}}">
+          <block wx:if="{{useSlot}}">
+            <slot name="content"></slot>
+          </block>
+          <block wx:elif="{{src}}">
+            <image
+              class="ssf-img"
+              style="{{_contentStyle}}"
+              src="{{src}}"
+              mode="{{imageMode}}"
+            />
+          </block>
+          <block wx:else>
+            <view class="ssf-fallback" style="{{_contentStyle}}">
+              <text class="ssf-fallback-text">{{fallbackText}}</text>
+            </view>
+          </block>
+        </block>
+      </view>
+
+      <view wx:if="{{ping}}" class="ssf-ping ssf-ping-{{size}}"></view>
+    </open-container>
   </view>
-
-  <view wx:if="{{ping}}" class="ssf-ping ssf-ping-{{size}}"></view>
-</open-container>
+</view>

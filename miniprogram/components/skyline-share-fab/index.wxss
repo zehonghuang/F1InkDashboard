@@ -1,5 +1,34 @@
-.ssf-shell {
+.ssf-area {
   position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 118;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ssf-drag {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+  pointer-events: auto;
+}
+
+.ssf-drag.size-sm { width: 80rpx; height: 80rpx; }
+.ssf-drag.size-md { width: 104rpx; height: 104rpx; }
+.ssf-drag.size-lg { width: 140rpx; height: 140rpx; }
+
+.ssf-drag.ssf-dragging {
+  z-index: 121;
+}
+
+.ssf-shell {
+  position: relative;
+  left: 0;
+  top: 0;
   z-index: 119;
 }
 
