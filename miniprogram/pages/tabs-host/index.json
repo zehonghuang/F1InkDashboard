@@ -1,0 +1,14 @@
+{
+  "navigationBarTitleText": "TONIC F1",
+  "navigationStyle": "custom",
+  "backgroundColor": "#15151E",
+  "backgroundTextStyle": "light",
+  "renderer": "skyline",
+  "componentFramework": "glass-easel",
+  "usingComponents": {
+    "i-icon": "/miniprogram_npm/iview-weapp/dist/icon/index",
+    "news-panel": "/components/tab-panels/news-panel/index",
+    "archive-panel": "/components/tab-panels/archive-panel/index",
+    "mine-panel": "/components/tab-panels/mine-panel/index"
+  }
+}

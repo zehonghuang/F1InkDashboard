@@ -1,0 +1,300 @@
+<view class="page-root">
+  <scroll-view
+    id="page-scroll"
+    class="page-scroll"
+    scroll-y
+    enhanced
+    show-scrollbar="{{false}}"
+    bindscroll="onPageScroll"
+    style="{{scrollViewStyle}}"
+  >
+    <view class="page has-tabbar mine">
+      <view
+        class="hero {{heroPullDistance > 0 ? 'hero-pulling' : ''}}"
+        style="transform: translate3d(0, {{heroPullDistance}}px, 0); transition: {{heroPullAnimating ? 'transform 180ms ease' : 'none'}};"
+        bindtouchstart="onHeroPullStart"
+        bindtouchmove="onHeroPullMove"
+        bindtouchend="onHeroPullEnd"
+        bindtouchcancel="onHeroPullEnd"
+      >
+    <view class="hero-cover-frame">
+      <view class="hero-bg hero-bg-fallback"></view>
+      <view
+        wx:if="{{heroCoverUrl}}"
+        class="hero-custom-bg"
+        style="{{heroCoverStyle}}"
+      ></view>
+      <view class="hero-bg-mask"></view>
+      <view wx:if="{{heroPullDistance > 0}}" class="hero-pull-indicator">
+        <view class="hero-pull-pill {{heroPullReady ? 'hero-pull-pill-ready' : ''}}">
+          {{heroPullReady ? i18n.mine.coverPullReady : i18n.mine.coverPullIdle}}
+        </view>
+      </view>
+      <view class="profile-card">
+        <view class="profile">
+          <button
+            wx:if="{{isLoggedIn && canEditProfile}}"
+            class="profile-avatar avatar-btn"
+            open-type="chooseAvatar"
+            bindchooseavatar="onChooseAvatar"
+            loading="{{syncingProfile}}"
+          >
+            <image
+              wx:if="{{profile && profile.avatarUrl}}"
+              class="profile-avatar-img"
+              src="{{profile.avatarUrl}}"
+              mode="aspectFill"
+            />
+            <view wx:else class="avatar-placeholder">{{avatarText}}</view>
+            <view class="avatar-btn-after"></view>
+          </button>
+          <view wx:else class="profile-avatar" bindtap="onAvatarTap">
+            <image
+              wx:if="{{profile && profile.avatarUrl}}"
+              class="profile-avatar-img"
+              src="{{profile.avatarUrl}}"
+              mode="aspectFill"
+            />
+            <view wx:else class="avatar-placeholder">{{avatarText}}</view>
+          </view>
+
+          <view class="profile-main">
+            <view class="profile-name">{{displayName}}</view>
+            <view class="profile-sub">
+              <text wx:if="{{isLoggedIn}}">{{i18n.mine.loggedIn}}</text>
+              <text wx:else>{{i18n.mine.guest}}</text>
+            </view>
+          </view>
+
+          <view class="profile-actions">
+            <button
+              wx:if="{{!isLoggedIn}}"
+              class="btn btn-primary"
+              bindtap="onLogin"
+              loading="{{loadingLogin}}"
+            >
+              {{i18n.mine.wechatLogin}}
+            </button>
+            <button
+              wx:if="{{isLoggedIn}}"
+              class="btn btn-ghost"
+              bindtap="onBindDevice"
+              loading="{{bindingDevice}}"
+            >
+              {{i18n.mine.bindDevice}}
+            </button>
+          </view>
+        </view>
+        <view wx:if="{{!isLoggedIn}}" class="hero-sync-hint">{{i18n.mine.syncHint}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{profileGuideVisible}}" class="section">
+    <view class="profile-guide profile-guide-standalone">
+      <view class="profile-guide-head">
+        <view class="profile-guide-title">{{profileGuideTitle}}</view>
+        <view class="profile-guide-badge">{{profileGuideDoneCount}}/{{profileGuideTotal}}</view>
+      </view>
+      <view class="profile-guide-desc">{{i18n.mine.profileGuideHint}}</view>
+      <view class="profile-guide-step">
+        <view class="profile-guide-step-main">
+          <view class="profile-guide-step-title">{{i18n.mine.profileGuideAvatar}}</view>
+          <view class="profile-guide-step-desc">{{hasAvatar ? i18n.mine.profileGuideDoneHint : i18n.mine.profileGuideAvatarHint}}</view>
+        </view>
+        <view class="profile-guide-step-status {{hasAvatar ? 'profile-guide-step-status-done' : ''}}">{{hasAvatar ? i18n.mine.profileGuideDone : i18n.mine.profileGuideTodo}}</view>
+      </view>
+      <view class="profile-guide-step">
+        <view class="profile-guide-step-main">
+          <view class="profile-guide-step-title">{{i18n.mine.profileGuideNickname}}</view>
+          <view class="profile-guide-step-desc">{{hasNick ? i18n.mine.profileGuideDoneHint : i18n.mine.profileGuideNicknameHint}}</view>
+        </view>
+        <view class="profile-guide-step-status {{hasNick ? 'profile-guide-step-status-done' : ''}}">{{hasNick ? i18n.mine.profileGuideDone : i18n.mine.profileGuideTodo}}</view>
+      </view>
+      <input
+        wx:if="{{isLoggedIn && !hasNick}}"
+        class="nickname-input"
+        type="nickname"
+        placeholder="{{i18n.mine.nickPlaceholder}}"
+        value="{{nicknameDraft}}"
+        bindblur="onNicknameBlur"
+      />
+    </view>
+  </view>
+
+  <view class="section section-follow">
+    <view class="follow-grid">
+      <view class="follow-card" bindtap="onTapItem" data-action="followDrivers">
+        <view class="follow-card-head">
+          <view class="follow-card-title">{{i18n.mine.followDrivers}}</view>
+          <view class="follow-card-count">{{followDrivers.length}}{{i18n.mine.peopleUnit}}</view>
+        </view>
+        <view class="follow-card-stack">
+          <view wx:if="{{followDriverThumbs.length}}" class="stack">
+            <block wx:for="{{followDriverThumbs}}" wx:key="key" wx:for-item="d" wx:for-index="idx">
+              <view class="stack-item" style="z-index: {{100-idx}}; border-color: {{d.color || 'rgba(255,255,255,0.18)'}};">
+                <image wx:if="{{d.url}}" class="stack-img" src="{{d.url}}" mode="aspectFill" />
+                <view wx:else class="stack-placeholder">{{d.text}}</view>
+              </view>
+            </block>
+            <view wx:if="{{followDriverMoreCount > 0}}" class="stack-more">+{{followDriverMoreCount}}</view>
+          </view>
+          <view wx:else class="follow-card-empty">{{i18n.mine.followToBuild}}</view>
+        </view>
+        <view class="follow-card-value">{{followDrivers.length ? followDriversText : i18n.mine.noDriverYet}}</view>
+      </view>
+
+      <view class="follow-card" bindtap="onTapItem" data-action="followTeams">
+        <view class="follow-card-head">
+          <view class="follow-card-title">{{i18n.mine.followTeams}}</view>
+          <view class="follow-card-count">{{followTeams.length}}{{i18n.mine.teamsUnit}}</view>
+        </view>
+        <view class="follow-card-stack">
+          <view wx:if="{{followTeamThumbs.length}}" class="stack">
+            <block wx:for="{{followTeamThumbs}}" wx:key="key" wx:for-item="t" wx:for-index="idx">
+              <view class="stack-item" style="z-index: {{100-idx}}; border-color: {{t.color || 'rgba(255,255,255,0.18)'}};">
+                <image wx:if="{{t.url}}" class="stack-img" src="{{t.url}}" mode="aspectFill" />
+                <view wx:else class="stack-placeholder">{{t.text}}</view>
+              </view>
+            </block>
+            <view wx:if="{{followTeamMoreCount > 0}}" class="stack-more">+{{followTeamMoreCount}}</view>
+          </view>
+          <view wx:else class="follow-card-empty">{{i18n.mine.followToBuild}}</view>
+        </view>
+        <view class="follow-card-value">{{followTeams.length ? followTeamsText : i18n.mine.noTeamYet}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section section-quick">
+    <view class="quick-grid">
+      <view class="quick-card" bindtap="onTapItem" data-action="standings">
+        <view class="quick-card-head">
+          <view class="quick-card-icon">🏆</view>
+        </view>
+        <view class="quick-card-title">{{i18n.mine.standings}}</view>
+      </view>
+      <view class="quick-card" bindtap="onTapItem" data-action="tyreIntro">
+        <view class="quick-card-head">
+          <view class="quick-card-icon quick-card-icon-image">
+            <image class="quick-card-icon-asset" src="/assets/icons/tyre-blue-icon.png" mode="aspectFit" />
+          </view>
+        </view>
+        <view class="quick-card-title">{{i18n.mine.tyreIntro}}</view>
+      </view>
+      <view class="quick-card" bindtap="onTapItem" data-action="liveTiming">
+        <view class="quick-card-head">
+          <view class="quick-card-icon">⏱️</view>
+        </view>
+        <view class="quick-card-title">{{i18n.mine.liveTiming}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section shop-section">
+    <view class="shop-inline-head">
+      <view class="shop-inline-head-main">
+        <view class="shop-inline-eyebrow">WECHAT STORE</view>
+        <view class="shop-inline-title">{{i18n.mine.shop}}</view>
+        <view class="shop-inline-desc">{{i18n.mine.shopDesc}}</view>
+      </view>
+      <view class="shop-inline-pill">SHOP</view>
+      <view class="shop-inline-head-decoration"></view>
+    </view>
+    <view wx:if="{{storeAppId}}" class="shop-inline-shell">
+      <view class="shop-inline-embed">
+        <store-home appid="{{storeAppId}}"></store-home>
+      </view>
+    </view>
+    <view wx:else class="shop-inline-empty">
+      <view class="shop-inline-empty-title">{{i18n.shop.configMissingTitle}}</view>
+      <view class="shop-inline-empty-desc">{{i18n.shop.configMissingDesc}}</view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">{{i18n.mine.preferences}}</view>
+    <view class="row" bindtap="onChangeLanguage">
+      <view class="row-key">{{i18n.mine.language}}</view>
+      <view class="row-val">{{i18n.locale.name}}</view>
+    </view>
+    <view wx:if="{{isLoggedIn}}" class="divider"></view>
+    <view wx:if="{{isLoggedIn}}" class="row">
+      <view class="row-key">{{i18n.mine.currentDeviceId}}</view>
+      <view class="row-val">{{deviceId || "-"}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{isLoggedIn}}" class="section">
+    <button class="btn btn-ghost" bindtap="onLogout">{{i18n.mine.logout}}</button>
+  </view>
+    </view>
+  </scroll-view>
+
+  <skyline-share-fab
+    target-url="{{wechatGroupFabTargetUrl}}"
+    share-key="{{wechatGroupFabShareKey}}"
+    src="{{wechatGroupFabSrc}}"
+    fallback-text="QR"
+    size="md"
+    bottom="150rpx"
+    ping="{{true}}"
+    glow-color="rgba(92,232,144,0.36)"
+    inner-bg="linear-gradient(180deg,rgba(18,44,28,0.94) 0%,rgba(8,28,16,0.98) 100%)"
+    inner-border="1rpx solid rgba(92,232,144,0.34)"
+    inner-shadow="inset 0 1rpx 0 rgba(255,255,255,0.18),0 14rpx 34rpx rgba(8,92,42,0.32)"
+    closed-color="rgba(18, 84, 42, 0.92)"
+    draggable="{{true}}"
+    edge-inset="{{12}}"
+    reserve-bottom-rpx="100"
+    position-key="mine_wechat_group_fab_pos"
+  />
+
+  <view wx:if="{{showPicker}}" class="picker-mask" bindtap="onClosePicker"></view>
+  <view wx:if="{{showPicker}}" class="picker">
+    <view class="picker-header">
+      <view class="picker-title">{{pickerTitle}}</view>
+      <view class="picker-actions">
+        <view class="picker-btn" bindtap="onPickerCancel">{{i18n.common.cancel}}</view>
+        <view class="picker-btn picker-btn-primary" bindtap="onPickerConfirm">{{i18n.common.ok}}</view>
+      </view>
+    </view>
+    <view class="picker-list">
+      <block wx:if="{{pickerMode === 'drivers'}}">
+        <block wx:for="{{driverOptions}}" wx:key="driver_number">
+          <view class="card" style="{{item.cardStyle}}" bindtap="onTogglePickDriver" data-driver-number="{{item.driver_number}}">
+            <view class="card-left">
+              <image class="avatar" src="{{item.headshot_url}}" mode="aspectFit" wx:if="{{item.headshot_url}}" />
+            </view>
+            <view class="card-mid">
+              <view class="driver-row">
+                <view class="driver-no">#{{item.driver_number}}</view>
+                <view class="driver">{{item.full_name || item.driver_name || item.name_acronym || item.driver_number}}</view>
+              </view>
+              <view class="team">{{item.team_name || '-'}}</view>
+            </view>
+            <view class="card-right">
+              <view class="pick-mark">{{pickedMap[item.driver_number] ? '✓' : ''}}</view>
+            </view>
+          </view>
+        </block>
+      </block>
+
+      <block wx:if="{{pickerMode === 'teams'}}">
+        <block wx:for="{{teamOptions}}" wx:key="team_key">
+          <view class="card" style="{{item.cardStyle}}" bindtap="onTogglePickTeam" data-team-key="{{item.team_key}}">
+            <view class="card-left">
+              <image class="avatar" src="{{item.team_logo_url}}" mode="aspectFit" wx:if="{{item.team_logo_url}}" />
+            </view>
+            <view class="card-mid card-mid-team">
+              <view class="team-title">{{item.team_name}}</view>
+            </view>
+            <view class="card-right">
+              <view class="pick-mark">{{pickedMap[item.team_key] ? '✓' : ''}}</view>
+            </view>
+          </view>
+        </block>
+      </block>
+    </view>
+  </view>
+</view>

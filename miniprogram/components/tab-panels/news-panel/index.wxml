@@ -1,0 +1,227 @@
+<view class="page-root">
+  <view wx:if="{{ showWelcome && welcome }}" class="welcome" catchtap="onCloseWelcome" catchtouchmove="noop">
+    <image class="welcome-image" src="{{ welcome.coverUrl }}" mode="aspectFill" />
+    <view class="welcome-mask" />
+    <view class="welcome-tip">{{i18n.news.welcomeEnter}}</view>
+  </view>
+
+  <scroll-view
+    id="page-scroll"
+    class="page-scroll {{ pressPreview && pressPreview.show ? 'page-scroll-previewing' : '' }}"
+    scroll-y
+    enhanced
+    show-scrollbar="{{false}}"
+    refresher-enabled="{{true}}"
+    refresher-triggered="{{ refreshing }}"
+    bindrefresherrefresh="onRefresherRefresh"
+    bindscroll="onPageScroll"
+    bindscrolltolower="onScrollToLower"
+    scrolltolower-threshold="120"
+    style="{{scrollViewStyle}}"
+  >
+    <view class="page has-tabbar {{ pressPreview && pressPreview.active ? 'page-previewing' : '' }}">
+      <view class="header" style="padding-top: calc({{ statusBarHeight }}px + 12rpx);">
+        <view class="title">{{i18n.news.pageTitle}}</view>
+        <view class="subtitle">News • Updates • Insights</view>
+      </view>
+
+      <view wx:if="{{ loading }}" class="status">{{i18n.common.loading}}</view>
+      <view wx:if="{{ !loading && errorText }}" class="status status-error">{{ errorText }}</view>
+      <view wx:if="{{ !loading && !errorText && !banners.length && !list.length }}" class="status">{{i18n.news.empty}}</view>
+
+      <swiper
+        wx:if="{{ banners.length }}"
+        class="hero-swiper"
+        circular
+        autoplay
+        indicator-dots
+        indicator-color="rgba(255,255,255,0.45)"
+        indicator-active-color="#ffffff"
+      >
+        <block wx:for="{{ banners }}" wx:key="id">
+          <swiper-item>
+            <view
+              class="hero-banner"
+              bindtap="onTapCard"
+              bindlongpress="onLongPressCard"
+              bindtouchend="onReleasePressCard"
+              bindtouchcancel="onReleasePressCard"
+              data-id="{{ item.id }}"
+              hover-class="hero-banner-pressed"
+              hover-stay-time="120"
+            >
+              <image class="hero-image" src="{{ item.coverUrl }}" mode="aspectFill" />
+              <view class="hero-content">
+                <view class="hero-title">{{ item.title }}</view>
+                <view class="hero-meta">
+                  <view class="hero-tag">{{ item.tagText }}</view>
+                  <view class="hero-dot">•</view>
+                  <view class="hero-time">{{ item.timeText }}</view>
+                </view>
+              </view>
+            </view>
+          </swiper-item>
+        </block>
+      </swiper>
+
+      <view
+        wx:if="{{ raceWeek && raceWeek.isRaceWeek && raceWeekCardMode === 'live' }}"
+        class="live-standings-wrap"
+      >
+        <view
+          class="live-session-card"
+          bindtap="onTapRaceWeekCard"
+          hover-class="raceweek-countdown-pressed"
+          hover-stay-time="120"
+        >
+          <view class="raceweek-countdown raceweek-live-card">
+            <view class="live-session-title-group">
+              <view class="live-session-title {{ raceWeekSessionLabelCompact ? 'live-session-title-compact' : '' }}">{{ raceWeekSessionLabel }}</view>
+              <view class="live-session-subtitle">{{ i18n.raceSessions.statusLive }}</view>
+            </view>
+            <view class="raceweek-countdown-mid">
+              <analog-clock sizeRpx="84" />
+            </view>
+            <view class="live-session-meta">
+              <view wx:if="{{ isLoggedIn }}" class="live-session-toggle">{{ raceWeekLiveStandingsOpen ? '▴' : '▾' }}</view>
+              <view wx:else class="live-session-login-hint">{{ i18n.common.loginFirst }}</view>
+            </view>
+          </view>
+          <view wx:if="{{ isLoggedIn && raceWeekLiveStandingsOpen && liveStandingsRows.length }}" class="raceweek-live-body">
+            <ms-live-standings-table title="" rows="{{liveStandingsRows}}" dense bodyHeightRpx="{{liveStandingsBodyHeightRpx}}" maxRows="0" />
+          </view>
+        </view>
+      </view>
+
+      <view
+        wx:elif="{{ raceWeek && raceWeek.isRaceWeek && raceWeekSessionLabel && countdown }}"
+        class="raceweek-countdown {{ raceWeekShowFlag ? 'raceweek-countdown-flag-mode' : '' }}"
+      >
+        <view class="raceweek-countdown-left {{ raceWeekShowFlag ? 'raceweek-countdown-left-flag-only' : '' }}">
+          <block wx:if="{{ raceWeekShowFlag && raceWeek && raceWeek.race && raceWeek.race.flagUrl }}">
+            <image class="raceweek-countdown-flag raceweek-countdown-flag-only" src="{{ raceWeek.race.flagUrl }}" mode="aspectFit" />
+          </block>
+          <block wx:else>
+            <text class="raceweek-countdown-session {{ raceWeekSessionLabelCompact ? 'raceweek-countdown-session-compact' : '' }}">{{ raceWeekSessionLabel }}</text>
+            <text class="raceweek-countdown-suffix">{{ i18n.news.startsInSuffix }}</text>
+          </block>
+        </view>
+        <view class="raceweek-countdown-mid">
+          <analog-clock sizeRpx="84" />
+        </view>
+        <view class="raceweek-countdown-clock">
+          <view class="raceweek-countdown-seg">
+            <text class="raceweek-countdown-num">{{ countdown.a1 }}</text>
+            <text class="raceweek-countdown-unit">{{ countdown.mode === 'dhm' ? i18n.news.unitDay : i18n.news.unitHrs }}</text>
+          </view>
+          <view class="raceweek-countdown-seg">
+            <text class="raceweek-countdown-num">{{ countdown.a2 }}</text>
+            <text class="raceweek-countdown-unit">{{ countdown.mode === 'dhm' ? i18n.news.unitHrs : i18n.news.unitMin }}</text>
+          </view>
+          <view class="raceweek-countdown-seg">
+            <text class="raceweek-countdown-num">{{ countdown.a3 }}</text>
+            <text class="raceweek-countdown-unit">{{ countdown.mode === 'dhm' ? i18n.news.unitMin : i18n.news.unitSec }}</text>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{qualiRows.length}}" class="quali-panel {{ qualiOpen ? 'quali-panel-open' : '' }}">
+        <view class="quali-panel-header" bindtap="onToggleQualiPanel">
+          <view class="quali-panel-title">{{ qualiTitle || 'Latest Session Results' }}</view>
+          <view class="quali-panel-icon">{{ qualiOpen ? '▴' : '▾' }}</view>
+        </view>
+        <view class="quali-panel-body {{ qualiOpen ? 'quali-panel-body-open' : '' }}">
+          <ms-qualifying-table wx:if="{{qualiVisible}}" title="" rows="{{qualiRows}}" dense bodyHeightRpx="420" maxRows="0" baseUrl="{{apiBase}}" />
+        </view>
+      </view>
+
+      <view id="news-list" class="news-list" style="{{ listTransformStyle }}">
+        <block wx:for="{{ list }}" wx:key="id">
+          <view
+            id="news-card-{{ item.id }}"
+            class="news-card {{ pressJiggleId === item.id ? 'news-card-jiggle' : '' }} {{ item.coverUrl ? 'news-card-with-cover' : 'news-card-text-only' }} {{ item._prefPromoted ? 'news-card-promoted' : '' }} {{ item._prefHit ? 'news-card-hit' : '' }}"
+            style="{{ item._prefMoveHidden ? 'opacity:0;' : '' }}"
+            bindtap="onTapCard"
+            bindlongpress="onLongPressCard"
+            bindtouchend="onReleasePressCard"
+            bindtouchcancel="onReleasePressCard"
+            data-id="{{ item.id }}"
+            hover-class="news-card-pressed"
+            hover-stay-time="120"
+          >
+            <view wx:if="{{ item._prefHit }}" class="news-hit-bar" style="background: {{ item._prefHitColor || '#2EE8D8' }};" />
+            <view wx:if="{{ !item.coverUrl }}" class="news-card-glow" />
+            <view wx:if="{{ !item.coverUrl }}" class="news-card-accent" />
+            <view wx:if="{{ !item.coverUrl }}" class="news-card-pattern" />
+            <view wx:if="{{ item.coverUrl }}" class="news-cover-wrap">
+              <image class="news-cover" src="{{ item.coverUrl }}" mode="aspectFill" lazy-load />
+            </view>
+            <view class="news-body">
+              <view class="news-title">{{ item.title }}</view>
+              <view wx:if="{{ !item.coverUrl && item.summary }}" class="news-summary news-summary-text-only">{{ item.summary }}</view>
+              <view class="news-meta {{ !item.coverUrl ? 'news-meta-text-only' : '' }}">
+                <view class="news-tag">{{ item.tagText }}</view>
+                <view class="news-dot">•</view>
+                <view class="news-time">{{ item.timeText }}</view>
+              </view>
+            </view>
+          </view>
+        </block>
+      </view>
+
+      <view wx:if="{{ loadingMore }}" class="load-more">
+        <text class="load-more-dot dot1">.</text>
+        <text class="load-more-dot dot2">.</text>
+        <text class="load-more-dot dot3">.</text>
+      </view>
+      <view wx:if="{{ !loadingMore && !hasMore && list.length }}" class="load-more load-more-end">— {{ i18n.news.noMore }} —</view>
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{ prefMoveOverlay && prefMoveOverlay.show && prefMoveOverlay.item }}" id="pref-move-overlay" class="pref-move-overlay" style="{{ prefMoveOverlay.style }}">
+    <view class="news-card {{ prefMoveOverlay.item.coverUrl ? 'news-card-with-cover' : 'news-card-text-only' }} news-card-promoted news-card-hit">
+      <view class="news-hit-bar" style="background: {{ prefMoveOverlay.item._prefHitColor || '#2EE8D8' }};" />
+      <view wx:if="{{ !prefMoveOverlay.item.coverUrl }}" class="news-card-glow" />
+      <view wx:if="{{ !prefMoveOverlay.item.coverUrl }}" class="news-card-accent" />
+      <view wx:if="{{ !prefMoveOverlay.item.coverUrl }}" class="news-card-pattern" />
+      <view wx:if="{{ prefMoveOverlay.item.coverUrl }}" class="news-cover-wrap">
+        <image class="news-cover" src="{{ prefMoveOverlay.item.coverUrl }}" mode="aspectFill" lazy-load />
+      </view>
+      <view class="news-body">
+        <view class="news-title">{{ prefMoveOverlay.item.title }}</view>
+        <view wx:if="{{ !prefMoveOverlay.item.coverUrl && prefMoveOverlay.item.summary }}" class="news-summary news-summary-text-only">{{ prefMoveOverlay.item.summary }}</view>
+        <view class="news-meta {{ !prefMoveOverlay.item.coverUrl ? 'news-meta-text-only' : '' }}">
+          <view class="news-tag">{{ prefMoveOverlay.item.tagText }}</view>
+          <view class="news-dot">•</view>
+          <view class="news-time">{{ prefMoveOverlay.item.timeText }}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view
+    wx:if="{{ pressPreview && pressPreview.show && pressPreview.item }}"
+    class="press-preview-overlay {{ pressPreview.active ? 'press-preview-overlay-active' : '' }}"
+    bindtap="onClosePressPreview"
+    catchtouchmove="noop"
+  >
+    <view class="press-preview {{ pressPreview.active ? 'press-preview-active' : '' }}" catchtap="noop">
+      <view class="press-preview-close" bindtap="onClosePressPreview">×</view>
+      <view class="press-preview-card" bindtap="onTapPressPreview" hover-class="press-preview-pressed" hover-stay-time="120">
+        <view wx:if="{{ pressPreview.item.coverUrl }}" class="press-preview-cover-wrap">
+          <image class="press-preview-cover" src="{{ pressPreview.item.coverUrl }}" mode="aspectFill" lazy-load />
+          <view class="press-preview-cover-mask" />
+        </view>
+        <view class="press-preview-body">
+          <view class="press-preview-title">{{ pressPreview.item.title }}</view>
+          <view wx:if="{{ pressPreview.item.summary }}" class="press-preview-summary">{{ pressPreview.item.summary }}</view>
+          <view class="press-preview-meta">
+            <view class="press-preview-tag">{{ pressPreview.item.tagText }}</view>
+            <view class="press-preview-dot">•</view>
+            <view class="press-preview-time">{{ pressPreview.item.timeText }}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

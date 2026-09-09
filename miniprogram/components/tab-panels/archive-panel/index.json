@@ -1,0 +1,7 @@
+{
+  "component": true,
+  "componentFramework": "glass-easel",
+  "usingComponents": {
+    "race-card": "/components/race-card/index"
+  }
+}

@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/entry/index",
+    "pages/tabs-host/index",
     "pages/news/index",
     "pages/archive/index",
     "pages/mine/index"
@@ -46,6 +47,10 @@
     }
   ],
   "preloadRule": {
+    "pages/tabs-host/index": {
+      "network": "all",
+      "packages": ["news-pkg", "race-pkg", "shop-pkg", "tools-pkg"]
+    },
     "pages/news/index": {
       "network": "all",
       "packages": ["news-pkg"]

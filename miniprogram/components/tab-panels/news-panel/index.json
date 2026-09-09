@@ -1,0 +1,9 @@
+{
+  "component": true,
+  "componentFramework": "glass-easel",
+  "usingComponents": {
+    "analog-clock": "/components/analog-clock/index",
+    "ms-qualifying-table": "/components/ms-qualifying-table/index",
+    "ms-live-standings-table": "/components/ms-live-standings-table/index"
+  }
+}

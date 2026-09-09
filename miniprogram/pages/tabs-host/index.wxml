@@ -1,0 +1,56 @@
+<view class="tabs-host">
+  <swiper
+    id="tab-swiper"
+    class="tab-swiper"
+    current="{{tabIdx}}"
+    duration="340"
+    easing-function="easeOutCubic"
+    skip-hidden-item-layout
+    bindchange="onSwiperChange"
+    bindtransition="onSwiperTransition"
+    bindanimationfinish="onSwiperAnimationFinish"
+    style="{{swiperStyle}}"
+  >
+    <swiper-item wx:if="{{showNews}}">
+      <news-panel id="panel-news" active="{{tabIdx === newsIdx}}" tabbar-reserve-rpx="{{tabbarReserveRpx}}" status-bar-height="{{statusBarHeight}}" bind:switchTab="onPanelRequestSwitchTab" bind:setTabbarVisible="onPanelSetTabbarVisible" />
+    </swiper-item>
+    <swiper-item>
+      <archive-panel id="panel-archive" active="{{tabIdx === archiveIdx}}" tabbar-reserve-rpx="{{tabbarReserveRpx}}" status-bar-height="{{statusBarHeight}}" />
+    </swiper-item>
+    <swiper-item>
+      <mine-panel id="panel-mine" active="{{tabIdx === mineIdx}}" tabbar-reserve-rpx="{{tabbarReserveRpx}}" status-bar-height="{{statusBarHeight}}" />
+    </swiper-item>
+  </swiper>
+
+  <view wx:if="{{tabbarVisible}}" class="host-tabbar" style="{{hostTabbarStyle}}">
+    <view class="host-tabbar-inner">
+      <view class="host-tabbar-track" id="host-tabbar-track">
+        <view
+          class="host-tab-indicator"
+          id="host-tab-indicator"
+          style="{{indicatorStyle}}"
+        ></view>
+        <block wx:for="{{tabList}}" wx:key="key">
+          <view
+            class="host-tabbar-item {{tabIdx === item._idx ? 'is-selected' : ''}}"
+            id="host-tab-{{item.key}}"
+            hover-class="host-tabbar-item--pressed"
+            hover-stay-time="120"
+            catchtap="onTapTab"
+            data-idx="{{item._idx}}"
+            data-key="{{item.key}}"
+          >
+            <view class="host-icon-wrap">
+              <i-icon
+                type="{{item.icon}}"
+                size="24"
+                color="{{tabIdx === item._idx ? '#ffffff' : 'rgba(255,255,255,0.55)'}}"
+              />
+            </view>
+            <view class="host-tabbar-label">{{item.label}}</view>
+          </view>
+        </block>
+      </view>
+    </view>
+  </view>
+</view>

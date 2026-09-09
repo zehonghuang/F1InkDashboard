@@ -7,15 +7,24 @@ Page({
   onLoad() {
     this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     this.applyI18n()
+    this._diverted = false
   },
   onUnload() {
     if (this._offLocale) this._offLocale()
   },
   onShow() {
+    if (this._diverted) return
+    this._diverted = true
     try {
       const app = getApp()
       const hideNews = Boolean(app && app.globalData && app.globalData.tweakAEffective)
-      wx.switchTab({ url: hideNews ? "/pages/archive/index" : "/pages/news/index" })
+      const initialTab = hideNews ? "archive" : "news"
+      wx.redirectTo({
+        url: `/pages/tabs-host/index?tab=${encodeURIComponent(initialTab)}`,
+        fail(err) {
+          wx.switchTab({ url: hideNews ? "/pages/archive/index" : "/pages/news/index" })
+        }
+      })
     } catch (e) {}
   },
   applyI18n() {
