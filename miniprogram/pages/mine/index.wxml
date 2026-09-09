@@ -122,7 +122,7 @@
     </view>
   </view>
 
-  <view class="section">
+  <view class="section section-follow">
     <view class="follow-grid">
       <view class="follow-card" bindtap="onTapItem" data-action="followDrivers">
         <view class="follow-card-head">
