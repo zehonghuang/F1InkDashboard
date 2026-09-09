@@ -560,6 +560,10 @@
   overflow: hidden;
 }
 
+.quick-card-icon-clock {
+  overflow: visible;
+}
+
 .quick-card-icon-asset {
   width: 60rpx;
   height: 60rpx;

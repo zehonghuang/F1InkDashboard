@@ -184,7 +184,9 @@
       </view>
       <view class="quick-card" bindtap="onTapItem" data-action="liveTiming">
         <view class="quick-card-head">
-          <view class="quick-card-icon">⏱️</view>
+          <view class="quick-card-icon quick-card-icon-clock">
+            <analog-clock sizeRpx="56" />
+          </view>
         </view>
         <view class="quick-card-title">{{i18n.mine.liveTiming}}</view>
       </view>
