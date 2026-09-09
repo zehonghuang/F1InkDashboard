@@ -2,22 +2,21 @@
   <swiper
     id="tab-swiper"
     class="tab-swiper"
-    current="{{tabIdx}}"
+    current-item-id="{{currentItemId}}"
     duration="340"
     easing-function="easeOutCubic"
-    skip-hidden-item-layout
-    bindchange="onSwiperChange"
-    bindtransition="onSwiperTransition"
-    bindanimationfinish="onSwiperAnimationFinish"
+    bind:change="onSwiperChange"
+    bind:transition="onSwiperTransition"
+    bind:animationfinish="onSwiperAnimationFinish"
     style="{{swiperStyle}}"
   >
-    <swiper-item wx:if="{{showNews}}">
-      <news-panel id="panel-news" active="{{tabIdx === newsIdx}}" tabbar-reserve-rpx="{{tabbarReserveRpx}}" status-bar-height="{{statusBarHeight}}" bind:switchTab="onPanelRequestSwitchTab" bind:setTabbarVisible="onPanelSetTabbarVisible" />
+    <swiper-item item-id="news" hidden="{{!showNews}}">
+      <news-panel id="panel-news" active="{{showNews && tabIdx === newsIdx}}" tabbar-reserve-rpx="{{tabbarReserveRpx}}" status-bar-height="{{statusBarHeight}}" bind:switchTab="onPanelRequestSwitchTab" bind:setTabbarVisible="onPanelSetTabbarVisible" />
     </swiper-item>
-    <swiper-item>
+    <swiper-item item-id="archive">
       <archive-panel id="panel-archive" active="{{tabIdx === archiveIdx}}" tabbar-reserve-rpx="{{tabbarReserveRpx}}" status-bar-height="{{statusBarHeight}}" />
     </swiper-item>
-    <swiper-item>
+    <swiper-item item-id="mine">
       <mine-panel id="panel-mine" active="{{tabIdx === mineIdx}}" tabbar-reserve-rpx="{{tabbarReserveRpx}}" status-bar-height="{{statusBarHeight}}" />
     </swiper-item>
   </swiper>
@@ -36,7 +35,7 @@
             id="host-tab-{{item.key}}"
             hover-class="host-tabbar-item--pressed"
             hover-stay-time="120"
-            catchtap="onTapTab"
+            catch:tap="onTapTab"
             data-idx="{{item._idx}}"
             data-key="{{item.key}}"
           >

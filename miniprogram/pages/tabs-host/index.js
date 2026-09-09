@@ -19,6 +19,7 @@ Page({
     i18n: i18n.getDict(),
     tabList: [],
     tabIdx: 1,
+    currentItemId: "archive",
     showNews: true,
     newsIdx: 0,
     archiveIdx: 1,
@@ -117,6 +118,7 @@ Page({
       if (it.key === initialKey) { tabIdx = it._idx; break }
     }
     if (tabIdx < 0) tabIdx = list[0] ? list[0]._idx : 0
+    const currentItemId = (list[tabIdx] && list[tabIdx].key) || (list[0] && list[0].key) || ""
 
     const swiperHeightStyle = `width:100vw;height:100vh;`
     const safeBottomRpx = Math.max(0, Math.round((extra && extra.tabbarReserveRpx) || 200))
@@ -129,6 +131,7 @@ Page({
       archiveIdx,
       mineIdx,
       tabIdx,
+      currentItemId,
       statusBarHeight: (extra && extra.statusBarHeight) || 0,
       tabbarReserveRpx: safeBottomRpx,
       swiperStyle: swiperHeightStyle,
@@ -283,10 +286,12 @@ Page({
 
   onSwiperChange(e) {
     const idx = Number((e && e.detail && e.detail.current) || 0)
+    const itemId = String((e && e.detail && e.detail.currentItemId) || "")
     const fromKey = this.data.tabList[this.data.tabIdx] && this.data.tabList[this.data.tabIdx].key
     const toItem = this.data.tabList[idx]
     const toKey = toItem && toItem.key
-    this.setData({ tabIdx: idx })
+    const resolvedItemId = itemId || toKey || ""
+    this.setData({ tabIdx: idx, currentItemId: resolvedItemId })
     this.syncIndicatorToIdx(idx, { animated: true })
     this.notifyPanelsShowHide(fromKey, toKey)
     try {
@@ -326,30 +331,48 @@ Page({
   },
 
   onTapTab(e) {
-    const idx = Number((e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.idx) || -1)
-    const key = (e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.key) || ""
-    if (idx < 0) return
-    if (this._switchingLock) return
-    if (idx === this.data.tabIdx) {
-      this.syncIndicatorToIdx(idx, { animated: true })
-      return
+    try {
+      const idx = Number((e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.idx) || -1)
+      const key = (e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.key) || ""
+      if (idx < 0 || !key) return
+      if (this._switchingLock) return
+      const list = this.data.tabList || []
+      const target = list.find((it) => it.key === key)
+      if (!target) return
+      if (target._idx === this.data.tabIdx) {
+        this.syncIndicatorToIdx(target._idx, { animated: true })
+        return
+      }
+      this._switchingLock = true
+      clearTimeout(this._switchingGuard)
+      this._switchingGuard = setTimeout(() => { this._switchingLock = false }, 450)
+
+      const fromKey = (this.data.tabList[this.data.tabIdx] || {}).key
+      const toKey = key
+      const toIdx = target._idx
+
+      this.syncIndicatorToIdx(toIdx, { animated: true })
+      this.setData({ tabIdx: toIdx, currentItemId: toKey }, () => {
+        wx.nextTick(() => {
+          try {
+            if (this.data.currentItemId !== toKey) {
+              this.setData({ tabIdx: toIdx, currentItemId: toKey })
+            }
+          } catch (e) {}
+          this.notifyPanelsShowHide(fromKey, toKey)
+          try {
+            if (toKey) wx.setStorageSync("tabs_host_last_tab", toKey)
+          } catch (e) {}
+          try {
+            const app = getApp()
+            if (app && app.globalData) app.globalData.tabsHostCurrentTab = toKey
+          } catch (e) {}
+        })
+      })
+    } catch (err) {
+      try { this._switchingLock = false } catch (e) {}
+      console.error(LOG_TAG + " onTapTab error", err && err.message || err)
     }
-    this._switchingLock = true
-    clearTimeout(this._switchingGuard)
-    this._switchingGuard = setTimeout(() => { this._switchingLock = false }, 700)
-    this.syncIndicatorToIdx(idx, { animated: true })
-    this.setData({ tabIdx: idx })
-    const fromItem = this.data.tabList[this.data.tabIdx]
-    const fromKey = fromItem && fromItem.key
-    const toKey = key
-    this.notifyPanelsShowHide(fromKey, toKey)
-    try {
-      if (toKey) wx.setStorageSync("tabs_host_last_tab", toKey)
-    } catch (e) {}
-    try {
-      const app = getApp()
-      if (app && app.globalData) app.globalData.tabsHostCurrentTab = toKey
-    } catch (e) {}
   },
 
   applyI18n() {
@@ -399,24 +422,47 @@ Page({
   },
 
   switchTabByKey(key) {
-    const k = String(key || "").trim()
-    if (!k) return
-    const it = this.data.tabList.find((x) => x.key === k)
-    if (!it) return
-    if (it._idx === this.data.tabIdx) { this.syncIndicatorToIdx(it._idx, { animated: true }); return }
-    this._switchingLock = true
-    clearTimeout(this._switchingGuard)
-    this._switchingGuard = setTimeout(() => { this._switchingLock = false }, 700)
-    const fromItem = this.data.tabList[this.data.tabIdx]
-    const fromKey = fromItem && fromItem.key
-    this.syncIndicatorToIdx(it._idx, { animated: true })
-    this.setData({ tabIdx: it._idx })
-    this.notifyPanelsShowHide(fromKey, k)
-    try { wx.setStorageSync("tabs_host_last_tab", k) } catch (e) {}
     try {
-      const app = getApp()
-      if (app && app.globalData) app.globalData.tabsHostCurrentTab = k
-    } catch (e) {}
+      const k = String(key || "").trim()
+      if (!k) return
+      if (this._switchingLock) return
+      let it = this.data.tabList.find((x) => x.key === k)
+      if (!it) {
+        if (k === "news" && !this.data.showNews) {
+          it = this.data.tabList.find((x) => x.key === "archive") || this.data.tabList[0]
+        }
+        if (!it) return
+      }
+      if (it._idx === this.data.tabIdx) { this.syncIndicatorToIdx(it._idx, { animated: true }); return }
+
+      this._switchingLock = true
+      clearTimeout(this._switchingGuard)
+      this._switchingGuard = setTimeout(() => { this._switchingLock = false }, 450)
+
+      const fromKey = (this.data.tabList[this.data.tabIdx] || {}).key
+      const toKey = it.key
+      const toIdx = it._idx
+
+      this.syncIndicatorToIdx(toIdx, { animated: true })
+      this.setData({ tabIdx: toIdx, currentItemId: toKey }, () => {
+        wx.nextTick(() => {
+          try {
+            if (this.data.currentItemId !== toKey) {
+              this.setData({ tabIdx: toIdx, currentItemId: toKey })
+            }
+          } catch (e) {}
+          this.notifyPanelsShowHide(fromKey, toKey)
+          try { wx.setStorageSync("tabs_host_last_tab", toKey) } catch (e) {}
+          try {
+            const app = getApp()
+            if (app && app.globalData) app.globalData.tabsHostCurrentTab = toKey
+          } catch (e) {}
+        })
+      })
+    } catch (err) {
+      try { this._switchingLock = false } catch (e) {}
+      console.error(LOG_TAG + " switchTabByKey error", err && err.message || err)
+    }
   },
 
   getActivePanel() {

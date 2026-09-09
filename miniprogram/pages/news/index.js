@@ -15,11 +15,10 @@ Page({
       const query = paramKeys.length
         ? "?" + paramKeys.map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(opts[k])}`).join("&") + `&tab=${encodeURIComponent(tab)}&src=news`
         : `?tab=${encodeURIComponent(tab)}&src=news`
-      wx.redirectTo({
+      wx.reLaunch({
         url: `/pages/tabs-host/index${query}`,
         fail(err) {
-          console.warn("[NEWS-SHELL] redirectTo tabs-host failed, fallback reLaunch", err && err.errMsg)
-          try { wx.reLaunch({ url: `/pages/tabs-host/index?tab=${encodeURIComponent(tab)}` }) } catch (e) {}
+          console.warn("[NEWS-SHELL] reLaunch tabs-host failed", err && err.errMsg)
         }
       })
       this._diverted = true
@@ -31,7 +30,10 @@ Page({
       const app = getApp()
       const hideNews = Boolean(app && app.globalData && app.globalData.tweakAEffective)
       const tab = hideNews ? "archive" : "news"
-      wx.redirectTo({ url: `/pages/tabs-host/index?tab=${encodeURIComponent(tab)}&src=news_show`, fail() {} })
+      wx.reLaunch({
+        url: `/pages/tabs-host/index?tab=${encodeURIComponent(tab)}&src=news_show`,
+        fail() {}
+      })
       this._diverted = true
     } catch (e) {}
   },

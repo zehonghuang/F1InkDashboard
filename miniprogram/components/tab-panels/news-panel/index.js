@@ -397,6 +397,7 @@ Component({
       const layout = computeTabbarReserveStyle()
       this._motorsportLiveHasSnapshot = false
       this._raceWeekTimelineSessions = []
+      this._initialized = false
       this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
       try {
         const app = getApp()
@@ -419,9 +420,6 @@ Component({
       this.applyI18n()
       this.setListOffset(0, 0)
       this._useScrollViewRefresher = true
-      this.syncAuthState()
-      if (this.data.isLoggedIn) this.ensureMotorsportLiveClient()
-      this.reload()
     },
     detached() {
       this.disconnectMotorsportLiveWs()
@@ -437,11 +435,29 @@ Component({
     }
   },
   ready() {
-    this.initWorklet()
   },
   methods: {
     _requestSwitchTab(key) {
       this.triggerEvent("switchTab", { key })
+    },
+    _ensureInitialized() {
+      if (this._initialized) return
+      this._initialized = true
+      try {
+        const app = getApp()
+        const apiBase = app && app.globalData && app.globalData.apiBase ? String(app.globalData.apiBase) : ""
+        if (apiBase && this.data.apiBase !== apiBase) {
+          this.setData({ apiBase })
+        }
+      } catch (e) {}
+      if (typeof this.initWorklet === "function") {
+        try { this.initWorklet() } catch (e) {}
+      }
+      try { this.syncAuthState() } catch (e) {}
+      try {
+        if (this.data.isLoggedIn) this.ensureMotorsportLiveClient()
+      } catch (e) {}
+      try { this.reload() } catch (e) {}
     },
     pad2(v) {
       const n = Math.max(0, Math.floor(Number(v) || 0))
@@ -687,6 +703,7 @@ Component({
       }, 260)
     },
     onPanelShow() {
+      this._ensureInitialized()
       this.applyI18n()
       const isLoggedIn = this.syncAuthState()
       if (isLoggedIn) {

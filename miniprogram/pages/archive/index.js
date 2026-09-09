@@ -12,11 +12,10 @@ Page({
       const query = paramKeys.length
         ? "?" + paramKeys.map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(opts[k])}`).join("&") + "&tab=archive&src=archive"
         : "?tab=archive&src=archive"
-      wx.redirectTo({
+      wx.reLaunch({
         url: `/pages/tabs-host/index${query}`,
         fail(err) {
-          console.warn("[ARCHIVE-SHELL] redirectTo tabs-host failed, fallback reLaunch", err && err.errMsg)
-          try { wx.reLaunch({ url: "/pages/tabs-host/index?tab=archive" }) } catch (e) {}
+          console.warn("[ARCHIVE-SHELL] reLaunch tabs-host failed", err && err.errMsg)
         }
       })
       this._diverted = true
@@ -25,7 +24,7 @@ Page({
   onShow() {
     if (this._diverted) return
     try {
-      wx.redirectTo({ url: "/pages/tabs-host/index?tab=archive&src=archive_show", fail() {} })
+      wx.reLaunch({ url: "/pages/tabs-host/index?tab=archive&src=archive_show", fail() {} })
       this._diverted = true
     } catch (e) {}
   },

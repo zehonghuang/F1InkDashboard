@@ -20,9 +20,10 @@ Page({
       const hideNews = Boolean(app && app.globalData && app.globalData.tweakAEffective)
       const initialTab = hideNews ? "archive" : "news"
       wx.redirectTo({
-        url: `/pages/tabs-host/index?tab=${encodeURIComponent(initialTab)}`,
+        url: `/pages/tabs-host/index?tab=${encodeURIComponent(initialTab)}&src=entry`,
         fail(err) {
-          wx.switchTab({ url: hideNews ? "/pages/archive/index" : "/pages/news/index" })
+          console.warn("[ENTRY] redirectTo tabs-host failed, fallback reLaunch", err && err.errMsg)
+          try { wx.reLaunch({ url: `/pages/tabs-host/index?tab=${encodeURIComponent(initialTab)}&src=entry_fb` }) } catch (e) {}
         }
       })
     } catch (e) {}

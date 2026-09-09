@@ -164,7 +164,7 @@ App({
       if (!cur) return
       if (cur.route === "pages/tabs-host/index") return
       if (cur.route !== "pages/news/index") return
-      wx.navigateTo({ url: "/pages/tabs-host/index?tab=archive", fail() {} })
+      wx.reLaunch({ url: "/pages/tabs-host/index?tab=archive&src=app_onshow_tweaka", fail() {} })
     } catch (e) {}
   },
   globalData: {
