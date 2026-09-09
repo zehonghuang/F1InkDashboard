@@ -1,20 +1,15 @@
-.ssf-area {
+.ssf-drag {
   position: fixed;
   left: 0;
   top: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 118;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.ssf-drag {
-  position: absolute;
-  left: 0;
-  top: 0;
+  z-index: 119;
+  display: block;
+  visibility: visible;
+  opacity: 1;
   will-change: transform;
-  pointer-events: auto;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+  transform-origin: 0 0;
 }
 
 .ssf-drag.size-sm { width: 80rpx; height: 80rpx; }
@@ -29,12 +24,12 @@
   position: relative;
   left: 0;
   top: 0;
-  z-index: 119;
+  width: 100%;
+  height: 100%;
+  display: block;
+  visibility: visible;
+  opacity: 1;
 }
-
-.ssf-shell.size-sm { width: 80rpx; height: 80rpx; }
-.ssf-shell.size-md { width: 104rpx; height: 104rpx; }
-.ssf-shell.size-lg { width: 140rpx; height: 140rpx; }
 
 .ssf-inner {
   position: absolute;

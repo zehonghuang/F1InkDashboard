@@ -67,7 +67,8 @@ Page({
     storeAppId: "",
     scrollViewStyle: "height: calc(100vh - 200rpx);",
     tabbarReserveRpx: 200,
-    wechatGroupFabReady: false,
+    tabbarRpx: 100,
+    wechatGroupFabReady: true,
     wechatGroupFabShareKey: "",
     wechatGroupFabSrc: "",
     wechatGroupFabTargetUrl: "/packages/tools-pkg/pages/wechat-group/index"

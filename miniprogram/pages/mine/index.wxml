@@ -242,7 +242,6 @@
   </scroll-view>
 
   <skyline-share-fab
-    wx:if="{{wechatGroupFabReady}}"
     target-url="{{wechatGroupFabTargetUrl}}"
     share-key="{{wechatGroupFabShareKey}}"
     src="{{wechatGroupFabSrc}}"
@@ -257,6 +256,7 @@
     closed-color="rgba(18, 84, 42, 0.92)"
     draggable="{{true}}"
     edge-inset="{{12}}"
+    reserve-bottom-rpx="0"
     position-key="mine_wechat_group_fab_pos"
   />
 
