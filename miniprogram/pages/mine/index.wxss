@@ -22,6 +22,15 @@
   box-shadow: 0 18rpx 40rpx rgba(0, 0, 0, 0.24);
 }
 
+.section-quick {
+  margin-top: 10rpx;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 .mine {
   padding-top: 48rpx;
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));

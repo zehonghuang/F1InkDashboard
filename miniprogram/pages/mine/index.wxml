@@ -166,8 +166,7 @@
     </view>
   </view>
 
-  <view class="section">
-    <view class="section-title">{{i18n.mine.quickActions}}</view>
+  <view class="section section-quick">
     <view class="quick-grid">
       <view class="quick-card" bindtap="onTapItem" data-action="standings">
         <view class="quick-card-head">
