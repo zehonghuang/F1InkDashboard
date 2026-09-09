@@ -1,6 +1,7 @@
 {
   "usingComponents": {
-    "i-icon": "/miniprogram_npm/iview-weapp/dist/icon/index"
+    "i-icon": "/miniprogram_npm/iview-weapp/dist/icon/index",
+    "skyline-share-fab": "/components/skyline-share-fab/index"
   },
   "navigationBarTitleText": "我的",
   "navigationStyle": "custom",

@@ -241,31 +241,24 @@
     </view>
   </scroll-view>
 
-  <open-container
-    class="wechat-group-fab-shell"
+  <skyline-share-fab
+    wx:if="{{wechatGroupFabReady}}"
+    target-url="{{wechatGroupFabTargetUrl}}"
+    share-key="{{wechatGroupFabShareKey}}"
+    src="{{wechatGroupFabSrc}}"
+    fallback-text="QR"
+    size="md"
+    bottom="150rpx"
+    ping="{{true}}"
+    glow-color="rgba(92,232,144,0.36)"
+    inner-bg="linear-gradient(180deg,rgba(18,44,28,0.94) 0%,rgba(8,28,16,0.98) 100%)"
+    inner-border="1rpx solid rgba(92,232,144,0.34)"
+    inner-shadow="inset 0 1rpx 0 rgba(255,255,255,0.18),0 14rpx 34rpx rgba(8,92,42,0.32)"
     closed-color="rgba(18, 84, 42, 0.92)"
-    closed-elevation="{{28}}"
-    closed-border-radius="{{999}}"
-    open-color="rgba(10, 10, 16, 1)"
-    open-elevation="{{0}}"
-    open-border-radius="{{0}}"
-    transition-type="fadeThrough"
-    transition-duration="{{380}}"
-    bindtap="onOpenWechatGroup"
-  >
-    <view class="wechat-group-fab">
-      <view class="wechat-group-fab-core">
-        <view class="wechat-group-fab-badge"></view>
-        <view class="wechat-group-fab-icon">
-          <view class="wechat-group-fab-corner wechat-group-fab-corner-tl"></view>
-          <view class="wechat-group-fab-corner wechat-group-fab-corner-tr"></view>
-          <view class="wechat-group-fab-corner wechat-group-fab-corner-bl"></view>
-          <view class="wechat-group-fab-corner wechat-group-fab-corner-br"></view>
-          <view class="wechat-group-fab-center"></view>
-        </view>
-      </view>
-    </view>
-  </open-container>
+    draggable="{{true}}"
+    edge-inset="{{12}}"
+    position-key="mine_wechat_group_fab_pos"
+  />
 
   <view wx:if="{{showPicker}}" class="picker-mask" bindtap="onClosePicker"></view>
   <view wx:if="{{showPicker}}" class="picker">

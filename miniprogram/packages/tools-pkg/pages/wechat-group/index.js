@@ -64,7 +64,6 @@ Page({
     } catch (e) {}
     this.applyI18n()
     this.syncConfig()
-    this.refreshFromBackend({ silent: true })
   },
   onUnload() {
     if (this._offLocale) this._offLocale()

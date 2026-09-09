@@ -1,0 +1,22 @@
+.ssr-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ssr-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ssr-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 800;
+  font-size: 48rpx;
+}

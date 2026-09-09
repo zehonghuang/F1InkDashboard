@@ -1,0 +1,53 @@
+<share-element
+  wx:if="{{_hasShareKey}}"
+  key="{{shareKey}}"
+  transition-on-gesture="{{transitionOnGesture}}"
+  rect-tween-type="{{rectTweenType}}"
+  shuttle-on-push="{{shuttleOnPush}}"
+  shuttle-on-pop="{{shuttleOnPop}}"
+  bind:frame="_onFrame"
+  class="ssr-wrap"
+  style="{{_wrapStyle}}"
+>
+  <block wx:if="{{useSlot}}">
+    <slot name="content"></slot>
+  </block>
+  <block wx:elif="{{src}}">
+    <image
+      class="ssr-img"
+      style="{{_contentStyle}}"
+      src="{{src}}"
+      mode="{{imageMode}}"
+      bindload="_onImgLoad"
+      binderror="_onImgError"
+    />
+  </block>
+  <block wx:else>
+    <view class="ssr-fallback" style="{{_contentStyle}}">
+      <text class="ssr-fallback-text">{{fallbackText}}</text>
+    </view>
+  </block>
+</share-element>
+
+<block wx:if="{{!_hasShareKey}}">
+  <view class="ssr-wrap" style="{{_wrapStyle}}">
+    <block wx:if="{{useSlot}}">
+      <slot name="content"></slot>
+    </block>
+    <block wx:elif="{{src}}">
+      <image
+        class="ssr-img"
+        style="{{_contentStyle}}"
+        src="{{src}}"
+        mode="{{imageMode}}"
+        bindload="_onImgLoad"
+        binderror="_onImgError"
+      />
+    </block>
+    <block wx:else>
+      <view class="ssr-fallback" style="{{_contentStyle}}">
+        <text class="ssr-fallback-text">{{fallbackText}}</text>
+      </view>
+    </block>
+  </view>
+</block>

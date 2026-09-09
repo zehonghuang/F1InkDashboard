@@ -1,0 +1,9 @@
+<view class="page-root">
+  <skyline-share-receiver
+    wx:if="{{shareKey}}"
+    share-key="{{shareKey}}"
+    src="{{imageSrc}}"
+    width="600rpx"
+    height="600rpx"
+  />
+</view>
