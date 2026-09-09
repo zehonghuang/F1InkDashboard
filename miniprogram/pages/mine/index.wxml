@@ -172,31 +172,22 @@
       <view class="quick-card" bindtap="onTapItem" data-action="standings">
         <view class="quick-card-head">
           <view class="quick-card-icon">PTS</view>
-          <view class="quick-card-badge">{{prefSeason}}</view>
         </view>
         <view class="quick-card-title">{{i18n.mine.standings}}</view>
-        <view class="quick-card-desc">{{i18n.mine.standingsHint}}</view>
-        <view class="quick-card-link">查看</view>
       </view>
       <view class="quick-card" bindtap="onTapItem" data-action="tyreIntro">
         <view class="quick-card-head">
           <view class="quick-card-icon quick-card-icon-image">
             <image class="quick-card-icon-asset" src="/assets/icons/tyre-blue-icon.png" mode="aspectFit" />
           </view>
-          <view class="quick-card-badge">Guide</view>
         </view>
         <view class="quick-card-title">{{i18n.mine.tyreIntro}}</view>
-        <view class="quick-card-desc">{{i18n.mine.tyreIntroHint}}</view>
-        <view class="quick-card-link">进入</view>
       </view>
       <view class="quick-card" bindtap="onTapItem" data-action="liveTiming">
         <view class="quick-card-head">
           <view class="quick-card-icon">LIVE</view>
-          <view class="quick-card-badge">WS</view>
         </view>
         <view class="quick-card-title">{{i18n.mine.liveTiming}}</view>
-        <view class="quick-card-desc">{{i18n.mine.liveTimingHint}}</view>
-        <view class="quick-card-link">进入</view>
       </view>
     </view>
   </view>
