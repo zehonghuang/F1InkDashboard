@@ -260,11 +260,11 @@ Component({
       else x = rightX
       return { x, y: pt.y }
     },
-    _buildDragStyle(pt, withSnapAnim) {
+    _buildDragStyle(pt, withSnapAnim, extra) {
       const s = pt
-      const trans = withSnapAnim
-        ? "transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1);"
-        : "transition: none;"
+      let trans = "transition: none;"
+      if (withSnapAnim) trans = "transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);"
+      else if (extra && extra.transition) trans = `transition: ${extra.transition};`
       return `position:fixed;left:0;top:0;transform:translate3d(${s.x}px, ${s.y}px, 0);${trans}`
     },
     _applyPos(pt, opts) {
@@ -273,19 +273,13 @@ Component({
       const needAnim = Boolean(sn) && this._lastPos
         && (Math.abs(clamped.x - this._lastPos.x) > 1 || Math.abs(clamped.y - this._lastPos.y) > 1)
       this._lastPos = { x: clamped.x, y: clamped.y }
-      this.setData({ _dragStyle: this._buildDragStyle(clamped, needAnim) })
+      this.setData({ _dragStyle: this._buildDragStyle(clamped, needAnim, opts && opts.extra) })
       return clamped
     },
     _applyPosFast(pt) {
-      const clamped = this._clampPos(pt)
-      if (this._lastPos
-        && Math.abs(clamped.x - this._lastPos.x) < 0.5
-        && Math.abs(clamped.y - this._lastPos.y) < 0.5) {
-        return clamped
-      }
-      this._lastPos = { x: clamped.x, y: clamped.y }
-      this.setData({ _dragStyle: this._buildDragStyle(clamped, false) })
-      return clamped
+      this._lastPos = { x: pt.x, y: pt.y }
+      this.setData({ _dragStyle: this._buildDragStyle(pt, false) })
+      return pt
     },
     _rafFlush() {
       if (!this._rafPending) return
@@ -328,13 +322,13 @@ Component({
       this._rafPending = false
       this._gsx = Number(t.pageX) || 0
       this._gsy = Number(t.pageY) || 0
-      const last = this._lastPos || { x: 0, y: 0 }
+      const last = this._lastPos || this._defaultAnchor()
       this._glx = last.x
       this._gly = last.y
       this._moved = false
       this._startedAt = Date.now()
       this._dragState = null
-      this.setData({ _dragging: false })
+      this.setData({ _dragging: true })
     },
     _onTouchMove(e) {
       if (!this.properties.draggable) return
@@ -344,12 +338,9 @@ Component({
       const dy = (Number(t.pageY) || 0) - this._gsy
       if (!this._moved && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
         this._moved = true
-        this.setData({ _dragging: true })
       }
-      const nx = this._glx + dx
-      const ny = this._gly + dy
-      this._rafX = nx
-      this._rafY = ny
+      this._rafX = this._glx + dx
+      this._rafY = this._gly + dy
       if (this._rafPending) return
       this._rafPending = true
       const self = this
@@ -371,21 +362,9 @@ Component({
         return
       }
       if (!this.properties.draggable) return
-      const sizePx = sizeToPx(this.properties.size)
-      const win = getWinSize()
-      const insets = this._safeInsets()
-      const inset = Number(this.properties.edgeInset) || 0
-      const reserve = rpxToPx(Number(this.properties.reserveBottomRpx) || 0)
-      const tabPx = Number(this.properties.reserveTabbarPx) || 0
       const raw = this._lastPos || this._defaultAnchor()
       const snapped = this._snapX(raw)
-      const winMaxY = win.h - sizePx - inset - insets.bottom - reserve - tabPx
-      const screenMaxY = win.screenH - sizePx - inset - insets.bottom - reserve - tabPx
-      const yMax = Math.min(winMaxY, screenMaxY)
-      const clamped = this._clampPos({
-        x: Math.max(inset, Math.min(win.w - sizePx - inset, snapped.x)),
-        y: Math.max(inset + insets.top, Math.min(yMax, snapped.y))
-      })
+      const clamped = this._clampPos(snapped)
       const finalPt = this._applyPos(clamped, { snap: true })
       this._dragState = { wasClick: false, at: Date.now() }
       this.setData({ _dragging: false })
