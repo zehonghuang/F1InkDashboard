@@ -290,11 +290,7 @@ Component({
       const p = this.properties
       const size = normalizeSize(p.size)
       const _hasShareKey = Boolean(String(p.shareKey || "").trim())
-      if (!this._lastPos) {
-        const saved = this._loadSavedPos()
-        if (saved) this._lastPos = { x: saved.x, y: saved.y }
-        else this._lastPos = this._defaultAnchor()
-      }
+      this._lastPos = this._defaultAnchor()
       this._applyPos(this._lastPos, { snap: false })
       this.setData({
         _sizeClass: "size-" + size,
@@ -379,7 +375,6 @@ Component({
         y: Math.max(inset + insets.top, Math.min(win.h - sizePx - inset - insets.bottom - reserve, snapped.y))
       })
       const finalPt = this._applyPos(clamped, { snap: true })
-      this._savePos(finalPt)
       this._dragState = { wasClick: false, at: Date.now() }
       this.setData({ _dragging: false })
     },
