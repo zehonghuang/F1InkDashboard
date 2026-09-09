@@ -14,10 +14,13 @@
   </block>
   <block wx:elif="{{src}}">
     <image
-      class="ssr-img"
+      class="ssr-img ssr-img-static"
       style="{{_contentStyle}}"
       src="{{src}}"
       mode="{{imageMode}}"
+      lazy-load="false"
+      show-menu-by-longpress="false"
+      webp="{{false}}"
       bindload="_onImgLoad"
       binderror="_onImgError"
     />

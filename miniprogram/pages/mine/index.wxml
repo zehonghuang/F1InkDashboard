@@ -248,6 +248,7 @@
     draggable="{{true}}"
     edge-inset="{{12}}"
     reserve-bottom-rpx="100"
+    position-key="mine_wechat_group_fab_pos"
   />
 
   <view wx:if="{{showPicker}}" class="picker-mask" bindtap="onClosePicker"></view>

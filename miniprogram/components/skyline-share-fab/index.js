@@ -288,12 +288,46 @@ Component({
       const y = this._rafY
       this._applyPosFast({ x, y })
     },
+    _savePos(pt) {
+      try {
+        const key = String(this.properties.positionKey || "").trim()
+        if (!key) return
+        wx.setStorageSync(key, {
+          x: pt.x,
+          y: pt.y,
+          savedAt: Date.now()
+        })
+      } catch (e) {}
+    },
+    _loadSavedPos() {
+      try {
+        const key = String(this.properties.positionKey || "").trim()
+        if (!key) return null
+        const raw = wx.getStorageSync(key)
+        if (!raw) return null
+        if (typeof raw !== "object") return null
+        const x = Number(raw.x)
+        const y = Number(raw.y)
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return null
+        return { x, y }
+      } catch (e) {
+        return null
+      }
+    },
     _recomputeProps() {
       const p = this.properties
       const size = normalizeSize(p.size)
       const _hasShareKey = Boolean(String(p.shareKey || "").trim())
-      this._lastPos = this._defaultAnchor()
-      this._applyPos(this._lastPos, { snap: false })
+      const saved = this._loadSavedPos()
+      let pt
+      if (saved && Number.isFinite(saved.x) && Number.isFinite(saved.y)
+        && !(saved.x === 0 && saved.y === 0)) {
+        pt = this._clampPos(saved)
+      } else {
+        pt = this._defaultAnchor()
+      }
+      this._lastPos = pt
+      this._applyPos(pt, { snap: false })
       this.setData({
         _sizeClass: "size-" + size,
         _innerStyle: buildInnerStyle(p),
@@ -366,6 +400,7 @@ Component({
       const snapped = this._snapX(raw)
       const clamped = this._clampPos(snapped)
       const finalPt = this._applyPos(clamped, { snap: true })
+      this._savePos(finalPt)
       this._dragState = { wasClick: false, at: Date.now() }
       this.setData({ _dragging: false })
     },

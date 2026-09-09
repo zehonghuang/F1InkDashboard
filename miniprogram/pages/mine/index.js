@@ -150,6 +150,11 @@ Page({
       wechatGroupFabShareKey: shareKey,
       wechatGroupFabSrc: qrImage
     })
+    if (qrImage) {
+      try {
+        wx.getImageInfo({ src: qrImage, fail() {}, success() {} })
+      } catch (e) {}
+    }
   },
   async refreshWechatGroupFab(opts) {
     try {

@@ -34,10 +34,13 @@
         </block>
         <block wx:elif="{{src}}">
           <image
-            class="ssf-img"
+            class="ssf-img ssf-img-static"
             style="{{_contentStyle}}"
             src="{{src}}"
             mode="{{imageMode}}"
+            lazy-load="false"
+            show-menu-by-longpress="false"
+            webp="{{false}}"
           />
         </block>
         <block wx:else>
@@ -53,10 +56,13 @@
         </block>
         <block wx:elif="{{src}}">
           <image
-            class="ssf-img"
+            class="ssf-img ssf-img-static"
             style="{{_contentStyle}}"
             src="{{src}}"
             mode="{{imageMode}}"
+            lazy-load="false"
+            show-menu-by-longpress="false"
+            webp="{{false}}"
           />
         </block>
         <block wx:else>
