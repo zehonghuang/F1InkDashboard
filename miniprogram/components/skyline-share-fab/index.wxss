@@ -91,18 +91,27 @@
   100% { opacity: 0; transform: scale(1.7); }
 }
 
+.ssf-chip-hit {
+  position: absolute;
+  right: -16rpx;
+  top: -16rpx;
+  width: 44rpx;
+  height: 44rpx;
+  z-index: 3;
+  pointer-events: auto;
+}
+
 .ssf-chip {
   position: absolute;
-  right: -12rpx;
-  top: -12rpx;
+  right: 4rpx;
+  top: 4rpx;
   width: 36rpx;
   height: 36rpx;
   border-radius: 999rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
-  pointer-events: auto;
+  pointer-events: none;
   border: 2rpx solid rgba(255,255,255,0.88);
 }
 

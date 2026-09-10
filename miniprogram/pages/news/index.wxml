@@ -239,7 +239,7 @@
     target-url="/packages/tools-pkg/pages/poster-detail/index"
     position-key="skyline_share_fab_pos_news_poster"
     dismiss-chip="{{true}}"
-    dismiss-ttl-ms="{{0}}"
+    dismiss-persist="{{false}}"
     reserve-bottom-rpx="160"
     ping="{{true}}"
     bind:close="onPosterFabClose"

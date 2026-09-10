@@ -7,7 +7,7 @@ const { createMotorsportLiveClient } = require("../../services/motorsportLiveWs"
 const { getAuthState } = require("../../services/authService")
 const i18n = require("../../services/i18n")
 const { computeTabbarReserveStyle } = require("../../utils/tabbar-layout")
-const { fetchPoster, getPosterCache } = require("../../services/mpPosterApi")
+const { fetchPoster, getPosterCache, isPosterDismissed, markPosterDismissed } = require("../../services/mpPosterApi")
 
 const WELCOME_KEY = "news_welcome_shown_v1"
 const PREF_TEAMS_KEY = "pref_follow_teams"
@@ -582,7 +582,8 @@ Page({
       this.setData({ posterVisible: false, posterItem: null })
       return
     }
-    if (this._posterDismissedForId === (Number(item.id) || 0)) {
+    const id = Number(item.id) || 0
+    if (isPosterDismissed(id)) {
       this.setData({ posterVisible: false, posterItem: null })
       return
     }
@@ -596,7 +597,7 @@ Page({
     }
     if (!(posterRatio > 0)) posterRatio = fallbackRatio
     const safeItem = {
-      id: Number(item.id) || 0,
+      id,
       title: String(item.title || "").trim(),
       posterUrl: String(item.posterUrl || "").trim(),
       posterRatio
@@ -605,7 +606,7 @@ Page({
   },
   onPosterFabClose(e) {
     const id = this.data.posterItem && this.data.posterItem.id ? Number(this.data.posterItem.id) : 0
-    this._posterDismissedForId = id
+    if (id) markPosterDismissed(id)
     this.setData({ posterVisible: false, posterItem: null })
   },
   async loadPoster(opts) {

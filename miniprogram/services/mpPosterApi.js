@@ -2,7 +2,49 @@ const { requestJson } = require("./request")
 
 const STORAGE_KEY = "mp_poster_cache"
 const STORAGE_TS_KEY = "mp_poster_cache_ts"
+const DISMISSED_KEY = "mp_poster_dismissed_ids_v1"
 const TTL_MS = 10 * 60 * 1000
+
+function readDismissed() {
+  try {
+    const raw = wx.getStorageSync(DISMISSED_KEY)
+    if (raw && typeof raw === "object") return raw
+  } catch (e) {}
+  return {}
+}
+
+function writeDismissed(obj) {
+  try {
+    wx.setStorageSync(DISMISSED_KEY, obj)
+  } catch (e) {}
+}
+
+function isPosterDismissed(id) {
+  const key = String(Number(id) || 0)
+  if (!key || key === "0") return false
+  const map = readDismissed()
+  return Boolean(map[key])
+}
+
+function markPosterDismissed(id) {
+  const key = String(Number(id) || 0)
+  if (!key || key === "0") return
+  const map = readDismissed()
+  map[key] = Date.now()
+  writeDismissed(map)
+}
+
+function clearPosterDismissed(ids) {
+  if (ids && ids.length) {
+    const map = readDismissed()
+    ids.forEach((id) => {
+      delete map[String(Number(id) || 0)]
+    })
+    writeDismissed(map)
+    return
+  }
+  writeDismissed({})
+}
 
 function getApiBase() {
   try {
@@ -124,5 +166,8 @@ async function fetchPoster(opts) {
 
 module.exports = {
   getPosterCache,
-  fetchPoster
+  fetchPoster,
+  isPosterDismissed,
+  markPosterDismissed,
+  clearPosterDismissed
 }

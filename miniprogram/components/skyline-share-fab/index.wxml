@@ -77,13 +77,14 @@
   </open-container>
   <view
     wx:if="{{dismissChip && _visible}}"
-    class="ssf-chip"
+    class="ssf-chip-hit"
     catchtap="_onChipTap"
-    catchtouchstart
-    catchtouchmove
-    catchtouchend
-    style="{{_chipStyle}}"
+    catchtouchstart="_onChipTouchStart"
+    catchtouchmove="_onChipTouchMove"
+    catchtouchend="_onChipTouchEnd"
   >
-    <text class="ssf-chip-icon">×</text>
+    <view class="ssf-chip" style="{{_chipStyle}}">
+      <text class="ssf-chip-icon">×</text>
+    </view>
   </view>
 </view>

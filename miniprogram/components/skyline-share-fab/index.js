@@ -167,7 +167,8 @@ Component({
 
     autoResetOnShow: { type: Boolean, value: true },
     dismissChip: { type: Boolean, value: true },
-    dismissTtlMs: { type: Number, value: 604800000 },
+    dismissTtlMs: { type: Number, value: 0 },
+    dismissPersist: { type: Boolean, value: true },
     chipColor: { type: String, value: "rgba(220,38,38,0.96)" },
     chipIconColor: { type: String, value: "#ffffff" },
 
@@ -388,6 +389,7 @@ Component({
       return `background:${bg};color:${fg};box-shadow:0 4rpx 14rpx rgba(0,0,0,0.28);`
     },
     _computeDismissed() {
+      if (!this.properties.dismissPersist) return false
       const key = String(this.properties.positionKey || "skyline_share_fab_pos")
       try {
         const saved = wx.getStorageSync && wx.getStorageSync(key)
@@ -404,6 +406,7 @@ Component({
       }
     },
     _markDismissed() {
+      if (!this.properties.dismissPersist) return
       const key = String(this.properties.positionKey || "skyline_share_fab_pos")
       const last = this._lastPos || { x: 0, y: 0 }
       try { wx.setStorageSync && wx.setStorageSync(key, { x: last.x, y: last.y, dismissedAt: Date.now() }) } catch (e) {}
@@ -487,11 +490,42 @@ Component({
         position: this._lastPos || { x: 0, y: 0 }
       })
     },
+    _onChipTouchStart(e) {
+      this._chipTouching = true
+      if (e) {
+        if (typeof e.stopPropagation === "function") try { e.stopPropagation() } catch (err) {}
+        if (typeof e.preventDefault === "function") try { e.preventDefault() } catch (err) {}
+      }
+    },
+    _onChipTouchMove(e) {
+      this._chipTouching = false
+      if (e) {
+        if (typeof e.stopPropagation === "function") try { e.stopPropagation() } catch (err) {}
+      }
+    },
+    _onChipTouchEnd(e) {
+      const fired = this._chipTapFiredAt && (Date.now() - this._chipTapFiredAt < 150)
+      if (this._chipTouching && !fired) {
+        const dx = (e && e.changedTouches && e.changedTouches[0] && Number(e.changedTouches[0].pageX) || 0) - (this._gsx || 0)
+        const dy = (e && e.changedTouches && e.changedTouches[0] && Number(e.changedTouches[0].pageY) || 0) - (this._gsy || 0)
+        if (Math.abs(dx) < 12 && Math.abs(dy) < 12) {
+          this._chipTapFiredAt = Date.now()
+          this.dismiss()
+        }
+      }
+      this._chipTouching = false
+      if (e) {
+        if (typeof e.stopPropagation === "function") try { e.stopPropagation() } catch (err) {}
+      }
+    },
     _onChipTap(e) {
       if (e) {
         if (typeof e.stopPropagation === "function") try { e.stopPropagation() } catch (err) {}
         if (typeof e.preventDefault === "function") try { e.preventDefault() } catch (err) {}
       }
+      const fired = this._chipTapFiredAt && (Date.now() - this._chipTapFiredAt < 300)
+      if (fired) return
+      this._chipTapFiredAt = Date.now()
       this.dismiss()
     },
     _onDragTap(e) {
@@ -509,6 +543,12 @@ Component({
       this._executeNavigate()
     },
     _onTouchStart(e) {
+      if (this._chipTouching) return
+      const targetId = e && e.target && e.target.id
+      const cls = (e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.class) || ""
+      const idStr = targetId ? String(targetId) : ""
+      const clsStr = (e && e.target && e.target.className) ? String(e.target.className) : ""
+      if (/ssf-chip/.test(idStr) || /ssf-chip/.test(clsStr) || /ssf-chip/.test(cls)) return
       if (!this.properties.draggable) return
       const t = (e && e.touches && e.touches[0]) || null
       if (!t) return
