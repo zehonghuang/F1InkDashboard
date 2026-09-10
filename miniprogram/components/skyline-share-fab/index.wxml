@@ -75,4 +75,15 @@
 
     <view wx:if="{{ping}}" class="ssf-ping ssf-ping-{{size}}"></view>
   </open-container>
+  <view
+    wx:if="{{dismissChip && _visible}}"
+    class="ssf-chip"
+    catchtap="_onChipTap"
+    catchtouchstart
+    catchtouchmove
+    catchtouchend
+    style="{{_chipStyle}}"
+  >
+    <text class="ssf-chip-icon">×</text>
+  </view>
 </view>

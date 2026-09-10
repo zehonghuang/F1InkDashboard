@@ -87,3 +87,25 @@
   70% { opacity: 0; transform: scale(1.7); }
   100% { opacity: 0; transform: scale(1.7); }
 }
+
+.ssf-chip {
+  position: absolute;
+  right: -12rpx;
+  top: -12rpx;
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 999rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: auto;
+  border: 2rpx solid rgba(255,255,255,0.88);
+}
+
+.ssf-chip-icon {
+  font-size: 30rpx;
+  line-height: 30rpx;
+  font-weight: 800;
+  transform: translateY(-2rpx);
+}

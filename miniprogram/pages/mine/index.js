@@ -71,7 +71,8 @@ Page({
     wechatGroupFabReady: true,
     wechatGroupFabShareKey: "",
     wechatGroupFabSrc: "",
-    wechatGroupFabTargetUrl: "/packages/tools-pkg/pages/wechat-group/index"
+    wechatGroupFabTargetUrl: "/packages/tools-pkg/pages/wechat-group/index",
+    wechatGroupFabDismissed: false
   },
   onLoad() {
     const layout = computeTabbarReserveStyle()
@@ -101,6 +102,7 @@ Page({
     console.log("[PAGE:MINE] onShow() fired. this.route=", this.route, "typeof getTabBar=", typeof this.getTabBar)
     this.applyI18n()
     this.syncStoreConfig()
+    this.syncWechatGroupFabDismissed()
     this.syncWechatGroupFabConfig()
     this.refreshAuth()
     this.loadPreferences()
@@ -140,6 +142,21 @@ Page({
     const cfg = getWeChatStoreConfig()
     const appId = String(cfg.appId || "").trim()
     this.setData({ storeAppId: appId })
+  },
+  syncWechatGroupFabDismissed() {
+    const key = "mine_wechat_group_fab_pos"
+    let dismissed = false
+    try {
+      const saved = wx.getStorageSync(key)
+      if (saved && typeof saved === "object") {
+        const at = Number(saved.dismissedAt) || 0
+        if (at > 0 && Date.now() - at < 604800000) dismissed = true
+      }
+    } catch (e) {}
+    this.setData({ wechatGroupFabDismissed: dismissed })
+  },
+  onShareFabClose() {
+    this.setData({ wechatGroupFabDismissed: true })
   },
   syncWechatGroupFabConfig() {
     const cfg = getWeChatGroupConfig()

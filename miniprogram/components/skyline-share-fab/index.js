@@ -106,6 +106,10 @@ Component({
     shuttleOnPop: { type: String, value: "to" },
 
     autoResetOnShow: { type: Boolean, value: true },
+    dismissChip: { type: Boolean, value: true },
+    dismissTtlMs: { type: Number, value: 604800000 },
+    chipColor: { type: String, value: "rgba(220,38,38,0.96)" },
+    chipIconColor: { type: String, value: "#ffffff" },
 
     draggable: { type: Boolean, value: true },
     edgeInset: { type: Number, value: 8 },
@@ -167,7 +171,7 @@ Component({
     }
   },
   observers: {
-    "size, right, left, top, bottom, closedBorderRadius, innerBg, innerBorder, innerShadow, glowColor, contentStyle, shareKey, draggable, edgeInset, reserveBottomRpx, reserveTabbarPx": function () {
+    "size, right, left, top, bottom, closedBorderRadius, innerBg, innerBorder, innerShadow, glowColor, contentStyle, shareKey, draggable, edgeInset, reserveBottomRpx, reserveTabbarPx, chipColor, chipIconColor, dismissChip, dismissTtlMs": function () {
       this._recomputeProps()
     }
   },
@@ -314,10 +318,40 @@ Component({
         return null
       }
     },
+    _chipStyle() {
+      const bg = String(this.properties.chipColor || "rgba(220,38,38,0.96)").trim()
+      const fg = String(this.properties.chipIconColor || "#ffffff").trim()
+      return `background:${bg};color:${fg};box-shadow:0 4rpx 14rpx rgba(0,0,0,0.28);`
+    },
+    _computeDismissed() {
+      const key = String(this.properties.positionKey || "skyline_share_fab_pos")
+      try {
+        const saved = wx.getStorageSync && wx.getStorageSync(key)
+        if (!saved || typeof saved !== "object") return false
+        const at = Number(saved.dismissedAt) || 0
+        const ttl = Number(this.properties.dismissTtlMs) || 0
+        if (!at) return false
+        if (ttl <= 0) return true
+        if (Date.now() - at < ttl) return true
+        try { wx.removeStorageSync && wx.removeStorageSync(key) } catch (e) {}
+        return false
+      } catch (e) {
+        return false
+      }
+    },
+    _markDismissed() {
+      const key = String(this.properties.positionKey || "skyline_share_fab_pos")
+      const last = this._lastPos || { x: 0, y: 0 }
+      try { wx.setStorageSync && wx.setStorageSync(key, { x: last.x, y: last.y, dismissedAt: Date.now() }) } catch (e) {}
+    },
     _recomputeProps() {
       const p = this.properties
       const size = normalizeSize(p.size)
       const _hasShareKey = Boolean(String(p.shareKey || "").trim())
+      if (this._computeDismissed()) {
+        this.setData({ _visible: false })
+        return
+      }
       const saved = this._loadSavedPos()
       let pt
       if (saved && Number.isFinite(saved.x) && Number.isFinite(saved.y)
@@ -329,9 +363,11 @@ Component({
       this._lastPos = pt
       this._applyPos(pt, { snap: false })
       this.setData({
+        _visible: true,
         _sizeClass: "size-" + size,
         _innerStyle: buildInnerStyle(p),
         _contentStyle: buildContentStyle(size, p.contentStyle),
+        _chipStyle: this._chipStyle(),
         _hasShareKey
       })
     },
@@ -348,6 +384,35 @@ Component({
           this.setData({ _visible: true }, () => this._recomputeProps())
         })
       })
+    },
+    dismiss() {
+      this._markDismissed()
+      this.setData({ _visible: false })
+      this.triggerEvent("close", {
+        action: "dismiss",
+        position: this._lastPos || { x: 0, y: 0 }
+      })
+    },
+    _onChipTap(e) {
+      if (e) {
+        if (typeof e.stopPropagation === "function") try { e.stopPropagation() } catch (err) {}
+        if (typeof e.preventDefault === "function") try { e.preventDefault() } catch (err) {}
+      }
+      this.dismiss()
+    },
+    _onDragTap(e) {
+      if (!this.data._visible) return
+      if (!this.properties.draggable) {
+        this._executeNavigate()
+        return
+      }
+      const st = this._dragState
+      this._dragState = null
+      if (st && st.wasClick === false) {
+        if (this._lastPos) this._savePos(this._lastPos)
+        return
+      }
+      this._executeNavigate()
     },
     _onTouchStart(e) {
       if (!this.properties.draggable) return
