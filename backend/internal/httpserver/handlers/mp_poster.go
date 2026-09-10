@@ -237,13 +237,19 @@ func AdminPosterCreate(db *gorm.DB) gin.HandlerFunc {
 		if item.ContentFormat == "" {
 			item.ContentFormat = "RICH_TEXT_NODES"
 		}
+		hasValidNodes := false
 		if s, ok := normalizeContentNodesJSON(req.ContentNodes); ok {
 			item.ContentNodes = s
+			hasValidNodes = true
 		}
 		if item.Status == "" {
 			item.Status = model.MpPosterStatusDraft
 		}
-		if err := db.Create(&item).Error; err != nil {
+		dbx := db
+		if !hasValidNodes {
+			dbx = dbx.Omit("ContentNodes")
+		}
+		if err := dbx.Create(&item).Error; err != nil {
 			LogReqError(c, "admin_poster_create", "create_failed", err)
 			c.JSON(http.StatusInternalServerError, model.ErrorResponse{Ok: false, Error: "create_failed"})
 			return
