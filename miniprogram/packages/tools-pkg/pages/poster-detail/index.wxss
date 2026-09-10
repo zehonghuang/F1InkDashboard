@@ -36,28 +36,29 @@
 
 .nav-back-icon {
   position: relative;
-  width: 36rpx;
-  height: 36rpx;
+  width: 44rpx;
+  height: 44rpx;
+  transform: translateX(4rpx);
 }
 
 .nav-back-bar {
   position: absolute;
-  left: 0;
-  width: 26rpx;
+  left: 6rpx;
+  width: 32rpx;
   height: 4rpx;
   border-radius: 4rpx;
-  background: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.92);
 }
 
 .nav-back-bar-top {
-  top: 9rpx;
-  transform: rotate(-40deg);
+  top: 14rpx;
+  transform: rotate(-45deg);
   transform-origin: left center;
 }
 
 .nav-back-bar-bottom {
-  bottom: 9rpx;
-  transform: rotate(40deg);
+  bottom: 14rpx;
+  transform: rotate(45deg);
   transform-origin: left center;
 }
 
@@ -104,7 +105,57 @@
 .content-shell {
   width: 100%;
   box-sizing: border-box;
-  padding: 28rpx 24rpx calc(40rpx + env(safe-area-inset-bottom));
+  padding: 20rpx 24rpx calc(40rpx + env(safe-area-inset-bottom));
+}
+
+.meta-shell-top {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20rpx 24rpx 24rpx;
+}
+
+.meta-shell {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 28rpx 8rpx 12rpx;
+}
+
+.title {
+  width: 100%;
+  color: #ffffff;
+  font-size: 40rpx;
+  line-height: 1.28;
+  font-weight: 800;
+  letter-spacing: 1rpx;
+}
+
+.meta-published {
+  margin-top: 12rpx;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 22rpx;
+  line-height: 30rpx;
+}
+
+.poster-hero-shell {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: rgba(12, 12, 18, 0.96);
+}
+
+.poster-hero-state {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.54);
+  font-size: 24rpx;
+  line-height: 34rpx;
 }
 
 .poster-shell {
@@ -132,28 +183,6 @@
   color: rgba(255, 255, 255, 0.54);
   font-size: 24rpx;
   line-height: 34rpx;
-}
-
-.meta-shell {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 28rpx 8rpx 12rpx;
-}
-
-.title {
-  width: 100%;
-  color: #ffffff;
-  font-size: 38rpx;
-  line-height: 1.28;
-  font-weight: 800;
-  letter-spacing: 1rpx;
-}
-
-.meta-published {
-  margin-top: 12rpx;
-  color: rgba(255, 255, 255, 0.48);
-  font-size: 22rpx;
-  line-height: 30rpx;
 }
 
 .content-plain-shell {

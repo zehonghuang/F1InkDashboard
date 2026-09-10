@@ -15,30 +15,30 @@
     <view wx:if="{{ loading }}" class="status">{{i18n.common.loading}}</view>
     <view wx:if="{{ !loading && errorText }}" class="status status-error">{{ errorText }}</view>
 
+    <view wx:if="{{title}}" class="meta-shell meta-shell-top">
+      <view class="title">{{title}}</view>
+      <view wx:if="{{publishedText}}" class="meta-published">{{publishedText}}</view>
+    </view>
+
+    <view wx:if="{{posterUrl}}" class="poster-hero-shell" bindtap="onPreviewPoster">
+      <skyline-share-receiver
+        share-key="mp-poster-hero"
+        src="{{posterUrl}}"
+        image-mode="aspectFill"
+        width="100%"
+        height="{{posterHeroHeight ? posterHeroHeight + 'px' : 'auto'}}"
+        wrap-style="display:block;width:100%;"
+        content-style="width:100%;{{posterHeroHeight ? 'height:' + posterHeroHeight + 'px;' : ''}}display:block;opacity:{{posterLoaded ? '1' : '0'}};transition:opacity 280ms ease-out;min-height:360rpx;background:linear-gradient(180deg,rgba(32,32,44,0.9) 0%,rgba(14,14,20,0.98) 100%);"
+        bind:frame="_onShareFrame"
+        bind:imageload="onPosterLoad"
+        bind:imageerror="onPosterError"
+      />
+      <view wx:if="{{posterUrl && !posterLoaded && !posterBroken}}" class="poster-hero-state">
+        {{i18n.common.loading}}
+      </view>
+    </view>
+
     <view class="content-shell">
-      <view wx:if="{{posterUrl}}" class="poster-shell" bindtap="onPreviewPoster">
-        <skyline-share-receiver
-          share-key="mp-poster-hero"
-          src="{{posterUrl}}"
-          image-mode="aspectFit"
-          width="100%"
-          height="auto"
-          wrap-style="display:block;width:100%;"
-          content-style="width:100%;height:auto;display:block;opacity:{{posterLoaded ? '1' : '0'}};transition:opacity 280ms ease-out;min-height:260rpx;background:linear-gradient(180deg,rgba(32,32,44,0.9) 0%,rgba(14,14,20,0.98) 100%);border-radius:24rpx;"
-          bind:frame="_onShareFrame"
-          bind:imageload="onPosterLoad"
-          bind:imageerror="onPosterError"
-        />
-        <view wx:if="{{posterUrl && !posterLoaded && !posterBroken}}" class="poster-state">
-          {{i18n.common.loading}}
-        </view>
-      </view>
-
-      <view wx:if="{{title}}" class="meta-shell">
-        <view class="title">{{title}}</view>
-        <view wx:if="{{publishedText}}" class="meta-published">{{publishedText}}</view>
-      </view>
-
       <view wx:if="{{ contentFormatCode === 'PLAIN' && contentText }}" class="content-plain-shell">
         <view class="content-plain-text">{{contentText}}</view>
       </view>

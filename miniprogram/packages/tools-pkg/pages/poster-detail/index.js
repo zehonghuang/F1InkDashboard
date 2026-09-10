@@ -135,6 +135,7 @@ Page({
     posterWidth: 0,
     posterHeight: 0,
     posterRatio: 0,
+    posterHeroHeight: 0,
     posterLoaded: false,
     posterBroken: false,
     contentFormatCode: "PLAIN",
@@ -152,6 +153,8 @@ Page({
     try {
       const sys = wx.getSystemInfoSync()
       const h = Number(sys && sys.statusBarHeight) || 0
+      const w = Number(sys && sys.windowWidth) || 0
+      this._windowWidth = w
       this.setData({ statusBarHeight: h })
     } catch (e) {}
     this.applyI18n()
@@ -209,12 +212,25 @@ Page({
     const allImages = posterUrl
       ? [{ src: posterUrl, alt: title || "poster" }].concat(articleImages)
       : articleImages
+    const winW = Number(this._windowWidth) || 0
+    const pw = Number(item.posterWidth) || 0
+    const ph = Number(item.posterHeight) || 0
+    const ratio = Number(item.posterRatio) || 0
+    let heroHeightPx = 0
+    if (winW > 0) {
+      if (pw > 0 && ph > 0) {
+        heroHeightPx = Math.round((winW * ph) / pw)
+      } else if (ratio > 0) {
+        heroHeightPx = Math.round(winW / ratio)
+      }
+    }
     this.setData({
       title,
       posterUrl,
-      posterWidth: Number(item.posterWidth) || 0,
-      posterHeight: Number(item.posterHeight) || 0,
-      posterRatio: Number(item.posterRatio) || 0,
+      posterWidth: pw,
+      posterHeight: ph,
+      posterRatio: ratio,
+      posterHeroHeight: heroHeightPx > 0 ? heroHeightPx : 0,
       posterLoaded: false,
       posterBroken: !posterUrl,
       contentFormatCode: format,
