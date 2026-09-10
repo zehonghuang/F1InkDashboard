@@ -1,6 +1,7 @@
 {
   "usingComponents": {
-    "skyline-share-receiver": "/components/skyline-share-receiver/index"
+    "skyline-share-receiver": "/components/skyline-share-receiver/index",
+    "image-deck-viewer": "/components/image-deck-viewer/index"
   },
   "navigationBarTitleText": "海报详情",
   "navigationStyle": "custom",

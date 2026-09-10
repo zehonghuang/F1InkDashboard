@@ -249,19 +249,26 @@ Page({
   onPosterError() {
     this.setData({ posterLoaded: false, posterBroken: true })
   },
-  onPreviewPoster() {
-    const url = String(this.data.posterUrl || "").trim()
-    if (!url) return
-    const urls = this.data.articleImages && this.data.articleImages.length
-      ? this.data.articleImages.map((x) => x.src).filter(Boolean)
-      : [url]
-    wx.previewImage({ current: url, urls })
+  onPreviewPoster(e) {
+    const list = Array.isArray(this.data.articleImages) ? this.data.articleImages.filter((x) => x && x.src) : []
+    if (!list.length) return
+    let initial = 0
+    try {
+      const i = Number(e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.imageIndex)
+      if (Number.isFinite(i)) initial = i
+    } catch (err) {}
+    initial = Math.max(0, Math.min(list.length - 1, initial))
+    const urls = list.map((x) => x.src)
+    wx.previewImage({ current: urls[initial] || urls[0], urls })
   },
   onTapGallery(e) {
+    const list = Array.isArray(this.data.articleImages) ? this.data.articleImages.filter((x) => x && x.src) : []
+    if (!list.length) return
     const idx = Number(e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.blockIndex)
-    const initial = Number.isFinite(idx) && this.data.contentBlocks && this.data.contentBlocks[idx]
-      ? Number(this.data.contentBlocks[idx].activeIndex) || 0
+    let initial = Number.isFinite(idx) && this.data.contentBlocks && this.data.contentBlocks[idx]
+      ? Number(this.data.contentBlocks[idx].articleStartIndex) || 0
       : 0
+    initial = Math.max(0, Math.min(list.length - 1, initial))
     this.setData({
       viewerVisible: true,
       viewerInitialIndex: initial

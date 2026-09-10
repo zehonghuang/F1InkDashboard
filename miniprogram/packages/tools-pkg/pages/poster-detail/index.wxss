@@ -34,32 +34,16 @@
   flex: none;
 }
 
-.nav-back-icon {
-  position: relative;
-  width: 44rpx;
-  height: 44rpx;
-  transform: translateX(4rpx);
-}
-
-.nav-back-bar {
-  position: absolute;
-  left: 6rpx;
-  width: 32rpx;
-  height: 4rpx;
-  border-radius: 4rpx;
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.nav-back-bar-top {
-  top: 14rpx;
-  transform: rotate(-45deg);
-  transform-origin: left center;
-}
-
-.nav-back-bar-bottom {
-  bottom: 14rpx;
-  transform: rotate(45deg);
-  transform-origin: left center;
+.nav-back-chevron {
+  width: 20rpx;
+  height: 20rpx;
+  box-sizing: border-box;
+  border-top: 4rpx solid rgba(255, 255, 255, 0.92);
+  border-left: 4rpx solid rgba(255, 255, 255, 0.92);
+  border-top-left-radius: 4rpx;
+  border-right: 0;
+  border-bottom: 0;
+  transform: rotate(-45deg) translateX(4rpx);
 }
 
 .nav-title {

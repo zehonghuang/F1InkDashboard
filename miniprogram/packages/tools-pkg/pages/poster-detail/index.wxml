@@ -2,10 +2,7 @@
   <view class="status-bar" style="height: {{statusBarHeight}}px;"></view>
   <view class="nav">
     <view class="nav-back" bindtap="onBack">
-      <view class="nav-back-icon">
-        <view class="nav-back-bar nav-back-bar-top"></view>
-        <view class="nav-back-bar nav-back-bar-bottom"></view>
-      </view>
+      <view class="nav-back-chevron"></view>
     </view>
     <view class="nav-title">{{title || '海报详情'}}</view>
     <view class="nav-placeholder"></view>
@@ -20,7 +17,7 @@
       <view wx:if="{{publishedText}}" class="meta-published">{{publishedText}}</view>
     </view>
 
-    <view wx:if="{{posterUrl}}" class="poster-hero-shell" bindtap="onPreviewPoster">
+    <view wx:if="{{posterUrl}}" class="poster-hero-shell" bindtap="onPreviewPoster" data-image-index="0">
       <skyline-share-receiver
         share-key="mp-poster-hero"
         src="{{posterUrl}}"
@@ -45,7 +42,9 @@
 
       <view wx:if="{{ contentFormatCode === 'RICH_TEXT_NODES' }}" class="content-rich-shell">
         <block wx:for="{{ contentBlocks }}" wx:key="id" wx:for-item="block" wx:for-index="blockIndex">
-          <rich-text wx:if="{{ block.type === 'rich' }}" class="content-rich-block" nodes="{{ block.nodes }}" />
+          <view wx:if="{{ block.type === 'rich' }}" class="content-rich-wrap">
+            <rich-text class="content-rich-block" nodes="{{ block.nodes }}" />
+          </view>
           <view wx:elif="{{ block.type === 'gallery' }}" class="content-gallery-block" catchtap="onTapGallery" data-block-index="{{ blockIndex }}">
             <view class="content-gallery-shell content-gallery-shell-single">
               <image
@@ -69,6 +68,7 @@
     visible="{{ viewerVisible }}"
     images="{{ articleImages }}"
     initialIndex="{{ viewerInitialIndex }}"
+    loop="{{true}}"
     bindclose="onViewerClose"
   />
 </view>
