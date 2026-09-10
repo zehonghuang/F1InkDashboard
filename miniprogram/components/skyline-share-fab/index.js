@@ -205,16 +205,18 @@ Component({
       this._rafX = 0
       this._rafY = 0
       this._lastPos = null
-      this._lastSize = null
-      this._lastShape = null
+      const _sz = sizeToPxWH(normalizeSize(this.properties.size), this.properties.sizeRpx,
+        normalizeShape(this.properties.shape, this.properties.aspectRatio), this.properties.aspectRatio)
+      this._lastShape = normalizeShape(this.properties.shape, this.properties.aspectRatio)
+      this._lastSize = _sz
       this._recomputeProps()
       if (this.properties.autoResetOnShow) {
         this._onPageShow = () => {
-          if (this._resetTimer) return
+          if (this._resetTimer) clearTimeout(this._resetTimer)
           this._resetTimer = setTimeout(() => {
             this._resetTimer = null
-            this.reset()
-          }, 140)
+            this.reset(true)
+          }, 20)
         }
         const pages = getCurrentPages && getCurrentPages()
         const page = pages && pages[pages.length - 1]
@@ -235,11 +237,21 @@ Component({
         clearTimeout(this._resetTimer)
         this._resetTimer = null
       }
+      if (this._recomputeDebounceTimer) {
+        clearTimeout(this._recomputeDebounceTimer)
+        this._recomputeDebounceTimer = null
+      }
     }
   },
   observers: {
-    "size, sizeRpx, shape, aspectRatio, rectBorderRadius, right, left, top, bottom, closedBorderRadius, innerBg, innerBorder, innerShadow, glowColor, contentStyle, shareKey, draggable, edgeInset, reserveBottomRpx, reserveTabbarPx, chipColor, chipIconColor, dismissChip, dismissTtlMs": function () {
-      this._recomputeProps()
+    "size, sizeRpx, shape, aspectRatio, rectBorderRadius, right, left, top, bottom, closedBorderRadius, innerBg, innerBorder, innerShadow, glowColor, contentStyle, shareKey, draggable, edgeInset, reserveBottomRpx, reserveTabbarPx, chipColor, chipIconColor, dismissChip, dismissTtlMs, dismissPersist": function () {
+      if (this._recomputeDebounceTimer) {
+        clearTimeout(this._recomputeDebounceTimer)
+      }
+      this._recomputeDebounceTimer = setTimeout(() => {
+        this._recomputeDebounceTimer = null
+        this._recomputeProps()
+      }, 50)
     }
   },
   methods: {
@@ -364,14 +376,35 @@ Component({
       const clamped = this._clampPos(pt)
       const sn = opts && opts.snap !== false
       const needAnim = Boolean(sn) && this._lastPos
-        && (Math.abs(clamped.x - this._lastPos.x) > 1 || Math.abs(clamped.y - this._lastPos.y) > 1)
+        && (Math.abs(clamped.x - this._lastPos.x) > 0.5 || Math.abs(clamped.y - this._lastPos.y) > 0.5)
+      const lastX = this._lastPos ? Math.round(this._lastPos.x * 100) / 100 : null
+      const lastY = this._lastPos ? Math.round(this._lastPos.y * 100) / 100 : null
+      const clampRoundedX = Math.round(clamped.x * 100) / 100
+      const clampRoundedY = Math.round(clamped.y * 100) / 100
+      const isSameAsLast = this._lastPos
+        && lastX != null
+        && lastY != null
+        && Math.abs(lastX - clampRoundedX) < 0.2
+        && Math.abs(lastY - clampRoundedY) < 0.2
       this._lastPos = { x: clamped.x, y: clamped.y }
-      this.setData({ _dragStyle: this._buildDragStyle(clamped, needAnim, opts && opts.extra, closedBorderRadiusRpx) })
+      const dragStyle = this._buildDragStyle(clamped, needAnim, opts && opts.extra, closedBorderRadiusRpx)
+      if (isSameAsLast) {
+        if (opts && opts.forceWriteSameData) {
+          this.setData({ _dragStyle: dragStyle })
+        }
+        return clamped
+      }
+      this.setData({ _dragStyle: dragStyle })
       return clamped
     },
     _applyPosFast(pt, closedBorderRadiusRpx) {
+      const isSame = this._lastPos
+        && Math.abs(this._lastPos.x - pt.x) < 0.2
+        && Math.abs(this._lastPos.y - pt.y) < 0.2
       this._lastPos = { x: pt.x, y: pt.y }
-      this.setData({ _dragStyle: this._buildDragStyle(pt, false, null, closedBorderRadiusRpx) })
+      if (isSame) return pt
+      const dragStyle = this._buildDragStyle(pt, false, null, closedBorderRadiusRpx)
+      this.setData({ _dragStyle: dragStyle })
       return pt
     },
     _rafFlush() {
@@ -412,6 +445,7 @@ Component({
       try { wx.setStorageSync && wx.setStorageSync(key, { x: last.x, y: last.y, dismissedAt: Date.now() }) } catch (e) {}
     },
     _recomputeProps() {
+      if (this._inResetTearDown) return
       const p = this.properties
       const size = normalizeSize(p.size)
       const sh = normalizeShape(p.shape, p.aspectRatio)
@@ -423,9 +457,9 @@ Component({
       const cbr = deriveClosedBorderRadiusRpx(size, sh, p.aspectRatio, p.rectBorderRadius, p.closedBorderRadius)
       const sz = sizeToPxWH(size, p.sizeRpx, sh, p.aspectRatio)
       const shapeChanged = this._lastShape !== sh
-      const sizeChanged = !this._lastSize
-        || this._lastSize.w !== sz.w
-        || this._lastSize.h !== sz.h
+      const sizeChanged = this._lastSize == null
+        || Math.abs(this._lastSize.w - sz.w) > 0.1
+        || Math.abs(this._lastSize.h - sz.h) > 0.1
       this._lastShape = sh
       this._lastSize = sz
       const saved = this._loadSavedPos()
@@ -433,11 +467,22 @@ Component({
       if (!shapeChanged && !sizeChanged && saved && Number.isFinite(saved.x) && Number.isFinite(saved.y)
         && !(saved.x === 0 && saved.y === 0)) {
         pt = this._clampPos(saved)
+      } else if (saved && Number.isFinite(saved.x) && Number.isFinite(saved.y)
+        && !(saved.x === 0 && saved.y === 0)) {
+        const savedClamped = this._clampPos(saved)
+        const defaultPt = this._defaultAnchor()
+        const xDiff = Math.abs(savedClamped.x - defaultPt.x)
+        const yDiff = Math.abs(savedClamped.y - defaultPt.y)
+        if (xDiff <= sz.w * 1.2 && yDiff <= sz.h * 1.2) {
+          pt = savedClamped
+        } else {
+          pt = defaultPt
+        }
       } else {
         pt = this._defaultAnchor()
       }
-      this._lastPos = pt
-      this._applyPos(pt, { snap: false }, cbr)
+      this._lastPos = null
+      this._applyPos(pt, { snap: false, forceWriteSameData: true }, cbr)
       const edgeRpx = sizeEdgeRpx(size, p.sizeRpx)
       const ratio = Number(p.aspectRatio) || 0
       let pwRpx = edgeRpx
@@ -464,20 +509,33 @@ Component({
         _closedBorderRadius: cbr
       })
     },
-    reset() {
-      if (!this.data._visible) {
-        this.setData({ _visible: true })
+    reset(silent) {
+      const szBeforeReset = sizeToPxWH(normalizeSize(this.properties.size), this.properties.sizeRpx,
+        normalizeShape(this.properties.shape, this.properties.aspectRatio), this.properties.aspectRatio)
+      const shBeforeReset = normalizeShape(this.properties.shape, this.properties.aspectRatio)
+      const wasVisible = Boolean(this.data._visible)
+      if (wasVisible && silent) {
         this._lastPos = null
-        this._lastSize = null
-        this._lastShape = null
+        this._lastSize = szBeforeReset
+        this._lastShape = shBeforeReset
         this._recomputeProps()
         return
       }
+      this._inResetTearDown = true
+      const teardownClearLast = () => {
+        this._inResetTearDown = false
+        this._lastPos = null
+        this._lastSize = szBeforeReset
+        this._lastShape = shBeforeReset
+      }
+      if (!wasVisible) {
+        teardownClearLast()
+        this.setData({ _visible: true }, () => this._recomputeProps())
+        return
+      }
       this.setData({ _visible: false }, () => {
+        teardownClearLast()
         wx.nextTick(() => {
-          this._lastPos = null
-          this._lastSize = null
-          this._lastShape = null
           this.setData({ _visible: true }, () => this._recomputeProps())
         })
       })
