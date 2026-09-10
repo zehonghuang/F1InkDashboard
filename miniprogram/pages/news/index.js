@@ -582,6 +582,10 @@ Page({
       this.setData({ posterVisible: false, posterItem: null })
       return
     }
+    if (this._posterDismissedForId === (Number(item.id) || 0)) {
+      this.setData({ posterVisible: false, posterItem: null })
+      return
+    }
     const ratio = Number(item.posterRatio) || 0
     const fallbackRatio = 2 / 3
     let posterRatio = ratio
@@ -598,6 +602,11 @@ Page({
       posterRatio
     }
     this.setData({ posterVisible: true, posterItem: safeItem })
+  },
+  onPosterFabClose(e) {
+    const id = this.data.posterItem && this.data.posterItem.id ? Number(this.data.posterItem.id) : 0
+    this._posterDismissedForId = id
+    this.setData({ posterVisible: false, posterItem: null })
   },
   async loadPoster(opts) {
     const silent = Boolean(opts && opts.silent)
