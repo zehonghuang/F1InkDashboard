@@ -583,11 +583,19 @@ Page({
       return
     }
     const ratio = Number(item.posterRatio) || 0
+    const fallbackRatio = 2 / 3
+    let posterRatio = ratio
+    if (posterRatio <= 0) {
+      if (Number(item.posterWidth) > 0 && Number(item.posterHeight) > 0) {
+        posterRatio = Number(item.posterWidth) / Number(item.posterHeight)
+      }
+    }
+    if (!(posterRatio > 0)) posterRatio = fallbackRatio
     const safeItem = {
       id: Number(item.id) || 0,
       title: String(item.title || "").trim(),
       posterUrl: String(item.posterUrl || "").trim(),
-      posterRatio: ratio > 0 ? ratio : (Number(item.posterWidth) > 0 && Number(item.posterHeight) > 0 ? Number(item.posterWidth) / Number(item.posterHeight) : 0)
+      posterRatio
     }
     this.setData({ posterVisible: true, posterItem: safeItem })
   },

@@ -1,6 +1,6 @@
 <view
   wx:if="{{_visible}}"
-  class="ssf-drag {{_sizeClass}} {{_dragging ? 'ssf-dragging' : ''}}"
+  class="ssf-drag {{_sizeClass}} {{_shapeClass}} {{_dragging ? 'ssf-dragging' : ''}}"
   style="{{_dragStyle}}"
   bindtouchstart="_onTouchStart"
   bindtouchmove="_onTouchMove"
@@ -10,10 +10,10 @@
   id="ssf-root"
 >
   <open-container
-    class="ssf-shell {{_sizeClass}}"
+    class="ssf-shell {{_sizeClass}} {{_shapeClass}}"
     closed-color="{{closedColor}}"
     closed-elevation="{{closedElevation}}"
-    closed-border-radius="{{closedBorderRadius}}"
+    closed-border-radius="{{_closedBorderRadius}}"
     open-color="{{openColor}}"
     open-elevation="{{openElevation}}"
     open-border-radius="{{openBorderRadius}}"
@@ -73,7 +73,7 @@
       </block>
     </view>
 
-    <view wx:if="{{ping}}" class="ssf-ping ssf-ping-{{size}}"></view>
+    <view wx:if="{{ping}}" class="ssf-ping ssf-ping-{{size}} {{_shapeClass}}" style="{{_pingStyle}}"></view>
   </open-container>
   <view
     wx:if="{{dismissChip && _visible}}"

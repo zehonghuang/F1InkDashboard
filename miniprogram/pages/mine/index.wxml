@@ -239,6 +239,7 @@
     share-key="{{wechatGroupFabShareKey}}"
     src="{{wechatGroupFabSrc}}"
     fallback-text="QR"
+    shape="circle"
     size="md"
     bottom="150rpx"
     ping="{{true}}"
