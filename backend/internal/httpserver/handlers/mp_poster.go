@@ -192,6 +192,24 @@ func AdminPosterDetail(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+func normalizeContentNodesJSON(v any) (string, bool) {
+	if v == nil {
+		return "", false
+	}
+	b, err := json.Marshal(v)
+	if err != nil || len(b) == 0 {
+		return "", false
+	}
+	s := strings.TrimSpace(string(b))
+	if s == "" || s == `""` || s == "null" {
+		return "", false
+	}
+	if (s[0] == '[' || s[0] == '{') && len(s) > 1 {
+		return s, true
+	}
+	return s, true
+}
+
 func AdminPosterCreate(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if db == nil {
@@ -219,9 +237,8 @@ func AdminPosterCreate(db *gorm.DB) gin.HandlerFunc {
 		if item.ContentFormat == "" {
 			item.ContentFormat = "RICH_TEXT_NODES"
 		}
-		if req.ContentNodes != nil {
-			b, _ := json.Marshal(req.ContentNodes)
-			item.ContentNodes = string(b)
+		if s, ok := normalizeContentNodesJSON(req.ContentNodes); ok {
+			item.ContentNodes = s
 		}
 		if item.Status == "" {
 			item.Status = model.MpPosterStatusDraft
@@ -294,8 +311,11 @@ func AdminPosterUpdate(db *gorm.DB) gin.HandlerFunc {
 			updates["content_text"] = *req.ContentText
 		}
 		if req.ContentNodes != nil {
-			b, _ := json.Marshal(*req.ContentNodes)
-			updates["content_nodes"] = string(b)
+			if s, ok := normalizeContentNodesJSON(*req.ContentNodes); ok {
+				updates["content_nodes"] = s
+			} else {
+				updates["content_nodes"] = nil
+			}
 		}
 		if req.PublishedAt != nil {
 			updates["published_at"] = *req.PublishedAt
