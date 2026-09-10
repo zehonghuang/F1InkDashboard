@@ -1,0 +1,11 @@
+{
+  "usingComponents": {
+    "skyline-share-receiver": "/components/skyline-share-receiver/index"
+  },
+  "navigationBarTitleText": "海报详情",
+  "navigationStyle": "custom",
+  "backgroundColor": "#0B0B10",
+  "backgroundTextStyle": "light",
+  "renderer": "skyline",
+  "componentFramework": "glass-easel"
+}

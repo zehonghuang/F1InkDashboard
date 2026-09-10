@@ -224,4 +224,20 @@
       </view>
     </view>
   </view>
+
+  <skyline-share-fab
+    wx:if="{{posterVisible && posterItem && posterItem.posterUrl}}"
+    id="news-poster-fab"
+    src="{{posterItem.posterUrl}}"
+    aspect-ratio="{{posterItem.posterRatio}}"
+    size="md"
+    image-mode="aspectFill"
+    rect-border-radius="20"
+    share-key="mp-poster-hero"
+    target-url="/packages/tools-pkg/pages/poster-detail/index"
+    position-key="skyline_share_fab_pos_news_poster"
+    dismiss-chip="{{true}}"
+    reserve-bottom-rpx="160"
+    ping="{{true}}"
+  />
 </view>

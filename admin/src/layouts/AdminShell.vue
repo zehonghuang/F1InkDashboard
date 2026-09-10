@@ -13,6 +13,7 @@ const activeName = computed(() => {
   if (n.startsWith('settings')) return 'settings'
   if (n.startsWith('shop-categories') || n.startsWith('shop-products')) return 'shop'
   if (n.startsWith('mini-program-config')) return 'mini-program'
+  if (n.startsWith('poster')) return 'poster'
   if (n.startsWith('f1-live-timing-demo')) return 'f1-live-timing-demo'
   if (n.startsWith('motorsport-live-demo')) return 'motorsport-live-demo'
   if (n.startsWith('motorsport-demo')) return 'motorsport-demo'
@@ -51,6 +52,9 @@ function onSelect(name: string) {
     case 'mini-program':
       router.push({ name: 'mini-program-config' })
       return
+    case 'poster':
+      router.push({ name: 'poster-list' })
+      return
   }
 }
 </script>
@@ -82,6 +86,7 @@ function onSelect(name: string) {
         <MenuItem name="settings">设置</MenuItem>
         <MenuItem name="shop">微信小店</MenuItem>
         <MenuItem name="mini-program">小程序配置</MenuItem>
+        <MenuItem name="poster">海报管理</MenuItem>
         <MenuItem name="f1-live-timing-demo">F1 Live Timing Demo</MenuItem>
         <MenuItem name="motorsport-demo">样式 Demo</MenuItem>
         <MenuItem name="motorsport-live-demo">Live Standings Demo</MenuItem>

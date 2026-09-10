@@ -41,14 +41,15 @@
         "pages/style-demo/index",
         "pages/compare/index",
         "pages/wechat-group/index",
-        "pages/fab-target/index"
+        "pages/fab-target/index",
+        "pages/poster-detail/index"
       ]
     }
   ],
   "preloadRule": {
     "pages/news/index": {
       "network": "all",
-      "packages": ["news-pkg"]
+      "packages": ["news-pkg", "tools-pkg"]
     },
     "pages/archive/index": {
       "network": "all",

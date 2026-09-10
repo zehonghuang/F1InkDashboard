@@ -1,0 +1,74 @@
+<view class="page-root">
+  <view class="status-bar" style="height: {{statusBarHeight}}px;"></view>
+  <view class="nav">
+    <view class="nav-back" bindtap="onBack">
+      <view class="nav-back-icon">
+        <view class="nav-back-bar nav-back-bar-top"></view>
+        <view class="nav-back-bar nav-back-bar-bottom"></view>
+      </view>
+    </view>
+    <view class="nav-title">{{title || '海报详情'}}</view>
+    <view class="nav-placeholder"></view>
+  </view>
+
+  <scroll-view class="page-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view wx:if="{{ loading }}" class="status">{{i18n.common.loading}}</view>
+    <view wx:if="{{ !loading && errorText }}" class="status status-error">{{ errorText }}</view>
+
+    <view class="content-shell">
+      <view wx:if="{{posterUrl}}" class="poster-shell" bindtap="onPreviewPoster">
+        <skyline-share-receiver
+          share-key="mp-poster-hero"
+          src="{{posterUrl}}"
+          image-mode="aspectFit"
+          width="100%"
+          height="auto"
+          wrap-style="display:block;width:100%;"
+          content-style="width:100%;height:auto;display:block;opacity:{{posterLoaded ? '1' : '0'}};transition:opacity 280ms ease-out;min-height:260rpx;background:linear-gradient(180deg,rgba(32,32,44,0.9) 0%,rgba(14,14,20,0.98) 100%);border-radius:24rpx;"
+          bind:frame="_onShareFrame"
+          bind:imageload="onPosterLoad"
+          bind:imageerror="onPosterError"
+        />
+        <view wx:if="{{posterUrl && !posterLoaded && !posterBroken}}" class="poster-state">
+          {{i18n.common.loading}}
+        </view>
+      </view>
+
+      <view wx:if="{{title}}" class="meta-shell">
+        <view class="title">{{title}}</view>
+        <view wx:if="{{publishedText}}" class="meta-published">{{publishedText}}</view>
+      </view>
+
+      <view wx:if="{{ contentFormatCode === 'PLAIN' && contentText }}" class="content-plain-shell">
+        <view class="content-plain-text">{{contentText}}</view>
+      </view>
+
+      <view wx:if="{{ contentFormatCode === 'RICH_TEXT_NODES' }}" class="content-rich-shell">
+        <block wx:for="{{ contentBlocks }}" wx:key="id" wx:for-item="block" wx:for-index="blockIndex">
+          <rich-text wx:if="{{ block.type === 'rich' }}" class="content-rich-block" nodes="{{ block.nodes }}" />
+          <view wx:elif="{{ block.type === 'gallery' }}" class="content-gallery-block" catchtap="onTapGallery" data-block-index="{{ blockIndex }}">
+            <view class="content-gallery-shell content-gallery-shell-single">
+              <image
+                wx:if="{{ block.inlineImage && block.inlineImage.src }}"
+                class="content-gallery-image"
+                src="{{ block.inlineImage.src }}"
+                mode="widthFix"
+                lazy-load="false"
+              />
+            </view>
+          </view>
+        </block>
+      </view>
+
+      <view class="safe-bottom"></view>
+    </view>
+  </scroll-view>
+
+  <image-deck-viewer
+    wx:if="{{ viewerVisible }}"
+    visible="{{ viewerVisible }}"
+    images="{{ articleImages }}"
+    initialIndex="{{ viewerInitialIndex }}"
+    bindclose="onViewerClose"
+  />
+</view>

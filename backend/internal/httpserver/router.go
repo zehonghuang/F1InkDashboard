@@ -119,6 +119,14 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.POST("/api/v1/mp/news/ingest", handlers.MpNewsIngest(cfg, gormOrNil(database)))
 
 	s.Router.GET("/api/v1/mp/wechat-group", handlers.MpWechatGroupGet(cfg.StaticDir))
+	s.Router.GET("/api/v1/mp/poster", handlers.MpPosterGet(gormOrNil(database), cfg))
+
+	s.Router.POST("/api/v1/admin/mp/poster/image", handlers.AdminPosterUploadImage(cfg))
+	s.Router.GET("/api/v1/admin/mp/posters", handlers.AdminPosterList(gormOrNil(database)))
+	s.Router.GET("/api/v1/admin/mp/posters/:id", handlers.AdminPosterDetail(gormOrNil(database)))
+	s.Router.POST("/api/v1/admin/mp/posters", handlers.AdminPosterCreate(gormOrNil(database)))
+	s.Router.PUT("/api/v1/admin/mp/posters/:id", handlers.AdminPosterUpdate(gormOrNil(database)))
+	s.Router.DELETE("/api/v1/admin/mp/posters/:id", handlers.AdminPosterDelete(gormOrNil(database)))
 
 	s.Router.GET("/api/v1/admin/mp/wechat-group", handlers.AdminMpWechatGroupGet(cfg))
 	s.Router.POST("/api/v1/admin/mp/wechat-group", handlers.AdminMpWechatGroupUpdate(cfg))

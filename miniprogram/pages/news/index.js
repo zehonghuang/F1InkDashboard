@@ -7,6 +7,7 @@ const { createMotorsportLiveClient } = require("../../services/motorsportLiveWs"
 const { getAuthState } = require("../../services/authService")
 const i18n = require("../../services/i18n")
 const { computeTabbarReserveStyle } = require("../../utils/tabbar-layout")
+const { fetchPoster, getPosterCache } = require("../../services/mpPosterApi")
 
 const WELCOME_KEY = "news_welcome_shown_v1"
 const PREF_TEAMS_KEY = "pref_follow_teams"
@@ -383,7 +384,9 @@ Page({
     listTransformStyle: "",
     refreshing: false,
     pressPreview: null,
-    pressJiggleId: ""
+    pressJiggleId: "",
+    posterVisible: false,
+    posterItem: null
   },
   pad2(v) {
     const n = Math.max(0, Math.floor(Number(v) || 0))
@@ -572,6 +575,35 @@ Page({
       this.setData(nextData)
     }
   },
+  applyPoster(res) {
+    const item = res && res.item
+    const has = Boolean(item && item.id && item.posterUrl)
+    if (!has) {
+      this.setData({ posterVisible: false, posterItem: null })
+      return
+    }
+    const ratio = Number(item.posterRatio) || 0
+    const safeItem = {
+      id: Number(item.id) || 0,
+      title: String(item.title || "").trim(),
+      posterUrl: String(item.posterUrl || "").trim(),
+      posterRatio: ratio > 0 ? ratio : (Number(item.posterWidth) > 0 && Number(item.posterHeight) > 0 ? Number(item.posterWidth) / Number(item.posterHeight) : 0)
+    }
+    this.setData({ posterVisible: true, posterItem: safeItem })
+  },
+  async loadPoster(opts) {
+    const silent = Boolean(opts && opts.silent)
+    if (!silent) {
+      const cached = getPosterCache()
+      if (cached && cached.item) this.applyPoster(cached)
+    }
+    try {
+      const res = await fetchPoster({ silent })
+      if (res) this.applyPoster(res)
+    } catch (e) {
+      try { console.log("[news] loadPoster failed", e) } catch (err) {}
+    }
+  },
   applyMotorsportLiveStandings(standings) {
     if (!this.data.isLoggedIn) return
     const rows = mapMotorsportStandingsRows(standings && standings.rows)
@@ -680,6 +712,7 @@ Page({
   onShow() {
     console.log("[PAGE:NEWS] onShow() fired. this.route=", this.route, "typeof getTabBar=", typeof this.getTabBar)
     this.applyI18n()
+    this.loadPoster({ silent: false })
     const isLoggedIn = this.syncAuthState()
     if (isLoggedIn) {
       this.connectMotorsportLiveWs()
@@ -735,6 +768,7 @@ Page({
     if (reset) {
       this.loadRaceWeek()
       this.loadLatestCrawledResults()
+      this.loadPoster({ silent: true })
     }
     if (reset) {
       if (softReset) {

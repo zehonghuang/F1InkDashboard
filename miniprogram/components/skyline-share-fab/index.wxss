@@ -46,13 +46,16 @@
 
 .ssf-img {
   display: block;
+  width: 100%;
+  height: 100%;
   max-width: 100%;
   max-height: 100%;
+  box-sizing: border-box;
 }
 
-.ssf-shell.size-sm .ssf-img { width: 52rpx; height: 52rpx; }
-.ssf-shell.size-md .ssf-img { width: 68rpx; height: 68rpx; }
-.ssf-shell.size-lg .ssf-img { width: 92rpx; height: 92rpx; }
+.ssf-shell.size-sm .ssf-img { min-width: 52rpx; min-height: 52rpx; }
+.ssf-shell.size-md .ssf-img { min-width: 68rpx; min-height: 68rpx; }
+.ssf-shell.size-lg .ssf-img { min-width: 92rpx; min-height: 92rpx; }
 
 .ssf-fallback {
   display: flex;

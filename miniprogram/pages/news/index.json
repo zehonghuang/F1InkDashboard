@@ -8,6 +8,7 @@
   "usingComponents": {
     "analog-clock": "/components/analog-clock/index",
     "ms-qualifying-table": "/components/ms-qualifying-table/index",
-    "ms-live-standings-table": "/components/ms-live-standings-table/index"
+    "ms-live-standings-table": "/components/ms-live-standings-table/index",
+    "skyline-share-fab": "/components/skyline-share-fab/index"
   }
 }

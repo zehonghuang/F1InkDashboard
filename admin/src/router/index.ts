@@ -16,6 +16,8 @@ import MotorsportLiveStandingsDemoPage from '@/pages/MotorsportLiveStandingsDemo
 import ShopCategoriesPage from '@/pages/ShopCategoriesPage.vue'
 import ShopProductsPage from '@/pages/ShopProductsPage.vue'
 import MiniProgramConfigPage from '@/pages/MiniProgramConfigPage.vue'
+import PosterListPage from '@/pages/PosterListPage.vue'
+import PosterEditorPage from '@/pages/PosterEditorPage.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -111,6 +113,18 @@ const routes: RouteRecordRaw[] = [
         name: 'mini-program-config',
         component: MiniProgramConfigPage,
         meta: { title: '小程序配置' },
+      },
+      {
+        path: 'posters',
+        name: 'poster-list',
+        component: PosterListPage,
+        meta: { title: '海报管理' },
+      },
+      {
+        path: 'posters/:id/edit',
+        name: 'poster-edit',
+        component: PosterEditorPage,
+        meta: { title: '编辑海报' },
       },
     ],
   },

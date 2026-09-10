@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"toinc_f1_backend/internal/config"
+	"toinc_f1_backend/internal/model"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -40,5 +41,18 @@ func Connect(cfg config.MySQLConfig) (*DB, error) {
 	sqlDB.SetMaxOpenConns(10)
 	sqlDB.SetMaxIdleConns(5)
 
+	if err := autoMigrate(g); err != nil {
+		return nil, fmt.Errorf("auto_migrate_failed: %w", err)
+	}
+
 	return &DB{Gorm: g}, nil
+}
+
+func autoMigrate(g *gorm.DB) error {
+	if g == nil {
+		return nil
+	}
+	return g.AutoMigrate(
+		&model.MpPoster{},
+	)
 }

@@ -30,10 +30,42 @@ function getWinSize() {
   }
 }
 
+function sizeEdgeRpx(size) {
+  const s = normalizeSize(size)
+  if (s === "sm") return 80
+  if (s === "lg") return 140
+  return 104
+}
+
+function sizeToPxWH(size, aspectRatio) {
+  const edgeRpx = sizeEdgeRpx(size)
+  const edgePx = rpxToPx(edgeRpx)
+  const ratio = Number(aspectRatio) || 0
+  if (ratio <= 0) {
+    return { w: edgePx, h: edgePx }
+  }
+  if (ratio >= 1) {
+    const w = edgePx
+    const h = Math.max(20, edgePx / ratio)
+    return { w, h }
+  }
+  const h = edgePx
+  const w = Math.max(20, edgePx * ratio)
+  return { w, h }
+}
+
 function buildInnerStyle(props) {
   const inner = []
-  if (props.closedBorderRadius != null) inner.push(`border-radius:${props.closedBorderRadius}rpx;`)
-  else inner.push("border-radius:999rpx;")
+  const ratio = Number(props.aspectRatio) || 0
+  if (props.closedBorderRadius != null) {
+    inner.push(`border-radius:${props.closedBorderRadius}rpx;`)
+  } else if (ratio > 0) {
+    const r = Number(props.rectBorderRadius)
+    const rr = Number.isFinite(r) && r >= 0 ? r : 20
+    inner.push(`border-radius:${rr}rpx;`)
+  } else {
+    inner.push("border-radius:999rpx;")
+  }
   let bg = ""
   if (props.innerBg) bg = props.innerBg
   else bg = "linear-gradient(180deg,rgba(20,20,28,0.92) 0%,rgba(10,10,16,0.98) 100%)"
@@ -53,16 +85,21 @@ function buildInnerStyle(props) {
   return inner.join("")
 }
 
-function buildContentStyle(size, contentStyle) {
+function buildContentStyle(size, contentStyle, aspectRatio) {
   const extra = contentStyle ? String(contentStyle) : ""
-  return extra
-}
-
-function sizeToPx(size) {
-  const s = normalizeSize(size)
-  if (s === "sm") return rpxToPx(80)
-  if (s === "lg") return rpxToPx(140)
-  return rpxToPx(104)
+  const ratio = Number(aspectRatio) || 0
+  if (ratio <= 0) return extra
+  const sizeRpx = sizeEdgeRpx(size)
+  let wRpx, hRpx
+  if (ratio >= 1) {
+    wRpx = sizeRpx
+    hRpx = Math.max(20, Math.round(sizeRpx / ratio))
+  } else {
+    hRpx = sizeRpx
+    wRpx = Math.max(20, Math.round(sizeRpx * ratio))
+  }
+  const dims = `width:${wRpx}rpx;height:${hRpx}rpx;max-width:100%;max-height:100%;`
+  return dims + extra
 }
 
 Component({
@@ -80,6 +117,8 @@ Component({
     contentStyle: { type: String, value: "" },
 
     size: { type: String, value: "md" },
+    aspectRatio: { type: Number, value: 0 },
+    rectBorderRadius: { type: Number, value: 20 },
     right: { type: String, value: "" },
     left: { type: String, value: "" },
     top: { type: String, value: "" },
@@ -93,7 +132,7 @@ Component({
 
     closedColor: { type: String, value: "rgba(20, 20, 28, 0.98)" },
     closedElevation: { type: Number, value: 28 },
-    closedBorderRadius: { type: Number, value: 999 },
+    closedBorderRadius: { type: Number, value: null },
     openColor: { type: String, value: "#15151e" },
     openElevation: { type: Number, value: 0 },
     openBorderRadius: { type: Number, value: 0 },
@@ -124,7 +163,8 @@ Component({
     _dragStyle: "",
     _innerStyle: "",
     _contentStyle: "",
-    _hasShareKey: false
+    _hasShareKey: false,
+    _boxStyle: ""
   },
   lifetimes: {
     attached() {
@@ -140,6 +180,7 @@ Component({
       this._rafX = 0
       this._rafY = 0
       this._lastPos = null
+      this._lastSize = null
       this._recomputeProps()
       if (this.properties.autoResetOnShow) {
         this._onPageShow = () => {
@@ -171,24 +212,27 @@ Component({
     }
   },
   observers: {
-    "size, right, left, top, bottom, closedBorderRadius, innerBg, innerBorder, innerShadow, glowColor, contentStyle, shareKey, draggable, edgeInset, reserveBottomRpx, reserveTabbarPx, chipColor, chipIconColor, dismissChip, dismissTtlMs": function () {
+    "size, aspectRatio, rectBorderRadius, right, left, top, bottom, closedBorderRadius, innerBg, innerBorder, innerShadow, glowColor, contentStyle, shareKey, draggable, edgeInset, reserveBottomRpx, reserveTabbarPx, chipColor, chipIconColor, dismissChip, dismissTtlMs": function () {
       this._recomputeProps()
     }
   },
   methods: {
+    _sizeWH() {
+      return sizeToPxWH(this.properties.size, this.properties.aspectRatio)
+    },
     _defaultAnchor() {
       const p = this.properties
-      const sizePx = sizeToPx(p.size)
+      const sz = this._sizeWH()
       const win = getWinSize()
       const insets = this._safeInsets()
       const reserve = rpxToPx(Number(p.reserveBottomRpx) || 0)
       const tabPx = Number(p.reserveTabbarPx) || 0
-      let x = win.w - sizePx - rpxToPx(20)
-      let y = win.h - sizePx - rpxToPx(260) - insets.bottom - reserve - tabPx
-      if (p.right) x = win.w - sizePx - this._toPxOrZero(p.right)
+      let x = win.w - sz.w - rpxToPx(20)
+      let y = win.h - sz.h - rpxToPx(260) - insets.bottom - reserve - tabPx
+      if (p.right) x = win.w - sz.w - this._toPxOrZero(p.right)
       if (p.left) x = this._toPxOrZero(p.left)
       if (p.top) y = this._toPxOrZero(p.top)
-      if (p.bottom) y = win.h - sizePx - this._toPxOrZero(p.bottom) - insets.bottom - reserve - tabPx
+      if (p.bottom) y = win.h - sz.h - this._toPxOrZero(p.bottom) - insets.bottom - reserve - tabPx
       return { x, y }
     },
     _safeInsets() {
@@ -214,13 +258,15 @@ Component({
       return 0
     },
     _loadSavedPos() {
-      const key = String(this.properties.positionKey || "skyline_share_fab_pos")
+      const key = String(this.properties.positionKey || "").trim()
+      if (!key) return null
       try {
-        const saved = wx.getStorageSync && wx.getStorageSync(key)
-        if (!saved || typeof saved !== "object") return null
-        const x = Number(saved.x)
-        const y = Number(saved.y)
-        if (!isFinite(x) || !isFinite(y)) return null
+        const raw = wx.getStorageSync(key)
+        if (!raw) return null
+        if (typeof raw !== "object") return null
+        const x = Number(raw.x)
+        const y = Number(raw.y)
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return null
         if (x === 0 && y === 0) return null
         return { x, y }
       } catch (e) {
@@ -228,21 +274,28 @@ Component({
       }
     },
     _savePos(pt) {
-      const key = String(this.properties.positionKey || "skyline_share_fab_pos")
-      try { wx.setStorageSync && wx.setStorageSync(key, { x: pt.x, y: pt.y }) } catch (e) {}
+      try {
+        const key = String(this.properties.positionKey || "").trim()
+        if (!key) return
+        wx.setStorageSync(key, {
+          x: pt.x,
+          y: pt.y,
+          savedAt: Date.now()
+        })
+      } catch (e) {}
     },
     _clampPos(pt) {
-      const sizePx = sizeToPx(this.properties.size)
+      const sz = this._sizeWH()
       const win = getWinSize()
       const insets = this._safeInsets()
       const inset = Number(this.properties.edgeInset) || 0
       const reserve = rpxToPx(Number(this.properties.reserveBottomRpx) || 0)
       const tabPx = Number(this.properties.reserveTabbarPx) || 0
       const minX = inset
-      const maxX = win.w - sizePx - inset
+      const maxX = win.w - sz.w - inset
       const minY = inset + insets.top
-      const winMaxY = win.h - sizePx - inset - insets.bottom - reserve - tabPx
-      const screenMaxY = win.screenH - sizePx - inset - insets.bottom - reserve - tabPx
+      const winMaxY = win.h - sz.h - inset - insets.bottom - reserve - tabPx
+      const screenMaxY = win.screenH - sz.h - inset - insets.bottom - reserve - tabPx
       const maxY = Math.min(winMaxY, screenMaxY)
       let x = pt.x
       let y = pt.y
@@ -253,23 +306,34 @@ Component({
       return { x, y }
     },
     _snapX(pt) {
-      const sizePx = sizeToPx(this.properties.size)
+      const sz = this._sizeWH()
       const win = getWinSize()
       const inset = Number(this.properties.edgeInset) || 0
       const leftX = inset
-      const rightX = win.w - sizePx - inset
-      const center = (win.w - sizePx) / 2
+      const rightX = win.w - sz.w - inset
+      const center = (win.w - sz.w) / 2
       let x = pt.x
       if (x < center) x = leftX
       else x = rightX
       return { x, y: pt.y }
+    },
+    _boxDimStyle() {
+      const sz = this._sizeWH()
+      const ratio = Number(this.properties.aspectRatio) || 0
+      if (ratio <= 0) return ""
+      const r = Number(this.properties.closedBorderRadius)
+      const hasCustomRadius = Number.isFinite(r) && r != null
+      const radiusRpx = hasCustomRadius ? r : (Number(this.properties.rectBorderRadius) || 20)
+      const radiusStr = hasCustomRadius ? `border-radius:${radiusRpx}rpx;` : `border-radius:${radiusRpx}rpx;`
+      return `width:${Math.round(sz.w)}px;height:${Math.round(sz.h)}px;${radiusStr}`
     },
     _buildDragStyle(pt, withSnapAnim, extra) {
       const s = pt
       let trans = "transition: none;"
       if (withSnapAnim) trans = "transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);"
       else if (extra && extra.transition) trans = `transition: ${extra.transition};`
-      return `position:fixed;left:0;top:0;transform:translate3d(${s.x}px, ${s.y}px, 0);${trans}`
+      const box = this._boxDimStyle()
+      return `position:fixed;left:0;top:0;transform:translate3d(${s.x}px, ${s.y}px, 0);${trans}${box ? box : ""}`
     },
     _applyPos(pt, opts) {
       const clamped = this._clampPos(pt)
@@ -291,32 +355,6 @@ Component({
       const x = this._rafX
       const y = this._rafY
       this._applyPosFast({ x, y })
-    },
-    _savePos(pt) {
-      try {
-        const key = String(this.properties.positionKey || "").trim()
-        if (!key) return
-        wx.setStorageSync(key, {
-          x: pt.x,
-          y: pt.y,
-          savedAt: Date.now()
-        })
-      } catch (e) {}
-    },
-    _loadSavedPos() {
-      try {
-        const key = String(this.properties.positionKey || "").trim()
-        if (!key) return null
-        const raw = wx.getStorageSync(key)
-        if (!raw) return null
-        if (typeof raw !== "object") return null
-        const x = Number(raw.x)
-        const y = Number(raw.y)
-        if (!Number.isFinite(x) || !Number.isFinite(y)) return null
-        return { x, y }
-      } catch (e) {
-        return null
-      }
     },
     _chipStyle() {
       const bg = String(this.properties.chipColor || "rgba(220,38,38,0.96)").trim()
@@ -366,7 +404,7 @@ Component({
         _visible: true,
         _sizeClass: "size-" + size,
         _innerStyle: buildInnerStyle(p),
-        _contentStyle: buildContentStyle(size, p.contentStyle),
+        _contentStyle: buildContentStyle(size, p.contentStyle, p.aspectRatio),
         _chipStyle: this._chipStyle(),
         _hasShareKey
       })
@@ -468,16 +506,6 @@ Component({
       this._savePos(finalPt)
       this._dragState = { wasClick: false, at: Date.now() }
       this.setData({ _dragging: false })
-    },
-    _onDragTap(e) {
-      if (!this.properties.draggable) {
-        this._executeNavigate()
-        return
-      }
-      const st = this._dragState
-      this._dragState = null
-      if (st && st.wasClick === false) return
-      this._executeNavigate()
     },
     _executeNavigate() {
       this.triggerEvent("tap", {}, {})

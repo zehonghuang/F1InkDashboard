@@ -1,5 +1,7 @@
 import type { MpNewsItem, MpNewsRichTextNode } from '@/api/mpNews'
 
+export type { MpNewsRichTextNode }
+
 export const F1_SHOP_CARD_TAG = 'f1-shop-card'
 
 function escapeHtml(text: string) {
