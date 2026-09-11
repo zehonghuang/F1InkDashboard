@@ -126,13 +126,25 @@ function selectedCatID(): number | null {
 }
 
 function setSelectedL1(cat: ShopCategory) {
-  selected.value = { kind: 'l1', cat_id: cat.cat_id }
+  const next: SelectedScope = { kind: 'l1', cat_id: cat.cat_id }
+  if (scopeEquals(selected.value, next)) return
+  selected.value = next
+  pushRouterFromSelected()
+  loadProductIDs()
 }
 function setSelectedL2(cat: ShopCategory) {
-  selected.value = { kind: 'l2', cat_id: cat.cat_id }
+  const next: SelectedScope = { kind: 'l2', cat_id: cat.cat_id }
+  if (scopeEquals(selected.value, next)) return
+  selected.value = next
+  pushRouterFromSelected()
+  loadProductIDs()
 }
 function setSelectedAll() {
-  selected.value = { kind: 'all' }
+  const next: SelectedScope = { kind: 'all' }
+  if (scopeEquals(selected.value, next)) return
+  selected.value = next
+  pushRouterFromSelected()
+  loadProductIDs()
 }
 
 function isL1Active(cat: ShopCategory): boolean {
@@ -546,14 +558,15 @@ function pushRouterFromSelected() {
   const needsUpdate = sid !== qid
   if (!needsUpdate) return
   _syncingRouter.value = true
+  const release = () => { _syncingRouter.value = false }
   try {
     if (!sid) {
-      router.replace({ name: 'shop-products', query: {} })
+      router.replace({ name: 'shop-products', query: {} }).finally(release)
     } else {
-      router.replace({ name: 'shop-products', query: { cat_id: String(sid) } })
+      router.replace({ name: 'shop-products', query: { cat_id: String(sid) } }).finally(release)
     }
-  } finally {
-    queueMicrotask(() => { _syncingRouter.value = false })
+  } catch {
+    release()
   }
 }
 
@@ -585,29 +598,30 @@ function syncFromQuery() {
       next = { kind: 'l2', cat_id: qid }
     }
   }
-  if (scopeEquals(selected.value, next)) return
+  if (scopeEquals(selected.value, next)) return false
   selected.value = next
+  return true
 }
 
-watch(selected, () => {
-  if (_syncingRouter.value) return
-  pushRouterFromSelected()
-  loadProductIDs()
-})
-
 onMounted(async () => {
-  syncFromQuery()
-  await loadCategories()
-  syncFromQuery()
-  await loadProductIDs()
+  _syncingRouter.value = true
+  try {
+    syncFromQuery()
+    await loadCategories()
+    syncFromQuery()
+    await loadProductIDs()
+  } finally {
+    _syncingRouter.value = false
+  }
 })
 
 watch(
   () => [route.query?.cat_id],
   () => {
+    if (_syncingRouter.value) return
     const prev = selectedCatID()
-    syncFromQuery()
-    if (prev !== selectedCatID()) {
+    const changed = syncFromQuery()
+    if (prev !== selectedCatID() || changed) {
       loadProductIDs()
     }
   },
