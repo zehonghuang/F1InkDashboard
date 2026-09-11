@@ -4,8 +4,11 @@ import {
   fetchShopCategoryProductIDs,
   fetchShopAllProductIDs,
   fetchShopProductDetail,
+  addAdminShopSelected,
+  fetchAdminShopSelected,
   type ShopCategory,
   type ShopProductDetail,
+  type ShopSelectedProduct,
 } from '@/api/shop'
 import { computed, h, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -16,6 +19,7 @@ const router = useRouter()
 const loading = ref(false)
 const errorText = ref('')
 const catLoading = ref(false)
+const addingSelected = ref(false)
 
 const categories = ref<ShopCategory[]>([])
 type SelectedScope = { kind: 'all' } | { kind: 'l1'; cat_id: number } | { kind: 'l2'; cat_id: number }
@@ -27,6 +31,78 @@ const details = reactive<Record<string, ShopProductDetail | null>>({})
 const detailLoading = reactive<Record<string, boolean>>({})
 const detailError = reactive<Record<string, string>>({})
 const expandedRows = reactive<Record<string, boolean>>({})
+
+const checkedIDs = reactive<Set<string>>(new Set())
+const selectedProducts = ref<ShopSelectedProduct[]>([])
+
+async function loadSelectedProducts() {
+  try {
+    const res = await fetchAdminShopSelected()
+    selectedProducts.value = res.items || []
+  } catch (e) {
+    // ignore
+  }
+}
+
+onMounted(() => {
+  loadSelectedProducts()
+})
+
+const selectedProductIDSet = computed(() => {
+  const s = new Set<string>()
+  for (const p of selectedProducts.value) {
+    s.add(p.product_id)
+  }
+  return s
+})
+
+function isSelected(id: string): boolean {
+  return checkedIDs.has(id)
+}
+
+function toggleSelect(id: string) {
+  if (checkedIDs.has(id)) {
+    checkedIDs.delete(id)
+  } else {
+    checkedIDs.add(id)
+  }
+}
+
+function toggleSelectAll() {
+  const allChecked = productIDs.value.every((id) => checkedIDs.has(id))
+  if (allChecked) {
+    for (const id of productIDs.value) checkedIDs.delete(id)
+  } else {
+    for (const id of productIDs.value) checkedIDs.add(id)
+  }
+}
+
+const allChecked = computed(() => {
+  if (productIDs.value.length === 0) return false
+  return productIDs.value.every((id) => checkedIDs.has(id))
+})
+
+const someChecked = computed(() => {
+  return productIDs.value.some((id) => checkedIDs.has(id))
+})
+
+const checkedCount = computed(() => checkedIDs.size)
+
+async function handleAddSelected() {
+  const ids = Array.from(checkedIDs)
+  if (ids.length === 0) return
+  addingSelected.value = true
+  errorText.value = ''
+  try {
+    await addAdminShopSelected(ids)
+    for (const id of ids) checkedIDs.delete(id)
+    await loadSelectedProducts()
+  } catch (e: any) {
+    errorText.value = String(e?.message || e || '添加失败')
+  } finally {
+    addingSelected.value = false
+  }
+}
 
 function isSelectedAll(): boolean {
   return selected.value.kind === 'all'
@@ -80,6 +156,7 @@ async function loadCategories() {
 async function loadProductIDs() {
   loading.value = true
   errorText.value = ''
+  checkedIDs.clear()
   try {
     if (isSelectedAll()) {
       const r = await fetchShopAllProductIDs(5)
@@ -141,6 +218,52 @@ const scopeTitle = computed(() => {
 })
 
 const columns = computed(() => [
+  {
+    title: h(
+      'div',
+      { class: 'flex items-center gap-2' },
+      [
+        h(
+          'input',
+          {
+            type: 'checkbox',
+            checked: allChecked.value,
+            indeterminate: someChecked.value && !allChecked.value,
+            class: 'w-4 h-4 cursor-pointer accent-[#E10600]',
+            onChange: () => toggleSelectAll(),
+            'aria-label': '全选',
+          },
+          null,
+        ),
+        h('span', { class: 'text-xs text-zinc-400' }, `选 ${checkedCount.value}`),
+      ],
+    ),
+    key: '_check',
+    width: 70,
+    render: (hh: typeof h, params: any) => {
+      const id = String(params.row.id || '')
+      const inSelected = selectedProductIDSet.value.has(id)
+      return hh('div', { class: 'flex items-center gap-2' }, [
+        hh('input', {
+          type: 'checkbox',
+          checked: isSelected(id),
+          class: 'w-4 h-4 cursor-pointer accent-[#E10600]',
+          onChange: () => toggleSelect(id),
+          'aria-label': `选中 ${id}`,
+        }),
+        inSelected
+          ? hh(
+              'span',
+              {
+                class:
+                  'inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-[#1a0a0a] text-[#E10600] border border-[#E10600]/30',
+              },
+              '已指定',
+            )
+          : null,
+      ])
+    },
+  },
   {
     title: '商品 ID',
     key: 'id',
@@ -263,18 +386,43 @@ const columns = computed(() => [
     render: (hh: typeof h, params: any) => {
       const id = String(params.row.id || '')
       const expanded = !!expandedRows[id]
-      return hh(
-        'button',
-        {
-          class:
-            'px-3 py-1 text-xs rounded transition-colors ' +
-            (expanded
-              ? 'bg-[#E10600] hover:bg-[#c60700] text-white'
-              : 'bg-[#1a1a1a] hover:bg-[#2a2a2a] text-zinc-200'),
-          onClick: () => toggleExpand(id),
-        },
-        expanded ? '收起详情' : '查看详情',
-      )
+      const inSelected = selectedProductIDSet.value.has(id)
+      return hh('div', { class: 'flex items-center gap-2' }, [
+        !inSelected
+          ? hh(
+              'button',
+              {
+                class:
+                  'px-2.5 py-1 text-xs rounded transition-colors ' +
+                  'bg-zinc-800 hover:bg-zinc-700 text-zinc-200',
+                onClick: async () => {
+                  addingSelected.value = true
+                  try {
+                    await addAdminShopSelected([id])
+                    await loadSelectedProducts()
+                  } catch (e: any) {
+                    errorText.value = String(e?.message || e || '添加失败')
+                  } finally {
+                    addingSelected.value = false
+                  }
+                },
+              },
+              '指定',
+            )
+          : null,
+        hh(
+          'button',
+          {
+            class:
+              'px-3 py-1 text-xs rounded transition-colors ' +
+              (expanded
+                ? 'bg-[#E10600] hover:bg-[#c60700] text-white'
+                : 'bg-[#1a1a1a] hover:bg-[#2a2a2a] text-zinc-200'),
+            onClick: () => toggleExpand(id),
+          },
+          expanded ? '收起详情' : '查看详情',
+        ),
+      ])
     },
   },
 ])
@@ -449,11 +597,28 @@ watch(
           <div class="text-lg font-semibold text-zinc-100 mt-0.5 flex items-center gap-3">
             <span>{{ scopeTitle }}</span>
             <span class="text-xs font-normal text-zinc-500">共 {{ productIDs.length }} 个商品</span>
+            <span
+              v-if="selectedProducts.length"
+              class="text-xs font-normal px-2 py-0.5 rounded bg-[#1a0a0a] text-[#E10600] border border-[#E10600]/30"
+            >
+              已指定 {{ selectedProducts.length }} 个
+            </span>
           </div>
         </div>
-        <div class="flex items-center gap-2">
-          <Button type="primary" :loading="loading" @click="loadProductIDs">刷新</Button>
+        <div class="flex items-center gap-2 flex-wrap">
+          <Button
+            type="primary"
+            :loading="addingSelected"
+            :disabled="checkedCount === 0"
+            @click="handleAddSelected"
+          >
+            添加选中 ({{ checkedCount }})
+          </Button>
+          <Button type="default" @click="router.push({ name: 'shop-selected' })">
+            已指定商品
+          </Button>
           <Button type="default" @click="router.push({ name: 'shop-categories' })">分类管理</Button>
+          <Button type="primary" :loading="loading" @click="loadProductIDs">刷新</Button>
         </div>
       </div>
     </Card>

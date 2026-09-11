@@ -11,7 +11,7 @@ const activeName = computed(() => {
   if (n.startsWith('devices')) return 'devices'
   if (n.startsWith('users')) return 'users'
   if (n.startsWith('settings')) return 'settings'
-  if (n.startsWith('shop-categories') || n.startsWith('shop-products')) return 'shop'
+  if (n.startsWith('shop-categories') || n.startsWith('shop-products') || n.startsWith('shop-selected')) return 'shop'
   if (n.startsWith('mini-program-config')) return 'mini-program'
   if (n.startsWith('poster')) return 'poster'
   if (n.startsWith('f1-live-timing-demo')) return 'f1-live-timing-demo'

@@ -1,15 +1,18 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"toinc_f1_backend/internal/config"
 	"toinc_f1_backend/internal/model"
 	"toinc_f1_backend/internal/wechatshop"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func shopTokenOK(c *gin.Context, expected string) bool {
@@ -308,5 +311,261 @@ func WechatShopProductDetail(cfg config.Config) gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, model.WechatShopProductDetailResponse{Ok: true, Product: transformProduct(pd)})
+	}
+}
+
+func parseShopAppIDOrFallback(cfg config.Config, raw string) string {
+	raw = strings.TrimSpace(raw)
+	if raw != "" {
+		return raw
+	}
+	cfgRaw := strings.TrimSpace(cfg.WechatShop.AppID)
+	if cfgRaw != "" {
+		return cfgRaw
+	}
+	return "default"
+}
+
+// @Summary Admin-小程序指定商品列表
+// @Tags AdminWechatShop
+// @Produce json
+// @Param app_id query string false "小程序 AppID，留空使用默认"
+// @Success 200 {object} model.MpShopProductListResponse
+// @Router /api/v1/admin/shop/selected [get]
+func AdminShopSelectedList(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if db == nil {
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "db_unavailable"})
+			return
+		}
+		appID := parseShopAppIDOrFallback(cfg, c.Query("app_id"))
+		var total int64
+		var items []model.MpShopProduct
+		q := db.Model(&model.MpShopProduct{}).Where("app_id = ?", appID)
+		q.Count(&total)
+		if err := q.Order("weight DESC, id DESC").Find(&items).Error; err != nil {
+			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: strings.TrimSpace(err.Error())})
+			return
+		}
+		if items == nil {
+			items = []model.MpShopProduct{}
+		}
+		c.JSON(http.StatusOK, model.MpShopProductListResponse{Ok: true, Total: total, Items: items})
+	}
+}
+
+// @Summary Admin-添加指定商品（批量）
+// @Tags AdminWechatShop
+// @Accept json
+// @Produce json
+// @Param body body model.MpShopProductAddRequest true "商品ID列表"
+// @Success 200 {object} model.MpShopProductListResponse
+// @Router /api/v1/admin/shop/selected [post]
+func AdminShopSelectedAdd(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
+	client, initErr := wechatshop.NewClient(cfg.WechatShop)
+	return func(c *gin.Context) {
+		if db == nil {
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "db_unavailable"})
+			return
+		}
+		var req model.MpShopProductAddRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: strings.TrimSpace(err.Error())})
+			return
+		}
+		appID := parseShopAppIDOrFallback(cfg, req.AppID)
+		now := time.Now().UTC()
+
+		for _, pid := range req.ProductIDs {
+			pid = strings.TrimSpace(pid)
+			if pid == "" {
+				continue
+			}
+			var existing model.MpShopProduct
+			findErr := db.Where("app_id = ? AND product_id = ?", appID, pid).First(&existing).Error
+			if findErr == nil {
+				continue
+			}
+			var pd *wechatshop.ProductDetail
+			if initErr == nil {
+				pd, _ = client.GetProductDetail(c.Request.Context(), pid)
+			}
+			item := model.MpShopProduct{
+				AppID:      appID,
+				ProductID:  pid,
+				SelectedAt: &now,
+			}
+			if pd != nil {
+				item.SpuID = pd.SpuID
+				item.Title = pd.Title
+				item.SubTitle = pd.SubTitle
+				if len(pd.HeadImg) > 0 {
+					item.HeadImg = pd.HeadImg[0]
+				}
+				item.MinPrice = pd.SalePrice
+				item.MarketPrice = pd.MarketPrice
+				item.TotalStock = pd.TotalStock
+				item.Status = pd.Status
+				if snapshot, jerr := json.Marshal(transformProduct(pd)); jerr == nil {
+					item.SnapshotJSON = string(snapshot)
+				}
+			}
+			if err := db.Create(&item).Error; err != nil {
+				c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: strings.TrimSpace(err.Error())})
+				return
+			}
+		}
+
+		var total int64
+		var items []model.MpShopProduct
+		q := db.Model(&model.MpShopProduct{}).Where("app_id = ?", appID)
+		q.Count(&total)
+		q.Order("weight DESC, id DESC").Find(&items)
+		if items == nil {
+			items = []model.MpShopProduct{}
+		}
+		c.JSON(http.StatusOK, model.MpShopProductListResponse{Ok: true, Total: total, Items: items})
+	}
+}
+
+// @Summary Admin-移除指定商品（批量）
+// @Tags AdminWechatShop
+// @Accept json
+// @Produce json
+// @Param body body model.MpShopProductRemoveRequest true "商品ID列表"
+// @Success 200 {object} model.MpShopProductListResponse
+// @Router /api/v1/admin/shop/selected [delete]
+func AdminShopSelectedRemove(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if db == nil {
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "db_unavailable"})
+			return
+		}
+		var req model.MpShopProductRemoveRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: strings.TrimSpace(err.Error())})
+			return
+		}
+		appID := parseShopAppIDOrFallback(cfg, req.AppID)
+		ids := make([]string, 0, len(req.ProductIDs))
+		for _, pid := range req.ProductIDs {
+			pid = strings.TrimSpace(pid)
+			if pid != "" {
+				ids = append(ids, pid)
+			}
+		}
+		if len(ids) > 0 {
+			db.Where("app_id = ? AND product_id IN ?", appID, ids).Delete(&model.MpShopProduct{})
+		}
+		var total int64
+		var items []model.MpShopProduct
+		q := db.Model(&model.MpShopProduct{}).Where("app_id = ?", appID)
+		q.Count(&total)
+		q.Order("weight DESC, id DESC").Find(&items)
+		if items == nil {
+			items = []model.MpShopProduct{}
+		}
+		c.JSON(http.StatusOK, model.MpShopProductListResponse{Ok: true, Total: total, Items: items})
+	}
+}
+
+// @Summary Admin-更新指定商品权重
+// @Tags AdminWechatShop
+// @Accept json
+// @Produce json
+// @Param id path int true "记录ID"
+// @Param body body object true "{\"weight\": 100"
+// @Success 200 {object} model.MpShopProductDetailResponse
+// @Router /api/v1/admin/shop/selected/{id} [put]
+func AdminShopSelectedUpdate(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
+	type Req struct {
+		Weight *int `json:"weight"`
+	}
+	return func(c *gin.Context) {
+		if db == nil {
+			c.JSON(http.StatusServiceUnavailable, model.ErrorResponse{Ok: false, Error: "db_unavailable"})
+			return
+		}
+		rawID := strings.TrimSpace(c.Param("id"))
+		id, err := strconv.ParseInt(rawID, 10, 64)
+		if err != nil || id <= 0 {
+			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: "invalid_id"})
+			return
+		}
+		var req Req
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: strings.TrimSpace(err.Error())})
+			return
+		}
+		var item model.MpShopProduct
+		if err := db.Where("id = ?", id).First(&item).Error; err != nil {
+			c.JSON(http.StatusNotFound, model.ErrorResponse{Ok: false, Error: "not_found"})
+			return
+		}
+		if req.Weight != nil {
+			item.Weight = *req.Weight
+			db.Save(&item)
+		}
+		c.JSON(http.StatusOK, model.MpShopProductDetailResponse{Ok: true, Item: item})
+	}
+}
+
+// @Summary 小程序-查询已指定商品ID列表
+// @Tags WechatShop
+// @Produce json
+// @Param app_id query string false "小程序 AppID"
+// @Param token query string false "鉴权 token"
+// @Success 200 {object} model.MpShopProductIDsResponse
+// @Router /api/v1/shop/selected [get]
+func MpShopSelectedIDs(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !shopTokenOK(c, cfg.WechatShop.ApiToken) {
+			return
+		}
+		if db == nil {
+			c.JSON(http.StatusOK, model.MpShopProductIDsResponse{Ok: true, AppID: "", ProductIDs: []string{}})
+			return
+		}
+		appID := parseShopAppIDOrFallback(cfg, c.Query("app_id"))
+		var items []model.MpShopProduct
+		db.Model(&model.MpShopProduct{}).Where("app_id = ?", appID).
+			Order("weight DESC, id DESC").Find(&items)
+		ids := make([]string, 0, len(items))
+		for _, it := range items {
+			ids = append(ids, it.ProductID)
+		}
+		c.JSON(http.StatusOK, model.MpShopProductIDsResponse{Ok: true, AppID: appID, ProductIDs: ids})
+	}
+}
+
+// @Summary 小程序-查询已指定商品详情列表（带缓存快照）
+// @Tags WechatShop
+// @Produce json
+// @Param app_id query string false "小程序 AppID"
+// @Param token query string false "鉴权 token"
+// @Success 200 {object} model.MpShopProductListResponse
+// @Router /api/v1/shop/selected/detail [get]
+func MpShopSelectedDetailList(cfg config.Config, db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !shopTokenOK(c, cfg.WechatShop.ApiToken) {
+			return
+		}
+		if db == nil {
+			c.JSON(http.StatusOK, model.MpShopProductListResponse{Ok: true, Total: 0, Items: []model.MpShopProduct{}})
+			return
+		}
+		appID := parseShopAppIDOrFallback(cfg, c.Query("app_id"))
+		var total int64
+		var items []model.MpShopProduct
+		q := db.Model(&model.MpShopProduct{}).Where("app_id = ?", appID)
+		q.Count(&total)
+		if err := q.Order("weight DESC, id DESC").Find(&items).Error; err != nil {
+			c.JSON(http.StatusBadRequest, model.ErrorResponse{Ok: false, Error: strings.TrimSpace(err.Error())})
+			return
+		}
+		if items == nil {
+			items = []model.MpShopProduct{}
+		}
+		c.JSON(http.StatusOK, model.MpShopProductListResponse{Ok: true, Total: total, Items: items})
 	}
 }

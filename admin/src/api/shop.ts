@@ -100,3 +100,92 @@ export async function fetchShopProductDetail(productID: string): Promise<ShopPro
   if (!res.ok) throw new Error(res.error || 'backend_error')
   return res
 }
+
+export type ShopSelectedProduct = {
+  id: number
+  app_id: string
+  product_id: string
+  spu_id: string
+  title: string
+  sub_title: string
+  head_img: string
+  min_price: number
+  market_price: number
+  total_stock: number
+  status: number
+  weight: number
+  snapshot_json?: string
+  selected_at?: string
+  created_at: string
+  updated_at: string
+}
+
+export type ShopSelectedListResponse = {
+  ok: boolean
+  error?: string
+  total: number
+  items: ShopSelectedProduct[]
+}
+
+export type ShopSelectedIDsResponse = {
+  ok: boolean
+  error?: string
+  app_id: string
+  product_ids: string[]
+}
+
+export async function fetchAdminShopSelected(appID = ''): Promise<ShopSelectedListResponse> {
+  const q = appID ? `?app_id=${encodeURIComponent(appID)}` : ''
+  const res = await fetchJSON<ShopSelectedListResponse>(`/api/v1/admin/shop/selected${q}`)
+  if (!res.ok) throw new Error(res.error || 'backend_error')
+  return res
+}
+
+export async function addAdminShopSelected(
+  productIDs: string[],
+  appID = '',
+): Promise<ShopSelectedListResponse> {
+  const res = await fetchJSON<ShopSelectedListResponse>(`/api/v1/admin/shop/selected`, {
+    method: 'POST',
+    body: JSON.stringify({ app_id: appID, product_ids: productIDs }),
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(res.error || 'backend_error')
+  return res
+}
+
+export async function removeAdminShopSelected(
+  productIDs: string[],
+  appID = '',
+): Promise<ShopSelectedListResponse> {
+  const res = await fetchJSON<ShopSelectedListResponse>(`/api/v1/admin/shop/selected`, {
+    method: 'DELETE',
+    body: JSON.stringify({ app_id: appID, product_ids: productIDs }),
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(res.error || 'backend_error')
+  return res
+}
+
+export async function updateAdminShopSelectedWeight(
+  id: number | string,
+  weight: number,
+): Promise<{ ok: boolean; item: ShopSelectedProduct }> {
+  const res = await fetchJSON<{ ok: boolean; item: ShopSelectedProduct }>(
+    `/api/v1/admin/shop/selected/${encodeURIComponent(String(id))}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify({ weight }),
+      headers: { 'Content-Type': 'application/json' },
+    },
+  )
+  if (!res.ok) throw new Error((res as any).error || 'backend_error')
+  return res
+}
+
+export async function fetchMpShopSelectedIDs(appID = ''): Promise<ShopSelectedIDsResponse> {
+  const q = appID ? `&app_id=${encodeURIComponent(appID)}` : ''
+  const res = await fetchJSON<ShopSelectedIDsResponse>(`/api/v1/shop/selected?token=admin${q}`)
+  if (!res.ok) throw new Error(res.error || 'backend_error')
+  return res
+}

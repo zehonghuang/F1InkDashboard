@@ -54,5 +54,6 @@ func autoMigrate(g *gorm.DB) error {
 	}
 	return g.AutoMigrate(
 		&model.MpPoster{},
+		&model.MpShopProduct{},
 	)
 }

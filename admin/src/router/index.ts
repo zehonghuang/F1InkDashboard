@@ -15,6 +15,7 @@ import MotorsportQualifyingDemoPage from '@/pages/MotorsportQualifyingDemoPage.v
 import MotorsportLiveStandingsDemoPage from '@/pages/MotorsportLiveStandingsDemoPage.vue'
 import ShopCategoriesPage from '@/pages/ShopCategoriesPage.vue'
 import ShopProductsPage from '@/pages/ShopProductsPage.vue'
+import ShopSelectedPage from '@/pages/ShopSelectedPage.vue'
 import MiniProgramConfigPage from '@/pages/MiniProgramConfigPage.vue'
 import PosterListPage from '@/pages/PosterListPage.vue'
 import PosterEditorPage from '@/pages/PosterEditorPage.vue'
@@ -107,6 +108,12 @@ const routes: RouteRecordRaw[] = [
         name: 'shop-products',
         component: ShopProductsPage,
         meta: { title: '微信小店 · 商品' },
+      },
+      {
+        path: 'shop/selected',
+        name: 'shop-selected',
+        component: ShopSelectedPage,
+        meta: { title: '微信小店 · 已指定商品' },
       },
       {
         path: 'mini-program',

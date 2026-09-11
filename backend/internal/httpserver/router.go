@@ -167,6 +167,13 @@ func New(cfg config.Config, database *db.DB) *Server {
 	s.Router.GET("/api/v1/shop/categories/:id/products", handlers.WechatShopCategoryProductIDs(cfg))
 	s.Router.GET("/api/v1/shop/products", handlers.WechatShopAllProductIDs(cfg))
 	s.Router.GET("/api/v1/shop/products/:id", handlers.WechatShopProductDetail(cfg))
+	s.Router.GET("/api/v1/shop/selected", handlers.MpShopSelectedIDs(cfg, gormOrNil(database)))
+	s.Router.GET("/api/v1/shop/selected/detail", handlers.MpShopSelectedDetailList(cfg, gormOrNil(database)))
+
+	s.Router.GET("/api/v1/admin/shop/selected", handlers.AdminShopSelectedList(cfg, gormOrNil(database)))
+	s.Router.POST("/api/v1/admin/shop/selected", handlers.AdminShopSelectedAdd(cfg, gormOrNil(database)))
+	s.Router.DELETE("/api/v1/admin/shop/selected", handlers.AdminShopSelectedRemove(cfg, gormOrNil(database)))
+	s.Router.PUT("/api/v1/admin/shop/selected/:id", handlers.AdminShopSelectedUpdate(cfg, gormOrNil(database)))
 
 	s.Router.GET("/api/v1/f1/sessions", handlers.F1Sessions(cfg, gormOrNil(database), s.Cache))
 	s.Router.GET("/api/v1/f1/sessions/current", handlers.F1SessionsCurrentExplicit(cfg, gormOrNil(database), s.Cache))
