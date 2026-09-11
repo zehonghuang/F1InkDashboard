@@ -3,7 +3,7 @@ const { fetchPrefs, updatePrefs } = require("../../services/prefsService")
 const i18n = require("../../services/i18n")
 const { getWeChatStoreConfig } = require("../../services/wechatStore")
 const { getWeChatGroupConfig, fetchWeChatGroupConfig } = require("../../services/wechatGroup")
-const { computeTabbarReserveStyle } = require("../../utils/tabbar-layout")
+const { computeTabbarReserveStyle, computePickerLayout } = require("../../utils/tabbar-layout")
 
 const STORAGE_KEYS = {
   season: "pref_season",
@@ -39,6 +39,9 @@ Page({
     profileGuideTotal: 2,
     profileGuideTitle: "",
     statusBarHeight: 0,
+    pickerInnerStyle: "top:64px;bottom:96px;left:12px;right:12px;",
+    pickerTopPx: 64,
+    pickerBottomPx: 96,
     prefSeason: 2026,
     followDrivers: [],
     followDriversText: i18n.t("mine.notSet"),
@@ -76,13 +79,27 @@ Page({
   },
   onLoad() {
     const layout = computeTabbarReserveStyle()
+    const pickerLayout = computePickerLayout()
     this._offLocale = i18n.onLocaleChange(() => this.applyI18n())
     try {
       const sys = wx.getSystemInfoSync()
       const h = Number(sys && sys.statusBarHeight) || 0
-      this.setData({ statusBarHeight: h, scrollViewStyle: layout.scrollViewStyle, tabbarReserveRpx: layout.tabbarReserveRpx })
+      this.setData({
+        statusBarHeight: h,
+        scrollViewStyle: layout.scrollViewStyle,
+        tabbarReserveRpx: layout.tabbarReserveRpx,
+        pickerInnerStyle: pickerLayout.pickerInnerStyle,
+        pickerTopPx: pickerLayout.pickerTopPx,
+        pickerBottomPx: pickerLayout.pickerBottomPx
+      })
     } catch (e) {
-      this.setData({ scrollViewStyle: layout.scrollViewStyle, tabbarReserveRpx: layout.tabbarReserveRpx })
+      this.setData({
+        scrollViewStyle: layout.scrollViewStyle,
+        tabbarReserveRpx: layout.tabbarReserveRpx,
+        pickerInnerStyle: pickerLayout.pickerInnerStyle,
+        pickerTopPx: pickerLayout.pickerTopPx,
+        pickerBottomPx: pickerLayout.pickerBottomPx
+      })
     }
     this.applyI18n()
     this.syncStoreConfig()

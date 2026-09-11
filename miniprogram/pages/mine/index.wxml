@@ -257,7 +257,7 @@
   />
 
   <view wx:if="{{showPicker}}" class="picker-mask" bindtap="onClosePicker"></view>
-  <view wx:if="{{showPicker}}" class="picker">
+  <view wx:if="{{showPicker}}" class="picker" style="{{pickerInnerStyle}}">
     <view class="picker-header">
       <view class="picker-title">{{pickerTitle}}</view>
       <view class="picker-actions">
