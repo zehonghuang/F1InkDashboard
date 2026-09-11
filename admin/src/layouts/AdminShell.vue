@@ -47,7 +47,7 @@ function onSelect(name: string) {
       router.push({ name: 'motorsport-live-demo' })
       return
     case 'shop':
-      router.push({ name: 'shop-products' })
+      router.push({ name: 'shop-categories' })
       return
     case 'mini-program':
       router.push({ name: 'mini-program-config' })
