@@ -24,6 +24,7 @@ const addingSelected = ref(false)
 const categories = ref<ShopCategory[]>([])
 const expandedL1 = reactive<Record<number, boolean>>({})
 const categoryIconError = reactive<Set<number>>(new Set())
+const catLoaded = ref(false)
 
 type SelectedScope = { kind: 'all' } | { kind: 'l1'; cat_id: number } | { kind: 'l2'; cat_id: number }
 
@@ -34,10 +35,9 @@ function parseCatIdFromQuery(): number | null {
   return Number.isFinite(n) && n > 0 ? n : null
 }
 
-const selected = computed<SelectedScope>((): SelectedScope => {
-  const qid = parseCatIdFromQuery()
+function scopeFromQuery(cats: ShopCategory[], qid: number | null): SelectedScope {
   if (qid === null) return { kind: 'all' }
-  for (const c of categories.value) {
+  for (const c of cats) {
     if (c.cat_id === qid) return { kind: 'l1', cat_id: qid }
     if (c.children) {
       const f = c.children.find((x) => x.cat_id === qid)
@@ -45,7 +45,9 @@ const selected = computed<SelectedScope>((): SelectedScope => {
     }
   }
   return { kind: 'l2', cat_id: qid }
-})
+}
+
+const selected = computed<SelectedScope>(() => scopeFromQuery(categories.value, parseCatIdFromQuery()))
 
 function applyScopeToRouter(scope: SelectedScope) {
   const qid = parseCatIdFromQuery()
@@ -90,18 +92,22 @@ function toggleL1(cat: ShopCategory) {
   expandedL1[cat.cat_id] = !expandedL1[cat.cat_id]
 }
 
-watch(
-  () => selected.value,
-  (s) => {
-    if (s.kind === 'l1') {
-      expandedL1[s.cat_id] = true
-    } else if (s.kind === 'l2') {
-      const parent = categories.value.find((c) => c.children?.some((x) => x.cat_id === s.cat_id))
-      if (parent) expandedL1[parent.cat_id] = true
+function ensureExpandedFromQuery(qid: number | null, cats: ShopCategory[]) {
+  if (qid === null) return
+  for (const c of cats) {
+    if (c.cat_id === qid) {
+      expandedL1[c.cat_id] = true
+      return
     }
-  },
-  { immediate: true },
-)
+    if (c.children) {
+      const f = c.children.find((x) => x.cat_id === qid)
+      if (f) {
+        expandedL1[c.cat_id] = true
+        return
+      }
+    }
+  }
+}
 
 const productIDs = ref<string[]>([])
 const details = reactive<Record<string, ShopProductDetail | null>>({})
@@ -131,7 +137,7 @@ const scopeTitle = computed(() => {
   return s.kind === 'l1' ? `L1#${cid}` : `L2#${cid}`
 })
 
-function isSelected(id: string): boolean {
+function isChecked(id: string): boolean {
   return checkedIDs.has(id)
 }
 function toggleSelect(id: string) {
@@ -182,6 +188,8 @@ async function loadCategories() {
   try {
     const res = await fetchShopCategories()
     categories.value = res.categories || []
+    catLoaded.value = true
+    ensureExpandedFromQuery(parseCatIdFromQuery(), categories.value)
   } catch (e: any) {
     errorText.value = String(e?.message || e || '分类加载失败')
   } finally {
@@ -247,9 +255,9 @@ function statusText(s: number | undefined | null) {
   return { label: String(n), cls: 'text-zinc-400' }
 }
 
-const columns = computed(() => [
-  {
-    title: h(
+const checkboxHeaderSlot = {
+  render: () =>
+    h(
       'div',
       { class: 'flex items-center gap-2' },
       [
@@ -258,11 +266,19 @@ const columns = computed(() => [
           checked: allChecked.value,
           indeterminate: someChecked.value && !allChecked.value,
           class: 'w-4 h-4 cursor-pointer accent-[#E10600]',
-          onChange: () => toggleSelectAll(),
+          onClick: (e: Event) => {
+            e.stopPropagation()
+            toggleSelectAll()
+          },
         }),
         h('span', { class: 'text-xs text-zinc-400' }, `选${checkedCount.value}`),
       ],
     ),
+}
+
+const columns = [
+  {
+    title: h(checkboxHeaderSlot.render()),
     key: '_check',
     width: 70,
     render: (hh: typeof h, params: any) => {
@@ -271,9 +287,12 @@ const columns = computed(() => [
       return hh('div', { class: 'flex items-center gap-2' }, [
         hh('input', {
           type: 'checkbox',
-          checked: isSelected(id),
+          checked: isChecked(id),
           class: 'w-4 h-4 cursor-pointer accent-[#E10600]',
-          onChange: () => toggleSelect(id),
+          onClick: (e: Event) => {
+            e.stopPropagation()
+            toggleSelect(id)
+          },
         }),
         inSelected
           ? hh(
@@ -438,13 +457,10 @@ const columns = computed(() => [
       ])
     },
   },
-])
+]
 
 const tableRows = computed(() =>
-  productIDs.value.map((id) => ({
-    _key: id,
-    id,
-  })),
+  productIDs.value.map((id) => ({ _key: id, id })),
 )
 
 function rowExpandRender(hh: typeof h, params: any) {
@@ -556,14 +572,17 @@ onMounted(async () => {
 let _lastLoadKey = ''
 watch(
   () => {
-    const sid = selectedCatID()
-    return sid === null ? 'all' : String(sid)
+    const sid = parseCatIdFromQuery()
+    return (sid === null ? 'all' : String(sid)) + '::' + (catLoaded.value ? '1' : '0')
   },
   (key) => {
-    if (key === _lastLoadKey) return
-    _lastLoadKey = key
+    const [k] = key.split('::')
+    if (k === _lastLoadKey) return
+    _lastLoadKey = k
+    ensureExpandedFromQuery(parseCatIdFromQuery(), categories.value)
     loadProductIDs()
   },
+  { immediate: false },
 )
 </script>
 
