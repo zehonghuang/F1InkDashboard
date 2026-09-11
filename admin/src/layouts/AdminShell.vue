@@ -11,19 +11,13 @@ const activeName = computed(() => {
   if (n.startsWith('devices')) return 'devices'
   if (n.startsWith('users')) return 'users'
   if (n.startsWith('settings')) return 'settings'
-  if (n === 'shop-categories' || n === 'shop-products' || n === 'shop-selected') return n
+  if (n.startsWith('shop-categories') || n.startsWith('shop-products') || n.startsWith('shop-selected')) return 'shop'
   if (n.startsWith('mini-program-config')) return 'mini-program'
   if (n.startsWith('poster')) return 'poster'
   if (n.startsWith('f1-live-timing-demo')) return 'f1-live-timing-demo'
   if (n.startsWith('motorsport-live-demo')) return 'motorsport-live-demo'
   if (n.startsWith('motorsport-demo')) return 'motorsport-demo'
   return 'dashboard'
-})
-
-const openNames = computed(() => {
-  const n = String(route.name || '')
-  if (n === 'shop-categories' || n === 'shop-products' || n === 'shop-selected') return ['shop']
-  return []
 })
 
 function onSelect(name: string) {
@@ -52,14 +46,8 @@ function onSelect(name: string) {
     case 'motorsport-live-demo':
       router.push({ name: 'motorsport-live-demo' })
       return
-    case 'shop-products':
+    case 'shop':
       router.push({ name: 'shop-products' })
-      return
-    case 'shop-selected':
-      router.push({ name: 'shop-selected' })
-      return
-    case 'shop-categories':
-      router.push({ name: 'shop-categories' })
       return
     case 'mini-program':
       router.push({ name: 'mini-program-config' })
@@ -89,7 +77,6 @@ function onSelect(name: string) {
         theme="dark"
         width="auto"
         :active-name="activeName"
-        :open-names="openNames"
         @on-select="onSelect"
       >
         <MenuItem name="dashboard">概览</MenuItem>
@@ -97,12 +84,7 @@ function onSelect(name: string) {
         <MenuItem name="devices">设备</MenuItem>
         <MenuItem name="users">用户</MenuItem>
         <MenuItem name="settings">设置</MenuItem>
-        <Submenu name="shop">
-          <template #title>微信小店</template>
-          <MenuItem name="shop-products">商品列表</MenuItem>
-          <MenuItem name="shop-selected">已指定商品</MenuItem>
-          <MenuItem name="shop-categories">分类管理</MenuItem>
-        </Submenu>
+        <MenuItem name="shop">微信小店</MenuItem>
         <MenuItem name="mini-program">小程序配置</MenuItem>
         <MenuItem name="poster">海报管理</MenuItem>
         <MenuItem name="f1-live-timing-demo">F1 Live Timing Demo</MenuItem>
