@@ -23,6 +23,7 @@ const catLoading = ref(false)
 const addingSelected = ref(false)
 const categories = ref<ShopCategory[]>([])
 const expandedL1 = reactive<Record<number, boolean>>({})
+const categoryIconError = reactive<Set<number>>(new Set())
 
 type SelectedScope = { kind: 'all' } | { kind: 'l1'; cat_id: number } | { kind: 'l2'; cat_id: number }
 
@@ -639,10 +640,10 @@ watch(
                 >
                   <div class="w-9 h-9 rounded flex items-center justify-center flex-shrink-0 overflow-hidden bg-zinc-800">
                     <img
-                      v-if="l1.icon_url"
+                      v-if="l1.icon_url && !categoryIconError.has(l1.cat_id)"
                       :src="l1.icon_url"
                       class="w-full h-full object-cover"
-                      @error="($event.target as HTMLImageElement).remove()"
+                      @error="categoryIconError.add(l1.cat_id)"
                     />
                   </div>
                   <div class="min-w-0 flex-1">
@@ -691,10 +692,10 @@ watch(
                 >
                   <div class="w-8 h-8 rounded flex items-center justify-center flex-shrink-0 overflow-hidden bg-zinc-800">
                     <img
-                      v-if="l2.icon_url"
+                      v-if="l2.icon_url && !categoryIconError.has(l2.cat_id)"
                       :src="l2.icon_url"
                       class="w-full h-full object-cover"
-                      @error="($event.target as HTMLImageElement).remove()"
+                      @error="categoryIconError.add(l2.cat_id)"
                     />
                   </div>
                   <div class="min-w-0 flex-1">
