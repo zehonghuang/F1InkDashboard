@@ -265,12 +265,18 @@
         <view class="picker-btn picker-btn-primary" bindtap="onPickerConfirm">{{i18n.common.ok}}</view>
       </view>
     </view>
-    <view class="picker-list">
+    <scroll-view
+      class="picker-list"
+      scroll-y
+      enhanced
+      show-scrollbar="{{false}}"
+    >
       <block wx:if="{{pickerMode === 'drivers'}}">
         <block wx:for="{{driverOptions}}" wx:key="driver_number">
           <view class="card" style="{{item.cardStyle}}" bindtap="onTogglePickDriver" data-driver-number="{{item.driver_number}}">
-            <view class="card-left">
-              <image class="avatar" src="{{item.headshot_url}}" mode="aspectFit" wx:if="{{item.headshot_url}}" />
+            <view class="card-left card-left-driver">
+              <image class="avatar avatar-driver" src="{{item.headshot_url}}" mode="aspectFill" wx:if="{{item.headshot_url}}" />
+              <view wx:else class="avatar-placeholder-driver">{{item.driver_number}}</view>
             </view>
             <view class="card-mid">
               <view class="driver-row">
@@ -301,6 +307,6 @@
           </view>
         </block>
       </block>
-    </view>
+    </scroll-view>
   </view>
 </view>

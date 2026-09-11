@@ -673,7 +673,7 @@ Page({
         const items = Array.isArray(data.items) ? data.items : []
         const driverOptions = items.map((it) => {
           const c = (it && it.team_color) || ""
-          const cardStyle = c ? `border-left: 10rpx solid ${c}; padding-left: 16rpx;` : ""
+          const cardStyle = c ? `border-left: 10rpx solid ${c}; padding-left: 22rpx;` : ""
           return Object.assign({}, it, { cardStyle })
         })
         const teamOptions = this.buildTeamOptions(driverOptions)
@@ -705,7 +705,7 @@ Page({
     teams.sort((a, b) => String(a.team_name).localeCompare(String(b.team_name)))
     return teams.map((t) => {
       const c = t.team_color || ""
-      const cardStyle = c ? `border-left: 10rpx solid ${c}; padding-left: 16rpx;` : ""
+      const cardStyle = c ? `border-left: 10rpx solid ${c}; padding-left: 22rpx;` : ""
       return Object.assign({}, t, { cardStyle })
     })
   },
