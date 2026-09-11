@@ -86,11 +86,14 @@ const attrs = computed(() => {
 const children = computed<MpNewsRichTextNode[]>(() => {
   const c: any = props.node?.children
   if (!c) return []
+  if (c === props.node) return []
   if (typeof c === 'string') {
     const s = c.trim()
     return s ? [{ type: 'text', text: s }] : []
   }
-  if (Array.isArray(c)) return c as MpNewsRichTextNode[]
+  if (Array.isArray(c)) {
+    return (c as MpNewsRichTextNode[]).filter((child) => child !== props.node && child !== c)
+  }
   if (typeof c === 'object') return [c as MpNewsRichTextNode]
   return []
 })

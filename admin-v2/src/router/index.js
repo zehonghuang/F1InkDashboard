@@ -94,8 +94,9 @@ const routes = [
     },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundPage },
 ];
+const env = import.meta.env || {};
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHistory(env.BASE_URL || '/admin-v2/'),
     routes,
 });
 export default router;

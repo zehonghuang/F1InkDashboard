@@ -25,6 +25,20 @@ const categories = ref<ShopCategory[]>([])
 type SelectedScope = { kind: 'all' } | { kind: 'l1'; cat_id: number } | { kind: 'l2'; cat_id: number }
 const selected = ref<SelectedScope>({ kind: 'all' })
 const expandedL1 = reactive<Record<number, boolean>>({})
+const _syncingRouter = ref(false)
+
+function scopeEquals(a: SelectedScope, b: SelectedScope): boolean {
+  if (a.kind !== b.kind) return false
+  if (a.kind === 'all') return b.kind === 'all'
+  return a.cat_id === (b as any).cat_id
+}
+
+function catIdFromQuery(): number | null {
+  const fromQ = route.query?.cat_id
+  if (fromQ === undefined) return null
+  const n = Number(String(fromQ))
+  return Number.isFinite(n) && n > 0 ? n : null
+}
 
 const productIDs = ref<string[]>([])
 const details = reactive<Record<string, ShopProductDetail | null>>({})
@@ -528,43 +542,55 @@ function rowExpandRender(hh: typeof h, params: any) {
 
 function pushRouterFromSelected() {
   const sid = selectedCatID()
-  if (!sid) {
-    router.replace({ name: 'shop-products', query: {} })
-  } else {
-    router.replace({ name: 'shop-products', query: { cat_id: String(sid) } })
+  const qid = catIdFromQuery()
+  const needsUpdate = sid !== qid
+  if (!needsUpdate) return
+  _syncingRouter.value = true
+  try {
+    if (!sid) {
+      router.replace({ name: 'shop-products', query: {} })
+    } else {
+      router.replace({ name: 'shop-products', query: { cat_id: String(sid) } })
+    }
+  } finally {
+    queueMicrotask(() => { _syncingRouter.value = false })
   }
 }
 
 function syncFromQuery() {
-  const fromQ = route.query?.cat_id
-  if (fromQ === undefined) {
-    selected.value = { kind: 'all' }
-    return
-  }
-  const n = Number(String(fromQ))
-  if (!Number.isFinite(n) || n <= 0) {
-    selected.value = { kind: 'all' }
-    return
-  }
-  for (const c of categories.value) {
-    if (c.cat_id === n) {
-      selected.value = { kind: 'l1', cat_id: n }
-      expandedL1[n] = true
-      return
-    }
-    if (c.children) {
-      const f = c.children.find((x) => x.cat_id === n)
-      if (f) {
-        selected.value = { kind: 'l2', cat_id: n }
-        expandedL1[c.cat_id] = true
-        return
+  const qid = catIdFromQuery()
+  let next: SelectedScope
+  if (qid === null) {
+    next = { kind: 'all' }
+  } else {
+    let matched = false
+    for (const c of categories.value) {
+      if (c.cat_id === qid) {
+        next = { kind: 'l1', cat_id: qid }
+        expandedL1[qid] = true
+        matched = true
+        break
+      }
+      if (c.children) {
+        const f = c.children.find((x) => x.cat_id === qid)
+        if (f) {
+          next = { kind: 'l2', cat_id: qid }
+          expandedL1[c.cat_id] = true
+          matched = true
+          break
+        }
       }
     }
+    if (!matched) {
+      next = { kind: 'l2', cat_id: qid }
+    }
   }
-  selected.value = { kind: 'l2', cat_id: n }
+  if (scopeEquals(selected.value, next)) return
+  selected.value = next
 }
 
 watch(selected, () => {
+  if (_syncingRouter.value) return
   pushRouterFromSelected()
   loadProductIDs()
 })
