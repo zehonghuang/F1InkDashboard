@@ -113,25 +113,35 @@ type tokenResponse struct {
 	apiError
 }
 
-func (c *Client) GetAccessToken(ctx context.Context) (string, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+func (c *Client) clearTokenLocked() {
+	c.accessToken = ""
+	c.tokenExpAt = time.Time{}
+}
 
+func (c *Client) getAccessTokenLocked(ctx context.Context, forceRefresh bool) (string, error) {
 	now := time.Now()
-	if c.accessToken != "" && now.Before(c.tokenExpAt.Add(-30*time.Second)) {
+	if !forceRefresh && c.accessToken != "" && now.Before(c.tokenExpAt.Add(-30*time.Second)) {
 		return c.accessToken, nil
 	}
 
-	u := "https://api.weixin.qq.com/cgi-bin/token"
-	q := url.Values{}
-	q.Set("grant_type", "client_credential")
-	q.Set("appid", c.cfg.AppID)
-	q.Set("secret", c.cfg.Secret)
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u+"?"+q.Encode(), nil)
+	u := "https://api.weixin.qq.com/cgi-bin/stable_token"
+	body := map[string]any{
+		"grant_type":    "client_credential",
+		"appid":         c.cfg.AppID,
+		"secret":        c.cfg.Secret,
+		"force_refresh": forceRefresh,
+	}
+	bodyBytes, err := json.Marshal(body)
 	if err != nil {
 		return "", err
 	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u, bytes.NewReader(bodyBytes))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return "", err
@@ -161,63 +171,112 @@ func (c *Client) GetAccessToken(ctx context.Context) (string, error) {
 	return c.accessToken, nil
 }
 
-func (c *Client) doShopAPI(ctx context.Context, method, path string, reqBody any, respOut any) error {
-	tok, err := c.GetAccessToken(ctx)
-	if err != nil {
-		return err
-	}
-	u := "https://api.weixin.qq.com" + path
-	q := url.Values{}
-	q.Set("access_token", tok)
-	u += "?" + q.Encode()
+func (c *Client) GetAccessToken(ctx context.Context) (string, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.getAccessTokenLocked(ctx, false)
+}
 
-	var bodyBytes []byte
-	if reqBody != nil {
-		b, err := json.Marshal(reqBody)
+func isTokenInvalidErr(err error) bool {
+	var ae *apiError
+	if !errors.As(err, &ae) {
+		return false
+	}
+	switch ae.ErrCode {
+	case 40001, // invalid credential
+		40014, // invalid access_token
+		42001, // access_token expired
+		42007, // access_token overtime
+		40013, // invalid appid (rare, but safe)
+		41001, // missing access_token
+		41002: // missing appid
+		return true
+	}
+	return false
+}
+
+func (c *Client) doShopAPI(ctx context.Context, method, path string, reqBody any, respOut any) error {
+	var lastErr error
+	for attempt := 0; attempt < 2; attempt++ {
+		tok, terr := func() (string, error) {
+			c.mu.Lock()
+			defer c.mu.Unlock()
+			force := attempt > 0
+			return c.getAccessTokenLocked(ctx, force)
+		}()
+		if terr != nil {
+			lastErr = terr
+			break
+		}
+		u := "https://api.weixin.qq.com" + path
+		q := url.Values{}
+		q.Set("access_token", tok)
+		u += "?" + q.Encode()
+
+		var bodyBytes []byte
+		if reqBody != nil {
+			b, err := json.Marshal(reqBody)
+			if err != nil {
+				return err
+			}
+			bodyBytes = b
+		}
+		log.Printf("[wechatshop] REQ %s %s attempt=%d body=%s", method, path, attempt+1, strings.TrimSpace(string(bodyBytes)))
+
+		req, err := http.NewRequestWithContext(ctx, method, u, bytes.NewReader(bodyBytes))
 		if err != nil {
 			return err
 		}
-		bodyBytes = b
-	}
-	log.Printf("[wechatshop] REQ %s %s body=%s", method, path, strings.TrimSpace(string(bodyBytes)))
+		req.Header.Set("Accept", "application/json")
+		if bodyBytes != nil {
+			req.Header.Set("Content-Type", "application/json")
+		}
 
-	req, err := http.NewRequestWithContext(ctx, method, u, bytes.NewReader(bodyBytes))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Accept", "application/json")
-	if bodyBytes != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
+		resp, err := c.httpClient.Do(req)
+		if err != nil {
+			lastErr = err
+			break
+		}
+		defer resp.Body.Close()
 
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+		raw, err := io.ReadAll(io.LimitReader(resp.Body, 4*1024*1024))
+		if err != nil {
+			lastErr = err
+			break
+		}
+		respPreview := strings.TrimSpace(string(raw))
+		if len(respPreview) > 4096 {
+			respPreview = respPreview[:4096] + "...(truncated)"
+		}
+		log.Printf("[wechatshop] RES %s %s attempt=%d status=%d body=%s", method, path, attempt+1, resp.StatusCode, respPreview)
+		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+			return fmt.Errorf("wechatshop_http_%d: %s", resp.StatusCode, strings.TrimSpace(string(raw)))
+		}
 
-	raw, err := io.ReadAll(io.LimitReader(resp.Body, 4*1024*1024))
-	if err != nil {
-		return err
+		var errCheck apiError
+		_ = json.Unmarshal(raw, &errCheck)
+		if errCheck.ErrCode != 0 {
+			ae := &apiError{ErrCode: errCheck.ErrCode, ErrMsg: errCheck.ErrMsg}
+			if isTokenInvalidErr(ae) && attempt == 0 {
+				func() {
+					c.mu.Lock()
+					defer c.mu.Unlock()
+					c.clearTokenLocked()
+				}()
+				lastErr = ae
+				continue
+			}
+			return ae
+		}
+		if respOut == nil {
+			return nil
+		}
+		return json.Unmarshal(raw, respOut)
 	}
-	respPreview := strings.TrimSpace(string(raw))
-	if len(respPreview) > 4096 {
-		respPreview = respPreview[:4096] + "...(truncated)"
+	if lastErr == nil {
+		lastErr = errors.New("wechatshop_retry_exhausted")
 	}
-	log.Printf("[wechatshop] RES %s %s status=%d body=%s", method, path, resp.StatusCode, respPreview)
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("wechatshop_http_%d: %s", resp.StatusCode, strings.TrimSpace(string(raw)))
-	}
-
-	var errCheck apiError
-	_ = json.Unmarshal(raw, &errCheck)
-	if errCheck.ErrCode != 0 {
-		return &apiError{ErrCode: errCheck.ErrCode, ErrMsg: errCheck.ErrMsg}
-	}
-	if respOut == nil {
-		return nil
-	}
-	return json.Unmarshal(raw, respOut)
+	return lastErr
 }
 
 type Category struct {
