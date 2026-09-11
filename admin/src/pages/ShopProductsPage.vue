@@ -780,7 +780,7 @@ watch(
           :show-header="true"
         >
           <template #expandedRowRender="params">
-            <component :is="{ render: () => rowExpandRender(h, params) }" />
+            <component :is="() => rowExpandRender(h, params)" />
           </template>
         </Table>
       </Card>
