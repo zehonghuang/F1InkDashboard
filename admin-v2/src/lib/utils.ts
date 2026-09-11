@@ -29,26 +29,17 @@ export function escapeHtml(value: string) {
     .replaceAll("'", '&#39;')
 }
 
-export function renderRichNode(node: MpNewsRichTextNode, seen?: WeakSet<object>, depth = 0): string {
-  if (!node || typeof node !== 'object' || depth > 32) return ''
-  const visited = seen ?? new WeakSet<object>()
-  if (visited.has(node)) return ''
-  visited.add(node)
-
+export function renderRichNode(node: MpNewsRichTextNode): string {
   const tag = String(node.name || node.type || 'p').toLowerCase()
-  const childNodes = node.children
-  let children = ''
-  if (Array.isArray(childNodes)) {
-    children = childNodes.map((c) => renderRichNode(c, visited, depth + 1)).join('')
-  } else if (typeof childNodes === 'string') {
-    children = escapeHtml(childNodes)
-  } else if (childNodes && typeof childNodes === 'object') {
-    children = renderRichNode(childNodes as MpNewsRichTextNode, visited, depth + 1)
-  } else {
-    children = escapeHtml(String(node.text || ''))
-  }
+  const children = Array.isArray(node.children)
+    ? node.children.map(renderRichNode).join('')
+    : typeof node.children === 'string'
+      ? escapeHtml(node.children)
+      : node.children && typeof node.children === 'object'
+        ? renderRichNode(node.children)
+        : escapeHtml(node.text || '')
 
-  if (tag === 'text') return escapeHtml(String(node.text || ''))
+  if (tag === 'text') return escapeHtml(node.text || '')
   if (tag === 'bullet_list' || tag === 'ul') return `<ul>${children}</ul>`
   if (tag === 'ordered_list' || tag === 'ol') return `<ol>${children}</ol>`
   if (tag === 'list_item' || tag === 'li') return `<li>${children}</li>`
@@ -61,7 +52,7 @@ export function renderRichNode(node: MpNewsRichTextNode, seen?: WeakSet<object>,
 export function renderNewsContent(item: MpNewsItem | null) {
   if (!item?.content) return '<p>暂无内容</p>'
   if (item.content.format_code === 'RICH_TEXT_NODES' && item.content.nodes?.length) {
-    return item.content.nodes.map((n) => renderRichNode(n)).join('')
+    return item.content.nodes.map(renderRichNode).join('')
   }
   return String(item.content.text || '')
     .split(/\n{2,}/)

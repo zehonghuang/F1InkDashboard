@@ -20,72 +20,11 @@ const loading = ref(false)
 const errorText = ref('')
 const catLoading = ref(false)
 const addingSelected = ref(false)
+
 const categories = ref<ShopCategory[]>([])
-const expandedL1 = reactive<Record<number, boolean>>({})
-
 type SelectedScope = { kind: 'all' } | { kind: 'l1'; cat_id: number } | { kind: 'l2'; cat_id: number }
-
-function parseCatIdFromQuery(): number | null {
-  const q = route.query?.cat_id
-  if (q === undefined || q === null || q === '') return null
-  const n = Number(String(q))
-  return Number.isFinite(n) && n > 0 ? n : null
-}
-
-const selected = computed<SelectedScope>((): SelectedScope => {
-  const qid = parseCatIdFromQuery()
-  if (qid === null) return { kind: 'all' }
-  for (const c of categories.value) {
-    if (c.cat_id === qid) return { kind: 'l1', cat_id: qid }
-    if (c.children) {
-      const f = c.children.find((x) => x.cat_id === qid)
-      if (f) return { kind: 'l2', cat_id: qid }
-    }
-  }
-  return { kind: 'l2', cat_id: qid }
-})
-
-function applyScopeToRouter(scope: SelectedScope) {
-  const qid = parseCatIdFromQuery()
-  const sid = scope.kind === 'all' ? null : scope.cat_id
-  if (sid === qid) return
-  if (sid === null) {
-    router.replace({ name: 'shop-products', query: {} })
-  } else {
-    router.replace({ name: 'shop-products', query: { cat_id: String(sid) } })
-  }
-}
-
-function setSelectedAll() {
-  applyScopeToRouter({ kind: 'all' })
-}
-function setSelectedL1(cat: ShopCategory) {
-  applyScopeToRouter({ kind: 'l1', cat_id: cat.cat_id })
-}
-function setSelectedL2(cat: ShopCategory) {
-  applyScopeToRouter({ kind: 'l2', cat_id: cat.cat_id })
-}
-
-function isSelectedAll(): boolean {
-  return selected.value.kind === 'all'
-}
-function selectedCatID(): number | null {
-  return selected.value.kind === 'all' ? null : selected.value.cat_id
-}
-
-function isL1Active(cat: ShopCategory): boolean {
-  const s = selected.value
-  if (s.kind === 'l1' && s.cat_id === cat.cat_id) return true
-  if (s.kind === 'l2' && cat.children?.some((c) => c.cat_id === s.cat_id)) return true
-  return false
-}
-function isL2Active(cat: ShopCategory): boolean {
-  return selected.value.kind === 'l2' && selected.value.cat_id === cat.cat_id
-}
-
-function toggleL1(cat: ShopCategory) {
-  expandedL1[cat.cat_id] = !expandedL1[cat.cat_id]
-}
+const selected = ref<SelectedScope>({ kind: 'all' })
+const expandedL1 = reactive<Record<number, boolean>>({})
 
 const productIDs = ref<string[]>([])
 const details = reactive<Record<string, ShopProductDetail | null>>({})
@@ -96,19 +35,39 @@ const expandedRows = reactive<Record<string, boolean>>({})
 const checkedIDs = reactive<Set<string>>(new Set())
 const selectedProducts = ref<ShopSelectedProduct[]>([])
 
+async function loadSelectedProducts() {
+  try {
+    const res = await fetchAdminShopSelected()
+    selectedProducts.value = res.items || []
+  } catch (e) {
+    // ignore
+  }
+}
+
+onMounted(() => {
+  loadSelectedProducts()
+})
+
 const selectedProductIDSet = computed(() => {
   const s = new Set<string>()
-  for (const p of selectedProducts.value) s.add(p.product_id)
+  for (const p of selectedProducts.value) {
+    s.add(p.product_id)
+  }
   return s
 })
 
 function isSelected(id: string): boolean {
   return checkedIDs.has(id)
 }
+
 function toggleSelect(id: string) {
-  if (checkedIDs.has(id)) checkedIDs.delete(id)
-  else checkedIDs.add(id)
+  if (checkedIDs.has(id)) {
+    checkedIDs.delete(id)
+  } else {
+    checkedIDs.add(id)
+  }
 }
+
 function toggleSelectAll() {
   const allChecked = productIDs.value.every((id) => checkedIDs.has(id))
   if (allChecked) {
@@ -117,8 +76,16 @@ function toggleSelectAll() {
     for (const id of productIDs.value) checkedIDs.add(id)
   }
 }
-const allChecked = computed(() => productIDs.value.length > 0 && productIDs.value.every((id) => checkedIDs.has(id)))
-const someChecked = computed(() => productIDs.value.some((id) => checkedIDs.has(id)))
+
+const allChecked = computed(() => {
+  if (productIDs.value.length === 0) return false
+  return productIDs.value.every((id) => checkedIDs.has(id))
+})
+
+const someChecked = computed(() => {
+  return productIDs.value.some((id) => checkedIDs.has(id))
+})
+
 const checkedCount = computed(() => checkedIDs.size)
 
 async function handleAddSelected() {
@@ -137,13 +104,35 @@ async function handleAddSelected() {
   }
 }
 
-async function loadSelectedProducts() {
-  try {
-    const res = await fetchAdminShopSelected()
-    selectedProducts.value = res.items || []
-  } catch {
-    // ignore
-  }
+function isSelectedAll(): boolean {
+  return selected.value.kind === 'all'
+}
+function selectedCatID(): number | null {
+  return selected.value.kind === 'all' ? null : selected.value.cat_id
+}
+
+function setSelectedL1(cat: ShopCategory) {
+  selected.value = { kind: 'l1', cat_id: cat.cat_id }
+}
+function setSelectedL2(cat: ShopCategory) {
+  selected.value = { kind: 'l2', cat_id: cat.cat_id }
+}
+function setSelectedAll() {
+  selected.value = { kind: 'all' }
+}
+
+function isL1Active(cat: ShopCategory): boolean {
+  const s = selected.value
+  if (s.kind === 'l1' && s.cat_id === cat.cat_id) return true
+  if (s.kind === 'l2' && cat.children?.some((c) => c.cat_id === s.cat_id)) return true
+  return false
+}
+function isL2Active(cat: ShopCategory): boolean {
+  return selected.value.kind === 'l2' && selected.value.cat_id === cat.cat_id
+}
+
+function toggleL1(cat: ShopCategory) {
+  expandedL1[cat.cat_id] = !expandedL1[cat.cat_id]
 }
 
 async function loadCategories() {
@@ -153,19 +142,8 @@ async function loadCategories() {
     const res = await fetchShopCategories()
     categories.value = res.categories || []
     for (const c of categories.value) {
-      if ((c.children?.length ?? 0) > 0) expandedL1[c.cat_id] = true
-    }
-    const qid = parseCatIdFromQuery()
-    if (qid !== null) {
-      for (const c of categories.value) {
-        if (c.cat_id === qid) {
-          expandedL1[qid] = true
-          break
-        }
-        if (c.children?.some((x) => x.cat_id === qid)) {
-          expandedL1[c.cat_id] = true
-          break
-        }
+      if ((c.children?.length ?? 0) > 0) {
+        expandedL1[c.cat_id] = true
       }
     }
   } catch (e: any) {
@@ -180,14 +158,13 @@ async function loadProductIDs() {
   errorText.value = ''
   checkedIDs.clear()
   try {
-    const sid = selectedCatID()
-    let res: { product_ids?: string[] }
-    if (sid === null) {
-      res = await fetchShopAllProductIDs(5)
+    if (isSelectedAll()) {
+      const r = await fetchShopAllProductIDs(5)
+      productIDs.value = r.product_ids || []
     } else {
-      res = await fetchShopCategoryProductIDs(sid)
+      const r = await fetchShopCategoryProductIDs(selectedCatID()!)
+      productIDs.value = r.product_ids || []
     }
-    productIDs.value = res.product_ids || []
     for (const k of Object.keys(details)) delete details[k]
     for (const k of Object.keys(detailLoading)) delete detailLoading[k]
     for (const k of Object.keys(detailError)) delete detailError[k]
@@ -549,22 +526,64 @@ function rowExpandRender(hh: typeof h, params: any) {
   ])
 }
 
+function pushRouterFromSelected() {
+  const sid = selectedCatID()
+  if (!sid) {
+    router.replace({ name: 'shop-products', query: {} })
+  } else {
+    router.replace({ name: 'shop-products', query: { cat_id: String(sid) } })
+  }
+}
+
+function syncFromQuery() {
+  const fromQ = route.query?.cat_id
+  if (fromQ === undefined) {
+    selected.value = { kind: 'all' }
+    return
+  }
+  const n = Number(String(fromQ))
+  if (!Number.isFinite(n) || n <= 0) {
+    selected.value = { kind: 'all' }
+    return
+  }
+  for (const c of categories.value) {
+    if (c.cat_id === n) {
+      selected.value = { kind: 'l1', cat_id: n }
+      expandedL1[n] = true
+      return
+    }
+    if (c.children) {
+      const f = c.children.find((x) => x.cat_id === n)
+      if (f) {
+        selected.value = { kind: 'l2', cat_id: n }
+        expandedL1[c.cat_id] = true
+        return
+      }
+    }
+  }
+  selected.value = { kind: 'l2', cat_id: n }
+}
+
+watch(selected, () => {
+  pushRouterFromSelected()
+  loadProductIDs()
+})
+
 onMounted(async () => {
-  loadSelectedProducts()
+  syncFromQuery()
   await loadCategories()
+  syncFromQuery()
   await loadProductIDs()
 })
 
-let _lastLoadKey = ''
 watch(
+  () => [route.query?.cat_id],
   () => {
-    const sid = selectedCatID()
-    return sid === null ? 'all' : String(sid)
-  },
-  (key) => {
-    if (key === _lastLoadKey) return
-    _lastLoadKey = key
-    loadProductIDs()
+    const prev = selectedCatID()
+    syncFromQuery()
+    if (prev !== selectedCatID()) {
+      loadProductIDs()
+    }
   },
 )
 </script>
