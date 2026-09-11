@@ -60,9 +60,12 @@ function setSelectedAll() {
   applyScopeToRouter({ kind: 'all' })
 }
 function setSelectedL1(cat: ShopCategory) {
+  expandedL1[cat.cat_id] = true
   applyScopeToRouter({ kind: 'l1', cat_id: cat.cat_id })
 }
 function setSelectedL2(cat: ShopCategory) {
+  const parent = categories.value.find((c) => c.children?.some((x) => x.cat_id === cat.cat_id))
+  if (parent) expandedL1[parent.cat_id] = true
   applyScopeToRouter({ kind: 'l2', cat_id: cat.cat_id })
 }
 
@@ -563,6 +566,19 @@ watch(
     _lastLoadKey = key
     loadProductIDs()
   },
+)
+
+watch(
+  () => selected.value,
+  (s) => {
+    if (s.kind === 'l1') {
+      expandedL1[s.cat_id] = true
+    } else if (s.kind === 'l2') {
+      const parent = categories.value.find((c) => c.children?.some((x) => x.cat_id === s.cat_id))
+      if (parent) expandedL1[parent.cat_id] = true
+    }
+  },
+  { immediate: true },
 )
 </script>
 
