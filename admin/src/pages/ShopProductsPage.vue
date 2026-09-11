@@ -569,6 +569,44 @@ watch(
 
 <template>
   <div class="space-y-4">
+    <Card padding="0" class="overflow-hidden">
+      <div class="flex items-stretch divide-x divide-zinc-800 border-b border-zinc-800">
+        <button
+          class="flex-1 px-4 py-3 text-sm transition-colors"
+          :class="
+            route.name === 'shop-products'
+              ? 'bg-[#1a0a0a] text-[#E10600] border-b-2 border-b-[#E10600] -mb-px font-medium'
+              : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#131313]'
+          "
+          @click="router.push({ name: 'shop-products' })"
+        >
+          商品列表
+        </button>
+        <button
+          class="flex-1 px-4 py-3 text-sm transition-colors"
+          :class="
+            route.name === 'shop-selected'
+              ? 'bg-[#1a0a0a] text-[#E10600] border-b-2 border-b-[#E10600] -mb-px font-medium'
+              : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#131313]'
+          "
+          @click="router.push({ name: 'shop-selected' })"
+        >
+          已指定商品
+        </button>
+        <button
+          class="flex-1 px-4 py-3 text-sm transition-colors"
+          :class="
+            route.name === 'shop-categories'
+              ? 'bg-[#1a0a0a] text-[#E10600] border-b-2 border-b-[#E10600] -mb-px font-medium'
+              : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#131313]'
+          "
+          @click="router.push({ name: 'shop-categories' })"
+        >
+          分类管理
+        </button>
+      </div>
+    </Card>
+
     <Card>
       <div class="flex items-center justify-between gap-3 flex-wrap">
         <div>
@@ -593,10 +631,6 @@ watch(
           >
             入库选中 ({{ checkedCount }})
           </Button>
-          <Button type="default" @click="router.push({ name: 'shop-selected' })">
-            已指定商品
-          </Button>
-          <Button type="default" @click="router.push({ name: 'shop-categories' })">分类管理</Button>
           <Button type="primary" :loading="loading" @click="loadProductIDs">刷新</Button>
         </div>
       </div>

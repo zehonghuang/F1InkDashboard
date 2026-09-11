@@ -6,9 +6,10 @@ import {
   type ShopSelectedProduct,
 } from '@/api/shop'
 import { computed, h, onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Message } from 'view-ui-plus'
 
+const route = useRoute()
 const router = useRouter()
 
 const loading = ref(false)
@@ -326,10 +327,48 @@ const tableRows = computed(() =>
 
 <template>
   <div class="space-y-4">
+    <Card padding="0" class="overflow-hidden">
+      <div class="flex items-stretch divide-x divide-zinc-800 border-b border-zinc-800">
+        <button
+          class="flex-1 px-4 py-3 text-sm transition-colors"
+          :class="
+            route.name === 'shop-products'
+              ? 'bg-[#1a0a0a] text-[#E10600] border-b-2 border-b-[#E10600] -mb-px font-medium'
+              : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#131313]'
+          "
+          @click="router.push({ name: 'shop-products' })"
+        >
+          商品列表
+        </button>
+        <button
+          class="flex-1 px-4 py-3 text-sm transition-colors"
+          :class="
+            route.name === 'shop-selected'
+              ? 'bg-[#1a0a0a] text-[#E10600] border-b-2 border-b-[#E10600] -mb-px font-medium'
+              : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#131313]'
+          "
+          @click="router.push({ name: 'shop-selected' })"
+        >
+          已指定商品
+        </button>
+        <button
+          class="flex-1 px-4 py-3 text-sm transition-colors"
+          :class="
+            route.name === 'shop-categories'
+              ? 'bg-[#1a0a0a] text-[#E10600] border-b-2 border-b-[#E10600] -mb-px font-medium'
+              : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#131313]'
+          "
+          @click="router.push({ name: 'shop-categories' })"
+        >
+          分类管理
+        </button>
+      </div>
+    </Card>
+
     <Card>
       <div class="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <div class="text-sm text-zinc-500">微信小店 · 子页面</div>
+          <div class="text-sm text-zinc-500">微信小店</div>
           <div class="text-lg font-semibold text-zinc-100 mt-0.5 flex items-center gap-3">
             <span>已指定商品</span>
             <span class="text-xs font-normal text-zinc-500">共 {{ total }} 个商品</span>
@@ -346,9 +385,6 @@ const tableRows = computed(() =>
             @click="handleRemoveSelected"
           >
             移除选中 ({{ checkedCount }})
-          </Button>
-          <Button type="default" @click="router.push({ name: 'shop-products' })">
-            返回商品列表
           </Button>
           <Button type="primary" :loading="loading || updatingWeight" @click="load">
             刷新

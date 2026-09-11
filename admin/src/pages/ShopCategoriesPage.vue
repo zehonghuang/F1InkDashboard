@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { fetchShopCategories, type ShopCategory } from '@/api/shop'
 import { computed, h, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
+const route = useRoute()
 const router = useRouter()
 const loading = ref(false)
 const errorText = ref('')
@@ -86,16 +87,48 @@ onMounted(load)
 
 <template>
   <div class="space-y-4">
+    <Card padding="0" class="overflow-hidden">
+      <div class="flex items-stretch divide-x divide-zinc-800 border-b border-zinc-800">
+        <button
+          class="flex-1 px-4 py-3 text-sm transition-colors"
+          :class="
+            route.name === 'shop-products'
+              ? 'bg-[#1a0a0a] text-[#E10600] border-b-2 border-b-[#E10600] -mb-px font-medium'
+              : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#131313]'
+          "
+          @click="router.push({ name: 'shop-products' })"
+        >
+          商品列表
+        </button>
+        <button
+          class="flex-1 px-4 py-3 text-sm transition-colors"
+          :class="
+            route.name === 'shop-selected'
+              ? 'bg-[#1a0a0a] text-[#E10600] border-b-2 border-b-[#E10600] -mb-px font-medium'
+              : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#131313]'
+          "
+          @click="router.push({ name: 'shop-selected' })"
+        >
+          已指定商品
+        </button>
+        <button
+          class="flex-1 px-4 py-3 text-sm transition-colors"
+          :class="
+            route.name === 'shop-categories'
+              ? 'bg-[#1a0a0a] text-[#E10600] border-b-2 border-b-[#E10600] -mb-px font-medium'
+              : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#131313]'
+          "
+          @click="router.push({ name: 'shop-categories' })"
+        >
+          分类管理
+        </button>
+      </div>
+    </Card>
+
     <Card>
       <template #title>微信小店 · 商品分类</template>
       <div class="flex gap-2 items-center">
         <Button type="primary" :loading="loading" @click="load">刷新</Button>
-        <Button
-          type="default"
-          @click="router.push({ name: 'shop-products' })"
-        >
-          商品列表（全部）
-        </Button>
       </div>
       <Alert v-if="errorText" type="error" show-icon class="mt-3">{{ errorText }}</Alert>
       <div class="mt-2 text-xs text-zinc-400">
